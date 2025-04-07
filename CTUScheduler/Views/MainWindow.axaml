@@ -1,0 +1,18 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:rxui="http://reactiveui.net" 
+        xmlns:vm="using:CTUScheduler.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:CTUScheduler.Views"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+		WindowState="Maximized"
+		WindowStartupLocation="CenterScreen"
+        x:Class="CTUScheduler.Views.MainWindow"
+        Icon="/Assets/avalonia-logo.ico"
+		MinHeight="600" MinWidth="1000"
+		x:CompileBindings="True"
+		Focusable="True"
+        Title="CTU Scheduler">
+       <views:MainView/>
+</Window>

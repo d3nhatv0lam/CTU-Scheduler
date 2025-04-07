@@ -1,0 +1,79 @@
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
+using Avalonia.Styling;
+using CTUScheduler.Services;
+using CTUScheduler.ViewModels;
+using CTUScheduler.Views;
+using Microsoft.Extensions.DependencyInjection;
+using ReactiveUI;
+using Splat;
+using System;
+using System.Diagnostics;
+using System.Reactive.Linq;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+
+namespace CTUScheduler;
+
+public partial class App : Application
+{
+    public static string AppVersion { get; } = "0.1";
+    public static IServiceProvider? ServiceProvider { get; private set; }
+
+    public override void Initialize()
+    {
+        AvaloniaXamlLoader.Load(this);
+
+        // đăng ký ServiceCollection
+        var services = new ServiceCollection();
+        ConfigureServices(services);
+
+        ServiceProvider = services.BuildServiceProvider();
+    }
+
+
+
+    public override void OnFrameworkInitializationCompleted()
+    {
+        // load view
+        Locator.CurrentMutable.RegisterLazySingleton(() => new ConventionalViewLocator(), typeof(IViewLocator));
+        // Load Web
+        Task.Run(() => ServiceProvider!.GetRequiredService<WebDriverService>());
+
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.MainWindow = new LoadingScreen
+            {
+                DataContext = new LoadingScreenViewModel()
+            };
+            desktop.MainWindow.Show();
+            desktop.Exit += Desktop_Exit;
+            
+        }
+        else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
+        {
+            singleViewPlatform.MainView = new MainView
+            {
+                DataContext = new MainViewModel()
+            };
+        }
+
+        base.OnFrameworkInitializationCompleted();
+    }
+
+    private void ConfigureServices(IServiceCollection services)
+    {
+        services.AddSingleton<InternetStatusService>(provider => InternetStatusService.CreateInstance(TimeSpan.FromSeconds(3)));
+        services.AddSingleton<WebDriverService>(provider => new WebDriverService(provider.GetRequiredService<InternetStatusService>()));
+        ServiceProvider = services.BuildServiceProvider();
+    }
+
+    private void Desktop_Exit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
+    {
+        if (ServiceProvider is IDisposable disposableService)
+            disposableService.Dispose();   
+    }
+}
