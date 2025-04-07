@@ -2,19 +2,55 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
 			 xmlns:vm="clr-namespace:CTUScheduler.ViewModels"
 			 xmlns:model="clr-namespace:CTUScheduler.Models"
 			 xmlns:control="clr-namespace:CTUScheduler.Controls"
 			 x:DataType="vm:ScheduleViewModel"
 			 x:CompileBindings="True"
              x:Class="CTUScheduler.Views.ScheduleView">
-
+	
 
 	<Border BorderBrush="Black" BorderThickness="1" >
-		<Grid ColumnDefinitions="* 1 * 1 * 1 * 1 * 1 * 1 *"
-			  RowDefinitions="* 1 * * * * * 0.7* * * * *" 
-			  >
+		<Grid >
+
+			<!--ColumnDefinitions="* 1 * 1 * 1 * 1 * 1 * 1 *"
+				RowDefinitions="* 1 * * * * * 0.7* * * * *"-->
+
+			 <!--Định nghĩa cột--> 
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" MinWidth="50"/>
+				<ColumnDefinition Width="1" />
+				<ColumnDefinition Width="*" MinWidth="50"/>
+				<ColumnDefinition Width="1" />
+				<ColumnDefinition Width="*" MinWidth="50"/>
+				<ColumnDefinition Width="1" />
+				<ColumnDefinition Width="*" MinWidth="50"/>
+				<ColumnDefinition Width="1" />
+				<ColumnDefinition Width="*" MinWidth="50"/>
+				<ColumnDefinition Width="1" />
+				<ColumnDefinition Width="*" MinWidth="50"/>
+				<ColumnDefinition Width="1" />
+				<ColumnDefinition Width="*" MinWidth="50"/>
+			</Grid.ColumnDefinitions>
+
+			 <!--Định nghĩa hàng--> 
+			<Grid.RowDefinitions>
+				<RowDefinition Height="*" MinHeight="50"/>
+				<RowDefinition Height="1"/>
+				<RowDefinition Height="*" MinHeight="50"/>
+				<RowDefinition Height="*" MinHeight="50"/>
+				<RowDefinition Height="*" MinHeight="50"/>
+				<RowDefinition Height="*" MinHeight="50"/>
+				<RowDefinition Height="*" MinHeight="50"/>
+				<RowDefinition Height="0.7*" MinHeight="30"/>
+				<RowDefinition Height="*" MinHeight="50"/>
+				<RowDefinition Height="*" MinHeight="50"/>
+				<RowDefinition Height="*" MinHeight="50"/>
+				<RowDefinition Height="*" MinHeight="50"/>
+			</Grid.RowDefinitions>
+
+
 			<Grid.Styles>
 				<Style Selector="Grid > TextBlock">
 					<Setter Property="HorizontalAlignment" Value="Center"/>
@@ -79,9 +115,33 @@
 
 					<ItemsControl.ItemsPanel>
 						<ItemsPanelTemplate>
-							<Grid RowDefinitions="* * * * * 0.7* * * * *"
-								ColumnDefinitions="* * * * * *" 
-								/>
+							<Grid>
+								<!--RowDefinitions="* * * * * 0.7* * * * *"-->
+								<!--ColumnDefinitions="* * * * * *"-->
+
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*" MinWidth="50"/>
+									<ColumnDefinition Width="*" MinWidth="50"/>
+									<ColumnDefinition Width="*" MinWidth="50"/>
+									<ColumnDefinition Width="*" MinWidth="50"/>
+									<ColumnDefinition Width="*" MinWidth="50"/>
+									<ColumnDefinition Width="*" MinWidth="50"/>
+								</Grid.ColumnDefinitions>
+								
+								<Grid.RowDefinitions>
+									<RowDefinition Height="*" MinHeight="50"/>
+									<RowDefinition Height="*" MinHeight="50"/>
+									<RowDefinition Height="*" MinHeight="50"/>
+									<RowDefinition Height="*" MinHeight="50"/>
+									<RowDefinition Height="*" MinHeight="50"/>
+									<RowDefinition Height="0.7*" MinHeight="30"/>
+									<RowDefinition Height="*" MinHeight="50"/>
+									<RowDefinition Height="*" MinHeight="50"/>
+									<RowDefinition Height="*" MinHeight="50"/>
+									<RowDefinition Height="*" MinHeight="50"/>
+								</Grid.RowDefinitions>
+								
+							</Grid>
 						</ItemsPanelTemplate>
 					</ItemsControl.ItemsPanel>
 

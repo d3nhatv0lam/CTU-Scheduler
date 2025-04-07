@@ -3,8 +3,10 @@ using CTUScheduler.Models;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace CTUScheduler.ViewModels
@@ -40,6 +42,9 @@ namespace CTUScheduler.ViewModels
                 TietBatDau = 1,
                 RowSpan = 5
             });
+            string json = JsonSerializer.Serialize(ScheduleTable);
+            Debug.WriteLine(json);
+
         }
         public ScheduleViewModel(IScreen hostScreen, ScheduleTable scheduleTable)
         {

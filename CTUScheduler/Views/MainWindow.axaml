@@ -10,7 +10,7 @@
 		WindowStartupLocation="CenterScreen"
         x:Class="CTUScheduler.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
-		MinHeight="600" MinWidth="1000"
+		Height="600" Width="1000"
 		x:CompileBindings="True"
 		Focusable="True"
         Title="CTU Scheduler">
