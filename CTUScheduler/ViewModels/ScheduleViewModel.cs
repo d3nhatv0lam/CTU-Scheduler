@@ -1,5 +1,8 @@
-﻿using Avalonia.Controls;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using CTUScheduler.Models;
+using CTUScheduler.Views;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -44,7 +47,6 @@ namespace CTUScheduler.ViewModels
             });
             string json = JsonSerializer.Serialize(ScheduleTable);
             Debug.WriteLine(json);
-
         }
         public ScheduleViewModel(IScreen hostScreen, ScheduleTable scheduleTable)
         {

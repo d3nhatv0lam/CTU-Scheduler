@@ -7,15 +7,31 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace CTUScheduler.Models
 {
     public class ScheduleTable: ReactiveObject
     {
+        private string _name = "UNNAMED";
+        private string _description = string.Empty;
         private readonly ObservableCollection<ScheduleCell> _scheduleCells;
-        private int _totalCredit; 
+        private readonly Dictionary<string, string> _scheduleData;
+        private int _totalCredit;
 
+        public string Name
+        {
+            get => _name;
+            set => this.RaiseAndSetIfChanged(ref _name, value);
+        }
+        public string Description
+        {
+            get => _description;
+            set => this.RaiseAndSetIfChanged(ref _description, value);
+        }
+
+        [JsonIgnore]
         public ObservableCollection<ScheduleCell> ScheduleCells
         {
             get => _scheduleCells;
@@ -25,20 +41,30 @@ namespace CTUScheduler.Models
             get => _totalCredit;
             set => this.RaiseAndSetIfChanged(ref _totalCredit, value);
         }
-
+        public Dictionary<string,string> ScheduleData
+        {
+            get => _scheduleData;
+        }
 
         public ScheduleTable()
         {
             _scheduleCells = new ObservableCollection<ScheduleCell>();
+            _scheduleData = new Dictionary<string, string>();
         }
 
         private bool IsDuplicateModule(ScheduleCell cell)
         {
-
             throw new DuplicateModuleException();
             return true;
         }
 
+        private bool IsMaxCreditReached(ScheduleCell cell)
+        {
+            bool isReachMax = false;
+            if (cell.TinChi + TotalCredit > 30)
+                isReachMax = true;
+            return isReachMax;
+        }
         private bool IsConflictModule(ScheduleCell cell)
         {
             bool isConflict = false;
@@ -50,7 +76,7 @@ namespace CTUScheduler.Models
         {
             try
             {
-                if (IsDuplicateModule(cell) && IsConflictModule(cell))
+                if (IsMaxCreditReached(cell) && IsDuplicateModule(cell) && IsConflictModule(cell))
                     return true;
             }
             catch
@@ -60,7 +86,7 @@ namespace CTUScheduler.Models
             return false;
         }
         
-        public void AddCell(ScheduleCell cell)
+        public void TryAddCell(ScheduleCell cell)
         {
             try
             {
