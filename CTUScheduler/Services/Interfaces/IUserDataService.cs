@@ -13,8 +13,8 @@ namespace CTUScheduler.Services.Interfaces
     {
         public UserData _UserData { get; }
 
-        public void LoadUserData();
+        public void LoadUserData(string fileName);
 
-        public void SaveUserData();
+        public void SaveUserData(string fileName);
     }
 }

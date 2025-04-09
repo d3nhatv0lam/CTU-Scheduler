@@ -12,28 +12,45 @@ namespace CTUScheduler.Utilities
     {
         public static void OpenUrl(string url)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            try
             {
-                var process = new Process
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    StartInfo = new ProcessStartInfo
+                    var process = new Process
                     {
-                        FileName = url,
-                        UseShellExecute = true
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = url,
+                            UseShellExecute = true
+                        }
+                    };
+                    process.Start();
+                    return;
+                }
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    try
+                    {
+                        Process.Start("xdg-open", url);
                     }
-                };
-                process.Start();
-                return;
+                    catch (System.ComponentModel.Win32Exception)
+                    {
+                        // Nếu `xdg-open` không tồn tại, thử `x-www-browser`
+                        Process.Start("x-www-browser", url);
+                    }
+                    return;
+                }
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Process.Start("open", url);
+                    return;
+                }
+                throw new NotSupportedException("Unsupported OS");
             }
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            catch (Exception e)
             {
-                Process.Start("x-www-browser", url);
-                return;
+                Debug.WriteLine(e.Message);
             }
-            // not MacOS
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) throw new NotSupportedException("Unsupported OS");
-
-            Process.Start("open", url);
         }
     }
 }

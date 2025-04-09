@@ -87,7 +87,7 @@ namespace CTUScheduler.Services
                 {
                     _isHasInternet = status;
                 }).DisposeWith(_disposables);
-            
+                
         }
 
         //private async Task InitializeAsync()

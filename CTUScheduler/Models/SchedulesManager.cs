@@ -11,10 +11,11 @@ using System.Threading.Tasks;
 
 namespace CTUScheduler.Models
 {
-    public class SchedulesManager: ReactiveObject
+    public class SchedulesManager: ReactiveObject, IDisposable
     {
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly ObservableCollection<ScheduleTable> _scheduleTables;
-
+        private DateTime _lastUpdate = DateTime.Now;
         public ObservableCollection<ScheduleTable> ScheduleTables
         {
             get => _scheduleTables;
@@ -22,6 +23,12 @@ namespace CTUScheduler.Models
 
         [JsonIgnore]
         public int ScheduleTableCount => _scheduleTables.Count;
+
+        public DateTime LastUpdate
+        {
+            get => _lastUpdate;
+            set => this.RaiseAndSetIfChanged(ref _lastUpdate, value);
+        }
 
         public SchedulesManager()
         {
@@ -34,6 +41,11 @@ namespace CTUScheduler.Models
         public void AddScheduleTable(ScheduleTable scheduleTable)
         {
             _scheduleTables.Add(scheduleTable);
+        }
+
+        public void Dispose()
+        {
+            _disposables.Dispose();
         }
     }
 }

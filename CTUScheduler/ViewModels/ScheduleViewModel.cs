@@ -28,21 +28,21 @@ namespace CTUScheduler.ViewModels
             ScheduleTable = new ScheduleTable();
             ScheduleTable.ScheduleCells.Add(new ScheduleCell
             {
-                ThuDihoc = 2,
-                TietBatDau = 1,
+                AttendingDay = 2,
+                StartPeriod = 1,
                 RowSpan = 2
             });
 
             ScheduleTable.ScheduleCells.Add(new ScheduleCell
             {
-                ThuDihoc = 5,
-                TietBatDau = 6,
+                AttendingDay = 5,
+                StartPeriod = 6,
                 RowSpan = 4
             });
             ScheduleTable.ScheduleCells.Add(new ScheduleCell
             {
-                ThuDihoc = 6,
-                TietBatDau = 1,
+                AttendingDay = 6,
+                StartPeriod = 1,
                 RowSpan = 5
             });
             string json = JsonSerializer.Serialize(ScheduleTable);

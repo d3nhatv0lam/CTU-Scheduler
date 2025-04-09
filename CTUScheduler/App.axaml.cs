@@ -5,6 +5,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
 using CTUScheduler.Services;
+using CTUScheduler.Services.Interfaces;
 using CTUScheduler.ViewModels;
 using CTUScheduler.Views;
 using Microsoft.Extensions.DependencyInjection;
@@ -68,6 +69,7 @@ public partial class App : Application
     {
         services.AddSingleton<InternetStatusService>(provider => InternetStatusService.CreateInstance(TimeSpan.FromSeconds(3)));
         services.AddSingleton<WebDriverService>(provider => new WebDriverService(provider.GetRequiredService<InternetStatusService>()));
+        services.AddSingleton<IUserDataService, UserDataService>();
         ServiceProvider = services.BuildServiceProvider();
     }
 

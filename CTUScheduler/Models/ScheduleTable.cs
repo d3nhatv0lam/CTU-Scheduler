@@ -18,8 +18,8 @@ namespace CTUScheduler.Models
         private string _description = string.Empty;
         private readonly ObservableCollection<ScheduleCell> _scheduleCells;
         private readonly Dictionary<string, string> _scheduleData;
+        private DateTime _lastUpdate = DateTime.Now;
         private int _totalCredit;
-
         public string Name
         {
             get => _name;
@@ -30,7 +30,6 @@ namespace CTUScheduler.Models
             get => _description;
             set => this.RaiseAndSetIfChanged(ref _description, value);
         }
-
         [JsonIgnore]
         public ObservableCollection<ScheduleCell> ScheduleCells
         {
@@ -44,6 +43,11 @@ namespace CTUScheduler.Models
         public Dictionary<string,string> ScheduleData
         {
             get => _scheduleData;
+        }
+        public DateTime LastUpdate
+        {
+            get => _lastUpdate;
+            set => this.RaiseAndSetIfChanged(ref _lastUpdate, value);
         }
 
         public ScheduleTable()

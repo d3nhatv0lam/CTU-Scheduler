@@ -6,8 +6,13 @@
 			 xmlns:vm ="clr-namespace:CTUScheduler.ViewModels"
 			 x:DataType="vm:MainHomeViewModel"
 			 x:CompileBindings="True"
+			 xmlns:controls ="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
              x:Class="CTUScheduler.Views.MainHomeView">
-	<Grid>
-		
+	<Grid ColumnDefinitions="0.3* *" ShowGridLines="True">
+		<controls:NavigationDrawer Grid.Column="1"  LeftDrawerOpened="True" >
+			<controls:NavigationDrawer.LeftDrawerContent>
+				<StackPanel Height="100" Width="100" Background="Red"></StackPanel>
+			</controls:NavigationDrawer.LeftDrawerContent>
+		</controls:NavigationDrawer>
 	</Grid>
 </UserControl>
