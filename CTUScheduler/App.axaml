@@ -7,6 +7,14 @@
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
 	<Application.Resources>
+
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+
+
 		<SolidColorBrush x:Key="PrimaryColor" Color="#1f5ca9"/>
 		<SolidColorBrush x:Key="SecondaryColor" Color="#00afef"/>
 		<FontFamily x:Key="CTU_Title_Font">
@@ -22,7 +30,6 @@
 	
     <Application.Styles>
         <FluentTheme />
-		
 		<materialIcons:MaterialIconStyles />
 	</Application.Styles>
 </Application>

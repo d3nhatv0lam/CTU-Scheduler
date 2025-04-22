@@ -1,0 +1,150 @@
+<rxui:ReactiveUserControl 
+	x:TypeArguments="vm:SignInViewModel"
+			 xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+			 xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+			 xmlns:rxui="http://reactiveui.net"
+			 xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
+			 xmlns:controls ="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+			 xmlns:vm ="clr-namespace:CTUScheduler.Presentation.ViewModels"
+			 x:CompileBindings="True"
+			 x:DataType="vm:SignInViewModel"
+			 Focusable="True"
+             x:Class="CTUScheduler.Presentation.Views.SignInView">
+	
+	<UserControl.KeyBindings>
+		<KeyBinding Gesture="Enter" Command="{Binding SignInCommand}" />
+	</UserControl.KeyBindings>
+
+	<UserControl.Styles>
+		<themes:CustomMaterialTheme  PrimaryColor="Blue" SecondaryColor="#1f5ca9"/>
+		<Style Selector="TextBlock">
+			<Setter Property="Foreground" Value="Black"/>
+		</Style>
+	</UserControl.Styles>
+	
+	<Grid Background="{StaticResource PrimaryColor}"
+		  ColumnDefinitions="0.85* *">
+		<Grid Grid.Column="0" RowDefinitions="20 * *">
+			
+			<!--// Logo image//-->
+			<Image 
+				Grid.Row="1" 
+				Source="avares://CTUScheduler/Assets/Images/CTU Logo/CTU_logo_200x200.png" 
+				Height="280" Width="280" Stretch="Uniform"
+				   />
+			<!--// Title //-->
+			<StackPanel Grid.Row="2"
+						VerticalAlignment="Top"
+						HorizontalAlignment="Center">
+				<StackPanel.Styles>
+					<Style Selector="TextBlock">
+						<Setter Property="VerticalAlignment" Value="Top"/>
+						<Setter Property="HorizontalAlignment" Value="Center"/>
+						<Setter Property="Foreground" Value="White"/>
+					</Style>
+				</StackPanel.Styles>
+				
+				<TextBlock 
+						   Text="CTU Scheduler"
+						   FontSize="45"
+						   Margin="0 20 0 0"
+						   FontFamily="{StaticResource CTU_Title_Font}"
+						   FontWeight="Bold"/>
+				<TextBlock Text="Student's project"
+						   Margin="0 30 0 0"
+						   FontSize="28"
+						   FontWeight="Bold"
+						   />
+			</StackPanel>
+		</Grid>
+	
+		<!--// right side //-->
+		<Border Grid.Column="1" 
+				Background="White"
+				CornerRadius="40 0 0 40"
+				BorderThickness="0"
+				>
+			<Grid RowDefinitions="0.1* * 0.1*" ColumnDefinitions="0.2* * 0.2*">
+				<StackPanel Grid.Row="1" Grid.Column="1">
+					<StackPanel.Styles>
+						<Style Selector="StackPanel > TextBlock">
+							<Setter Property="HorizontalAlignment" Value="Center"/>
+							<Setter Property="FontSize" Value="35"/>
+							<Setter Property="FontWeight" Value="Bold"/>
+						</Style>
+						
+						<Style Selector="TextBox">
+							<Setter Property="Foreground" Value="Black"/>
+							<Setter Property="FocusAdorner" Value="{x:Null}" />
+						</Style>
+				
+						<Style Selector="TextBox /template/ controls|MaterialUnderline">
+							<Setter Property="IdleBrush" Value="Black"/>
+						</Style>
+
+
+					</StackPanel.Styles>
+				
+					<TextBlock Text="Đăng nhập"/>
+
+					<TextBox Margin="0 25 0 0"
+								 x:Name="txtUsername"
+								UseFloatingWatermark="True"
+								p1:TextFieldAssist.Label="MSSV"
+								HorizontalAlignment="Stretch"/>
+
+					<TextBox x:Name="txtPassword"
+							 UseFloatingWatermark="True" 
+							 Classes="revealPasswordButton" 
+							 p1:TextFieldAssist.Label="Mật khẩu" 
+							 PasswordChar="*"
+							 Margin="0 25 0 0"/>
+				
+					<Grid ColumnDefinitions="* *" Margin="0 25 0 0">
+						<TextBox Grid.Column="0" 
+							x:Name="txtCapcha"	
+							UseFloatingWatermark="True" 
+							Classes="clearButton"
+							Margin="0 0 10 0"
+							MaxLength="10"
+							p1:TextFieldAssist.Label="Captcha"/>
+
+						<Image Grid.Column="1"
+							   x:Name="capchaImage" 
+							   Stretch="Uniform"/>
+					</Grid>
+
+					<CheckBox 
+						x:Name="chkSaveUsername"
+						Classes="accent"
+						Content="Lưu MSSV cho lần đăng nhập kế"  
+						Margin="0 10 0 0"/>
+				
+					<Button Classes="accent"
+							x:Name="LoginButton"
+							Content="Đăng nhập"
+							HorizontalAlignment="Stretch"
+							Margin="0 25 0 0"
+							Height="40"
+							Cursor="Hand"
+							CornerRadius="8"
+					/>
+
+					<TextBlock 
+							Text="#Note: Nếu ảnh captcha bị lỗi, hãy thoát app và mở lại hoặc nhấp vào nút login!"
+							FontWeight="Bold"
+							FontSize="15"
+							TextAlignment="Center" 
+							TextWrapping="WrapWithOverflow"
+							Margin="0 50 0 0"/>
+				</StackPanel>
+			</Grid>
+			
+		</Border>
+		
+	</Grid>
+</rxui:ReactiveUserControl>

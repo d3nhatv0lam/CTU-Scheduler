@@ -4,10 +4,10 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
-using CTUScheduler.Services;
-using CTUScheduler.Services.Interfaces;
-using CTUScheduler.ViewModels;
-using CTUScheduler.Views;
+using CTUScheduler.AppServices.Services.Implementations;
+using CTUScheduler.AppServices.Services.Interfaces;
+using CTUScheduler.Presentation.ViewModels;
+using CTUScheduler.Presentation.Views;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using Splat;
@@ -46,6 +46,7 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            
             desktop.MainWindow = new LoadingScreen
             {
                 DataContext = new LoadingScreenViewModel()
@@ -61,7 +62,6 @@ public partial class App : Application
                 DataContext = new MainViewModel()
             };
         }
-
         base.OnFrameworkInitializationCompleted();
     }
 

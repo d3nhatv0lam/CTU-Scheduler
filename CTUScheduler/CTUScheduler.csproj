@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
+	<AvaloniaResource Include="Presentation\Resources\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,10 +27,12 @@
 
   <ItemGroup>
     <Folder Include="Assets\Logo\" />
+    <Folder Include="Presentation\Resources\" />
+    <Folder Include="Presentation\Templates\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Views\MainHomeView.axaml.cs">
+    <Compile Update="Presentation\Views\MainHomeView.axaml.cs">
       <DependentUpon>MainHomeView.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
