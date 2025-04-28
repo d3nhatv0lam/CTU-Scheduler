@@ -9,6 +9,7 @@ using CTUScheduler.AppServices;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.Implementations;
 using CTUScheduler.Presentation.ViewModels.Base;
+using CTUScheduler.Presentation.ViewModels.Shells;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
 using ReactiveUI;
@@ -95,9 +96,10 @@ namespace CTUScheduler.Presentation.ViewModels
             _capchaImage = BitmapHelper.CreateEmptyBitmap();
             _isLoginSuccessful = false;
             _disposables.Add(_captchaImageUpdate);
-            LoadSignInData();
 
-            FillCapchaImage();
+            GoToSignPage().ConfigureAwait(false);
+            LoadSignInData();
+            FillCapchaImage().ConfigureAwait(false);
             InitObservable();
             InitCommand();
         }
@@ -150,6 +152,7 @@ namespace CTUScheduler.Presentation.ViewModels
                 }
                 else
                 {
+                    CleanCaptcha();
                     await FillCapchaImage();
                 }
                 await Task.Delay(500);
@@ -158,11 +161,24 @@ namespace CTUScheduler.Presentation.ViewModels
             }, CanLogin).DisposeWith(_disposables);
         }
 
+        private async Task GoToSignPage()
+        {
+            await _webDriverService.GoToPage(AppConstants.CTU_LOGIN_URL);
+        }
+
         private void OnLoggedIn()
         {
             SaveSignInData();
             RxApp.MainThreadScheduler.Schedule(NavigateToHome);
             Dispose();
+        }
+
+        private void CleanCaptcha()
+        {
+            RxApp.MainThreadScheduler.Schedule(() =>
+            {
+                Capcha = string.Empty;
+            });
         }
 
         private async Task FillCapchaImage()
@@ -179,9 +195,7 @@ namespace CTUScheduler.Presentation.ViewModels
                 ILocator imageLocator = _webDriverService.LocatorElement(AppConstants.CTU_LOGIN_CAPCHA_IMAGE);
                 byte[] image = await _webDriverService.GetImageToByteArray(imageLocator);
                 using var stream = new MemoryStream(image,writable:false);
-                {
                     imageSource = new Bitmap(stream);
-                }
             }
             catch
             {
@@ -189,7 +203,6 @@ namespace CTUScheduler.Presentation.ViewModels
             }
             return imageSource;
         }
-
 
         private async Task<bool> TrySignIn()
         {
@@ -213,12 +226,12 @@ namespace CTUScheduler.Presentation.ViewModels
 
         private void NavigateToHome()
         {
-            HostScreen.Router.NavigateAndReset.Execute(new MainHomeViewModel(HostScreen));
+            HostScreen.Router.NavigateAndReset.Execute(new MainLayoutViewModel(HostScreen));
         }
 
         private void SaveSignInData()
         {
-            string path = AppConstants.PWD + "/" + AppConstants.USERCONFG_FILENAME;
+            string path = string.Concat(AppConstants.PWD, "/", AppConstants.USERCONFG_FILENAME);
             using (FileStream fs = new FileStream(path, FileMode.Create))
             using (BinaryWriter writer = new BinaryWriter(fs))
             {
@@ -228,7 +241,7 @@ namespace CTUScheduler.Presentation.ViewModels
         }
         private void LoadSignInData()
         {
-            string path = AppConstants.PWD + "/" + AppConstants.USERCONFG_FILENAME;
+            string path = string.Concat(AppConstants.PWD,"/", AppConstants.USERCONFG_FILENAME);
             if (!File.Exists(path))
                 return;
             using (FileStream fs = new FileStream(path, FileMode.Open))

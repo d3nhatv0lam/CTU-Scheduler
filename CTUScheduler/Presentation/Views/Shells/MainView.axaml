@@ -5,11 +5,11 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
-			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.ViewModels"
+			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.ViewModels.Shells"
 			 x:DataType="vm:MainViewModel"
 			 xmlns:rxui="http://reactiveui.net"
 			 x:CompileBindings="True"
-             x:Class="CTUScheduler.Presentation.Views.MainView"
+             x:Class="CTUScheduler.Presentation.Views.Shells.MainView"
              >
   <Design.DataContext>
     <!-- This only sets the DataContext for the previewer in an IDE,

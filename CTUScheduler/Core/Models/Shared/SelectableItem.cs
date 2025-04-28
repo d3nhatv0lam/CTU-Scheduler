@@ -12,6 +12,7 @@ namespace CTUScheduler.Core.Models.Shared
     {
         private bool _isSelected;
         private T _item;
+
         public bool IsSelected
         {
             get => _isSelected;
@@ -22,10 +23,10 @@ namespace CTUScheduler.Core.Models.Shared
             get => _item;
             set => this.RaiseAndSetIfChanged(ref _item, value);
         }
-        public SelectableItem(T item)
+        public SelectableItem(T item, bool isSelected = false)
         {
             _item = item;
-            _isSelected = false;
+            _isSelected = isSelected;
         }
     }
 }

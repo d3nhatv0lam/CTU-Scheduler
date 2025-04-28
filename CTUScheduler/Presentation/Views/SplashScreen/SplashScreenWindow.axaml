@@ -1,5 +1,5 @@
 <rxui:ReactiveWindow 
-		x:TypeArguments="vm:LoadingScreenViewModel" 
+		x:TypeArguments="vm:SplashScreenViewModel" 
 		xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -10,16 +10,16 @@
 		TransparencyLevelHint="Transparent"
 		Background="Transparent"
 		WindowStartupLocation="CenterScreen"
-        x:Class="CTUScheduler.Presentation.Views.LoadingScreen"
+        x:Class="CTUScheduler.Presentation.Views.SplashScreen.SplashScreenWindow"
 		ExtendClientAreaToDecorationsHint="True"
 		ExtendClientAreaTitleBarHeightHint="0"
 		CanResize="False"
 		xmlns:rxui="http://reactiveui.net" 
-		xmlns:vm="clr-namespace:CTUScheduler.Presentation.ViewModels"
-		x:DataType="vm:LoadingScreenViewModel"
+		xmlns:vm="clr-namespace:CTUScheduler.Presentation.ViewModels.SplashScreen"
+		x:DataType="vm:SplashScreenViewModel"
 		x:CompileBindings="True"
 		xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-        Title="LoadingScreen">
+        Title="Splash Screen">
 	
     <Border Background="{StaticResource PrimaryColor}" CornerRadius="10">
 		<Grid RowDefinitions="auto * *">

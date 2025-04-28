@@ -1,10 +1,10 @@
 ﻿using Avalonia.Controls;
 using Avalonia.ReactiveUI;
-using CTUScheduler.Presentation.ViewModels;
+using CTUScheduler.Presentation.ViewModels.Shells;
 using ReactiveUI;
 using System.Reactive.Disposables;
 
-namespace CTUScheduler.Presentation.Views;
+namespace CTUScheduler.Presentation.Views.Shells;
 
 public partial class MainView : ReactiveUserControl<MainViewModel>
 {

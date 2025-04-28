@@ -8,8 +8,9 @@ using Avalonia.Threading;
 using CTUScheduler.AppServices;
 using CTUScheduler.AppServices.Services.Implementations;
 using CTUScheduler.Presentation.ViewModels.Base;
-using CTUScheduler.Presentation.ViewModels;
+using CTUScheduler.Presentation.ViewModels.Shells;
 using CTUScheduler.Presentation.Views;
+using CTUScheduler.Presentation.Views.Shells;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using System;
@@ -25,12 +26,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace CTUScheduler.Presentation.ViewModels
+namespace CTUScheduler.Presentation.ViewModels.SplashScreen
 {
-    public class LoadingScreenViewModel : ViewModelBase , IDisposable
+    public class SplashScreenViewModel : ViewModelBase , IDisposable
     {
         private readonly InternetStatusService _internetStatusService;
-        private readonly WebDriverService _webDriverService;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private string _message = "Đang kiểm tra kết nối mạng..";
         
@@ -43,22 +43,21 @@ namespace CTUScheduler.Presentation.ViewModels
 
         public ReactiveCommand<Unit,Unit> CloseAppCommand { get; }
 
-        public LoadingScreenViewModel()
+        public SplashScreenViewModel()
         {
             _internetStatusService = App.ServiceProvider!.GetRequiredService<InternetStatusService>();
-            _webDriverService = App.ServiceProvider!.GetRequiredService<WebDriverService>();
             CloseAppCommand = ReactiveCommand.Create(() => CloseApplication()).DisposeWith(_disposables);
 
             _internetStatusService.InternetStatusOnRefesh
                 .Where(internetStatus => internetStatus)
                 .TakeUntil(internetStatus => internetStatus)
-                .Subscribe(async internetStatus =>
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(internetStatus =>
                 {
                     try
                     {
-                        RxApp.MainThreadScheduler.Schedule(() => Message = "Mạng đã được kết nối!");
-                        await GoToSignPage();
-                        Observable.Timer(TimeSpan.FromSeconds(1.5d), RxApp.MainThreadScheduler)
+                         Message = "Mạng đã được kết nối!";
+                         Observable.Timer(TimeSpan.FromSeconds(1.5d),RxApp.MainThreadScheduler)
                         .Do(_ => Message = "Đang khởi động ứng dụng..")
                         .SelectMany(_ => Observable.Timer(TimeSpan.FromSeconds(1)))
                         .ObserveOn(RxApp.MainThreadScheduler)
@@ -72,10 +71,6 @@ namespace CTUScheduler.Presentation.ViewModels
                 }).DisposeWith(_disposables);
         }
 
-        private async Task GoToSignPage()
-        {
-            await _webDriverService.GoToPage(AppConstants.CTU_LOGIN_URL);
-        }
 
         private void RunMainWindow()
         {

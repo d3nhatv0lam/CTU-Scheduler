@@ -7,8 +7,7 @@
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
 			 xmlns:rxui="http://reactiveui.net"
 			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.ViewModels"
-			 xmlns:model="clr-namespace:CTUScheduler.Core.Models"
-			 xmlns:control="clr-namespace:CTUScheduler.Controls"
+			 xmlns:scheduleModel="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.Schedule"
 			 x:DataType="vm:ScheduleViewModel"
 			 x:CompileBindings="True"
              x:Class="CTUScheduler.Presentation.Views.ScheduleView">
@@ -113,7 +112,7 @@
 				  >
 				<ItemsControl x:Name="scheduleTable">
 					<ItemsControl.Styles>
-						<Style Selector="ContentPresenter" x:DataType="{x:Type model:ScheduleCell}">
+						<Style Selector="ContentPresenter" x:DataType="{x:Type scheduleModel:ScheduleCell}">
 							<Setter Property="Grid.Row" Value="{Binding Row}"/>
 							<Setter Property="Grid.Column" Value="{Binding Column}"/>
 							<Setter Property="Grid.RowSpan" Value="{Binding RowSpan}"/>
@@ -153,7 +152,7 @@
 					</ItemsControl.ItemsPanel>
 
 					<ItemsControl.ItemTemplate>
-						<DataTemplate x:DataType="{x:Type model:ScheduleCell}">
+						<DataTemplate x:DataType="{x:Type scheduleModel:ScheduleCell}">
 							<Border
 								BorderBrush="Black"
 								BorderThickness="1"

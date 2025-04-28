@@ -1,0 +1,284 @@
+<rxui:ReactiveUserControl 
+			 x:TypeArguments="vm:MainLayoutViewModel"
+			 xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+			 xmlns:rxui="http://reactiveui.net"
+			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.ViewModels.Shells"
+			 xmlns:components="clr-namespace:CTUScheduler.Presentation.ViewModels.Shells.Components"
+			 x:DataType="vm:MainLayoutViewModel"
+			 x:CompileBindings="True"
+			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+			 xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
+			 xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
+		    x:Class="CTUScheduler.Presentation.Views.Shells.MainLayoutView">
+	<rxui:ReactiveUserControl.Styles>
+		<themes:CustomMaterialTheme PrimaryColor="Blue" SecondaryColor="#1f5ca9"/>
+	</rxui:ReactiveUserControl.Styles>
+
+	<Design.DataContext>
+		<vm:MainLayoutViewModel/> 
+	</Design.DataContext>
+	
+	<dialogHostAvalonia:DialogHost Identifier="MainLayoutDialog" IsOpen="True" CloseOnClickAway="True">
+			<dialogHostAvalonia:DialogHost.DataTemplates>
+				<DataTemplate x:DataType="{x:Type components:LogoutDialogViewModel}">
+					<controls:Card 
+							MinHeight="160" 
+						MinWidth="400">
+					<Grid RowDefinitions="* 30">
+						<!--// Content //-->
+						<Grid Grid.Row="0" RowDefinitions="auto 2 10 *" >
+							<Grid.Styles>
+								<Style Selector="TextBlock">
+									<Setter Property="FontFamily" Value="{StaticResource Text_Font}"/>
+									<Setter Property="FontSize" Value="18"/>
+								</Style>
+							</Grid.Styles>
+							<TextBlock Grid.Row="0" Text="Đăng xuất" Classes="Headline6" FontSize="22" FontWeight="Bold"/>
+							<Separator Grid.Row="1" Height="1" Margin="0 0 0 0"/>
+							<StackPanel Grid.Row="3">
+								<TextBlock Text="Bạn có chắc muốn đăng xuất?"/>
+								<TextBlock Text="Các dữ liệu sẽ không được lưu!"/>
+							</StackPanel>
+						</Grid>
+							<!--// Button //-->
+						<DockPanel Grid.Row="1" LastChildFill="False">
+							<DockPanel.Styles>
+								<Style Selector="Button">
+									<Setter Property="MinWidth" Value="75"/>
+									<Setter Property="HorizontalAlignment" Value="Stretch"/>
+									<Setter Property="Margin" Value="3 0 3 0"/>
+									<Setter Property="Padding" Value="0"/>
+								</Style>
+							</DockPanel.Styles>
+							
+							<Button DockPanel.Dock="Right"
+									Content="Đăng xuất" 
+									Background="Red"  
+									Command="{Binding AcceptCommand}"/>
+							<Button DockPanel.Dock="Right"
+									Content="Không"
+									Command="{Binding CancelCommand}"/>
+						</DockPanel>
+					</Grid>
+				</controls:Card>
+				</DataTemplate>
+			</dialogHostAvalonia:DialogHost.DataTemplates>
+		
+		
+		<dialogHostAvalonia:DialogHost.DialogContent>
+			<controls:Card x:DataType="{x:Type components:LogoutDialogViewModel}"
+						MinHeight="160" 
+						MinWidth="400">
+					<Grid RowDefinitions="* 30">
+						<!--// Content //-->
+						<Grid Grid.Row="0" RowDefinitions="auto 2 10 *" >
+							<Grid.Styles>
+								<Style Selector="TextBlock">
+									<Setter Property="FontFamily" Value="{StaticResource Text_Font}"/>
+									<Setter Property="FontSize" Value="18"/>
+								</Style>
+							</Grid.Styles>
+							<TextBlock Grid.Row="0" Text="Đăng xuất" Classes="Headline6" FontSize="22" FontWeight="Bold"/>
+							<Separator Grid.Row="1" Height="1" Margin="0 0 0 0"/>
+							<StackPanel Grid.Row="3">
+								<TextBlock Text="Bạn có chắc muốn đăng xuất?"/>
+								<TextBlock Text="Các dữ liệu sẽ không được lưu!"/>
+							</StackPanel>
+						</Grid>
+							<!--// Button //-->
+						<DockPanel Grid.Row="1" LastChildFill="False">
+							<DockPanel.Styles>
+								<Style Selector="Button">
+									<Setter Property="MinWidth" Value="75"/>
+									<Setter Property="HorizontalAlignment" Value="Stretch"/>
+									<Setter Property="Margin" Value="3 0 3 0"/>
+									<Setter Property="Padding" Value="0"/>
+								</Style>
+							</DockPanel.Styles>
+							
+							<Button DockPanel.Dock="Right"
+									Content="Đăng xuất" 
+									Background="Red"  
+									Command="{Binding AcceptCommand}"/>
+							<Button DockPanel.Dock="Right"
+									Content="Không"
+									Command="{Binding CancelCommand}"/>
+						</DockPanel>
+					</Grid>
+				</controls:Card>
+		</dialogHostAvalonia:DialogHost.DialogContent>
+	
+		<controls:NavigationDrawer
+			x:Name="LeftDrawer"
+			LeftDrawerOpened="{Binding ElementName=ExpandToggleButton,Path=IsChecked,Mode=TwoWay}"
+			LeftDrawerExpandThresholdWidth="999"
+			LeftDrawerWidth="220"
+			>
+			<controls:NavigationDrawer.LeftDrawerContent>
+				<DockPanel Background="#ECECEC">
+					<!--// CTU Title //-->
+					<Border Padding="10" Height="70" DockPanel.Dock="Top">
+						<Grid ColumnDefinitions="auto *">
+							<Image Grid.Column="0"
+								   Height="50"
+								   Width="50"
+								   Source="/Assets/Images/CTU Logo/CTU_logo_50x50.png"/>
+							<TextBlock Grid.Column="1" Text="Cần Thơ University"
+									   VerticalAlignment="Center"
+									   HorizontalAlignment="Center"
+									   FontFamily="{StaticResource CTU_Title_Font}"/>
+						</Grid>
+					</Border>
+
+					<!--// Student Info //-->
+					<Border Padding="10" DockPanel.Dock="Top">
+						<Border CornerRadius="10" Background="White">
+							<Grid MinHeight="60" ColumnDefinitions="50 *" >
+								<materialIcons:MaterialIcon Grid.Column="0"
+									Kind="AccountSchool"
+									Height="40"
+									Width="40"
+									Foreground="{StaticResource PrimaryColor}"/>
+								<Grid Grid.Column="1" RowDefinitions="* *">
+									<Grid.Styles>
+										<Style Selector="SelectableTextBlock">
+											<Setter Property="HorizontalAlignment" Value="Stretch"/>
+											<Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+											<Setter Property="SelectionForegroundBrush" Value="White"/>
+										</Style>
+									</Grid.Styles>
+									<SelectableTextBlock x:Name="txtUserName"
+											   Grid.Row="0"
+											   Text="Họ Tên"
+											   VerticalAlignment="Bottom"
+											   FontWeight="Bold"
+											   FontSize="15"
+											   />
+									<SelectableTextBlock x:Name="txtMSSV"
+											   Grid.Row="1"
+											   Text="MSSV"
+											   VerticalAlignment="Top"
+											   FontSize="13"
+											   Foreground="Gray"
+											   />
+								</Grid>
+							</Grid>
+						</Border>
+					</Border>
+					
+					<!--// navigation & Logout //-->
+					<Border Padding="10">
+						<Border CornerRadius="5" Background="White">
+							<StackPanel>
+								<!--// Navigation //-->
+								<Border CornerRadius="5" Background="White">
+									<ListBox x:Name="lBoxNavigation"
+											 SelectionMode="Single"
+											 Focusable="{Binding ElementName=LeftDrawer, Path=LeftDrawerOpened}"
+												 >
+										<ListBox.Styles>
+											<Style Selector="ListBoxItem">
+												<Setter Property="Height" Value="40"/>
+												<Setter Property="Padding" Value="0"/>
+												<Setter Property="Margin" Value="0"/>
+												<Setter Property="Cursor" Value="Hand"/>
+											</Style>
+										</ListBox.Styles>
+
+										<ListBox.ItemTemplate>
+											<DataTemplate x:DataType="{x:Type components:NavigationItem}">
+												<Grid ColumnDefinitions="7 5 auto 5 *">
+													<Grid.Styles>
+														<Style Selector="TextBlock">
+															<Setter Property="VerticalAlignment" Value="Center"/>
+														</Style>
+													</Grid.Styles>
+													<Border IsVisible="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType= ListBoxItem}}" Grid.Column="0" CornerRadius="0 5 5 0" Background="Blue"/>
+													<materialIcons:MaterialIcon Grid.Column="2" Height="25" Width="25" Kind="{Binding Kind}"/>
+													<TextBlock Grid.Column="5" Text="{Binding Title}"/>
+												</Grid>
+											</DataTemplate>
+										</ListBox.ItemTemplate>
+									</ListBox>
+								</Border>
+
+
+								<Border Padding="10">
+									<Separator Height="2" />
+								</Border>
+
+								<!--// Logout Button //-->
+
+								<Button x:Name="BtnLogout"
+										Background="White"
+										Height="50"
+										Foreground="Black"
+										VerticalContentAlignment="Stretch"
+										HorizontalContentAlignment="Stretch"
+										Padding="0"
+										Cursor="Hand">
+
+									<Button.ContentTemplate>
+										<DataTemplate>
+											<Border CornerRadius="5"
+													HorizontalAlignment="Stretch"
+													VerticalAlignment="Stretch"
+												>
+
+												<Grid ColumnDefinitions="50 *">
+													<materialIcons:MaterialIcon
+														Grid.Column="0"
+														Kind="Logout"/>
+
+													<TextBlock Grid.Column="1"
+															   Text="Đăng xuất"
+															   VerticalAlignment="Center"/>
+												</Grid>
+											</Border>
+										</DataTemplate>
+									</Button.ContentTemplate>
+								</Button>
+							</StackPanel>
+						</Border>
+					</Border>
+				</DockPanel>
+			</controls:NavigationDrawer.LeftDrawerContent>
+
+			<!--// Content //-->
+			<controls:NavigationDrawer.Content>
+				<Border Padding="15 10 15 10">
+					<Grid RowDefinitions="auto *">
+						<!--// Title content //-->
+						<Grid Grid.Row="0" RowDefinitions="* auto" ColumnDefinitions="50 *">
+							<ToggleButton x:Name="ExpandToggleButton"
+										  Grid.Row="0"
+										  Grid.Column="0"
+										  Height="35"
+										  Width="35"
+										  HorizontalAlignment="Left"
+										  Content="{materialIcons:MaterialIconTextExt Kind=Menu,Size=25}"/>
+							
+							<TextBlock x:Name="txtTitle"
+										Grid.Row="0"
+										Grid.Column="1"
+									   VerticalAlignment="Center"
+									   HorizontalAlignment="Left"
+									   FontWeight="Bold"
+									   FontSize="30"
+									   />
+							<Separator Grid.Row="1" Grid.ColumnSpan="2"/>
+						</Grid>
+						<!--// Navigation content //-->
+						
+						
+					</Grid>
+				</Border>
+			</controls:NavigationDrawer.Content>
+		</controls:NavigationDrawer>
+	</dialogHostAvalonia:DialogHost>
+</rxui:ReactiveUserControl>

@@ -7,7 +7,11 @@ using Avalonia.Styling;
 using CTUScheduler.AppServices.Services.Implementations;
 using CTUScheduler.AppServices.Services.Interfaces;
 using CTUScheduler.Presentation.ViewModels;
+using CTUScheduler.Presentation.ViewModels.Shells;
+using CTUScheduler.Presentation.ViewModels.SplashScreen;
 using CTUScheduler.Presentation.Views;
+using CTUScheduler.Presentation.Views.Shells;
+using CTUScheduler.Presentation.Views.SplashScreen;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using Splat;
@@ -47,9 +51,9 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             
-            desktop.MainWindow = new LoadingScreen
+            desktop.MainWindow = new SplashScreenWindow
             {
-                DataContext = new LoadingScreenViewModel()
+                DataContext = new SplashScreenViewModel()
             };
             desktop.MainWindow.Show();
             desktop.Exit += Desktop_Exit;
@@ -70,6 +74,7 @@ public partial class App : Application
         services.AddSingleton<InternetStatusService>(provider => InternetStatusService.CreateInstance(TimeSpan.FromSeconds(3)));
         services.AddSingleton<WebDriverService>(provider => new WebDriverService(provider.GetRequiredService<InternetStatusService>()));
         services.AddSingleton<IUserDataService, UserDataService>();
+        services.AddSingleton<ICachingNavigationServiceFactory, CachingNavigationServiceFactory>();
         ServiceProvider = services.BuildServiceProvider();
     }
 

@@ -77,7 +77,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
             _internetStatusService = internetStatusService;
 
             _playwright =  Playwright.CreateAsync().GetAwaiter().GetResult();
-            _browser =  _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions() { Headless = true }).GetAwaiter().GetResult();
+            _browser =  _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions() { Headless = false }).GetAwaiter().GetResult();
             _page =  _browser.NewPageAsync().GetAwaiter().GetResult();
 
             ConfigPage();
@@ -109,7 +109,16 @@ namespace CTUScheduler.AppServices.Services.Implementations
 
         private async void ConfigPage()
         {
-            await _page.RouteAsync("**/*.css", async route => await route.AbortAsync());
+            //await _page.RouteAsync("**/*.css", async route => await route.AbortAsync());
+            await _page.RouteAsync("**/*", async route =>
+            {
+                var type = route.Request.ResourceType;
+                if (type == "stylesheet" || type == "font")
+                    await route.AbortAsync();
+                else
+                    await route.ContinueAsync();
+            });
+
             _isHasInternet = await _internetStatusService.CheckInternetStatus();
             _page.Dialog += async (sender, e) =>
             {
@@ -135,13 +144,11 @@ namespace CTUScheduler.AppServices.Services.Implementations
                         var contentType = e.Headers["content-type"];
                         if (contentType.Contains("application/json"))
                         {
-                            Debug.WriteLine("Response là JSON");
                             var jsonResponse = await e.JsonAsync();
                             JsonResponse.OnNext(jsonResponse);
                         }
                         else if (contentType.Contains("image"))
                         {
-                            Debug.WriteLine("Response là hình ảnh");
                         }
                     }
                     catch
@@ -149,10 +156,6 @@ namespace CTUScheduler.AppServices.Services.Implementations
 
                     }
                 }
-            };
-            _page.RequestFailed += (sender, e) =>
-            {
-                Debug.WriteLine("Request failed: " + e.Url);
             };
         }
 

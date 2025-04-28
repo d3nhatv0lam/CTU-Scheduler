@@ -6,19 +6,19 @@ using Splat;
 using System;
 using System.Diagnostics;
 using System.Reactive;
+using CTUScheduler.Presentation.ViewModels.Home;
+using CTUScheduler.Presentation.ViewModels.Shells.Components;
 
-namespace CTUScheduler.Presentation.ViewModels;
+namespace CTUScheduler.Presentation.ViewModels.Shells;
 
 public class MainViewModel : ViewModelBase , IScreen
 {
-    public string Greeting => "Welcome to Avalonia!";
-
     public RoutingState Router { get; }
 
     public MainViewModel()
     {
         Router = new RoutingState();
         //Router.Navigate.Execute(new SignInViewModel(this));
-        Router.Navigate.Execute(new MainHomeViewModel(this));
+        Router.Navigate.Execute(new MainLayoutViewModel(this));
     }
 }

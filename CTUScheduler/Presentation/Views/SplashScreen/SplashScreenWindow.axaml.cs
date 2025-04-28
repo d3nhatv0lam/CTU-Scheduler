@@ -2,15 +2,15 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
-using CTUScheduler.Presentation.ViewModels;
+using CTUScheduler.Presentation.ViewModels.SplashScreen;
 using ReactiveUI;
 using System.Reactive.Disposables;
 
-namespace CTUScheduler.Presentation.Views;
+namespace CTUScheduler.Presentation.Views.SplashScreen;
 
-public partial class LoadingScreen : ReactiveWindow<LoadingScreenViewModel>
+public partial class SplashScreenWindow : ReactiveWindow<SplashScreenViewModel>
 {
-    public LoadingScreen()
+    public SplashScreenWindow()
     {
         InitializeComponent();
         this.WhenActivated(disposables =>
