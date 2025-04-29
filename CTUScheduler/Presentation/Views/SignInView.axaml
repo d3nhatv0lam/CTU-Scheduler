@@ -114,6 +114,7 @@
 							p1:TextFieldAssist.Label="Captcha"/>
 
 						<Image Grid.Column="1"
+							   MaxHeight="80"
 							   x:Name="capchaImage" 
 							   Stretch="Uniform"/>
 					</Grid>

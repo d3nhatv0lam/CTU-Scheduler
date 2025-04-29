@@ -74,7 +74,8 @@ public partial class App : Application
         services.AddSingleton<InternetStatusService>(provider => InternetStatusService.CreateInstance(TimeSpan.FromSeconds(3)));
         services.AddSingleton<WebDriverService>(provider => new WebDriverService(provider.GetRequiredService<InternetStatusService>()));
         services.AddSingleton<IUserDataService, UserDataService>();
-        services.AddSingleton<ICachingNavigationServiceFactory, CachingNavigationServiceFactory>();
+        services.AddSingleton<IDialogHostService, DialogHostService>();
+        //services.AddSingleton<ICachingNavigationServiceFactory, CachingNavigationServiceFactory>();
         ServiceProvider = services.BuildServiceProvider();
     }
 

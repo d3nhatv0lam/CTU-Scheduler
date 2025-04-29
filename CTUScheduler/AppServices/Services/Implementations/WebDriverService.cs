@@ -82,7 +82,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
 
             ConfigPage();
 
-            _internetStatusService.InternetStatusOnRefesh
+            _internetStatusService.InternetStatusOnRefresh
                 .DistinctUntilChanged()
                 .Subscribe(status =>
                 {

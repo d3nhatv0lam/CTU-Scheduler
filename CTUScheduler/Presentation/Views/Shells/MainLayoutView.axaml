@@ -179,6 +179,8 @@
 								<Border CornerRadius="5" Background="White">
 									<ListBox x:Name="lBoxNavigation"
 											 SelectionMode="Single"
+											 ItemsSource="{Binding NavigationItems,Mode=OneWay}"
+											 SelectedItem="{Binding SelectedItem,Mode=OneWayToSource}"
 											 Focusable="{Binding ElementName=LeftDrawer, Path=LeftDrawerOpened}"
 												 >
 										<ListBox.Styles>
@@ -264,6 +266,7 @@
 										  Content="{materialIcons:MaterialIconTextExt Kind=Menu,Size=25}"/>
 							
 							<TextBlock x:Name="txtTitle"
+									   Text="{Binding Title}"
 										Grid.Row="0"
 										Grid.Column="1"
 									   VerticalAlignment="Center"
@@ -272,10 +275,10 @@
 									   FontSize="30"
 									   />
 							<Separator Grid.Row="1" Grid.ColumnSpan="2"/>
+						
 						</Grid>
 						<!--// Navigation content //-->
-						
-						
+							<rxui:RoutedViewHost Grid.Row="1" x:Name="PageRounter" Router="{Binding Router}"/>
 					</Grid>
 				</Border>
 			</controls:NavigationDrawer.Content>

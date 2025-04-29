@@ -25,12 +25,10 @@ namespace CTUScheduler.Presentation.ViewModels.Shells.Components
             AcceptCommand = ReactiveCommand.Create(() =>
             {
                 DialogHost.Close(_dialogIdentifier, true);
-                Dispose();
             }).DisposeWith(_disposables);
             CancelCommand = ReactiveCommand.Create(() =>
             {
                 DialogHost.Close(_dialogIdentifier, false);
-                Dispose();
             }).DisposeWith(_disposables);
         }
 

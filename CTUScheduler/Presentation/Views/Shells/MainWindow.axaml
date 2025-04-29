@@ -16,6 +16,6 @@
 		x:DataType="vm:MainViewModel"
 		x:CompileBindings="True"
 		Focusable="True"
-        Title="CTU Scheduler">
+        Title="{Binding WindowTitle,Mode=OneWay}">
        <views:MainView/>
 </rxui:ReactiveWindow>

@@ -6,19 +6,44 @@ using Splat;
 using System;
 using System.Diagnostics;
 using System.Reactive;
-using CTUScheduler.Presentation.ViewModels.Home;
+using CTUScheduler.Presentation.ViewModels.HomePage;
 using CTUScheduler.Presentation.ViewModels.Shells.Components;
+using CTUScheduler.AppServices.Services.Implementations;
+using System.Reactive.Linq;
+using System.Reactive.Disposables;
 
 namespace CTUScheduler.Presentation.ViewModels.Shells;
 
-public class MainViewModel : ViewModelBase , IScreen
+public class MainViewModel : ViewModelBase , IScreen , IActivatableViewModel
 {
+    private readonly InternetStatusService _internetStatusService;
+    private string _windowTitle = "CTU Scheduler";
     public RoutingState Router { get; }
+    public string WindowTitle
+    {
+        get => _windowTitle;
+        set => this.RaiseAndSetIfChanged(ref _windowTitle, value);
+    }
+
+    public ViewModelActivator Activator {get;}
 
     public MainViewModel()
     {
+        Activator = new ViewModelActivator();
+        
+        _internetStatusService = App.ServiceProvider!.GetRequiredService<InternetStatusService>();
         Router = new RoutingState();
         //Router.Navigate.Execute(new SignInViewModel(this));
         Router.Navigate.Execute(new MainLayoutViewModel(this));
+
+        this.WhenActivated(disposables =>
+        {
+            // Check internet status and update window title accordingly
+            _internetStatusService.IsInternetAvaiable.ObserveOn(RxApp.MainThreadScheduler).Subscribe(isAvailable =>
+            {
+                WindowTitle = isAvailable ? "CTU Scheduler" : "CTU Scheduler - No Internet";
+            }).DisposeWith(disposables);
+        });
+        
     }
 }

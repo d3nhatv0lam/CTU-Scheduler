@@ -2,6 +2,7 @@ using Avalonia.Data.Converters;
 using System;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
@@ -11,7 +12,8 @@ using System.Threading.Tasks;
 namespace CTUScheduler.AppServices.Services.Implementations;
 public class InternetStatusService : IDisposable
 {
-    private readonly IDisposable _subscription;
+    private readonly CompositeDisposable _disposable = new CompositeDisposable();
+    private readonly Subject<bool> _internetStatusOnRefresh = new Subject<bool>();
     private readonly HttpClient _httpClient;
     private bool _lastStatus;
     /// <summary>
@@ -21,7 +23,7 @@ public class InternetStatusService : IDisposable
     /// <summary>
     /// Phát ra giá trị trạng thái Internet được làm mới
     /// </summary>
-    public readonly Subject<bool> InternetStatusOnRefesh = new Subject<bool>();
+    public Subject<bool> InternetStatusOnRefresh => _internetStatusOnRefresh;
 
     /// <summary>
     /// Sự kiện thay đổi trạng thái kết nối, truyền vào giá trị boolean (true: có kết nối, false: mất kết nối).
@@ -48,19 +50,24 @@ public class InternetStatusService : IDisposable
         };
 
         // Tạo một observable để gửi kiểm tra định kỳ
-        _subscription = Observable.Interval(interval)
-            // Mỗi tick thì chuyển đổi sang Task kiểm tra kết nối rồi chuyển kết quả về là Observable<bool>
-            .SelectMany(async _ => await CheckInternetAsync().ToObservable())
-            // Update InternetStatusOnRefesh
-            .Do(status => InternetStatusOnRefesh.OnNext(status))
-            // Chỉ thông báo khi trạng thái thay đổi (không thông báo liên tục cùng trạng thái)
-            .DistinctUntilChanged()
-            .Subscribe(status =>
-            {
-                _lastStatus = status;
-                IsInternetAvaiable.OnNext(status);
-                OnConnectivityChanged(status);
-            });
+         Observable.Interval(interval)
+                // Mỗi tick thì chuyển đổi sang Task kiểm tra kết nối rồi chuyển kết quả về là Observable<bool>
+                .SelectMany(async _ => await CheckInternetAsync().ToObservable())
+                // Update InternetStatusOnRefresh
+                .Do(status => InternetStatusOnRefresh.OnNext(status))
+                // Chỉ thông báo khi trạng thái thay đổi (không thông báo liên tục cùng trạng thái)
+                .DistinctUntilChanged()
+                .Subscribe(status =>
+                {
+                    _lastStatus = status;
+                    IsInternetAvaiable.OnNext(status);
+                    OnConnectivityChanged(status);
+                }).DisposeWith(_disposable);
+
+
+        _disposable.Add(IsInternetAvaiable);
+        _disposable.Add(InternetStatusOnRefresh);
+        _disposable.Add(_httpClient);
     }
 
     public static InternetStatusService CreateInstance(TimeSpan interval)
@@ -68,9 +75,9 @@ public class InternetStatusService : IDisposable
         return new InternetStatusService(interval);
     }
 
-    public async Task<bool> CheckInternetStatus()
+    public Task<bool> CheckInternetStatus()
     {
-        return await CheckInternetAsync();
+        return CheckInternetAsync();
     }
 
     /// <summary>
@@ -102,18 +109,16 @@ public class InternetStatusService : IDisposable
 
     protected virtual void OnInternetConnected() 
     {
-        InternetConnected?.Invoke(this,new EventArgs());
+        InternetConnected?.Invoke(this,EventArgs.Empty);
     }
 
     protected virtual void OnInternetDisconnected() 
     {
-        InternetDisconnected?.Invoke(this,new EventArgs());
+        InternetDisconnected?.Invoke(this, EventArgs.Empty);
     }
 
     public void Dispose()
     {
-        IsInternetAvaiable.Dispose();
-        _subscription.Dispose();
-        _httpClient.Dispose();
+        _disposable.Dispose();  
     }
 }

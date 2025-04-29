@@ -19,7 +19,7 @@ namespace CTUScheduler.Presentation.ViewModels
     {
         public ScheduleTable ScheduleTable { get; set; }
 
-        public string? UrlPathSegment => "Schedule View";
+        public string? UrlPathSegment => "ScheduleView";
 
         public IScreen HostScreen { get; }
 

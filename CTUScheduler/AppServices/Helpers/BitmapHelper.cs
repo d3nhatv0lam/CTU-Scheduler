@@ -1,12 +1,11 @@
 ﻿using Avalonia.Media.Imaging;
-using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Avalonia.Platform;
 
 namespace CTUScheduler.AppServices.Helpers
 {

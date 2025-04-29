@@ -1,0 +1,22 @@
+<rxui:ReactiveUserControl 
+			x:TypeArguments="vm:HomePageViewModel"
+			xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 xmlns:rxui="http://reactiveui.net"
+			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.ViewModels.HomePage"
+			 xmlns:components="clr-namespace:CTUScheduler.Presentation.ViewModels.HomePage.Components"
+			 x:DataType="vm:HomePageViewModel"
+			 x:CompileBindings="True"
+             x:Class="CTUScheduler.Presentation.Views.HomePage.HomePageView">
+
+	<Design.DataContext>
+		<vm:HomePageViewModel/>
+	</Design.DataContext>
+	
+	<Grid>
+		<TextBlock Text="HomeWiew" FontSize="100"/>
+	</Grid>
+</rxui:ReactiveUserControl>

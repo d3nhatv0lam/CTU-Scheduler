@@ -37,7 +37,7 @@ namespace CTUScheduler.Presentation.ViewModels
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly WebDriverService _webDriverService;
-        private readonly Subject<Bitmap> _captchaImageUpdate = new Subject<Bitmap>();
+        private readonly Subject<Bitmap> _captchaImageUpdated = new Subject<Bitmap>();
         private string _username;
         private string _password;
         private string _capcha;
@@ -47,8 +47,7 @@ namespace CTUScheduler.Presentation.ViewModels
         private IObservable<bool> CanLogin;
         private bool _isLoginSuccessful;
 
-
-        public string? UrlPathSegment => "SignIn View";
+        public string? UrlPathSegment => "SignInView";
         public IScreen HostScreen { get; }
 
         public string Username
@@ -95,17 +94,26 @@ namespace CTUScheduler.Presentation.ViewModels
             _capcha = string.Empty;
             _capchaImage = BitmapHelper.CreateEmptyBitmap();
             _isLoginSuccessful = false;
-            _disposables.Add(_captchaImageUpdate);
+            _disposables.Add(_captchaImageUpdated);
 
-            GoToSignPage().ConfigureAwait(false);
-            LoadSignInData();
-            FillCapchaImage().ConfigureAwait(false);
+
+            Observable.Defer(() => Observable.StartAsync(GoToSignPage))
+                .Catch<Unit, Exception>(ex =>
+                {
+                    return Observable.Timer(TimeSpan.FromSeconds(3)).SelectMany(_ => Observable.Throw<Unit>(ex));
+                })
+                .Retry() // retry vô hạn
+                .Subscribe(async _ =>
+                {
+                    LoadSignInData();
+                    await FillCapchaImage();
+                })
+                .DisposeWith(_disposables);
+
             InitObservable();
             InitCommand();
         }
 #pragma warning restore CS8618
-
-
 
 
         private void InitObservable()
@@ -118,7 +126,7 @@ namespace CTUScheduler.Presentation.ViewModels
 
             CanLogin = this.WhenAnyValue(x => x.IsLoginButtonEnabled, x => x == true);
 
-            _captchaImageUpdate
+            _captchaImageUpdated
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(bitMapImage =>
                 {
@@ -158,7 +166,7 @@ namespace CTUScheduler.Presentation.ViewModels
                 await Task.Delay(500);
                 RxApp.MainThreadScheduler.Schedule(() => { IsLoginButtonEnabled = true; });
 
-            }, CanLogin).DisposeWith(_disposables);
+            },CanLogin).DisposeWith(_disposables);
         }
 
         private async Task GoToSignPage()
@@ -184,7 +192,7 @@ namespace CTUScheduler.Presentation.ViewModels
         private async Task FillCapchaImage()
         {
             var bitMapImage = await GetCapchaImage();
-            _captchaImageUpdate.OnNext(bitMapImage);
+            _captchaImageUpdated.OnNext(bitMapImage);
         }
 
         private async Task<Bitmap> GetCapchaImage()
@@ -199,7 +207,7 @@ namespace CTUScheduler.Presentation.ViewModels
             }
             catch
             {
-                imageSource = new Bitmap(Stream.Null);
+                imageSource = BitmapHelper.CreateEmptyBitmap();
             }
             return imageSource;
         }

@@ -17,21 +17,20 @@ public partial class MainLayoutView : ReactiveUserControl<MainLayoutViewModel>
         InitializeComponent();
         this.WhenActivated(disposables =>
         {
-            
-            this.OneWayBind(ViewModel, vm => vm.NavigationItems, v => v.lBoxNavigation.ItemsSource).DisposeWith(disposables);
 
-            this.OneWayBind(ViewModel, vm => vm.Title, v => v.txtTitle.Text).DisposeWith(disposables);
+            //this.OneWayBind(ViewModel, vm => vm.NavigationItems, v => v.lBoxNavigation.ItemsSource).DisposeWith(disposables);
 
-            this.WhenAnyValue(x => x.lBoxNavigation.SelectedItem).WhereNotNull().BindTo(ViewModel, vm => vm.SelectedItem).DisposeWith(disposables);
+            //this.OneWayBind(ViewModel, vm => vm.Title, v => v.txtTitle.Text).DisposeWith(disposables);
 
-            Observable.FromEventPattern<EventArgs>(lBoxNavigation, nameof(lBoxNavigation.Loaded)).Subscribe(_ =>
-            {
-                if (lBoxNavigation.Items.Count > 0)
-                    lBoxNavigation.SelectedIndex = 0;
+            //this.WhenAnyValue(x => x.lBoxNavigation.SelectedItem).BindTo(ViewModel, vm => vm.SelectedItem).DisposeWith(disposables);
 
-            }).DisposeWith(disposables);
+            //this.OneWayBind(ViewModel, vm => vm.Router, v => v.PageRounter.Router).DisposeWith(disposables);
 
-            
+            //Observable.FromEventPattern<EventArgs>(lBoxNavigation, nameof(lBoxNavigation.Loaded)).Subscribe(_ =>
+            //{
+            //    if (lBoxNavigation.Items.Count > 0)
+            //        lBoxNavigation.SelectedIndex = 0;
+            //}).DisposeWith(disposables);
 
 
             Observable.FromEventPattern<EventArgs>(lBoxNavigation, nameof(lBoxNavigation.PointerReleased)).Subscribe(_ =>

@@ -31,13 +31,16 @@
     <Folder Include="Assets\Logo\" />
     <Folder Include="Presentation\Resources\" />
     <Folder Include="Presentation\Templates\" />
-    <Folder Include="Presentation\ViewModels\Home\Components\" />
+    <Folder Include="Presentation\ViewModels\CoursePage\Components\" />
+    <Folder Include="Presentation\ViewModels\HomePage\Components\" />
     <Folder Include="Presentation\ViewModels\Shared\" />
-    <Folder Include="Presentation\Views\Home\" />
     <Folder Include="Presentation\Views\Shared\" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Presentation\Views\HomePage\HomePageView.axaml.cs">
+      <DependentUpon>HomePageView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Presentation\Views\SplashScreen\SplashScreenWindow.axaml.cs">
       <DependentUpon>SplashScreenWindow.axaml</DependentUpon>
     </Compile>
