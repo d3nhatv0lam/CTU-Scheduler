@@ -15,10 +15,10 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Schedule
     public class ScheduleTable: ReactiveObject
     {
         public static string DEFAULT_NAME = "UNNAMED";
-        private string _name;
+        private string _name = DEFAULT_NAME;
         private string _description = string.Empty;
-        private readonly ObservableCollection<ScheduleCell> _scheduleCells;
-        private readonly Dictionary<string, string> _scheduleData;
+        private readonly ObservableCollection<ScheduleCell> _scheduleCells = new ObservableCollection<ScheduleCell>();
+        private readonly Dictionary<string, string> _scheduleData = new Dictionary<string, string>();
         private DateTime _lastUpdate = DateTime.Now;
         private int _totalCredit;
         public string Name
@@ -32,10 +32,7 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Schedule
             set => this.RaiseAndSetIfChanged(ref _description, value);
         }
         [JsonIgnore]
-        public ObservableCollection<ScheduleCell> ScheduleCells
-        {
-            get => _scheduleCells;
-        }
+        public ObservableCollection<ScheduleCell> ScheduleCells => _scheduleCells;
         public int TotalCredit
         {
             get => _totalCredit;
@@ -53,8 +50,7 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Schedule
 
         public ScheduleTable()
         {
-            _scheduleCells = new ObservableCollection<ScheduleCell>();
-            _scheduleData = new Dictionary<string, string>();
+
         }
 
         private bool IsDuplicateModule(ScheduleCell cell)
@@ -77,7 +73,7 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Schedule
             return isConflict;
         }
 
-        private bool CanAddCell(ScheduleCell cell)
+        public bool CanAddCell(ScheduleCell cell)
         {
             try
             {

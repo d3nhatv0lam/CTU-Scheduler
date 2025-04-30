@@ -23,9 +23,7 @@ namespace CTUScheduler.AppServices.Helpers
 
             // Tạo WriteableBitmap với định dạng BGRA8888 và Alpha pre-multiplied
             var writeableBitmap = new WriteableBitmap(pixelSize, dpi, PixelFormat.Bgra8888, AlphaFormat.Premul);
-
             return writeableBitmap;
-
         }
     }
 }

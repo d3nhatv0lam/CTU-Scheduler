@@ -31,7 +31,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace CTUScheduler.Presentation.ViewModels
+namespace CTUScheduler.Presentation.ViewModels.Sign
 {
     public class SignInViewModel : ViewModelBase, IDisposable, IRoutableViewModel
     {
@@ -174,9 +174,10 @@ namespace CTUScheduler.Presentation.ViewModels
             await _webDriverService.GoToPage(AppConstants.CTU_LOGIN_URL);
         }
 
-        private void OnLoggedIn()
+        private async void OnLoggedIn()
         {
             SaveSignInData();
+            await Task.Delay(500);
             RxApp.MainThreadScheduler.Schedule(NavigateToHome);
             Dispose();
         }

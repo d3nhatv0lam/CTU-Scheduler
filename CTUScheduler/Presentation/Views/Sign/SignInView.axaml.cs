@@ -3,11 +3,11 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
-using CTUScheduler.Presentation.ViewModels;
+using CTUScheduler.Presentation.ViewModels.Sign;
 using ReactiveUI;
 using System.Reactive.Disposables;
 
-namespace CTUScheduler.Presentation.Views;
+namespace CTUScheduler.Presentation.Views.Sign;
 
 public partial class SignInView : ReactiveUserControl<SignInViewModel>
 {

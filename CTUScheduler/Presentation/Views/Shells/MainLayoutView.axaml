@@ -14,7 +14,8 @@
 			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
 			 xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
 			 xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
-		    x:Class="CTUScheduler.Presentation.Views.Shells.MainLayoutView">
+		     x:Class="CTUScheduler.Presentation.Views.Shells.MainLayoutView">
+	
 	<rxui:ReactiveUserControl.Styles>
 		<themes:CustomMaterialTheme PrimaryColor="Blue" SecondaryColor="#1f5ca9"/>
 	</rxui:ReactiveUserControl.Styles>
@@ -23,12 +24,12 @@
 		<vm:MainLayoutViewModel/> 
 	</Design.DataContext>
 	
-	<dialogHostAvalonia:DialogHost Identifier="MainLayoutDialog" IsOpen="True" CloseOnClickAway="True">
+	<dialogHostAvalonia:DialogHost Identifier="MainLayoutDialog" CloseOnClickAway="True">
 			<dialogHostAvalonia:DialogHost.DataTemplates>
 				<DataTemplate x:DataType="{x:Type components:LogoutDialogViewModel}">
 					<controls:Card 
 							MinHeight="160" 
-						MinWidth="400">
+							MinWidth="400">
 					<Grid RowDefinitions="* 30">
 						<!--// Content //-->
 						<Grid Grid.Row="0" RowDefinitions="auto 2 10 *" >
@@ -42,10 +43,10 @@
 							<Separator Grid.Row="1" Height="1" Margin="0 0 0 0"/>
 							<StackPanel Grid.Row="3">
 								<TextBlock Text="Bạn có chắc muốn đăng xuất?"/>
-								<TextBlock Text="Các dữ liệu sẽ không được lưu!"/>
+								<TextBlock Text="Các dữ liệu chưa lưu sẽ bị mất!"/>
 							</StackPanel>
 						</Grid>
-							<!--// Button //-->
+							<!--// Accept Buttons //-->
 						<DockPanel Grid.Row="1" LastChildFill="False">
 							<DockPanel.Styles>
 								<Style Selector="Button">
@@ -69,50 +70,6 @@
 				</DataTemplate>
 			</dialogHostAvalonia:DialogHost.DataTemplates>
 		
-		
-		<dialogHostAvalonia:DialogHost.DialogContent>
-			<controls:Card x:DataType="{x:Type components:LogoutDialogViewModel}"
-						MinHeight="160" 
-						MinWidth="400">
-					<Grid RowDefinitions="* 30">
-						<!--// Content //-->
-						<Grid Grid.Row="0" RowDefinitions="auto 2 10 *" >
-							<Grid.Styles>
-								<Style Selector="TextBlock">
-									<Setter Property="FontFamily" Value="{StaticResource Text_Font}"/>
-									<Setter Property="FontSize" Value="18"/>
-								</Style>
-							</Grid.Styles>
-							<TextBlock Grid.Row="0" Text="Đăng xuất" Classes="Headline6" FontSize="22" FontWeight="Bold"/>
-							<Separator Grid.Row="1" Height="1" Margin="0 0 0 0"/>
-							<StackPanel Grid.Row="3">
-								<TextBlock Text="Bạn có chắc muốn đăng xuất?"/>
-								<TextBlock Text="Các dữ liệu sẽ không được lưu!"/>
-							</StackPanel>
-						</Grid>
-							<!--// Button //-->
-						<DockPanel Grid.Row="1" LastChildFill="False">
-							<DockPanel.Styles>
-								<Style Selector="Button">
-									<Setter Property="MinWidth" Value="75"/>
-									<Setter Property="HorizontalAlignment" Value="Stretch"/>
-									<Setter Property="Margin" Value="3 0 3 0"/>
-									<Setter Property="Padding" Value="0"/>
-								</Style>
-							</DockPanel.Styles>
-							
-							<Button DockPanel.Dock="Right"
-									Content="Đăng xuất" 
-									Background="Red"  
-									Command="{Binding AcceptCommand}"/>
-							<Button DockPanel.Dock="Right"
-									Content="Không"
-									Command="{Binding CancelCommand}"/>
-						</DockPanel>
-					</Grid>
-				</controls:Card>
-		</dialogHostAvalonia:DialogHost.DialogContent>
-	
 		<controls:NavigationDrawer
 			x:Name="LeftDrawer"
 			LeftDrawerOpened="{Binding ElementName=ExpandToggleButton,Path=IsChecked,Mode=TwoWay}"
@@ -122,7 +79,7 @@
 			<controls:NavigationDrawer.LeftDrawerContent>
 				<DockPanel Background="#ECECEC">
 					<!--// CTU Title //-->
-					<Border Padding="10" Height="70" DockPanel.Dock="Top">
+					<Border Padding="15" Height="70" DockPanel.Dock="Top">
 						<Grid ColumnDefinitions="auto *">
 							<Image Grid.Column="0"
 								   Height="50"
@@ -136,43 +93,45 @@
 					</Border>
 
 					<!--// Student Info //-->
-					<Border Padding="10" DockPanel.Dock="Top">
-						<Border CornerRadius="10" Background="White">
-							<Grid MinHeight="60" ColumnDefinitions="50 *" >
-								<materialIcons:MaterialIcon Grid.Column="0"
-									Kind="AccountSchool"
-									Height="40"
-									Width="40"
-									Foreground="{StaticResource PrimaryColor}"/>
-								<Grid Grid.Column="1" RowDefinitions="* *">
-									<Grid.Styles>
-										<Style Selector="SelectableTextBlock">
-											<Setter Property="HorizontalAlignment" Value="Stretch"/>
-											<Setter Property="TextWrapping" Value="WrapWithOverflow"/>
-											<Setter Property="SelectionForegroundBrush" Value="White"/>
-										</Style>
-									</Grid.Styles>
-									<SelectableTextBlock x:Name="txtUserName"
-											   Grid.Row="0"
-											   Text="Họ Tên"
-											   VerticalAlignment="Bottom"
-											   FontWeight="Bold"
-											   FontSize="15"
+					<StackPanel DockPanel.Dock="Top">
+						<Border Padding="15">
+							<Border MinHeight="60" CornerRadius="10" Background="White">
+								<Grid ColumnDefinitions="50 *">
+									<materialIcons:MaterialIcon Grid.Column="0"
+										Kind="AccountSchool"
+										Height="40"
+										Width="40"
+										Foreground="{StaticResource PrimaryColor}"/>
+									<Grid Grid.Column="1" RowDefinitions="* *">
+										<Grid.Styles>
+											<Style Selector="SelectableTextBlock">
+												<Setter Property="HorizontalAlignment" Value="Stretch"/>
+												<Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+												<Setter Property="SelectionForegroundBrush" Value="White"/>
+											</Style>
+										</Grid.Styles>
+										<SelectableTextBlock x:Name="txtUserName"
+												   Grid.Row="0"
+												   Text="Họ Tên"
+												   VerticalAlignment="Bottom"
+												   FontWeight="Bold"
+												   FontSize="15"
 											   />
-									<SelectableTextBlock x:Name="txtMSSV"
-											   Grid.Row="1"
-											   Text="MSSV"
-											   VerticalAlignment="Top"
-											   FontSize="13"
-											   Foreground="Gray"
+										<SelectableTextBlock x:Name="txtMSSV"
+												   Grid.Row="1"
+												   Text="MSSV"
+												   VerticalAlignment="Top"
+												   FontSize="13"
+												   Foreground="Gray"
 											   />
+									</Grid>
 								</Grid>
-							</Grid>
+							</Border>
 						</Border>
-					</Border>
-					
+					</StackPanel>
+
 					<!--// navigation & Logout //-->
-					<Border Padding="10">
+					<Border Padding="15">
 						<Border CornerRadius="5" Background="White">
 							<StackPanel>
 								<!--// Navigation //-->
@@ -180,7 +139,7 @@
 									<ListBox x:Name="lBoxNavigation"
 											 SelectionMode="Single"
 											 ItemsSource="{Binding NavigationItems,Mode=OneWay}"
-											 SelectedItem="{Binding SelectedItem,Mode=OneWayToSource}"
+											 SelectedItem="{Binding SelectedItem,Mode=TwoWay}"
 											 Focusable="{Binding ElementName=LeftDrawer, Path=LeftDrawerOpened}"
 												 >
 										<ListBox.Styles>
@@ -210,7 +169,7 @@
 								</Border>
 
 
-								<Border Padding="10">
+								<Border Padding="15">
 									<Separator Height="2" />
 								</Border>
 

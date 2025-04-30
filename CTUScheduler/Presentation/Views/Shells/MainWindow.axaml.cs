@@ -13,7 +13,7 @@ public partial class MainWindow : ReactiveWindow<MainViewModel>
         InitializeComponent();
         this.WhenActivated(disposable =>
         {
-
+            
         });
     }
 }

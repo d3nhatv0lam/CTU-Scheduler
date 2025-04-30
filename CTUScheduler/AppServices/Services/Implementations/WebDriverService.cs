@@ -168,6 +168,11 @@ namespace CTUScheduler.AppServices.Services.Implementations
             return _isHasInternet;
         }
 
+        public string GetPageUrl()
+        {
+            return _page.Url;
+        }
+
         public async Task GoToPage(string strLink)
         {
             try

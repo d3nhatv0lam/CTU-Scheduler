@@ -4,7 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
 			 xmlns:rxui="http://reactiveui.net"
 			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.ViewModels.HomePage"
 			 xmlns:components="clr-namespace:CTUScheduler.Presentation.ViewModels.HomePage.Components"
@@ -16,7 +16,69 @@
 		<vm:HomePageViewModel/>
 	</Design.DataContext>
 	
+	<rxui:ReactiveUserControl.Styles>
+
+	</rxui:ReactiveUserControl.Styles>
+	
 	<Grid>
-		<TextBlock Text="HomeWiew" FontSize="100"/>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="0.45*" MinHeight="150"/>
+			<RowDefinition Height="*" MinHeight="350"/>
+		</Grid.RowDefinitions>
+		<!--// Top //-->
+		<Border Padding="15">
+			<Border CornerRadius="20" Background="Gray">
+					
+			</Border>
+		</Border>
+		<!--// bottom //-->
+		<Grid Grid.Row="1" 
+			  ShowGridLines="True"
+				>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" MinWidth="300"/>
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
+			<!--// Left side //-->
+			<Grid Grid.Column="0"
+				  RowDefinitions="* * 0.7*"
+				  ColumnDefinitions="* *"
+				  ShowGridLines="True">
+				
+				<!--// registration Info //-->
+				<Border Grid.Row="0" Grid.Column="0" Padding="15">
+					<Border CornerRadius="10" Background="Gray">
+						
+					</Border>
+				</Border>
+					<!--// Time registration //-->
+				<Border Grid.Row="0" Grid.Column="1" Padding="15">
+					<Border CornerRadius="10" Background="Gray">
+						
+					</Border>
+				</Border>
+				<!--// User registration time //-->
+				<Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Padding="15">
+					<Border CornerRadius="10" Background="Gray">
+						
+					</Border>
+				</Border>
+				<!--// contract //-->
+				<Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Padding="15">
+					<Border CornerRadius="10" Background="Gray">
+
+					</Border>	
+				</Border>
+			</Grid>
+
+			<!--// Right side //-->
+			<Border Grid.Column="1" Padding="15">
+				<Border CornerRadius="10" Background="Gray">
+					
+				</Border>
+			</Border>
+			
+			
+		</Grid>
 	</Grid>
 </rxui:ReactiveUserControl>

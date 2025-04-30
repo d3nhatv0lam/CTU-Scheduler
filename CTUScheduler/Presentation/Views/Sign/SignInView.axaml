@@ -9,11 +9,11 @@
 			 xmlns:rxui="http://reactiveui.net"
 			 xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
 			 xmlns:controls ="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
-			 xmlns:vm ="clr-namespace:CTUScheduler.Presentation.ViewModels"
+			 xmlns:vm ="clr-namespace:CTUScheduler.Presentation.ViewModels.Sign"
 			 x:CompileBindings="True"
 			 x:DataType="vm:SignInViewModel"
 			 Focusable="True"
-             x:Class="CTUScheduler.Presentation.Views.SignInView">
+             x:Class="CTUScheduler.Presentation.Views.Sign.SignInView">
 	
 	<UserControl.KeyBindings>
 		<KeyBinding Gesture="Enter" Command="{Binding SignInCommand}" />

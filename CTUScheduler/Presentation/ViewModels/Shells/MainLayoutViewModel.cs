@@ -5,6 +5,7 @@ using CTUScheduler.Presentation.ViewModels.CoursePage;
 using CTUScheduler.Presentation.ViewModels.HomePage;
 using CTUScheduler.Presentation.ViewModels.SettingsPage;
 using CTUScheduler.Presentation.ViewModels.Shells.Components;
+using CTUScheduler.Presentation.ViewModels.Sign;
 using DialogHostAvalonia;
 using Material.Icons;
 using Microsoft.Extensions.DependencyInjection;
@@ -67,7 +68,7 @@ namespace CTUScheduler.Presentation.ViewModels.Shells
             this.WhenAnyValue(x => x.SelectedItem).WhereNotNull().Subscribe(item =>
             {
                 Title = item.Title;
-                var page = (IRoutableViewModel)Activator.CreateInstance(item.ViewModelType)!;
+                var page = (IRoutableViewModel)Activator.CreateInstance(item.ViewModelType,HostScreen)!;
                 Router.NavigateAndReset.Execute(page);
             }).DisposeWith(_disposables);
 

@@ -29,11 +29,13 @@
 
   <ItemGroup>
     <Folder Include="Assets\Logo\" />
+    <Folder Include="Core\ModelViewModels\" />
     <Folder Include="Presentation\Resources\" />
     <Folder Include="Presentation\Templates\" />
     <Folder Include="Presentation\ViewModels\CoursePage\Components\" />
     <Folder Include="Presentation\ViewModels\HomePage\Components\" />
     <Folder Include="Presentation\ViewModels\Shared\" />
+    <Folder Include="Presentation\Views\HomePage\Components\" />
     <Folder Include="Presentation\Views\Shared\" />
   </ItemGroup>
 

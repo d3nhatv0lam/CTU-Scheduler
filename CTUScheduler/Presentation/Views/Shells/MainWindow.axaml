@@ -13,6 +13,7 @@
         x:Class="CTUScheduler.Presentation.Views.Shells.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
 		Height="600" Width="1000"
+		MinWidth="350"
 		x:DataType="vm:MainViewModel"
 		x:CompileBindings="True"
 		Focusable="True"
