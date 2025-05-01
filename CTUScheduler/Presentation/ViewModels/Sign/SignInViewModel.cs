@@ -8,6 +8,7 @@ using Avalonia.Threading;
 using CTUScheduler.AppServices;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.Implementations;
+using CTUScheduler.AppServices.Services.Interfaces;
 using CTUScheduler.Presentation.ViewModels.Base;
 using CTUScheduler.Presentation.ViewModels.Shells;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,7 +37,7 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
     public class SignInViewModel : ViewModelBase, IDisposable, IRoutableViewModel
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
-        private readonly WebDriverService _webDriverService;
+        private readonly IWebDriverService _webDriverService;
         private readonly Subject<Bitmap> _captchaImageUpdated = new Subject<Bitmap>();
         private string _username;
         private string _password;
@@ -88,7 +89,7 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
         public SignInViewModel(IScreen hostScreen)
         {
             HostScreen = hostScreen;
-            _webDriverService = App.ServiceProvider!.GetRequiredService<WebDriverService>();
+            _webDriverService = App.ServiceProvider!.GetRequiredService<IWebDriverService>();
             _username = string.Empty;
             _password = string.Empty;
             _capcha = string.Empty;
@@ -174,10 +175,9 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
             await _webDriverService.GoToPage(AppConstants.CTU_LOGIN_URL);
         }
 
-        private async void OnLoggedIn()
+        private void OnLoggedIn()
         {
             SaveSignInData();
-            await Task.Delay(500);
             RxApp.MainThreadScheduler.Schedule(NavigateToHome);
             Dispose();
         }

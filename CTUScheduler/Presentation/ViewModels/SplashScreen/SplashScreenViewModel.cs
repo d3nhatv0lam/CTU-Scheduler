@@ -7,6 +7,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CTUScheduler.AppServices;
 using CTUScheduler.AppServices.Services.Implementations;
+using CTUScheduler.AppServices.Services.Interfaces;
 using CTUScheduler.Presentation.ViewModels.Base;
 using CTUScheduler.Presentation.ViewModels.Shells;
 using CTUScheduler.Presentation.Views;
@@ -30,7 +31,7 @@ namespace CTUScheduler.Presentation.ViewModels.SplashScreen
 {
     public class SplashScreenViewModel : ViewModelBase , IDisposable
     {
-        private readonly InternetStatusService _internetStatusService;
+        private readonly IInternetStatusService _internetStatusService;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private string _message = "Đang kiểm tra kết nối mạng..";
         
@@ -45,7 +46,7 @@ namespace CTUScheduler.Presentation.ViewModels.SplashScreen
 
         public SplashScreenViewModel()
         {
-            _internetStatusService = App.ServiceProvider!.GetRequiredService<InternetStatusService>();
+            _internetStatusService = App.ServiceProvider!.GetRequiredService<IInternetStatusService>();
             CloseAppCommand = ReactiveCommand.Create(() => CloseApplication()).DisposeWith(_disposables);
 
             _internetStatusService.InternetStatusOnRefresh

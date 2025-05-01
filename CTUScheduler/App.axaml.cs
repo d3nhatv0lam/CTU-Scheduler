@@ -45,8 +45,9 @@ public partial class App : Application
     {
         // load view
         Locator.CurrentMutable.RegisterLazySingleton(() => new ConventionalViewLocator(), typeof(IViewLocator));
+
         // Load Web
-        Task.Run(() => ServiceProvider!.GetRequiredService<WebDriverService>());
+        Task.Run(() => ServiceProvider!.GetRequiredService<IWebDriverService>());
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -71,16 +72,19 @@ public partial class App : Application
 
     private void ConfigureServices(IServiceCollection services)
     {
-        services.AddSingleton<InternetStatusService>(provider => InternetStatusService.CreateInstance(TimeSpan.FromSeconds(3)));
-        services.AddSingleton<WebDriverService>(provider => new WebDriverService(provider.GetRequiredService<InternetStatusService>()));
+        services.AddSingleton<IInternetStatusService, InternetStatusService>(provider => new InternetStatusService(TimeSpan.FromSeconds(3)));
+        services.AddSingleton<IWebDriverService,WebDriverService>();
         services.AddSingleton<IUserDataService, UserDataService>();
         services.AddSingleton<IDialogHostService, DialogHostService>();
         //services.AddSingleton<ICachingNavigationServiceFactory, CachingNavigationServiceFactory>();
         ServiceProvider = services.BuildServiceProvider();
     }
 
-    private void Desktop_Exit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
+    private async void Desktop_Exit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
     {
+        if (ServiceProvider is IAsyncDisposable asyncDisposable)
+            await asyncDisposable.DisposeAsync();
+        else
         if (ServiceProvider is IDisposable disposableService)
             disposableService.Dispose();   
     }

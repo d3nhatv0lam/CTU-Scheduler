@@ -1,5 +1,6 @@
 ﻿using CTUScheduler.AppServices;
 using CTUScheduler.AppServices.Services.Implementations;
+using CTUScheduler.AppServices.Services.Interfaces;
 using CTUScheduler.Presentation.ViewModels.Base;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
@@ -17,7 +18,7 @@ namespace CTUScheduler.Presentation.ViewModels.HomePage
 {
     public class HomePageViewModel : ViewModelBase, IRoutableViewModel
     {
-        private WebDriverService _webDriverService;
+        private IWebDriverService _webDriverService;
         public string? UrlPathSegment => "HomeViewModel";
 
         public IScreen HostScreen { get; }
@@ -28,7 +29,7 @@ namespace CTUScheduler.Presentation.ViewModels.HomePage
 
         public HomePageViewModel(IScreen hostScreen)
         {
-            _webDriverService = App.ServiceProvider!.GetRequiredService<WebDriverService>();
+            _webDriverService = App.ServiceProvider!.GetRequiredService<IWebDriverService>();
             HostScreen = hostScreen;
 
             LoadPage();

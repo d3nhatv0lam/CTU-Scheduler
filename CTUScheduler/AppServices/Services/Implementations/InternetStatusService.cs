@@ -1,4 +1,5 @@
 using Avalonia.Data.Converters;
+using CTUScheduler.AppServices.Services.Interfaces;
 using System;
 using System.Diagnostics;
 using System.Net.Http;
@@ -10,16 +11,13 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace CTUScheduler.AppServices.Services.Implementations;
-public class InternetStatusService : IDisposable
+public class InternetStatusService : IInternetStatusService, IDisposable
 {
     private readonly CompositeDisposable _disposable = new CompositeDisposable();
     private readonly Subject<bool> _internetStatusOnRefresh = new Subject<bool>();
+    private const string requestUrl = "https://www.google.com";
     private readonly HttpClient _httpClient;
     private bool _lastStatus;
-    /// <summary>
-    /// Phát ra giá trị khi Internet có thay đổi
-    /// </summary>
-    public readonly Subject<bool> IsInternetAvaiable = new Subject<bool>();
     /// <summary>
     /// Phát ra giá trị trạng thái Internet được làm mới
     /// </summary>
@@ -42,7 +40,7 @@ public class InternetStatusService : IDisposable
     /// Khởi tạo monitor với khoảng thời gian kiểm tra nhất định.
     /// </summary>
     /// <param name="interval">Khoảng thời gian giữa các lần kiểm tra.</param>
-    private InternetStatusService(TimeSpan interval)
+    public InternetStatusService(TimeSpan interval)
     {
         _httpClient = new HttpClient()
         {
@@ -60,22 +58,15 @@ public class InternetStatusService : IDisposable
                 .Subscribe(status =>
                 {
                     _lastStatus = status;
-                    IsInternetAvaiable.OnNext(status);
                     OnConnectivityChanged(status);
                 }).DisposeWith(_disposable);
 
-
-        _disposable.Add(IsInternetAvaiable);
         _disposable.Add(InternetStatusOnRefresh);
         _disposable.Add(_httpClient);
     }
 
-    public static InternetStatusService CreateInstance(TimeSpan interval)
-    {
-        return new InternetStatusService(interval);
-    }
 
-    public Task<bool> CheckInternetStatus()
+    public Task<bool> GetInternetStatus()
     {
         return CheckInternetAsync();
     }
@@ -88,7 +79,7 @@ public class InternetStatusService : IDisposable
         try
         {
             // Endpoint có thể thay đổi tuỳ ứng dụng, ở đây dùng google.com làm ví dụ.
-            var response = await _httpClient.GetAsync("https://www.google.com");
+            var response = await _httpClient.GetAsync(requestUrl);
             return response.IsSuccessStatusCode;
         }
         catch
@@ -119,6 +110,6 @@ public class InternetStatusService : IDisposable
 
     public void Dispose()
     {
-        _disposable.Dispose();  
+        _disposable.Dispose();
     }
 }

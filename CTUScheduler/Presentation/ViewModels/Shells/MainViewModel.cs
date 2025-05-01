@@ -11,12 +11,14 @@ using CTUScheduler.Presentation.ViewModels.Shells.Components;
 using CTUScheduler.AppServices.Services.Implementations;
 using System.Reactive.Linq;
 using System.Reactive.Disposables;
+using CTUScheduler.AppServices.Services.Interfaces;
+using CTUScheduler.Presentation.ViewModels.Sign;
 
 namespace CTUScheduler.Presentation.ViewModels.Shells;
 
 public class MainViewModel : ViewModelBase , IScreen , IActivatableViewModel
 {
-    private readonly InternetStatusService _internetStatusService;
+    private readonly IInternetStatusService _internetStatusService;
     private string _windowTitle = "CTU Scheduler";
     public RoutingState Router { get; }
     public string WindowTitle
@@ -31,18 +33,21 @@ public class MainViewModel : ViewModelBase , IScreen , IActivatableViewModel
     {
         Activator = new ViewModelActivator();
         
-        _internetStatusService = App.ServiceProvider!.GetRequiredService<InternetStatusService>();
+        _internetStatusService = App.ServiceProvider!.GetRequiredService<IInternetStatusService>();
         Router = new RoutingState();
-        //Router.Navigate.Execute(new SignInViewModel(this));
-        Router.Navigate.Execute(new MainLayoutViewModel(this));
+        Router.Navigate.Execute(new SignInViewModel(this));
+        //Router.Navigate.Execute(new MainLayoutViewModel(this));
 
         this.WhenActivated(disposables =>
         {
             // Check internet status and update window title accordingly
-            _internetStatusService.IsInternetAvaiable.ObserveOn(RxApp.MainThreadScheduler).Subscribe(isAvailable =>
-            {
-                WindowTitle = isAvailable ? "CTU Scheduler" : "CTU Scheduler - No Internet";
-            }).DisposeWith(disposables);
+            _internetStatusService.InternetStatusOnRefresh
+                .DistinctUntilChanged()
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(isAvailable =>
+                {
+                    WindowTitle = isAvailable ? "CTU Scheduler" : "CTU Scheduler - No Internet";
+                }).DisposeWith(disposables);
         });
         
     }

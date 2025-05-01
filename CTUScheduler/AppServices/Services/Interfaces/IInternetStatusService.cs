@@ -13,7 +13,7 @@ namespace CTUScheduler.AppServices.Services.Interfaces
         /// Kiểm tra trạng thái kết nối Internet
         /// </summary>
         /// <returns>Trả về true nếu có kết nối, false nếu không có kết nối.</returns>
-        public Task<bool> CheckInternetStatus();
+        public Task<bool> GetInternetStatus();
 
         public event EventHandler<bool>? ConnectivityChanged;
         /// <summary>

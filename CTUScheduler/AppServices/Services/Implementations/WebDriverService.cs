@@ -1,4 +1,5 @@
-﻿using Microsoft.Playwright;
+﻿using CTUScheduler.AppServices.Services.Interfaces;
+using Microsoft.Playwright;
 using Splat;
 using System;
 using System.Collections;
@@ -14,73 +15,41 @@ using System.Threading.Tasks;
 
 namespace CTUScheduler.AppServices.Services.Implementations
 {
-    public class WebDriverService : IDisposable
+    public class WebDriverService : IWebDriverService, IDisposable , IAsyncDisposable
     {
-        private readonly InternetStatusService _internetStatusService;
-        private bool _isHasInternet;
-        private IPlaywright _playwright { get; set; }
-        private IBrowser _browser { get; set; }
-        private IPage _page { get; set; }
-
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private readonly IInternetStatusService _internetStatusService;
+        private IPlaywright _playwright = null!;
+        private IBrowser _browser = null!;
+        private IPage _page = null!;
+        protected bool _isHasInternet;
 
         public Subject<JsonElement?> JsonResponse = new Subject<JsonElement?>();
 
-        private event EventHandler? _alertBoxOpened;
+        public event EventHandler? AlertBoxOpened;
+        public event EventHandler? ConfirmBoxOpened;
 
-        public event EventHandler AlertBoxOpened
+        protected virtual void OnAlertBoxOpened()
         {
-            add
-            {
-                _alertBoxOpened += value;
-            }
-            remove
-            {
-                _alertBoxOpened -= value;
-            }
+            AlertBoxOpened?.Invoke(this, EventArgs.Empty);
         }
 
-        private event EventHandler? _confirmBoxOpened;
-
-        public event EventHandler ConfirmBoxOpened
+        protected virtual void OnConfimBoxOpened()
         {
-            add
-            {
-                _confirmBoxOpened += value;
-            }
-            remove
-            {
-                _confirmBoxOpened -= value;
-            }
+            ConfirmBoxOpened?.Invoke(this, EventArgs.Empty);
         }
 
-        private void OnAlertBoxOpened()
-        {
-            _alertBoxOpened?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void OnConfimBoxOpened()
-        {
-            _confirmBoxOpened?.Invoke(this, EventArgs.Empty);
-        }
-
-        //private WebDriverService()
-        //{
-        //    _playwright = Playwright.CreateAsync().GetAwaiter().GetResult();
-        //    _browser = _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions() { Headless = false }).GetAwaiter().GetResult();
-        //    _page = _browser.NewPageAsync().GetAwaiter().GetResult();
-        //    ConfigPage();
-        //}
-
-        public WebDriverService(InternetStatusService internetStatusService)
+        public WebDriverService(IInternetStatusService internetStatusService)
         { 
             _internetStatusService = internetStatusService;
 
-            _playwright =  Playwright.CreateAsync().GetAwaiter().GetResult();
-            _browser =  _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions() { Headless = false }).GetAwaiter().GetResult();
-            _page =  _browser.NewPageAsync().GetAwaiter().GetResult();
+            //_playwright =  Playwright.CreateAsync().GetAwaiter().GetResult();
+            //_browser =  _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions() { Headless = false }).GetAwaiter().GetResult();
+            //_page =  _browser.NewPageAsync().GetAwaiter().GetResult();
+            CreatePlayWrightChromiumAsync().GetAwaiter().GetResult();
 
-            ConfigPage();
+            ConfigPageAsync().GetAwaiter().GetResult();
+
 
             _internetStatusService.InternetStatusOnRefresh
                 .DistinctUntilChanged()
@@ -90,24 +59,14 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 }).DisposeWith(_disposables);
         }
 
-        //private async Task InitializeAsync()
-        //{
-        //    _playwright = await Playwright.CreateAsync();
-        //    _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions() { Headless = false });
-        //    _page = await _browser.NewPageAsync();
-        //    ConfigPage();
-        //}
+        protected async Task CreatePlayWrightChromiumAsync()
+        {
+            _playwright = await Playwright.CreateAsync();
+            _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions() { Headless = false });
+            _page = await _browser.NewPageAsync();
+        }
 
-
-        //public static async Task<WebDriverService> WebDriverServiceFactory(InternetStatusService internetStatusService)
-        //{
-        //    WebDriverService webDriverService = new WebDriverService(internetStatusService);
-        //    await webDriverService.InitializeAsync();
-        //    return webDriverService;
-        //}
-
-
-        private async void ConfigPage()
+        protected virtual async Task ConfigPageAsync()
         {
             //await _page.RouteAsync("**/*.css", async route => await route.AbortAsync());
             await _page.RouteAsync("**/*", async route =>
@@ -119,7 +78,6 @@ namespace CTUScheduler.AppServices.Services.Implementations
                     await route.ContinueAsync();
             });
 
-            _isHasInternet = await _internetStatusService.CheckInternetStatus();
             _page.Dialog += async (sender, e) =>
             {
                 if (e.Type == DialogType.Alert)
@@ -162,10 +120,11 @@ namespace CTUScheduler.AppServices.Services.Implementations
         ///<summary>
         /// Throw Exeption when no Internet 
         /// </summary>
-        private bool IsHasInternet()
+        /// <exception cref="Exception">
+        /// </exception>
+        private void EnsureInternetConnection()
         {
             if (!_isHasInternet) throw new Exception("No Internet");
-            return _isHasInternet;
         }
 
         public string GetPageUrl()
@@ -173,16 +132,16 @@ namespace CTUScheduler.AppServices.Services.Implementations
             return _page.Url;
         }
 
-        public async Task GoToPage(string strLink)
+        public async Task GoToPage(string url)
         {
             try
             {
-                IsHasInternet();
-                await _page.GotoAsync(strLink, new PageGotoOptions { Timeout = 10000 });
+                EnsureInternetConnection();
+                await _page.GotoAsync(url, new PageGotoOptions { Timeout = 10000 });
             }
             catch
             {
-                Debug.WriteLine("Go to page fail! " + strLink);
+                Debug.WriteLine("Go to page fail! " + url);
                 throw;
             }
         }
@@ -204,7 +163,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
         {
             try
             {
-                IsHasInternet();
+                EnsureInternetConnection();
                 await element.FillAsync(strValue);
             } 
             catch
@@ -214,11 +173,24 @@ namespace CTUScheduler.AppServices.Services.Implementations
             }
         }
 
+        public async Task FillElement(string selector, string strValue)
+        {
+            try
+            {
+                ILocator element = this.LocatorElement(selector);
+                await FillElement(element, strValue);
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         public async Task ClickElement(ILocator element)
         {
             try
             {
-                IsHasInternet();
+                EnsureInternetConnection();
                 await element.WaitForAsync(new LocatorWaitForOptions { Timeout = 10000 });
                 await element.ClickAsync();
             }
@@ -228,16 +200,29 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 throw;
             }
         }
+        public async Task ClickElement(string selector)
+        {
+            try
+            {
+                ILocator element = this.LocatorElement(selector);
+                await ClickElement(element);
+            }
+            catch
+            {
+                throw;
+            }
+        }
 
         public async Task ClickNavigateElement(ILocator element)
         {
             try
             {
                 await element.WaitForAsync(new LocatorWaitForOptions { Timeout = 10000 });
-                if (!await _internetStatusService.CheckInternetStatus())
+                if (!await _internetStatusService.GetInternetStatus())
                     throw new Exception("Can't Navigate because no internet!");
 
                 await element.ClickAsync();
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             }
             catch
             {
@@ -245,20 +230,47 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 throw;
             }
         }
+        public async Task ClickNavigateElement(string selector)
+        {
+            try
+            {
+                ILocator element = this.LocatorElement(selector);
+                await ClickNavigateElement(element);
+            }
+            catch
+            {
+                throw;
+            }
+        }
 
         public async Task<byte[]> GetImageToByteArray(ILocator element)
         {
-            if (!IsHasInternet())
-                return Array.Empty<byte>();
             try
             {
+                EnsureInternetConnection();
                 await element.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
                 return await element.ScreenshotAsync();
             }
             catch
             {
                 Debug.WriteLine("Get image fail!");
-                throw;
+                return Array.Empty<byte>();
+            }
+        }
+        public async Task<byte[]> GetImageToByteArray(string selector)
+        {
+            try
+            {
+                EnsureInternetConnection();
+                ILocator element = this.LocatorElement(selector);
+
+                await element.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
+                return await element.ScreenshotAsync();
+            }
+            catch
+            {
+                Debug.WriteLine("Get image fail!");
+                return Array.Empty<byte>();
             }
         }
 
@@ -268,6 +280,11 @@ namespace CTUScheduler.AppServices.Services.Implementations
             _browser.DisposeAsync().GetAwaiter().GetResult();
             _playwright.Dispose();
             _disposables.Dispose();
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+
         }
     }
 }
