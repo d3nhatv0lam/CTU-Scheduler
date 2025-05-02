@@ -74,6 +74,7 @@ public partial class App : Application
     {
         services.AddSingleton<IInternetStatusService, InternetStatusService>(provider => new InternetStatusService(TimeSpan.FromSeconds(3)));
         services.AddSingleton<IWebDriverService,WebDriverService>();
+        services.AddSingleton<ICTUWebDriverService, CTUWebDriverService>();
         services.AddSingleton<IUserDataService, UserDataService>();
         services.AddSingleton<IDialogHostService, DialogHostService>();
         //services.AddSingleton<ICachingNavigationServiceFactory, CachingNavigationServiceFactory>();
@@ -86,6 +87,10 @@ public partial class App : Application
             await asyncDisposable.DisposeAsync();
         else
         if (ServiceProvider is IDisposable disposableService)
-            disposableService.Dispose();   
+            disposableService.Dispose();
+        if (sender is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.Exit -= Desktop_Exit;
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using CTUScheduler.AppServices.Services.Interfaces;
+using CTUScheduler.Core.Exceptions;
 using Microsoft.Playwright;
 using Splat;
 using System;
@@ -57,6 +58,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 {
                     _isHasInternet = status;
                 }).DisposeWith(_disposables);
+
         }
 
         protected async Task CreatePlayWrightChromiumAsync()
@@ -64,6 +66,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
             _playwright = await Playwright.CreateAsync();
             _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions() { Headless = false });
             _page = await _browser.NewPageAsync();
+            
         }
 
         protected virtual async Task ConfigPageAsync()
@@ -120,11 +123,11 @@ namespace CTUScheduler.AppServices.Services.Implementations
         ///<summary>
         /// Throw Exeption when no Internet 
         /// </summary>
-        /// <exception cref="Exception">
+        /// <exception cref="NoInternetException">
         /// </exception>
-        private void EnsureInternetConnection()
+        public void EnsureInternetConnection()
         {
-            if (!_isHasInternet) throw new Exception("No Internet");
+            if (!_isHasInternet) throw new NoInternetException("No Internet");
         }
 
         public string GetPageUrl()
@@ -132,12 +135,13 @@ namespace CTUScheduler.AppServices.Services.Implementations
             return _page.Url;
         }
 
-        public async Task GoToPage(string url)
+        public async Task GoToPageAsync(string url)
         {
             try
             {
                 EnsureInternetConnection();
-                await _page.GotoAsync(url, new PageGotoOptions { Timeout = 10000 });
+                await _page.GotoAsync(url, new PageGotoOptions { Timeout = 10000 , WaitUntil = WaitUntilState.NetworkIdle });
+                await _page.WaitForLoadStateAsync(LoadState.Load);
             }
             catch
             {
@@ -159,7 +163,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
             }
         }
 
-        public async Task FillElement(ILocator element, string strValue)
+        public async Task FillElementAsync(ILocator element, string strValue)
         {
             try
             {
@@ -173,12 +177,12 @@ namespace CTUScheduler.AppServices.Services.Implementations
             }
         }
 
-        public async Task FillElement(string selector, string strValue)
+        public async Task FillElementAsync(string selector, string strValue)
         {
             try
             {
                 ILocator element = this.LocatorElement(selector);
-                await FillElement(element, strValue);
+                await FillElementAsync(element, strValue);
             }
             catch
             {
@@ -186,7 +190,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
             }
         }
 
-        public async Task ClickElement(ILocator element)
+        public async Task ClickElementAsync(ILocator element)
         {
             try
             {
@@ -200,12 +204,12 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 throw;
             }
         }
-        public async Task ClickElement(string selector)
+        public async Task ClickElementAsync(string selector)
         {
             try
             {
                 ILocator element = this.LocatorElement(selector);
-                await ClickElement(element);
+                await ClickElementAsync(element);
             }
             catch
             {
@@ -213,7 +217,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
             }
         }
 
-        public async Task ClickNavigateElement(ILocator element)
+        public async Task ClickNavigateElementAsync(ILocator element, LoadState loadState = LoadState.Load)
         {
             try
             {
@@ -230,12 +234,12 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 throw;
             }
         }
-        public async Task ClickNavigateElement(string selector)
+        public async Task ClickNavigateElementAsync(string selector, LoadState loadState = LoadState.Load)
         {
             try
             {
                 ILocator element = this.LocatorElement(selector);
-                await ClickNavigateElement(element);
+                await ClickNavigateElementAsync(element);
             }
             catch
             {
@@ -243,7 +247,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
             }
         }
 
-        public async Task<byte[]> GetImageToByteArray(ILocator element)
+        public async Task<byte[]> GetImageToByteArrayAsync(ILocator element)
         {
             try
             {
@@ -257,7 +261,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 return Array.Empty<byte>();
             }
         }
-        public async Task<byte[]> GetImageToByteArray(string selector)
+        public async Task<byte[]> GetImageToByteArrayAsync(string selector)
         {
             try
             {

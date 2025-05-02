@@ -30,58 +30,49 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CTUScheduler.Presentation.ViewModels.Sign
 {
     public class SignInViewModel : ViewModelBase, IDisposable, IRoutableViewModel
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
-        private readonly IWebDriverService _webDriverService;
+        private readonly ICTUWebDriverService _CTUWebDriverService;
         private readonly Subject<Bitmap> _captchaImageUpdated = new Subject<Bitmap>();
-        private string _username;
+        private string _userName;
         private string _password;
-        private string _capcha;
-        private Bitmap _capchaImage;
+        private string _captcha;
+        private Bitmap _captchaImage;
         private bool _isSaveUsername;
-        private bool _isLoginButtonEnabled = true;
-        private IObservable<bool> CanLogin;
-        private bool _isLoginSuccessful;
+
 
         public string? UrlPathSegment => "SignInView";
         public IScreen HostScreen { get; }
 
-        public string Username
+        public string UserName
         {
-            get => _username;
-            set => this.RaiseAndSetIfChanged(ref _username, value);
+            get => _userName;
+            set => this.RaiseAndSetIfChanged(ref _userName, value);
         }
         public string Password
         {
             get => _password;
             set => this.RaiseAndSetIfChanged(ref _password, value);
         }
-        public string Capcha
+        public string Captcha
         {
-            get => _capcha;
-            set => this.RaiseAndSetIfChanged(ref _capcha, value);
+            get => _captcha;
+            set => this.RaiseAndSetIfChanged(ref _captcha, value);
         }
-        public Bitmap CapchaImage
+        public Bitmap CaptchaImage
         {
-            get => _capchaImage;
-            set => this.RaiseAndSetIfChanged(ref _capchaImage, value);
+            get => _captchaImage;
+            set => this.RaiseAndSetIfChanged(ref _captchaImage, value);
         }
         public bool IsSaveUsername
         {
             get => _isSaveUsername;
             set => this.RaiseAndSetIfChanged(ref _isSaveUsername, value);
         }
-        public bool IsLoginButtonEnabled
-        {
-            get => _isLoginButtonEnabled;
-            set => this.RaiseAndSetIfChanged(ref _isLoginButtonEnabled, value);
-        }
-        
 
         public ReactiveCommand<Unit, Unit> SignInCommand { get; private set; }
 
@@ -89,15 +80,16 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
         public SignInViewModel(IScreen hostScreen)
         {
             HostScreen = hostScreen;
-            _webDriverService = App.ServiceProvider!.GetRequiredService<IWebDriverService>();
-            _username = string.Empty;
+            _CTUWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
+            _userName = string.Empty;
             _password = string.Empty;
-            _capcha = string.Empty;
-            _capchaImage = BitmapHelper.CreateEmptyBitmap();
-            _isLoginSuccessful = false;
+            _captcha = string.Empty;
+            _captchaImage = BitmapHelper.CreateEmptyBitmap();
+
+            LoadSignInData();
             _disposables.Add(_captchaImageUpdated);
 
-
+            // auto try Goto Signin until success
             Observable.Defer(() => Observable.StartAsync(GoToSignPage))
                 .Catch<Unit, Exception>(ex =>
                 {
@@ -106,7 +98,6 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
                 .Retry() // retry vô hạn
                 .Subscribe(async _ =>
                 {
-                    LoadSignInData();
                     await FillCapchaImage();
                 })
                 .DisposeWith(_disposables);
@@ -119,20 +110,13 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
 
         private void InitObservable()
         {
-            Observable.FromEventPattern(_webDriverService, nameof(_webDriverService.AlertBoxOpened))
-                    .Subscribe(_ =>
-                    {
-                        _isLoginSuccessful = false;
-                    }).DisposeWith(_disposables);
-
-            CanLogin = this.WhenAnyValue(x => x.IsLoginButtonEnabled, x => x == true);
 
             _captchaImageUpdated
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(bitMapImage =>
                 {
-                    var oldImage = CapchaImage;
-                    CapchaImage = bitMapImage;
+                    var oldImage = CaptchaImage;
+                    CaptchaImage = bitMapImage;
                     oldImage.Dispose();
                 }).DisposeWith(_disposables);
         }
@@ -141,21 +125,8 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
         {
             SignInCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                RxApp.MainThreadScheduler.Schedule(() => { IsLoginButtonEnabled = false; });
-                _isLoginSuccessful = true;
-                bool isInteractedOnWeb = await TrySignIn();
-
-                if (!isInteractedOnWeb)
-                {
-                    // enable button
-                    await Task.Delay(500);
-                    RxApp.MainThreadScheduler.Schedule(() => { IsLoginButtonEnabled = true; });
-                    return;
-                }
-
-                await Task.Delay(200);
-
-                if (_isLoginSuccessful)
+                var isLogged = await _CTUWebDriverService.TrySignInAsync(UserName, Password, Captcha);
+                if (isLogged)
                 {
                     OnLoggedIn();
                 }
@@ -163,16 +134,16 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
                 {
                     CleanCaptcha();
                     await FillCapchaImage();
+                    // wait 1sec => reduce CPU usage & Lag
+                    await Task.Delay(1000);
                 }
-                await Task.Delay(500);
-                RxApp.MainThreadScheduler.Schedule(() => { IsLoginButtonEnabled = true; });
 
-            },CanLogin).DisposeWith(_disposables);
+            }).DisposeWith(_disposables);
         }
 
         private async Task GoToSignPage()
         {
-            await _webDriverService.GoToPage(AppConstants.CTU_LOGIN_URL);
+            await _CTUWebDriverService.GoToSignInPageAsync();
         }
 
         private void OnLoggedIn()
@@ -186,51 +157,15 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
         {
             RxApp.MainThreadScheduler.Schedule(() =>
             {
-                Capcha = string.Empty;
+                Captcha = string.Empty;
             });
         }
 
         private async Task FillCapchaImage()
         {
-            var bitMapImage = await GetCapchaImage();
-            _captchaImageUpdated.OnNext(bitMapImage);
-        }
-
-        private async Task<Bitmap> GetCapchaImage()
-        {
-            Bitmap imageSource;
-            try
-            {
-                ILocator imageLocator = _webDriverService.LocatorElement(AppConstants.CTU_LOGIN_CAPCHA_IMAGE);
-                byte[] image = await _webDriverService.GetImageToByteArray(imageLocator);
-                using var stream = new MemoryStream(image,writable:false);
-                    imageSource = new Bitmap(stream);
-            }
-            catch
-            {
-                imageSource = BitmapHelper.CreateEmptyBitmap();
-            }
-            return imageSource;
-        }
-
-        private async Task<bool> TrySignIn()
-        {
-            try
-            {
-                ILocator usernameInput = _webDriverService.LocatorElement(AppConstants.CTU_LOGIN_USERNAME);
-                await _webDriverService.FillElement(usernameInput, Username);
-                ILocator passwordInput = _webDriverService.LocatorElement(AppConstants.CTU_LOGIN_PASSWORD);
-                await _webDriverService.FillElement(passwordInput, Password);
-                ILocator capchaInput = _webDriverService.LocatorElement(AppConstants.CTU_LOGIN_CAPCHA);
-                await _webDriverService.FillElement(capchaInput, Capcha);
-                ILocator loginButton = _webDriverService.LocatorElement(AppConstants.CTU_LOGIN_BUTTON);
-                await _webDriverService.ClickNavigateElement(loginButton);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            var bitMapImage = await _CTUWebDriverService.TryGetCaptchaImageAsync();
+            if (bitMapImage != null)
+                _captchaImageUpdated.OnNext(bitMapImage);
         }
 
         private void NavigateToHome()
@@ -245,7 +180,7 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
             using (BinaryWriter writer = new BinaryWriter(fs))
             {
                 writer.Write(IsSaveUsername);
-                writer.Write(Username);
+                writer.Write(UserName);
             }
         }
         private void LoadSignInData()
@@ -258,7 +193,7 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
             {
                 IsSaveUsername = reader.ReadBoolean();
                 if (IsSaveUsername)
-                    Username = reader.ReadString();
+                    UserName = reader.ReadString();
             }
         }
         public void Dispose()

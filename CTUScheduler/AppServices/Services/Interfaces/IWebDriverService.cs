@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CTUScheduler.Core.Exceptions;
 
 namespace CTUScheduler.AppServices.Services.Interfaces
 {
@@ -11,17 +12,22 @@ namespace CTUScheduler.AppServices.Services.Interfaces
     {
         event EventHandler AlertBoxOpened;
         event EventHandler ConfirmBoxOpened;
-
+        ///<summary>
+        /// Throw NoInternetException Exeption when no Internet 
+        /// </summary>
+        /// <exception cref="NoInternetException">
+        /// </exception>
+        void EnsureInternetConnection();
         string GetPageUrl();
-        Task GoToPage(string url);
+        Task GoToPageAsync(string url);
         ILocator LocatorElement(string selector);
-        Task FillElement(ILocator element, string strValue);
-        Task FillElement(string selector, string strValue);
-        Task ClickElement(ILocator element);
-        Task ClickElement(string selector);
-        Task ClickNavigateElement(ILocator element);
-        Task ClickNavigateElement(string selector);
-        Task<byte[]> GetImageToByteArray(ILocator element);
-        Task<byte[]> GetImageToByteArray(string selector);
+        Task FillElementAsync(ILocator element, string strValue);
+        Task FillElementAsync(string selector, string strValue);
+        Task ClickElementAsync(ILocator element);
+        Task ClickElementAsync(string selector);
+        Task ClickNavigateElementAsync(ILocator element, LoadState loadState = LoadState.Load);
+        Task ClickNavigateElementAsync(string selector, LoadState loadState = LoadState.Load);
+        Task<byte[]> GetImageToByteArrayAsync(ILocator element);
+        Task<byte[]> GetImageToByteArrayAsync(string selector);
     }
 }

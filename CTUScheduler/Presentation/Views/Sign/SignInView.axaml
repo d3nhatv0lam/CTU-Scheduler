@@ -106,16 +106,16 @@
 				
 					<Grid ColumnDefinitions="* *" Margin="0 25 0 0">
 						<TextBox Grid.Column="0" 
-							x:Name="txtCapcha"	
+							x:Name="txtCaptcha"	
 							UseFloatingWatermark="True" 
 							Classes="clearButton"
 							Margin="0 0 10 0"
 							MaxLength="10"
-							p1:TextFieldAssist.Label="Captcha"/>
+							p1:TextFieldAssist.Label="Mã bảo vệ"/>
 
 						<Image Grid.Column="1"
 							   MaxHeight="80"
-							   x:Name="capchaImage" 
+							   x:Name="captchaImage" 
 							   Stretch="Uniform"/>
 					</Grid>
 
@@ -136,7 +136,7 @@
 					/>
 
 					<TextBlock 
-							Text="#Note: Nếu ảnh captcha bị lỗi, hãy thoát app và mở lại hoặc nhấp vào nút login!"
+							Text="#Note: Nếu ảnh captcha bị lỗi, hãy thoát app và mở lại hoặc nhấp vào nút Đăng nhập!"
 							FontWeight="Bold"
 							FontSize="15"
 							TextAlignment="Center" 
