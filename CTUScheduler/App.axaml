@@ -31,6 +31,7 @@
 	
     <Application.Styles>
         <FluentTheme />
+		<themes:CustomMaterialTheme PrimaryColor="Blue" SecondaryColor="#1f5ca9"/>
 		<materialIcons:MaterialIconStyles />
 		<dialogHostAvalonia:DialogHostStyles />
 	</Application.Styles>

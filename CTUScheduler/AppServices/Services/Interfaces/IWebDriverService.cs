@@ -5,11 +5,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Exceptions;
+using System.Reactive.Subjects;
+using System.Text.Json;
 
 namespace CTUScheduler.AppServices.Services.Interfaces
 {
     public interface IWebDriverService
     {
+
+        Subject<JsonElement?> JsonResponse { get; }
+
         event EventHandler AlertBoxOpened;
         event EventHandler ConfirmBoxOpened;
         ///<summary>

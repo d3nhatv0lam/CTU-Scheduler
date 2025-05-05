@@ -8,10 +8,12 @@
 			 xmlns:rxui="http://reactiveui.net"
 			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.ViewModels.Shells"
 			 xmlns:components="clr-namespace:CTUScheduler.Presentation.ViewModels.Shells.Components"
+			 xmlns:componentViews="clr-namespace:CTUScheduler.Presentation.Views.Shells.Components"
 			 x:DataType="vm:MainLayoutViewModel"
 			 x:CompileBindings="True"
 			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+			 xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple"
 			 xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
 			 xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
 		     x:Class="CTUScheduler.Presentation.Views.Shells.MainLayoutView">
@@ -27,46 +29,7 @@
 	<dialogHostAvalonia:DialogHost Identifier="MainLayoutDialog" CloseOnClickAway="True">
 			<dialogHostAvalonia:DialogHost.DataTemplates>
 				<DataTemplate x:DataType="{x:Type components:LogoutDialogViewModel}">
-					<controls:Card 
-							MinHeight="160" 
-							MinWidth="400">
-					<Grid RowDefinitions="* 30">
-						<!--// Content //-->
-						<Grid Grid.Row="0" RowDefinitions="auto 2 10 *" >
-							<Grid.Styles>
-								<Style Selector="TextBlock">
-									<Setter Property="FontFamily" Value="{StaticResource Text_Font}"/>
-									<Setter Property="FontSize" Value="18"/>
-								</Style>
-							</Grid.Styles>
-							<TextBlock Grid.Row="0" Text="Đăng xuất" Classes="Headline6" FontSize="22" FontWeight="Bold"/>
-							<Separator Grid.Row="1" Height="1" Margin="0 0 0 0"/>
-							<StackPanel Grid.Row="3">
-								<TextBlock Text="Bạn có chắc muốn đăng xuất?"/>
-								<TextBlock Text="Các dữ liệu chưa lưu sẽ bị mất!"/>
-							</StackPanel>
-						</Grid>
-							<!--// Accept Buttons //-->
-						<DockPanel Grid.Row="1" LastChildFill="False">
-							<DockPanel.Styles>
-								<Style Selector="Button">
-									<Setter Property="MinWidth" Value="75"/>
-									<Setter Property="HorizontalAlignment" Value="Stretch"/>
-									<Setter Property="Margin" Value="3 0 3 0"/>
-									<Setter Property="Padding" Value="0"/>
-								</Style>
-							</DockPanel.Styles>
-							
-							<Button DockPanel.Dock="Right"
-									Content="Đăng xuất" 
-									Background="Red"  
-									Command="{Binding AcceptCommand}"/>
-							<Button DockPanel.Dock="Right"
-									Content="Không"
-									Command="{Binding CancelCommand}"/>
-						</DockPanel>
-					</Grid>
-				</controls:Card>
+					<componentViews:LogoutDialogView/>
 				</DataTemplate>
 			</dialogHostAvalonia:DialogHost.DataTemplates>
 		
@@ -112,14 +75,14 @@
 										</Grid.Styles>
 										<SelectableTextBlock x:Name="txtUserName"
 												   Grid.Row="0"
-												   Text="Họ Tên"
+												   Text="{Binding UserName, Mode=OneWay}"
 												   VerticalAlignment="Bottom"
 												   FontWeight="Bold"
 												   FontSize="15"
 											   />
 										<SelectableTextBlock x:Name="txtMSSV"
 												   Grid.Row="1"
-												   Text="MSSV"
+												   Text="{Binding UserMSSV, Mode=OneWay}"
 												   VerticalAlignment="Top"
 												   FontSize="13"
 												   Foreground="Gray"
@@ -149,6 +112,12 @@
 												<Setter Property="Margin" Value="0"/>
 												<Setter Property="Cursor" Value="Hand"/>
 											</Style>
+
+											<Style Selector="ListBoxItem:selected Border">
+												<Setter Property="Background" Value="#9ddcfa"/>
+											</Style>
+											
+										
 										</ListBox.Styles>
 
 										<ListBox.ItemTemplate>
@@ -165,6 +134,21 @@
 												</Grid>
 											</DataTemplate>
 										</ListBox.ItemTemplate>
+
+										<!--<ListBox.Items>
+											<ListBoxItem>
+												<Grid ColumnDefinitions="7 5 auto 5 *">
+													<Grid.Styles>
+														<Style Selector="TextBlock">
+															<Setter Property="VerticalAlignment" Value="Center"/>
+														</Style>
+													</Grid.Styles>
+													<Border  Grid.Column="0" CornerRadius="0 5 5 0" Background="Blue"/>
+													<materialIcons:MaterialIcon Grid.Column="2" Height="25" Width="25" Kind="Abacus"/>
+													<TextBlock Grid.Column="5" Text="text"/>
+												</Grid>
+											</ListBoxItem>
+										</ListBox.Items>-->
 									</ListBox>
 								</Border>
 

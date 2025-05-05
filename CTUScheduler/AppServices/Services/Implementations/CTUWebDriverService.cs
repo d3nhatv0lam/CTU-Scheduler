@@ -1,15 +1,22 @@
 ﻿using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.Interfaces;
 using CTUScheduler.Core.Exceptions;
+using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
+using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Raw;
 using Microsoft.Playwright;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace CTUScheduler.AppServices.Services.Implementations
@@ -18,14 +25,33 @@ namespace CTUScheduler.AppServices.Services.Implementations
     {
         private readonly IWebDriverService _webDriverService;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private readonly IObservable<RegistrationInformation> _registrationInformationResponse;
 
+        public IObservable<RegistrationInformation> RegistrationInformationResponse => _registrationInformationResponse;
 
         public CTUWebDriverService(IWebDriverService webDriverService)
         {
             _webDriverService = webDriverService;
+
+            // Registration Rules Page Response
+            _registrationInformationResponse =
+                _webDriverService.JsonResponse
+                .Select(rawJsonData => ToRegistrationRulesPageJsonData(rawJsonData))
+                .WhereNotNull()
+                // convert to class
+                .Select(jsonData => JsonHelper.Deserialize<RawRegistrationInformation>((JsonElement)jsonData!))
+                .WhereNotNull()
+                .Select(x => );
+
+
+
         }
 
         #region SignIn
+        /// <summary>
+        /// If navigate fail, throw exception
+        /// </summary>
+        /// <exception cref="Exception"></exception>
         public async Task GoToSignInPageAsync()
         {
             string signInPageUrl = AppConstants.CTU_SIGN_IN_URL;
@@ -46,7 +72,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 await _webDriverService.FillElementAsync(capchaInput, captcha);
                 await _webDriverService.ClickNavigateElementAsync(loginButton);
 
-                ILocator userLogged = _webDriverService.LocatorElement("//*[@id=\"user-login\"]");
+                ILocator userLogged = _webDriverService.LocatorElement(AppConstants.CTU_HOME_USER_INFO);
 
                 if (await userLogged.IsVisibleAsync())
                     return true;
@@ -78,8 +104,33 @@ namespace CTUScheduler.AppServices.Services.Implementations
         }
         #endregion
 
-        #region DKMH_Quydinhdangky
+        #region MainHome
 
+        public async Task<(string userName, string userMSSV)> TryGetUserInfomation()
+        {
+            try 
+            {
+                string userName = string.Empty;
+                string MSSV = string.Empty;
+                ILocator userInformationElement = _webDriverService.LocatorElement(AppConstants.CTU_HOME_USER_INFO);
+                string[] userInfoArray = (await userInformationElement.InnerTextAsync()).Split(" ");
+                userName = string.Join(' ', userInfoArray[0..^1]);
+                MSSV = userInfoArray[^1];
+                return (userName, MSSV);
+            }
+            catch
+            {
+                return (string.Empty, string.Empty);
+            }
+        }
+
+        #endregion
+
+        #region DKMH_Quydinhdangky
+        /// <summary>
+        /// If navigate fail, throw exception
+        /// </summary>
+        /// <exception cref="Exception"></exception>
         public async Task GoToRegistrationRulesPage() 
         {
             string currentUrl = _webDriverService.GetPageUrl();
@@ -101,12 +152,36 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 else
                 {
                     Debug.WriteLine($"Url: {currentUrl} khong thuoc quan ly cua service");
+                    throw new Exception("Khong dung web roi");
                 }
             }
             catch
             {
                 Debug.WriteLine("Exception when GoToRegistrationRulesPage");
+                throw;
             } 
+        }
+
+        private JsonElement? ToRegistrationRulesPageJsonData(JsonElement? rawJson)
+        {
+            if (rawJson is not JsonElement dataElement) return null;
+            try
+            {
+                var jsonData = JsonHelper.ChangeRoot(dataElement, "data");
+                return HasRequiredFields(dataElement) ? dataElement : null;
+                //check valid
+                bool HasRequiredFields(JsonElement element)
+                {
+                    return element.TryGetProperty("quyDinh", out _)
+                        && element.TryGetProperty("namhoc", out _)
+                        && element.TryGetProperty("hocky", out _)
+                        && element.TryGetProperty("thoiGianDangKy", out _);
+                }
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         #endregion

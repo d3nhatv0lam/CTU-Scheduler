@@ -27,11 +27,15 @@ namespace CTUScheduler.Presentation.ViewModels.Shells
     public class MainLayoutViewModel: ViewModelBase, IScreen , IRoutableViewModel, IDisposable
     {
         private CompositeDisposable _disposables = new CompositeDisposable();
+        private ICTUWebDriverService _CTUWebDriverService;
         private IDialogHostService _dialogHostService;
         private NavigationItem _selectedItem;
+        private string _userName = "họ tên";
+        private string _userMSSV = "MSSV";
         private string _title;
 
         public string? UrlPathSegment => "MainLayout view";
+        public RoutingState Router { get; }
         public IScreen HostScreen { get; }
         public ObservableCollection<NavigationItem> NavigationItems { get; }
         public NavigationItem SelectedItem
@@ -39,12 +43,24 @@ namespace CTUScheduler.Presentation.ViewModels.Shells
             get => _selectedItem;
             set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
         }
+
+        public string UserName
+        {
+            get => _userName;
+            set => this.RaiseAndSetIfChanged(ref _userName, value);
+        }
+        public string UserMSSV
+        {
+            get => _userMSSV;
+            set => this.RaiseAndSetIfChanged(ref _userMSSV, value);
+        }
+
         public string Title
         {
             get => _title;
             set => this.RaiseAndSetIfChanged(ref _title, value);
         }
-        public RoutingState Router { get; }
+        
 
         public ReactiveCommand<Unit, Unit> LogoutCommand { get; }
 
@@ -57,6 +73,7 @@ namespace CTUScheduler.Presentation.ViewModels.Shells
         {
             Router = new RoutingState();
             HostScreen = hostScreen;
+            _CTUWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
             _dialogHostService = App.ServiceProvider!.GetRequiredService<IDialogHostService>();
             NavigationItems = new ObservableCollection<NavigationItem>
             {
@@ -72,6 +89,9 @@ namespace CTUScheduler.Presentation.ViewModels.Shells
                 Router.NavigateAndReset.Execute(page);
             }).DisposeWith(_disposables);
 
+
+            TryGetUserInfo();
+
             SelectedItem = NavigationItems.First();
 
             LogoutCommand = ReactiveCommand.CreateFromTask(async () =>
@@ -83,6 +103,16 @@ namespace CTUScheduler.Presentation.ViewModels.Shells
                     Dispose();
                 }
             }).DisposeWith(_disposables);
+        }
+
+        private async void TryGetUserInfo()
+        {
+            var userInfo = await _CTUWebDriverService.TryGetUserInfomation();
+            if (string.IsNullOrEmpty(userInfo.userName) || string.IsNullOrEmpty(userInfo.userMSSV))
+                return;
+
+            UserName = userInfo.userName;
+            UserMSSV = userInfo.userMSSV;
         }
 
         public void Dispose()

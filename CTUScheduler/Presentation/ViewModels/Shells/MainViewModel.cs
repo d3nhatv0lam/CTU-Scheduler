@@ -35,8 +35,8 @@ public class MainViewModel : ViewModelBase , IScreen , IActivatableViewModel
         
         _internetStatusService = App.ServiceProvider!.GetRequiredService<IInternetStatusService>();
         Router = new RoutingState();
-        Router.Navigate.Execute(new SignInViewModel(this));
-        //Router.Navigate.Execute(new MainLayoutViewModel(this));
+        //Router.Navigate.Execute(new SignInViewModel(this));
+        Router.Navigate.Execute(new MainLayoutViewModel(this));
 
         this.WhenActivated(disposables =>
         {

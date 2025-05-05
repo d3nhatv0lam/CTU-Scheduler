@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.processed
+namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed
 {
     public class Course
     {

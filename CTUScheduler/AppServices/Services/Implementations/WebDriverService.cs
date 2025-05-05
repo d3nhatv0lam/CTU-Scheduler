@@ -23,9 +23,10 @@ namespace CTUScheduler.AppServices.Services.Implementations
         private IPlaywright _playwright = null!;
         private IBrowser _browser = null!;
         private IPage _page = null!;
+        private Subject<JsonElement?> _jsonResponse = new Subject<JsonElement?>();
         protected bool _isHasInternet;
 
-        public Subject<JsonElement?> JsonResponse = new Subject<JsonElement?>();
+        public Subject<JsonElement?> JsonResponse => _jsonResponse;
 
         public event EventHandler? AlertBoxOpened;
         public event EventHandler? ConfirmBoxOpened;
@@ -51,14 +52,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
 
             ConfigPageAsync().GetAwaiter().GetResult();
 
-
-            _internetStatusService.InternetStatusOnRefresh
-                .DistinctUntilChanged()
-                .Subscribe(status =>
-                {
-                    _isHasInternet = status;
-                }).DisposeWith(_disposables);
-
+            InitObservable();
         }
 
         protected async Task CreatePlayWrightChromiumAsync()
@@ -118,6 +112,22 @@ namespace CTUScheduler.AppServices.Services.Implementations
                     }
                 }
             };
+        }
+
+        private void InitObservable()
+        {
+            _internetStatusService.InternetStatusOnRefresh
+            .DistinctUntilChanged()
+            .Subscribe(status =>
+            {
+                _isHasInternet = status;
+            }).DisposeWith(_disposables);
+
+            //Observable.FromEventPattern<IResponse>(_page, nameof(_page.Response))
+            //.Subscribe(async e =>
+            //{
+            //    string strResponse = await e.EventArgs.TextAsync();
+            //}).DisposeWith(_disposables);
         }
 
         ///<summary>

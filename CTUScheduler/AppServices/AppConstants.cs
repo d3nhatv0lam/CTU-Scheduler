@@ -20,6 +20,7 @@ namespace CTUScheduler.AppServices
         public const string CTU_SIGN_IN_BUTTON = "//*[@id=\"login-sv\"]/tbody/tr[4]/td/input";
         // Home Page
         public const string CTU_HOME_URL = "https://dkmh.ctu.edu.vn/htql/sinhvien/hindex.php";
+        public const string CTU_HOME_USER_INFO = "//*[@id=\"user-login\"]";
         public const string CTU_HOME_DKMH_BUTTON = "//*[@id=\"page-body\"]/div[1]/table/tbody/tr[1]/td[2]/div/table/tbody/tr[1]/td[2]/div/span/img";
         // DKMH Page
         public const string CTU_DKMH_URL_KEY = "dkmhfe.ctu.edu.vn/dangkyhocphan";
