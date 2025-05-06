@@ -13,6 +13,7 @@ using CTUScheduler.Presentation.Views;
 using CTUScheduler.Presentation.Views.Shells;
 using CTUScheduler.Presentation.Views.SplashScreen;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Splat;
 using System;
@@ -72,6 +73,11 @@ public partial class App : Application
 
     private void ConfigureServices(IServiceCollection services)
     {
+        services.AddLogging(configure =>
+        {
+            configure.AddDebug();
+            configure.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Debug);
+        });
         services.AddSingleton<IInternetStatusService, InternetStatusService>(provider => new InternetStatusService(TimeSpan.FromSeconds(3)));
         services.AddSingleton<IWebDriverService,WebDriverService>();
         services.AddSingleton<ICTUWebDriverService, CTUWebDriverService>();

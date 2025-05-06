@@ -1,10 +1,12 @@
 ﻿using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using CTUScheduler.AppServices.Converter;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.Interfaces;
 using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Raw;
+using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using ReactiveUI;
 using System;
@@ -24,16 +26,17 @@ namespace CTUScheduler.AppServices.Services.Implementations
     public class CTUWebDriverService: ICTUWebDriverService, IDisposable
     {
         private readonly IWebDriverService _webDriverService;
+        private readonly ILogger<CTUWebDriverService> _logger;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly IObservable<RegistrationInformation> _registrationInformationResponse;
 
         public IObservable<RegistrationInformation> RegistrationInformationResponse => _registrationInformationResponse;
 
-        public CTUWebDriverService(IWebDriverService webDriverService)
+        public CTUWebDriverService(IWebDriverService webDriverService,ILogger<CTUWebDriverService> logger)
         {
             _webDriverService = webDriverService;
-
-            // Registration Rules Page Response
+            _logger = logger;
+            //Registration Rules Page Response
             _registrationInformationResponse =
                 _webDriverService.JsonResponse
                 .Select(rawJsonData => ToRegistrationRulesPageJsonData(rawJsonData))
@@ -41,10 +44,12 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 // convert to class
                 .Select(jsonData => JsonHelper.Deserialize<RawRegistrationInformation>((JsonElement)jsonData!))
                 .WhereNotNull()
-                .Select(x => );
-
-
-
+                .Select(x => 
+                {
+                    // get userKey(ID) & userUnit
+                    var user = TryGetUserKeyAndUnit().GetAwaiter().GetResult();
+                    return x.ToRegistrationInformation(user.userKey, user.userUnit);
+                });
         }
 
         #region SignIn
@@ -151,13 +156,12 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 }
                 else
                 {
-                    Debug.WriteLine($"Url: {currentUrl} khong thuoc quan ly cua service");
-                    throw new Exception("Khong dung web roi");
+                    throw new Exception($"Url: {currentUrl} khong thuoc quan ly cua service");
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                Debug.WriteLine("Exception when GoToRegistrationRulesPage");
+                _logger.LogError(ex + "Exception when GoToRegistrationRulesPage");
                 throw;
             } 
         }
@@ -168,7 +172,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
             try
             {
                 var jsonData = JsonHelper.ChangeRoot(dataElement, "data");
-                return HasRequiredFields(dataElement) ? dataElement : null;
+                return HasRequiredFields(jsonData) ? jsonData : null;
                 //check valid
                 bool HasRequiredFields(JsonElement element)
                 {
@@ -183,6 +187,48 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 return null;
             }
         }
+
+        private async Task<(string userKey, string userUnit)> TryGetUserKeyAndUnit()
+        {
+            try
+            {
+                string userKey = string.Empty;
+                string userUnit = string.Empty;
+                if (!_webDriverService.GetPageUrl().Contains(AppConstants.CTU_DKMH_URL_KEY)) 
+                    throw new Exception("Not in DKMH page");
+
+                ILocator userInfoTab = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_INFO_TAB);
+                await userInfoTab.ClickAsync();
+
+                ILocator userInfoButton = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_INFO_BUTTON);
+                await userInfoButton.WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Visible });
+                await userInfoButton.ClickAsync();
+
+                await _webDriverService.LocatorElement(".ant-modal-content").WaitForAsync(new() { State = WaitForSelectorState.Visible });
+                await _webDriverService.LocatorElement(".ant-modal-mask").WaitForAsync(new() { State = WaitForSelectorState.Visible });
+
+                ILocator userKeyElement = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_INFO_KEY);
+                ILocator userUnitElement = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_INFO_UNIT);
+
+                var result = await Task.WhenAll(userKeyElement.InnerTextAsync(), userUnitElement.InnerTextAsync());
+                userKey = result[0].ToString()!;
+                userUnit = result[1].ToString()!;
+
+                // close dialog
+                await _webDriverService.LocatorElement(".ant-modal-close").WaitForAsync(new() { State = WaitForSelectorState.Visible });
+                ILocator userInfoCloseButton = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_INFO_CLOSE_BUTTON);
+                await userInfoCloseButton.ClickAsync();
+
+
+                return (userKey, userUnit);
+            }
+            catch
+            {
+                return (string.Empty, string.Empty);
+            }
+           
+        }
+
 
         #endregion
 

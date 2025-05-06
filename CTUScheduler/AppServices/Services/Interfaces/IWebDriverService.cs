@@ -25,6 +25,7 @@ namespace CTUScheduler.AppServices.Services.Interfaces
         void EnsureInternetConnection();
         string GetPageUrl();
         Task GoToPageAsync(string url);
+        Task RefreshPageAsync();
         ILocator LocatorElement(string selector);
         Task FillElementAsync(ILocator element, string strValue);
         Task FillElementAsync(string selector, string strValue);

@@ -1,5 +1,7 @@
-﻿using CTUScheduler.AppServices.Services.Interfaces;
+﻿using Avalonia.Logging;
+using CTUScheduler.AppServices.Services.Interfaces;
 using CTUScheduler.Core.Exceptions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using Splat;
 using System;
@@ -19,6 +21,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
     public class WebDriverService : IWebDriverService, IDisposable , IAsyncDisposable
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private readonly ILogger<WebDriverService> _logger;
         private readonly IInternetStatusService _internetStatusService;
         private IPlaywright _playwright = null!;
         private IBrowser _browser = null!;
@@ -41,10 +44,10 @@ namespace CTUScheduler.AppServices.Services.Implementations
             ConfirmBoxOpened?.Invoke(this, EventArgs.Empty);
         }
 
-        public WebDriverService(IInternetStatusService internetStatusService)
+        public WebDriverService(IInternetStatusService internetStatusService, ILogger<WebDriverService> logger)
         { 
             _internetStatusService = internetStatusService;
-
+            _logger = logger;
             //_playwright =  Playwright.CreateAsync().GetAwaiter().GetResult();
             //_browser =  _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions() { Headless = false }).GetAwaiter().GetResult();
             //_page =  _browser.NewPageAsync().GetAwaiter().GetResult();
@@ -79,13 +82,13 @@ namespace CTUScheduler.AppServices.Services.Implementations
             {
                 if (e.Type == DialogType.Alert)
                 {
-                    Debug.WriteLine("Alert: " + e.Message);
+                    _logger.LogInformation("Alert: " + e.Message);
                     OnAlertBoxOpened();
                     await e.DismissAsync();
                 }
                 else if (e.Type == DialogType.Confirm)
                 {
-                    Debug.WriteLine("Confirm: " + e.Message);
+                    _logger.LogInformation("Confirm: " + e.Message);
                     OnConfimBoxOpened();
                     await e.AcceptAsync();
                 }
@@ -101,6 +104,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
                         {
                             var jsonResponse = await e.JsonAsync();
                             JsonResponse.OnNext(jsonResponse);
+                            _logger.LogInformation("JsonResponsed");
                         }
                         else if (contentType.Contains("image"))
                         {
@@ -145,6 +149,11 @@ namespace CTUScheduler.AppServices.Services.Implementations
             return _page.Url;
         }
 
+        public async Task WaitForTimeoutAsync(float milisecond)
+        {
+            await _page.WaitForTimeoutAsync(milisecond);
+        }
+
         public async Task GoToPageAsync(string url)
         {
             try
@@ -158,6 +167,12 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 Debug.WriteLine("Go to page fail! " + url);
                 throw;
             }
+        }
+
+        public async Task RefreshPageAsync()
+        {
+            await _page.ReloadAsync(new PageReloadOptions() { WaitUntil = WaitUntilState.Load });
+            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         }
 
         public ILocator LocatorElement(string selector)
@@ -236,6 +251,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
                     throw new Exception("Can't Navigate because no internet!");
 
                 await element.ClickAsync();
+                await _page.WaitForLoadStateAsync(LoadState.Load);
                 await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             }
             catch

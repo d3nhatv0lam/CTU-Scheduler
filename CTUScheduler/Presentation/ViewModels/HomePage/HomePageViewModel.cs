@@ -22,7 +22,6 @@ namespace CTUScheduler.Presentation.ViewModels.HomePage
     public class HomePageViewModel : ViewModelBase, IRoutableViewModel, IActivatableViewModel
     {
         public ViewModelActivator Activator { get; } = new ViewModelActivator();
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly ICTUWebDriverService _CTUWebDriverService;
         private readonly ObservableAsPropertyHelper<RegistrationInformation> _registrationInfor;
         public string? UrlPathSegment => "HomeViewModel";
@@ -42,10 +41,15 @@ namespace CTUScheduler.Presentation.ViewModels.HomePage
             _CTUWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
             HostScreen = hostScreen;
 
-            _CTUWebDriverService.RegistrationInformationResponse
+            _registrationInfor = _CTUWebDriverService.RegistrationInformationResponse
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .ToProperty(this,x => x.RegistrationInfo, out _registrationInfor);
+                .Do(x => Debug.WriteLine("alooo"))
+                .ToProperty(this, nameof(RegistrationInfo));
 
+            this.WhenActivated((CompositeDisposable disposable) =>
+            {
+                disposable.Add(_registrationInfor);
+            });
 
             LoadPage();
         }

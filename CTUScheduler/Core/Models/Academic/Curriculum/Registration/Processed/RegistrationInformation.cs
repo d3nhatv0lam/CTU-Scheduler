@@ -11,17 +11,9 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed
     {
         public int AcademicYear { get; set; }
         public string Semester { get; set; }
+        public int MaxCreditPerSemester { get; set; }
         public string Period { get; set; }
         public List<GroupItem> Groups { get; set; } = new List<GroupItem>();
-        public PeriodItem UserPeriod { get; set; }
-
-        public static RegistrationInformation FromRaw(RawRegistrationInformation rawRegistrationInformation)
-        {
-            RegistrationInformation info = new();
-
-
-
-            return info;
-        }
+        public List<PeriodItem> UserPeriod { get; set; } = new();
     }
 }

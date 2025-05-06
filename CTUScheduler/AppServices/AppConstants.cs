@@ -24,9 +24,16 @@ namespace CTUScheduler.AppServices
         public const string CTU_HOME_DKMH_BUTTON = "//*[@id=\"page-body\"]/div[1]/table/tbody/tr[1]/td[2]/div/table/tbody/tr[1]/td[2]/div/span/img";
         // DKMH Page
         public const string CTU_DKMH_URL_KEY = "dkmhfe.ctu.edu.vn/dangkyhocphan";
+        public const string CTU_DKMH_INFO_TAB = "//*[@id=\"root\"]/div/header/div/div[3]/div/div";
+        public const string CTU_DKMH_INFO_BUTTON = ":text-is('Thông tin')";
+        public const string CTU_DKMH_INFO_KEY = "li:has-text('Khóa học') p:nth-of-type(2)";
+        public const string CTU_DKMH_INFO_UNIT = "li:has-text('Đơn vị') p:nth-of-type(2)";
+        public const string CTU_DKMH_INFO_CLOSE_BUTTON = ".ant-modal-close";
         // navigate button
         public const string CTU_DKMH_QUYDINHDANGKY_BUTTON = "//*[@id=\"root\"]/div/div/aside/div/ul/li[1]";
         public const string CTU_DKMH_DANHMUCHOCPHAN_BUTTON = "//*[@id=\"root\"]/div/div/aside/div/ul/li[2]";
+        // quy dinh dang ky
+       
         // danh muc hoc phan
         public const string CTU_DKMH_DANHMUCHOCPHAN_SEARCHBOX = "//*[@id=\"rc_select_5\"]";
         public const string CTU_DKMH_DANHMUCHOCPHAN_SEARCH_BUTTON = "//*[@id=\"root\"]/div/div/main/div[3]/div[1]/div[1]/div/div[3]/span";
