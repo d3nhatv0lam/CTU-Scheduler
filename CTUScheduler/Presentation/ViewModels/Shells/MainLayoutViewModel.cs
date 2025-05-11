@@ -92,8 +92,8 @@ namespace CTUScheduler.Presentation.ViewModels.Shells
 
             TryGetUserInfo();
 
-            SelectedItem = NavigationItems.First();
-
+            //SelectedItem = NavigationItems.First();
+            SelectedItem = NavigationItems[1];
             LogoutCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 bool isAcceptLogout = await _dialogHostService.ShowDialog<bool>(new LogoutDialogViewModel("MainLayoutDialog"), "MainLayoutDialog");

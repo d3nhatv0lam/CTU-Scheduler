@@ -29,10 +29,10 @@ namespace CTUScheduler.AppServices.Services.Interfaces
         ILocator LocatorElement(string selector);
         Task FillElementAsync(ILocator element, string strValue);
         Task FillElementAsync(string selector, string strValue);
-        Task ClickElementAsync(ILocator element);
-        Task ClickElementAsync(string selector);
-        Task ClickNavigateElementAsync(ILocator element, LoadState loadState = LoadState.Load);
-        Task ClickNavigateElementAsync(string selector, LoadState loadState = LoadState.Load);
+        Task ClickElementAsync(ILocator element, LocatorClickOptions? options = null);
+        Task ClickElementAsync(string selector, LocatorClickOptions? options = null);
+        Task ClickNavigateElementAsync(ILocator element,  LocatorClickOptions? options = null, LoadState loadState = LoadState.Load);
+        Task ClickNavigateElementAsync(string selector, LocatorClickOptions? options = null, LoadState loadState = LoadState.Load);
         Task<byte[]> GetImageToByteArrayAsync(ILocator element);
         Task<byte[]> GetImageToByteArrayAsync(string selector);
     }

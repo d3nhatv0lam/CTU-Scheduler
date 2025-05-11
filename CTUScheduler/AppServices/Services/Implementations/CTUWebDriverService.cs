@@ -4,6 +4,7 @@ using CTUScheduler.AppServices.Converter;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.Interfaces;
 using CTUScheduler.Core.Exceptions;
+using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Raw;
 using Microsoft.Extensions.Logging;
@@ -29,13 +30,18 @@ namespace CTUScheduler.AppServices.Services.Implementations
         private readonly ILogger<CTUWebDriverService> _logger;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly IObservable<RegistrationInformation> _registrationInformationResponse;
+        private readonly IObservable<QuickSelectCourse> _courseCatalogQuickSelectResponse;
+        private readonly IObservable<RegistrationInformation> _courseCatalogResponse;
 
         public IObservable<RegistrationInformation> RegistrationInformationResponse => _registrationInformationResponse;
+        public IObservable<QuickSelectCourse> CourseCatalogQuickSelectResponse => _courseCatalogQuickSelectResponse;
+        public IObservable<RegistrationInformation> CourseCatalogResponse => _courseCatalogResponse;
 
         public CTUWebDriverService(IWebDriverService webDriverService,ILogger<CTUWebDriverService> logger)
         {
             _webDriverService = webDriverService;
             _logger = logger;
+
             //Registration Rules Page Response
             _registrationInformationResponse =
                 _webDriverService.JsonResponse
@@ -145,14 +151,18 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 if (currentUrl.Contains(AppConstants.CTU_HOME_URL))
                 {
                     ILocator navigateElement = _webDriverService.LocatorElement(AppConstants.CTU_HOME_DKMH_BUTTON);
-                    await _webDriverService.ClickNavigateElementAsync(navigateElement);
+                    LocatorClickOptions options = new LocatorClickOptions()
+                    {
+                        Delay = 200
+                    };
+                    await _webDriverService.ClickNavigateElementAsync(navigateElement,options);
                 }
                 else
                  // Current url is DKMH page
                 if (currentUrl.Contains(AppConstants.CTU_DKMH_URL_KEY))
                 {
-                    ILocator DKMHnavigateElement = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_QUYDINHDANGKY_BUTTON);
-                    await _webDriverService.ClickNavigateElementAsync(DKMHnavigateElement);
+                    ILocator DKMH_RegistrationRulenavigateElement = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_QUYDINHDANGKY_BUTTON);
+                    await _webDriverService.ClickNavigateElementAsync(DKMH_RegistrationRulenavigateElement);
                 }
                 else
                 {
@@ -227,6 +237,32 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 return (string.Empty, string.Empty);
             }
            
+        }
+
+        #endregion
+
+        #region DKMH_DanhMucHocPhan
+        public async Task GoToCourseCatalogPage()
+        {
+            string currentUrl = _webDriverService.GetPageUrl();
+            try
+            {
+                // Current url is DKMH page
+                if (currentUrl.Contains(AppConstants.CTU_DKMH_URL_KEY))
+                {
+                    ILocator navigateElement = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_DANHMUCHOCPHAN_BUTTON);
+                    await _webDriverService.ClickNavigateElementAsync(navigateElement);
+                }
+                else
+                {
+                    throw new Exception($"Url: {currentUrl} khong thuoc quan ly cua service");
+                }
+            }
+            catch
+            {
+                _logger.LogError("Exception when GoToCourseCatalogPage");
+                throw;
+            }
         }
 
 

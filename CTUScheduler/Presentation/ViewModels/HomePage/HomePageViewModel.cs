@@ -43,7 +43,6 @@ namespace CTUScheduler.Presentation.ViewModels.HomePage
 
             _registrationInfor = _CTUWebDriverService.RegistrationInformationResponse
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Do(x => Debug.WriteLine("alooo"))
                 .ToProperty(this, nameof(RegistrationInfo));
 
             this.WhenActivated((CompositeDisposable disposable) =>

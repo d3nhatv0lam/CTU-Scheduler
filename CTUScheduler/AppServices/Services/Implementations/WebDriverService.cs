@@ -104,7 +104,6 @@ namespace CTUScheduler.AppServices.Services.Implementations
                         {
                             var jsonResponse = await e.JsonAsync();
                             JsonResponse.OnNext(jsonResponse);
-                            _logger.LogInformation("JsonResponsed");
                         }
                         else if (contentType.Contains("image"))
                         {
@@ -215,13 +214,13 @@ namespace CTUScheduler.AppServices.Services.Implementations
             }
         }
 
-        public async Task ClickElementAsync(ILocator element)
+        public async Task ClickElementAsync(ILocator element,LocatorClickOptions? options = null)
         {
             try
             {
                 EnsureInternetConnection();
                 await element.WaitForAsync(new LocatorWaitForOptions { Timeout = 10000 });
-                await element.ClickAsync();
+                await element.ClickAsync(options);
             }
             catch
             {
@@ -229,12 +228,12 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 throw;
             }
         }
-        public async Task ClickElementAsync(string selector)
+        public async Task ClickElementAsync(string selector, LocatorClickOptions? options = null)
         {
             try
             {
                 ILocator element = this.LocatorElement(selector);
-                await ClickElementAsync(element);
+                await ClickElementAsync(element,options);
             }
             catch
             {
@@ -242,7 +241,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
             }
         }
 
-        public async Task ClickNavigateElementAsync(ILocator element, LoadState loadState = LoadState.Load)
+        public async Task ClickNavigateElementAsync(ILocator element, LocatorClickOptions? options = null, LoadState loadState = LoadState.Load)
         {
             try
             {
@@ -250,7 +249,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 if (!await _internetStatusService.GetInternetStatus())
                     throw new Exception("Can't Navigate because no internet!");
 
-                await element.ClickAsync();
+                await element.ClickAsync(options);
                 await _page.WaitForLoadStateAsync(LoadState.Load);
                 await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             }
@@ -260,12 +259,12 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 throw;
             }
         }
-        public async Task ClickNavigateElementAsync(string selector, LoadState loadState = LoadState.Load)
+        public async Task ClickNavigateElementAsync(string selector, LocatorClickOptions? options = null, LoadState loadState = LoadState.Load)
         {
             try
             {
                 ILocator element = this.LocatorElement(selector);
-                await ClickNavigateElementAsync(element);
+                await ClickNavigateElementAsync(element,options,loadState);
             }
             catch
             {

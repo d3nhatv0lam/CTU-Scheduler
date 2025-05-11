@@ -16,14 +16,21 @@ namespace CTUScheduler.AppServices.Converter
     {
         public static RegistrationInformation ToRegistrationInformation(this RawRegistrationInformation rawRegistrationInformation,string userKey, string userUnit)
         {
-            RegistrationInformation info = new RegistrationInformation();
-            info.AcademicYear = rawRegistrationInformation.namhoc;
-            info.Semester = rawRegistrationInformation.hocky;
-            info.MaxCreditPerSemester = GetMaxCreditPerSemester(rawRegistrationInformation);
-            info.Period = GetPeriod(rawRegistrationInformation);
-            info.Groups = GetGroups(rawRegistrationInformation);
-            info.UserPeriod = GetUserPeriod(rawRegistrationInformation,userKey,FindGroupByUnit(info.Groups,userUnit));
-            return info;
+            try
+            {
+                RegistrationInformation info = new RegistrationInformation();
+                info.AcademicYear = rawRegistrationInformation.namhoc;
+                info.Semester = rawRegistrationInformation.hocky;
+                info.MaxCreditPerSemester = GetMaxCreditPerSemester(rawRegistrationInformation);
+                info.Period = GetPeriod(rawRegistrationInformation);
+                info.Groups = GetGroups(rawRegistrationInformation);
+                info.UserPeriod = GetUserPeriod(rawRegistrationInformation, userKey, FindGroupByUnit(info.Groups, userUnit));
+                return info;
+            }
+            catch
+            {
+                return null!;
+            }
         }
 
         private static int GetMaxCreditPerSemester(RawRegistrationInformation rawRegistrationInformation)
