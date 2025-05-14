@@ -10,8 +10,6 @@
 			 xmlns:components="clr-namespace:CTUScheduler.Presentation.ViewModels.CoursePage.Components"
 			 x:DataType="vm:CoursePageViewModel"
 			 x:CompileBindings="True"
-			xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
-			xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
 			 xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
 			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
@@ -173,6 +171,7 @@
 						<!--// add schedule tables //-->
 						<Button DockPanel.Dock="Left"
 								x:Name="btnAddTables"
+								Command="{Binding OpenAddCourseDialogCommand}"
 							>
 							<StackPanel Orientation="Horizontal">
 								<materialIcons:MaterialIcon Kind="TablePlus"  Height="20" Width="20"/>
@@ -225,7 +224,8 @@
 									</ItemsRepeater.Layout>
 								</ItemsRepeater>
 							</ScrollViewer>
-
+							
+							<!--// empty schedule table popup //-->
 							<StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
 								<Interaction.Behaviors>
 									<DataTriggerBehavior Binding="{Binding CourseList.Count}" ComparisonCondition="NotEqual" Value="0">

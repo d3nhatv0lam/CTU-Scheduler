@@ -9,6 +9,8 @@
 			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.ViewModels.Shells"
 			 xmlns:components="clr-namespace:CTUScheduler.Presentation.ViewModels.Shells.Components"
 			 xmlns:componentViews="clr-namespace:CTUScheduler.Presentation.Views.Shells.Components"
+			 xmlns:coursePageAddScheduleVM="clr-namespace:CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable"
+			 xmlns:coursePageAddScheduleView="clr-namespace:CTUScheduler.Presentation.Views.CoursePage.AddScheduleTable"
 			 x:DataType="vm:MainLayoutViewModel"
 			 x:CompileBindings="True"
 			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
@@ -30,6 +32,9 @@
 			<dialogHostAvalonia:DialogHost.DataTemplates>
 				<DataTemplate x:DataType="{x:Type components:LogoutDialogViewModel}">
 					<componentViews:LogoutDialogView/>
+				</DataTemplate>
+				<DataTemplate x:DataType="{x:Type coursePageAddScheduleVM:AddScheduleTableDialogViewModel}">
+					<coursePageAddScheduleView:AddScheduleTableDialogView/>
 				</DataTemplate>
 			</dialogHostAvalonia:DialogHost.DataTemplates>
 		

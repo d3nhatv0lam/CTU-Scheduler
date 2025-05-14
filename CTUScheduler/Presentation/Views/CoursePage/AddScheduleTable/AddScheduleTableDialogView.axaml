@@ -1,0 +1,42 @@
+<rxui:ReactiveUserControl 
+	        x:TypeArguments="vm:AddScheduleTableDialogViewModel" 
+	        xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
+             xmlns:rxui="http://reactiveui.net"
+			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable"
+			 x:DataType="vm:AddScheduleTableDialogViewModel"
+			 x:CompileBindings="True"
+			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+				xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="CTUScheduler.Presentation.Views.CoursePage.AddScheduleTable.AddScheduleTableDialogView">
+	
+		<Design.DataContext>
+			<vm:AddScheduleTableDialogViewModel/>
+		</Design.DataContext>
+	
+    <controls:Card
+		 Height="500"
+		 Padding="0"
+		 Width="800">
+        <Grid RowDefinitions="auto *">
+			<Button
+				Grid.Row="0"
+				x:Name="btnClose"
+				Content="{materialIcons:MaterialIconExt Kind=WindowClose,Size=20}"
+				CornerRadius="5"
+				HorizontalAlignment="Right"
+				Command="{Binding CloseDialogCommand}"
+				Padding="3"/>
+		
+			<rxui:RoutedViewHost
+				Router="{Binding Router}"
+				Grid.Row="1"
+				/>
+		</Grid>
+    </controls:Card>
+
+
+</rxui:ReactiveUserControl>

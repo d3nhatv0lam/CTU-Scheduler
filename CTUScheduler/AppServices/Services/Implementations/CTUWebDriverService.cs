@@ -50,10 +50,10 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 // convert to class
                 .Select(jsonData => JsonHelper.Deserialize<RawRegistrationInformation>((JsonElement)jsonData!))
                 .WhereNotNull()
-                .Select(x => 
+                .SelectMany(async x => 
                 {
                     // get userKey(ID) & userUnit
-                    var user = TryGetUserKeyAndUnit().GetAwaiter().GetResult();
+                    var user = await TryGetUserKeyAndUnit();
                     return x.ToRegistrationInformation(user.userKey, user.userUnit);
                 });
         }

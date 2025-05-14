@@ -42,11 +42,15 @@
     <Folder Include="Presentation\ViewModels\CoursePage\Components\" />
     <Folder Include="Presentation\ViewModels\HomePage\Components\" />
     <Folder Include="Presentation\ViewModels\Shared\" />
+    <Folder Include="Presentation\Views\CoursePage\Components\" />
     <Folder Include="Presentation\Views\HomePage\Components\" />
     <Folder Include="Presentation\Views\Shared\" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Presentation\Views\CoursePage\AddScheduleTable\AddScheduleTableDialogView.axaml.cs">
+      <DependentUpon>AddScheduleTableDialogView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Presentation\Views\HomePage\HomePageView.axaml.cs">
       <DependentUpon>HomePageView.axaml</DependentUpon>
     </Compile>

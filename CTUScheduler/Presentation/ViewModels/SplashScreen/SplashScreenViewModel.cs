@@ -47,7 +47,7 @@ namespace CTUScheduler.Presentation.ViewModels.SplashScreen
         public SplashScreenViewModel()
         {
             _internetStatusService = App.ServiceProvider!.GetRequiredService<IInternetStatusService>();
-            CloseAppCommand = ReactiveCommand.Create(() => CloseApplication()).DisposeWith(_disposables);
+            CloseAppCommand = ReactiveCommand.Create(CloseApplication).DisposeWith(_disposables);
 
             _internetStatusService.InternetStatusOnRefresh
                 .Where(internetStatus => internetStatus)
