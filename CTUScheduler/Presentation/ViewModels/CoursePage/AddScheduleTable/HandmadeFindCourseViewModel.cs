@@ -26,9 +26,11 @@ namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
         private readonly ICTUWebDriverService _ctuWebDriverService;
         private string _txtInputCourseKey = string.Empty;
         private bool _isTxtInputCourseKeyFocused = false;
-        private ObservableCollection<SelectableItem<Course>> _courses;
+        private ObservableAsPropertyHelper<Course> _course;
+        private ObservableAsPropertyHelper<ObservableCollection<SelectableItem<CourseData>>> _coursesCatalog;
         private ObservableAsPropertyHelper<bool> _isQuickSelectPopupOpened;
         private ObservableAsPropertyHelper<ObservableCollection<QuickSelectCourse>> _quickSelectCourses;
+        private QuickSelectCourse _selectedQuickSelectCourse;
 
         public string? UrlPathSegment => "Handmade_Find_Course";
 
@@ -43,15 +45,16 @@ namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
             get => _isTxtInputCourseKeyFocused;
             set => this.RaiseAndSetIfChanged(ref _isTxtInputCourseKeyFocused, value);
         }
-
         public bool IsQuickSelectPopupOpened => _isQuickSelectPopupOpened.Value;
-        public ObservableCollection<SelectableItem<Course>> Courses
-        {
-            get => _courses;
-            set => this.RaiseAndSetIfChanged(ref _courses, value);
-        }
+
+        public Course Course => _course.Value;
+        public ObservableCollection<SelectableItem<CourseData>> CoursesCatalog => _coursesCatalog.Value;
         public ObservableCollection<QuickSelectCourse> QuickSelectCourses => _quickSelectCourses.Value;
-      
+        public QuickSelectCourse SelectedQuickSelectCourse
+        {
+            get => _selectedQuickSelectCourse;
+            set => this.RaiseAndSetIfChanged(ref _selectedQuickSelectCourse, value);
+        }
 
         public ReactiveCommand<Unit,Unit> SearchCommand { get; }
 
@@ -61,11 +64,9 @@ namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
         {
             HostScreen = hostScreen;
             _ctuWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
-
-  
             // quick select course
             this.WhenAnyValue(x => x.TxtInputCourseKey)
-                .Throttle(TimeSpan.FromMilliseconds(500))
+                .Throttle(TimeSpan.FromMilliseconds(300))
                 .Where(x => !string.IsNullOrEmpty(x))
                 .ObserveOn(RxApp.TaskpoolScheduler)
                 .Subscribe(async courseData =>
@@ -79,6 +80,7 @@ namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
               .ToProperty(this, nameof(QuickSelectCourses))
               .DisposeWith(_disposables);
 
+            // quick select course popup opened expression
             _isQuickSelectPopupOpened =
                this.WhenAnyValue(x => x.IsTxtInputCourseKeyFocused,
                                  x => x.QuickSelectCourses,
@@ -86,14 +88,50 @@ namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
               .ToProperty(this, nameof(IsQuickSelectPopupOpened))
               .DisposeWith(_disposables);
 
+            // Selected QuickSelectCourse do
+            this.WhenAnyValue(x => x.SelectedQuickSelectCourse)
+                .WhereNotNull()
+                .Subscribe(selectedQuickSelectCourse =>
+                {
+                    // set course key
+                    TxtInputCourseKey = selectedQuickSelectCourse.CourseCode;
+                }).DisposeWith(_disposables);
+
+            // course response
+            _course = _ctuWebDriverService.CourseCatalogResponse
+                .ToProperty(this, nameof(Course))
+                .DisposeWith(_disposables);
+
+            // Course -> UI items
+            _coursesCatalog = this.WhenAnyValue(x => x.Course)
+                .WhereNotNull()
+                .Select(course => ToSelectableCourseCatalogs(course))
+                .ToProperty(this, nameof(CoursesCatalog))
+                .DisposeWith(_disposables);
+
+
             SearchCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 if (string.IsNullOrEmpty(TxtInputCourseKey))
                 {
+                    CoursesCatalog.Clear();
                     return;
                 }
+                await _ctuWebDriverService.SearchCourse(TxtInputCourseKey);
             }).DisposeWith(_disposables);
         }
+
+        private ObservableCollection<SelectableItem<CourseData>> ToSelectableCourseCatalogs(Course course)
+        {
+            var items = new ObservableCollection<SelectableItem<CourseData>>();
+            foreach (var group in course.CourseDatas)
+            {
+                items.Add(new SelectableItem<CourseData>(group));
+            }
+            return items;
+        }
+
+
 
         public void Dispose()
         {

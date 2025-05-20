@@ -15,6 +15,6 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw
         public string CourseName_VN { get; set; }
 
         [JsonIgnore]
-        public string Information => $"{CourseCode.PadRight(8)} - {CourseName_VN}";
+        public string Information => $"{CourseCode} - {CourseName_VN}";
     }
 }

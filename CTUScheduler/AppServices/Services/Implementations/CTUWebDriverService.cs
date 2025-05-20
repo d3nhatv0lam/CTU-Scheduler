@@ -4,6 +4,7 @@ using CTUScheduler.AppServices.Extensions;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.Interfaces;
 using CTUScheduler.Core.Exceptions;
+using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Raw;
@@ -32,11 +33,11 @@ namespace CTUScheduler.AppServices.Services.Implementations
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly IObservable<RegistrationInformation> _registrationInformationResponse;
         private readonly IObservable<ObservableCollection<QuickSelectCourse>> _courseCatalogQuickSelectResponse;
-        private readonly IObservable<RegistrationInformation> _courseCatalogResponse;
+        private readonly IObservable<Course> _courseCatalogResponse;
 
         public IObservable<RegistrationInformation> RegistrationInformationResponse => _registrationInformationResponse;
         public IObservable<ObservableCollection<QuickSelectCourse>> CourseCatalogQuickSelectResponse => _courseCatalogQuickSelectResponse;
-        public IObservable<RegistrationInformation> CourseCatalogResponse => _courseCatalogResponse;
+        public IObservable<Course> CourseCatalogResponse => _courseCatalogResponse;
 
         public CTUWebDriverService(IWebDriverService webDriverService,ILogger<CTUWebDriverService> logger)
         {
@@ -65,6 +66,30 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 .WhereNotNull()
                 .Select(jsonData => JsonHelper.Deserialize<ObservableCollection<QuickSelectCourse>>((JsonElement)jsonData!))
                 .WhereNotNull();
+
+            // Course Catalog response
+            _courseCatalogResponse =
+                 _webDriverService.JsonResponse
+                .Select(rawJsonData => ToCourseCatalogJsonData(rawJsonData))
+                .WhereNotNull()
+                .Select(jsonData =>
+                {
+                    try
+                    {
+                        return JsonHelper.Deserialize<RawCourse>((JsonElement)jsonData!);
+                    }
+                    catch
+                    {
+                        _logger.LogDebug("Exception when Derserialize RawCourse, may by empty SearchBox");
+                        return default!;
+                    }
+
+                })
+                .WhereNotNull()
+                .Select(rawCourse => rawCourse.ToCourse())
+                .WhereNotNull();
+
+
         }
 
         #region SignIn
@@ -251,6 +276,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
         #endregion
 
         #region DKMH_DanhMucHocPhan
+
         public async Task GoToCourseCatalogPage()
         {
             string currentUrl = _webDriverService.GetPageUrl();
@@ -299,6 +325,46 @@ namespace CTUScheduler.AppServices.Services.Implementations
             catch
             {
                 _logger.LogError("Exception when FillCourseKey");
+            }
+        }
+
+        public async Task SearchCourse(string courseKey)
+        {
+            try
+            {
+                await FillCourseKey(courseKey);
+
+                ILocator searchButton = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_DANHMUCHOCPHAN_SEARCH_BUTTON);
+                await _webDriverService.ClickElementAsync(searchButton);
+            }
+            catch
+            {
+                _logger.LogError("Exception when SearchCourse");
+            }
+        }
+
+        private JsonElement? ToCourseCatalogJsonData(JsonElement? rawJson)
+        {
+            if (rawJson is not JsonElement dataElement) return null;
+
+            try
+            {
+                var jsonData = JsonHelper.ChangeRoot(dataElement, "data");
+                return HasRequiredFields(jsonData) ? jsonData : null;
+
+                //check valid
+                bool HasRequiredFields(JsonElement element)
+                {
+                    return element.TryGetProperty("data", out _)
+                        && element.TryGetProperty("tuan_max", out _)
+                        && element.TryGetProperty("hoc_phan_info", out _);
+                }
+
+            }
+            catch
+            {
+                _logger.LogError("Exception when ToCourseCatalogJsonData");
+                return null;
             }
         }
 

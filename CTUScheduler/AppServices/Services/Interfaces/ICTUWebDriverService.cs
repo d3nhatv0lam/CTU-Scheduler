@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media.Imaging;
+using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
 using System;
@@ -23,8 +24,10 @@ namespace CTUScheduler.AppServices.Services.Interfaces
         Task GoToRegistrationRulesPage();
         // course catalog
         IObservable<ObservableCollection<QuickSelectCourse>> CourseCatalogQuickSelectResponse { get; }
-        IObservable<RegistrationInformation> CourseCatalogResponse { get; }
+        IObservable<Course> CourseCatalogResponse { get; }
         Task GoToCourseCatalogPage();
         Task FillCourseKey(string courseStr);
+
+        Task SearchCourse(string courseKey);
     }
 }

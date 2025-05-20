@@ -83,6 +83,7 @@
 								 VerticalAlignment="Center"
 								 Padding="0"					 
 								 DockPanel.Dock="Left"
+								 Command="{Binding SearchCommand}"
 								 />
 							
 							<CheckBox DockPanel.Dock="Left" 
@@ -105,7 +106,7 @@
 							</Button>
 						</DockPanel>
 					</Border>
-					<!--IsOpen="{Binding ElementName=tboxCourseKeyInput,Path=IsFocused}"-->
+
 					<!--// Quick select popup //-->
 					<Popup 
 						  PlacementTarget="{Binding ElementName=tboxCourseKeyInput}" 
@@ -123,22 +124,22 @@
 								ClipToBounds="True">
 
 							<ListBox x:Name="lboxQuickSelect"
-									 
+									 SelectedItem="{Binding SelectedQuickSelectCourse,Mode=TwoWay}"
 									 ItemsSource="{Binding QuickSelectCourses,Mode=OneWay}"
 									 >
+									
 								<ListBox.ItemsPanel>
 									<ItemsPanelTemplate>
-										<VirtualizingStackPanel/>
+										<StackPanel/>
 									</ItemsPanelTemplate>
 								</ListBox.ItemsPanel>
 
 								<ListBox.ItemTemplate>
 									<DataTemplate x:DataType ="{x:Type modelCourse:QuickSelectCourse}">
-										<Grid>
-											<TextBlock Text="{Binding Information,Mode=OneWay}"/>
-											
+										<Grid Background="Transparent">
+											<TextBlock Text="{Binding Information,Mode= OneTime}"/>
 											<ToolTip.Tip>
-												<TextBlock Text="{Binding Information,Mode=OneWay}"/>
+												<TextBlock Text="{Binding Information,Mode= OneTime}"/>
 											</ToolTip.Tip>
 										</Grid>
 									</DataTemplate>
@@ -147,6 +148,8 @@
 							</ListBox>
 						</controls:Card>
 					</Popup>
+					
+					
 					<!--// DataGrid //-->
 					<Border Grid.Row="3"  Padding="8">
 						<DataGrid
@@ -158,7 +161,8 @@
 							  IsReadOnly="True"
 							  ColumnHeaderHeight="40"
 							  SelectionMode="Single"
-							  AutoGenerateColumns="False">
+							  ItemsSource="{Binding CoursesCatalog,Mode=OneWay}"
+							  AutoGenerateColumns="True">
 							<DataGrid.Styles>
 								<Style Selector="TextBlock">
 									<Setter Property="HorizontalAlignment" Value="Center"/>
@@ -174,9 +178,7 @@
 								</Style>
 							</DataGrid.Styles>
 							
-							<DataGrid.Columns>
-								
-							</DataGrid.Columns>
+
 
 						</DataGrid>
 					</Border>
