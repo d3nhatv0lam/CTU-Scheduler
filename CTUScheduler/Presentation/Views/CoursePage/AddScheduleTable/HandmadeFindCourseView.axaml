@@ -1,0 +1,211 @@
+
+<rxui:ReactiveUserControl
+			 x:TypeArguments="vm:HandmadeFindCourseViewModel"
+			 xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="474"
+			  xmlns:rxui="http://reactiveui.net"
+			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable"
+			 xmlns:modelCourse ="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;assembly=CTUScheduler"
+			 x:DataType="vm:HandmadeFindCourseViewModel"
+			 x:CompileBindings="True"
+			 xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="CTUScheduler.Presentation.Views.CoursePage.AddScheduleTable.HandmadeFindCourseView">
+
+	<rxui:ReactiveUserControl.Styles>
+
+		<Style Selector="TextBlock">
+			<Setter Property="FontFamily" Value="{StaticResource Text_Font}"/>
+		</Style>
+		<Style Selector="Border.CornerBorder">
+			<Setter Property="BorderBrush" Value="#a3a3a3"/>
+			<Setter Property="BorderThickness" Value="1"/>
+			<Setter Property="Background" Value="White"/>
+			<Setter Property="CornerRadius" Value="10"/>
+		</Style>
+		<Style Selector="TextBlock.Title">
+			<Setter Property="FontSize" Value="20"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+		</Style>
+	</rxui:ReactiveUserControl.Styles>
+	
+	<Grid ColumnDefinitions="* 0.025* 0.5*">
+		<!--// left side //-->
+		<Border Grid.Column="0" Padding="0 3 0 3">
+			<Border Classes="CornerBorder">
+				<Grid RowDefinitions="auto 1 60 *" >
+					<!--// title //-->
+					<TextBlock
+							 Grid.Row="0"
+							 x:Name="txtCourseInfo"
+							 Classes="Title"
+							 Text="Danh mục học phần"
+							 HorizontalAlignment="Left"
+							 Margin="10 0 0 0"
+										/>
+
+					<Border Grid.Row="1" Height="1"  Padding="10 0 10 0">
+						<Separator Grid.Row="1" Margin="0"  Background="#a3a3a3"/>
+					</Border>
+
+					<!--// Search bar //-->
+					<Border Grid.Row="2" Padding="10 0 10 0">
+						<DockPanel
+								   LastChildFill="False" 
+								   ClipToBounds="True">
+							<!--// search field //-->
+							<TextBox
+								x:Name="tboxCourseKeyInput"
+								Width="160"
+								DockPanel.Dock="Left"
+								UseFloatingWatermark="True"
+								Text="{Binding TxtInputCourseKey ,Mode=TwoWay}"
+								Classes="outline"
+								Theme="{StaticResource OutlineTextBox}"
+								p1:TextFieldAssist.Label="Mã học phần"
+								>
+								<TextBox.IsFocused>
+									<Binding Path="IsTxtInputCourseKeyFocused" Mode="OneWayToSource" />
+								</TextBox.IsFocused>
+							</TextBox>
+							<!--// search button //-->
+							<Button
+								 x:Name="btnSearchCourse"
+								 CornerRadius="40"
+								 Content="{materialIcons:MaterialIconExt Kind=Search,Size=30}"
+								 Width="40"
+								 Height="40"
+								 Margin="5 5 0 0"
+								 VerticalAlignment="Center"
+								 Padding="0"					 
+								 DockPanel.Dock="Left"
+								 />
+							
+							<CheckBox DockPanel.Dock="Left" 
+									  Margin="10 5 0 0" 
+									  VerticalAlignment="Center" 
+									  Padding="0"
+									  Content="Ẩn nhóm đủ sĩ số"
+									  />
+							<!--// add button //-->
+							<Button DockPanel.Dock="Right"
+									Height="30"
+									Padding="5"
+									Margin="0 5 0 0"
+									CornerRadius="5"
+									>
+								<StackPanel Orientation="Horizontal">
+									<materialIcons:MaterialIcon Kind="PlusCircleOutline"  Height="20" Width="20"/>
+									<TextBlock VerticalAlignment="Center" Text="Thêm học phần" Margin="2 0 0 0"/>
+								</StackPanel>
+							</Button>
+						</DockPanel>
+					</Border>
+					<!--IsOpen="{Binding ElementName=tboxCourseKeyInput,Path=IsFocused}"-->
+					<!--// Quick select popup //-->
+					<Popup 
+						  PlacementTarget="{Binding ElementName=tboxCourseKeyInput}" 
+						   Placement="BottomEdgeAlignedLeft"
+						   IsOpen="{Binding IsQuickSelectPopupOpened,Mode=OneWay}"
+							MaxHeight="200" Width="210"
+						  >
+						
+						<controls:Card
+								CornerRadius="5"
+								Background="White"
+								BorderThickness="1"
+								BorderBrush="#a3a3a3"
+								Padding="1"
+								ClipToBounds="True">
+
+							<ListBox x:Name="lboxQuickSelect"
+									 
+									 ItemsSource="{Binding QuickSelectCourses,Mode=OneWay}"
+									 >
+								<ListBox.ItemsPanel>
+									<ItemsPanelTemplate>
+										<VirtualizingStackPanel/>
+									</ItemsPanelTemplate>
+								</ListBox.ItemsPanel>
+
+								<ListBox.ItemTemplate>
+									<DataTemplate x:DataType ="{x:Type modelCourse:QuickSelectCourse}">
+										<Grid>
+											<TextBlock Text="{Binding Information,Mode=OneWay}"/>
+											
+											<ToolTip.Tip>
+												<TextBlock Text="{Binding Information,Mode=OneWay}"/>
+											</ToolTip.Tip>
+										</Grid>
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+								
+							</ListBox>
+						</controls:Card>
+					</Popup>
+					<!--// DataGrid //-->
+					<Border Grid.Row="3"  Padding="8">
+						<DataGrid
+							  BorderBrush="#a3a3a3"
+							  ClipboardCopyMode="IncludeHeader"
+							  CanUserReorderColumns="False"
+							  CanUserSortColumns="False"
+							  CanUserResizeColumns="True"
+							  IsReadOnly="True"
+							  ColumnHeaderHeight="40"
+							  SelectionMode="Single"
+							  AutoGenerateColumns="False">
+							<DataGrid.Styles>
+								<Style Selector="TextBlock">
+									<Setter Property="HorizontalAlignment" Value="Center"/>
+									<Setter Property="VerticalAlignment" Value="Center"/>
+									<Setter Property="Background" Value="Transparent"/>
+									<Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+								</Style>
+								<Style Selector="DataGridRow:selected">
+									<Setter Property="Background" Value="Transparent"/>
+								</Style>
+								<Style Selector="DataGridRow:nth-child(even)">
+									<Setter Property="Background" Value="Red"/>
+								</Style>
+							</DataGrid.Styles>
+							
+							<DataGrid.Columns>
+								
+							</DataGrid.Columns>
+
+						</DataGrid>
+					</Border>
+				</Grid>
+			</Border>
+		</Border>
+		<!--// right side //-->
+		<Border Grid.Column="2" Padding="0 3 0 3">
+			<Border Classes="CornerBorder">
+				<Grid RowDefinitions="auto 1 *" >
+					<TextBlock
+							 Grid.Row="0"
+							 Classes="Title"
+							 Text="Học phần đã chọn"
+							 HorizontalAlignment="Left"
+							 Margin="10 0 0 0"
+										/>
+
+					<Border Grid.Row="1" Height="1"  Padding="10 0 10 0">
+						<Separator Grid.Row="1" Margin="0"  Background="#a3a3a3"/>
+					</Border>
+
+					<!--// TreeView //-->
+					<Border Grid.Row="2"  Padding="8">
+						
+					</Border>
+				</Grid>
+			</Border>
+		</Border>
+	</Grid>
+</rxui:ReactiveUserControl>
+

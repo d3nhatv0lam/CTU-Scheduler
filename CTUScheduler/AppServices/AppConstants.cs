@@ -35,7 +35,7 @@ namespace CTUScheduler.AppServices
         // quy dinh dang ky
        
         // danh muc hoc phan
-        public const string CTU_DKMH_DANHMUCHOCPHAN_SEARCHBOX = "//*[@id=\"rc_select_5\"]";
+        public const string CTU_DKMH_DANHMUCHOCPHAN_SEARCHBOX = "#rc_select_2";
         public const string CTU_DKMH_DANHMUCHOCPHAN_SEARCH_BUTTON = "//*[@id=\"root\"]/div/div/main/div[3]/div[1]/div[1]/div/div[3]/span";
     }
 }

@@ -1,6 +1,6 @@
 ﻿using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using CTUScheduler.AppServices.Converter;
+using CTUScheduler.AppServices.Extensions;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.Interfaces;
 using CTUScheduler.Core.Exceptions;
@@ -12,6 +12,7 @@ using Microsoft.Playwright;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -30,11 +31,11 @@ namespace CTUScheduler.AppServices.Services.Implementations
         private readonly ILogger<CTUWebDriverService> _logger;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly IObservable<RegistrationInformation> _registrationInformationResponse;
-        private readonly IObservable<QuickSelectCourse> _courseCatalogQuickSelectResponse;
+        private readonly IObservable<ObservableCollection<QuickSelectCourse>> _courseCatalogQuickSelectResponse;
         private readonly IObservable<RegistrationInformation> _courseCatalogResponse;
 
         public IObservable<RegistrationInformation> RegistrationInformationResponse => _registrationInformationResponse;
-        public IObservable<QuickSelectCourse> CourseCatalogQuickSelectResponse => _courseCatalogQuickSelectResponse;
+        public IObservable<ObservableCollection<QuickSelectCourse>> CourseCatalogQuickSelectResponse => _courseCatalogQuickSelectResponse;
         public IObservable<RegistrationInformation> CourseCatalogResponse => _courseCatalogResponse;
 
         public CTUWebDriverService(IWebDriverService webDriverService,ILogger<CTUWebDriverService> logger)
@@ -56,6 +57,14 @@ namespace CTUScheduler.AppServices.Services.Implementations
                     var user = await TryGetUserKeyAndUnit();
                     return x.ToRegistrationInformation(user.userKey, user.userUnit);
                 });
+
+            // Course Catalog quick select response
+            _courseCatalogQuickSelectResponse =
+                _webDriverService.JsonResponse
+                .Select(rawJasonData => ToCourseCatalogQuickSelectJsonData(rawJasonData))
+                .WhereNotNull()
+                .Select(jsonData => JsonHelper.Deserialize<ObservableCollection<QuickSelectCourse>>((JsonElement)jsonData!))
+                .WhereNotNull();
         }
 
         #region SignIn
@@ -265,6 +274,33 @@ namespace CTUScheduler.AppServices.Services.Implementations
             }
         }
 
+        private JsonElement? ToCourseCatalogQuickSelectJsonData(JsonElement? rawJson)
+        {
+            if (rawJson is not JsonElement dataElement) return null;
+
+            try
+            {
+                var jsonData = JsonHelper.ChangeRoot(dataElement, "data");
+                return JsonHelper.ChangeRoot(jsonData, "dkmh_tu_dien_hoc_phan_ma_auto_complete");
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public async Task FillCourseKey(string courseStr)
+        {
+            try
+            {
+                ILocator courseKeyInput = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_DANHMUCHOCPHAN_SEARCHBOX);
+                await _webDriverService.FillElementAsync(courseKeyInput, courseStr);
+            }
+            catch
+            {
+                _logger.LogError("Exception when FillCourseKey");
+            }
+        }
 
         #endregion
 

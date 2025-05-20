@@ -3,6 +3,7 @@ using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,8 +22,9 @@ namespace CTUScheduler.AppServices.Services.Interfaces
         IObservable<RegistrationInformation> RegistrationInformationResponse { get; }
         Task GoToRegistrationRulesPage();
         // course catalog
-        IObservable<QuickSelectCourse> CourseCatalogQuickSelectResponse { get; }
+        IObservable<ObservableCollection<QuickSelectCourse>> CourseCatalogQuickSelectResponse { get; }
         IObservable<RegistrationInformation> CourseCatalogResponse { get; }
         Task GoToCourseCatalogPage();
+        Task FillCourseKey(string courseStr);
     }
 }

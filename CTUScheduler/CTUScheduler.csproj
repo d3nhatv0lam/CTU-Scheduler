@@ -36,7 +36,7 @@
 
   <ItemGroup>
     <Folder Include="Assets\Logo\" />
-    <Folder Include="Core\ModelViewModels\" />
+    <Folder Include="Core\Extensions\" />
     <Folder Include="Presentation\Resources\" />
     <Folder Include="Presentation\Templates\" />
     <Folder Include="Presentation\ViewModels\CoursePage\Components\" />

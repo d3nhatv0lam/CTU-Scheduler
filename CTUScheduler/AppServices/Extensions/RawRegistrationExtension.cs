@@ -10,21 +10,34 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace CTUScheduler.AppServices.Converter
+namespace CTUScheduler.AppServices.Extensions
 {
-    public static class RegistrationConverter
+    public static class RawRegistrationExtension
     {
         public static RegistrationInformation ToRegistrationInformation(this RawRegistrationInformation rawRegistrationInformation,string userKey, string userUnit)
         {
             try
             {
                 RegistrationInformation info = new RegistrationInformation();
+                
+                int maxCreditPerSemester = 99;
+                string period = string.Empty;
+                List<GroupItem> groups = null!;
+
+                Parallel.Invoke(
+                    () => maxCreditPerSemester = GetMaxCreditPerSemester(rawRegistrationInformation),
+                    () => period = GetPeriod(rawRegistrationInformation),
+                    () => groups = GetGroups(rawRegistrationInformation)
+                );
+
                 info.AcademicYear = rawRegistrationInformation.namhoc;
                 info.Semester = rawRegistrationInformation.hocky;
-                info.MaxCreditPerSemester = GetMaxCreditPerSemester(rawRegistrationInformation);
-                info.Period = GetPeriod(rawRegistrationInformation);
-                info.Groups = GetGroups(rawRegistrationInformation);
-                info.UserPeriod = GetUserPeriod(rawRegistrationInformation, userKey, FindGroupByUnit(info.Groups, userUnit));
+                info.MaxCreditPerSemester = maxCreditPerSemester;
+                info.Period = period;
+                info.Groups = groups;
+
+                string userGroup = FindGroupByUnit(info.Groups, userUnit);
+                info.UserPeriod = GetUserPeriod(rawRegistrationInformation, userKey,userGroup);
                 return info;
             }
             catch
@@ -44,7 +57,7 @@ namespace CTUScheduler.AppServices.Converter
                     {
                         foreach (var rightData in quyDinh.rightData)
                         {
-                            if (Int32.TryParse(rightData.important.First(), out maxCreditPerSemester))
+                            if (int.TryParse(rightData.important.First(), out maxCreditPerSemester))
                                 return maxCreditPerSemester;
                         }
                     }
@@ -56,16 +69,19 @@ namespace CTUScheduler.AppServices.Converter
 
         private static string GetPeriod(RawRegistrationInformation rawRegistrationInformation)
         {
-            string period = "";
             foreach (var quyDinh in rawRegistrationInformation.quyDinh)
             {
-                foreach (var leftData in quyDinh.leftData)
+                if (quyDinh.leftData.Any(leftData => leftData.value.Contains("Thời gian đăng ký"))) 
                 {
-                    if (leftData.value.Contains("Thời gian đăng ký"))
-                        return quyDinh.leftData.Last().value;
+                    return quyDinh.leftData.Last().value;
                 }
+                //foreach (var leftData in quyDinh.leftData)
+                //{
+                //    if (leftData.value.Contains("Thời gian đăng ký"))
+                //        return quyDinh.leftData.Last().value;
+                //}
             }
-            return period;
+            return string.Empty;
         }
 
         private static List<GroupItem> GetGroups(RawRegistrationInformation rawRegistrationInformation)
@@ -107,6 +123,7 @@ namespace CTUScheduler.AppServices.Converter
                     }
                 }
             }
+            return group;
 
             string NormalizeString(string input)
             {
@@ -115,22 +132,24 @@ namespace CTUScheduler.AppServices.Converter
                 foreach (var c in input.Normalize(NormalizationForm.FormD))
                 {
                     var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
-                    if (unicodeCategory != UnicodeCategory.NonSpacingMark && Char.IsLetterOrDigit(c))
+                    if (unicodeCategory != UnicodeCategory.NonSpacingMark && char.IsLetterOrDigit(c))
                     {
                         sb.Append(char.ToLowerInvariant(c));
                     }
                 }
                 return sb.ToString();
             }
-            return group;
         }
 
         private static List<PeriodItem> GetUserPeriod(RawRegistrationInformation rawRegistrationInformation, string userKey, string group)
         {
             List<PeriodItem> userPeriods = new List<PeriodItem>();
+            // empty check
+            if (string.IsNullOrEmpty(userKey) || string.IsNullOrEmpty(group))
+                return userPeriods;
 
             userKey = Regex.Match(userKey, @"Khóa \d+").Value;
-            int userKeyInt = Int32.Parse(Regex.Match(userKey, @"\d+").Value);
+            int userKeyInt = int.Parse(Regex.Match(userKey, @"\d+").Value);
 
             int i = 0;
             while(i < rawRegistrationInformation.thoiGianDangKy.Count)
@@ -138,29 +157,26 @@ namespace CTUScheduler.AppServices.Converter
                 List<RawThoiGianDangKyItem> firstRow = rawRegistrationInformation.thoiGianDangKy[i];
                 try
                 {
-                    var rowSpan = Int32.Parse(firstRow.First().rowspan);
+                    var rowSpan = int.Parse(firstRow.First().rowspan);
 
-                    if ((i == 0 && userKeyInt > Int32.Parse(Regex.Match(firstRow[1].title, @"\d+").Value)) 
+                    if (i == 0 && userKeyInt > int.Parse(Regex.Match(firstRow[1].title, @"\d+").Value) 
                         || !firstRow[1].title.Contains(userKey))
                     {
                         i += rowSpan;
                         continue;
                     }
 
-                    PeriodItem period = new PeriodItem();
-
-                    period.Key = userKey;
-                    period.Group = group;
+                    PeriodItem period = new PeriodItem() { Key = userKey};
 
                     for (int j = i; j < i + rowSpan; j++)
                     {
-                        List<RawThoiGianDangKyItem> row = rawRegistrationInformation.thoiGianDangKy[j];
-
-                        if (!row.Last().title.Contains(group))
-                            continue;
-
-                        period.StartDate = row[^3].title;
-                        period.EndDate = row[^2].title;
+                        var row = rawRegistrationInformation.thoiGianDangKy[j];
+                        if (row.Last().title.Contains(group))
+                        {
+                            period.StartDate = row[^3].title;
+                            period.EndDate = row[^2].title;
+                            period.Group = row[^1].title;
+                        }
                     }
                     userPeriods.Add(period);
                     break;

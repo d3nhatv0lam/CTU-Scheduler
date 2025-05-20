@@ -139,7 +139,7 @@
 						<Setter Property="FontSize" Value="20"/>
 						<Setter Property="FontFamily" Value="{StaticResource Text_Font}"/>
 						<Setter Property="FontWeight" Value="Bold"/>
-					</Style>
+				</Style>
 			</Grid.Styles>
 			<!--// Left side //-->
 			<Grid Grid.Column="0"
@@ -227,36 +227,41 @@
 							</Border>
 							
 							<Border Grid.Row="2"  Padding="8">
-								<DataGrid 
+								<ScrollViewer VerticalScrollBarVisibility="Auto" 
+											  HorizontalScrollBarVisibility="Disabled">
+									<DataGrid
 									  x:Name="dtgridUserRegistrationTime"
 									  BorderBrush="#a3a3a3"
 									  ClipboardCopyMode="IncludeHeader"
-									  CanUserReorderColumns="False" 
+									  CanUserReorderColumns="False"
 									  CanUserSortColumns="False"
 									  CanUserResizeColumns="True"
-									  IsReadOnly="True" 
+									  IsReadOnly="True"
 									  ItemsSource="{Binding RegistrationInfo.UserPeriod, Mode=OneTime}"
-									  ColumnHeaderHeight="40" 
+									  ColumnHeaderHeight="40"
 									  SelectionMode="Single"
-									  AutoGenerateColumns="False">
-									<DataGrid.Styles>
-										<Style Selector="TextBlock">
-											<Setter Property="HorizontalAlignment" Value="Center"/>
-											<Setter Property="VerticalAlignment" Value="Center"/>
-											<Setter Property="Background" Value="Transparent"/>
-											<Setter Property="TextWrapping" Value="WrapWithOverflow"/>
-										</Style>
-										<Style Selector="DataGridRow:selected">
-											<Setter Property="Background" Value="Transparent"/>
-										</Style>
-									</DataGrid.Styles>
-								<DataGrid.Columns>
-									<DataGridTextColumn Header="Khóa" Binding="{Binding Key}" Width="auto"/>
-									<DataGridTextColumn Header="Thời gian bắt đầu" Binding="{Binding StartDate}" Width="*"/>
-									<DataGridTextColumn Header="Thời gian kết thúc" Binding="{Binding EndDate}" Width="*"/>
-									<DataGridTextColumn Header="Nhóm" Binding="{Binding Group}" Width="auto"/>
-								</DataGrid.Columns>
-							</DataGrid>
+									  AutoGenerateColumns="False"
+									  ScrollViewer.VerticalScrollBarVisibility="Auto">
+										<DataGrid.Styles>
+											<Style Selector="TextBlock">
+												<Setter Property="HorizontalAlignment" Value="Center"/>
+												<Setter Property="VerticalAlignment" Value="Center"/>
+												<Setter Property="Background" Value="Transparent"/>
+												<Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+											</Style>
+											<Style Selector="DataGridRow:selected">
+												<Setter Property="Background" Value="Transparent"/>
+											</Style>
+										</DataGrid.Styles>
+										<DataGrid.Columns>
+											<DataGridTextColumn Header="Khóa" Binding="{Binding Key}" Width="auto"/>
+											<DataGridTextColumn Header="Thời gian bắt đầu" Binding="{Binding StartDate}"  Width="*"/>
+											<DataGridTextColumn Header="Thời gian kết thúc" Binding="{Binding EndDate}" Width="*"/>
+											<DataGridTextColumn Header="Nhóm" Binding="{Binding Group}" Width="auto"/>
+										</DataGrid.Columns>
+									</DataGrid>
+
+								</ScrollViewer>
 							</Border>
 						</Grid>
 					</Border>
@@ -331,81 +336,53 @@
 						<!--// All Group Registration Time //-->
 						<Border Grid.Row="2" Padding="10">
 								<Panel>
-									
-									<DataGrid 
-									 x:Name="dtgridGroupList"
-									  BorderBrush="#a3a3a3"
-									  ClipboardCopyMode="IncludeHeader"
-									  CanUserReorderColumns="False" 
-									  CanUserSortColumns="False"
-									  CanUserResizeColumns="True"
-									  IsReadOnly="True" 
-									  ColumnHeaderHeight="30"  
-									  AutoGenerateColumns="False">
-										
-										<DataGrid.Styles>
-											<Style Selector="SelectableTextBlock">
-												<Setter Property="TextWrapping" Value="WrapWithOverflow"/>
-												<Setter Property="FontSize" Value="16"/>
-												<Setter Property="FontFamily" Value="{StaticResource Text_Font}"/>
-												<Setter Property="VerticalAlignment" Value="Center"/>
-											</Style>
-										</DataGrid.Styles>
-										
-										<DataGrid.Columns>
-											<DataGridTemplateColumn  Width="auto" MaxWidth="100">
-												<DataGridTemplateColumn.Header>
-														<TextBlock Text="Nhóm" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-												</DataGridTemplateColumn.Header>
-												
-												<DataGridTemplateColumn.CellTemplate>
-													<DataTemplate x:DataType="{x:Type model:GroupItem}">
-														<SelectableTextBlock Text="{Binding Title}" TextAlignment="Center" FontWeight="Bold"/>
-													</DataTemplate>
-												</DataGridTemplateColumn.CellTemplate>
-											</DataGridTemplateColumn>
-											
-											<DataGridTemplateColumn  Width="*">
-												<DataGridTemplateColumn.Header>
-														<TextBlock Text="Các trường/khoa" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-												</DataGridTemplateColumn.Header>
-												
-												<DataGridTemplateColumn.CellTemplate>
-													<DataTemplate x:DataType="{x:Type model:GroupItem}">
-														<SelectableTextBlock Text="{Binding Value}"/>
-													</DataTemplate>
-												</DataGridTemplateColumn.CellTemplate>
-											</DataGridTemplateColumn>
-										</DataGrid.Columns>
-									</DataGrid>
-									<!--<ScrollViewer HorizontalScrollBarVisibility="Disabled">
-										<ItemsRepeater x:Name="itRpterGroup">
-											<ItemsRepeater.Styles>
-												<Style Selector="SelectableTextBlock">
-													<Setter Property="TextWrapping" Value="WrapWithOverflow"/>
-													<Setter Property="FontSize" Value="16"/>
-													<Setter Property="FontFamily" Value="{StaticResource Text_Font}"/>
-													<Setter Property="FontWeight" Value="DemiBold"/>
-												</Style>
-											</ItemsRepeater.Styles>
-											
-											<ItemsRepeater.ItemTemplate>
-													<DataTemplate x:DataType="{x:Type model:GroupItem}">
-															<Grid ColumnDefinitions="auto *">
-																
-															</Grid>
-													</DataTemplate>
-											</ItemsRepeater.ItemTemplate>								
-										</ItemsRepeater>
-									</ScrollViewer>-->
-									
-								
-									<!--<ItemsControl>
-										<ItemsControl.Items>
-											<SelectableTextBlock Text="Nhóm 1:" FontSize="20" FontFamily="{StaticResource Text_Font}"/>
-										    <SelectableTextBlock Text="Nhóm 2:"/>
-										</ItemsControl.Items>
-									</ItemsControl>-->
+										<DataGrid
+										 x:Name="dtgridGroupList"
+										  BorderBrush="#a3a3a3"
+										  ClipboardCopyMode="IncludeHeader"
+										  CanUserReorderColumns="False"
+										  CanUserSortColumns="False"
+										  CanUserResizeColumns="True"
+										  IsReadOnly="True"
+										  ColumnHeaderHeight="30"
+										  ScrollViewer.VerticalScrollBarVisibility="Visible"
+										  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+										  AutoGenerateColumns="False">
+												<DataGrid.Styles>
+													<Style Selector="SelectableTextBlock">
+														<Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+														<Setter Property="FontSize" Value="16"/>
+														<Setter Property="FontFamily" Value="{StaticResource Text_Font}"/>
+														<Setter Property="VerticalAlignment" Value="Center"/>
+													</Style>
+												</DataGrid.Styles>
+
+												<DataGrid.Columns>
+													<DataGridTemplateColumn  Width="auto" MaxWidth="100">
+														<DataGridTemplateColumn.Header>
+															<TextBlock Text="Nhóm" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+														</DataGridTemplateColumn.Header>
+
+														<DataGridTemplateColumn.CellTemplate>
+															<DataTemplate x:DataType="{x:Type model:GroupItem}">
+																<SelectableTextBlock Text="{Binding Title}" TextAlignment="Center" FontWeight="Bold"/>
+															</DataTemplate>
+														</DataGridTemplateColumn.CellTemplate>
+													</DataGridTemplateColumn>
+
+													<DataGridTemplateColumn  Width="*">
+														<DataGridTemplateColumn.Header>
+															<TextBlock Text="Các trường/khoa" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+														</DataGridTemplateColumn.Header>
+
+														<DataGridTemplateColumn.CellTemplate>
+															<DataTemplate x:DataType="{x:Type model:GroupItem}">
+																<SelectableTextBlock Text="{Binding Value}"/>
+															</DataTemplate>
+														</DataGridTemplateColumn.CellTemplate>
+													</DataGridTemplateColumn>
+												</DataGrid.Columns>
+											</DataGrid>
 								</Panel>
 							</Border>
 						</Grid>
