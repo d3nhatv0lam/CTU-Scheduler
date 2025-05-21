@@ -4,6 +4,7 @@ using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.ViewModels.Base;
 using CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable.Interfaces;
+using CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable.Components;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using System;
@@ -27,7 +28,7 @@ namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
         private string _txtInputCourseKey = string.Empty;
         private bool _isTxtInputCourseKeyFocused = false;
         private ObservableAsPropertyHelper<Course> _course;
-        private ObservableAsPropertyHelper<ObservableCollection<SelectableItem<CourseData>>> _coursesCatalog;
+        private ObservableAsPropertyHelper<ObservableCollection<SelectableCourseData>> _coursesCatalog;
         private ObservableAsPropertyHelper<bool> _isQuickSelectPopupOpened;
         private ObservableAsPropertyHelper<ObservableCollection<QuickSelectCourse>> _quickSelectCourses;
         private QuickSelectCourse _selectedQuickSelectCourse;
@@ -48,7 +49,7 @@ namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
         public bool IsQuickSelectPopupOpened => _isQuickSelectPopupOpened.Value;
 
         public Course Course => _course.Value;
-        public ObservableCollection<SelectableItem<CourseData>> CoursesCatalog => _coursesCatalog.Value;
+        public ObservableCollection<SelectableCourseData> CoursesCatalog => _coursesCatalog.Value;
         public ObservableCollection<QuickSelectCourse> QuickSelectCourses => _quickSelectCourses.Value;
         public QuickSelectCourse SelectedQuickSelectCourse
         {
@@ -121,12 +122,12 @@ namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
             }).DisposeWith(_disposables);
         }
 
-        private ObservableCollection<SelectableItem<CourseData>> ToSelectableCourseCatalogs(Course course)
+        private ObservableCollection<SelectableCourseData> ToSelectableCourseCatalogs(Course course)
         {
-            var items = new ObservableCollection<SelectableItem<CourseData>>();
-            foreach (var group in course.CourseDatas)
+            var items = new ObservableCollection<SelectableCourseData>();
+            foreach (var courseGroup in course.CourseDatas)
             {
-                items.Add(new SelectableItem<CourseData>(group));
+                items.Add(SelectableCourseData.ToSelectableCourseData(courseGroup));
             }
             return items;
         }

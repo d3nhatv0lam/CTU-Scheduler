@@ -36,6 +36,7 @@ namespace CTUScheduler.AppServices.Extensions
                             // Not: Add new Group data
                             new CourseData()
                             {
+                                Key = rawCourseGroupData.key,
                                 Group = rawCourseGroupData.dkmh_nhom_hoc_phan_ma,
                                 Lecturer = rawCourseGroupData.dkmh_tu_dien_giang_vien_ten_vn,
                                 LecturerEmail = rawCourseGroupData.dkmh_tu_dien_giang_vien_email,
@@ -56,7 +57,7 @@ namespace CTUScheduler.AppServices.Extensions
 
                         );
                 });
-                course.CourseDatas = new ObservableCollection<CourseData>(courseDataDir.Values.ToList());
+                course.CourseDatas = new ObservableCollection<CourseData>(courseDataDir.Values.OrderBy(x => x.Key).ToList());
 
                 return course;
             }

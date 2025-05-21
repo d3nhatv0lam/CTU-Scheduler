@@ -9,6 +9,7 @@
 			  xmlns:rxui="http://reactiveui.net"
 			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable"
 			 xmlns:modelCourse ="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;assembly=CTUScheduler"
+			 xmlns:selectableCourseData="using:CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable.Components"
 			 x:DataType="vm:HandmadeFindCourseViewModel"
 			 x:CompileBindings="True"
 			 xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
@@ -152,17 +153,19 @@
 					
 					<!--// DataGrid //-->
 					<Border Grid.Row="3"  Padding="8">
-						<DataGrid
+						<ScrollViewer HorizontalScrollBarVisibility="Disabled"
+									  VerticalScrollBarVisibility="Auto">
+							<DataGrid
 							  BorderBrush="#a3a3a3"
 							  ClipboardCopyMode="IncludeHeader"
 							  CanUserReorderColumns="False"
 							  CanUserSortColumns="False"
 							  CanUserResizeColumns="True"
-							  IsReadOnly="True"
+							  IsReadOnly="False"
 							  ColumnHeaderHeight="40"
 							  SelectionMode="Single"
 							  ItemsSource="{Binding CoursesCatalog,Mode=OneWay}"
-							  AutoGenerateColumns="True">
+							  AutoGenerateColumns="False">
 							<DataGrid.Styles>
 								<Style Selector="TextBlock">
 									<Setter Property="HorizontalAlignment" Value="Center"/>
@@ -170,18 +173,41 @@
 									<Setter Property="Background" Value="Transparent"/>
 									<Setter Property="TextWrapping" Value="WrapWithOverflow"/>
 								</Style>
-								<Style Selector="DataGridRow:selected">
-									<Setter Property="Background" Value="Transparent"/>
-								</Style>
-								<Style Selector="DataGridRow:nth-child(even)">
-									<Setter Property="Background" Value="Red"/>
-								</Style>
+								
+								<!--<Style Selector="DataGridRow:nth-child(even)">
+									<Setter Property="Background" Value="#f0f0f0"/>
+								</Style>-->
 							</DataGrid.Styles>
 							
-
+							<DataGrid.Columns>
+								<DataGridTemplateColumn Header="Chọn" Width="69" CanUserResize="False">
+									<DataGridTemplateColumn.CellTemplate>
+										<DataTemplate x:DataType="{x:Type selectableCourseData:SelectableCourseData}">
+											<CheckBox
+												VerticalAlignment="Center"
+												HorizontalAlignment="Center"
+												IsChecked="{Binding IsSelected, Mode=TwoWay}"/>
+										</DataTemplate>
+									</DataGridTemplateColumn.CellTemplate>
+								</DataGridTemplateColumn>
+								<DataGridTextColumn Binding="{Binding Item.Group, Mode=OneWay}" IsReadOnly="True" Header="Nhóm" MinWidth="60"/>
+								<DataGridTextColumn Binding="{Binding Item.TotalStudents, Mode=OneWay}" IsReadOnly="True" Header="Sĩ số" MinWidth="50" Width="auto"/>
+								<DataGridTextColumn Binding="{Binding Item.RemainingStudents, Mode=OneWay}" IsReadOnly="True" Header="Sĩ số còn lại" MinWidth="80" Width="80"/>
+								<DataGridTemplateColumn Header="Giảng viên" Width="*">
+									<DataGridTemplateColumn.CellTemplate>
+										<DataTemplate x:DataType="{x:Type selectableCourseData:SelectableCourseData}">
+											<Grid>
+												<TextBlock Text="{Binding Item.Lecturer, Mode=OneWay}"/>
+											</Grid>
+										</DataTemplate>
+									</DataGridTemplateColumn.CellTemplate>
+								</DataGridTemplateColumn>
+							</DataGrid.Columns>
 
 						</DataGrid>
-					</Border>
+				
+						</ScrollViewer>
+						</Border>
 				</Grid>
 			</Border>
 		</Border>
