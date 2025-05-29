@@ -78,10 +78,11 @@ namespace CTUScheduler.Presentation.ViewModels.SplashScreen
             if (Application.Current!.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {    
                 var loadingScreen = desktop.MainWindow;
-                desktop.MainWindow = new MainWindow()
-                {
-                    DataContext = new MainViewModel()
-                };
+                MainWindow mainWindow = App.ServiceProvider!.GetRequiredService<MainWindow>();
+                mainWindow.DataContext = new MainViewModel();
+
+                desktop.MainWindow = mainWindow;
+
                 desktop.MainWindow.Show();
                 loadingScreen!.Close();
             }

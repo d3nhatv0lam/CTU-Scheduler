@@ -28,7 +28,7 @@
 		<vm:MainLayoutViewModel/> 
 	</Design.DataContext>
 	
-	<dialogHostAvalonia:DialogHost Identifier="MainLayoutDialog" CloseOnClickAway="True">
+	<dialogHostAvalonia:DialogHost Identifier="MainLayoutDialog" CloseOnClickAway="False">
 			<dialogHostAvalonia:DialogHost.DataTemplates>
 				<DataTemplate x:DataType="{x:Type components:LogoutDialogViewModel}">
 					<componentViews:LogoutDialogView/>

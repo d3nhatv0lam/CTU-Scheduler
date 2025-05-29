@@ -26,10 +26,10 @@ namespace CTUScheduler.AppServices.Services.Implementations
         private IPlaywright _playwright = null!;
         private IBrowser _browser = null!;
         private IPage _page = null!;
-        private Subject<JsonElement?> _jsonResponse = new Subject<JsonElement?>();
+        private Subject<JsonElement?> _jsonResponseSubject = new Subject<JsonElement?>();
         protected bool _isHasInternet;
 
-        public Subject<JsonElement?> JsonResponse => _jsonResponse;
+        public IObservable<JsonElement?> JsonResponse => _jsonResponseSubject.AsObservable();
 
         public event EventHandler? AlertBoxOpened;
         public event EventHandler? ConfirmBoxOpened;
@@ -103,7 +103,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
                         if (contentType.Contains("application/json"))
                         {
                             var jsonResponse = await e.JsonAsync();
-                            JsonResponse.OnNext(jsonResponse);
+                            _jsonResponseSubject.OnNext(jsonResponse);
                         }
                         else if (contentType.Contains("image"))
                         {

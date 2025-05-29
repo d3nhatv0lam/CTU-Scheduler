@@ -18,6 +18,9 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Platform;
+using Avalonia.Controls;
+using Avalonia;
 
 namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
 {
@@ -100,16 +103,16 @@ namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
 
             // course response
             _course = _ctuWebDriverService.CourseCatalogResponse
+                .ObserveOn(RxApp.MainThreadScheduler)
                 .ToProperty(this, nameof(Course))
                 .DisposeWith(_disposables);
 
             // Course -> UI items
+            // Case Not null
             _coursesCatalog = this.WhenAnyValue(x => x.Course)
-                .WhereNotNull()
-                .Select(course => ToSelectableCourseCatalogs(course))
+                .Select(course => course == null ? new ObservableCollection<SelectableCourseData>():ToSelectableCourseCatalogs(course))
                 .ToProperty(this, nameof(CoursesCatalog))
                 .DisposeWith(_disposables);
-
 
             SearchCommand = ReactiveCommand.CreateFromTask(async () =>
             {

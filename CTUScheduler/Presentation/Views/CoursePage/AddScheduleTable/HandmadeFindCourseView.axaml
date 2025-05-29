@@ -5,11 +5,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="474"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="500"
 			  xmlns:rxui="http://reactiveui.net"
 			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable"
-			 xmlns:modelCourse ="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;assembly=CTUScheduler"
+			 xmlns:qSelectCourse ="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;assembly=CTUScheduler"
 			 xmlns:selectableCourseData="using:CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable.Components"
+			 xmlns:courseData="using:CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed"
 			 x:DataType="vm:HandmadeFindCourseViewModel"
 			 x:CompileBindings="True"
 			 xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
@@ -22,6 +23,7 @@
 		<Style Selector="TextBlock">
 			<Setter Property="FontFamily" Value="{StaticResource Text_Font}"/>
 		</Style>
+		
 		<Style Selector="Border.CornerBorder">
 			<Setter Property="BorderBrush" Value="#a3a3a3"/>
 			<Setter Property="BorderThickness" Value="1"/>
@@ -38,16 +40,19 @@
 		<!--// left side //-->
 		<Border Grid.Column="0" Padding="0 3 0 3">
 			<Border Classes="CornerBorder">
-				<Grid RowDefinitions="auto 1 60 *" >
+				<Grid RowDefinitions="auto 1 auto *" ClipToBounds="True">
 					<!--// title //-->
 					<TextBlock
 							 Grid.Row="0"
 							 x:Name="txtCourseInfo"
 							 Classes="Title"
+							 MaxHeight="70"
 							 Text="Danh mục học phần"
 							 HorizontalAlignment="Left"
 							 Margin="10 0 0 0"
-										/>
+							 TextWrapping="WrapWithOverflow"
+						>
+					</TextBlock>
 
 					<Border Grid.Row="1" Height="1"  Padding="10 0 10 0">
 						<Separator Grid.Row="1" Margin="0"  Background="#a3a3a3"/>
@@ -61,7 +66,7 @@
 							<!--// search field //-->
 							<TextBox
 								x:Name="tboxCourseKeyInput"
-								Width="160"
+								Width="165"
 								DockPanel.Dock="Left"
 								UseFloatingWatermark="True"
 								Text="{Binding TxtInputCourseKey ,Mode=TwoWay}"
@@ -136,7 +141,7 @@
 								</ListBox.ItemsPanel>
 
 								<ListBox.ItemTemplate>
-									<DataTemplate x:DataType ="{x:Type modelCourse:QuickSelectCourse}">
+									<DataTemplate x:DataType ="{x:Type qSelectCourse:QuickSelectCourse}">
 										<Grid Background="Transparent">
 											<TextBlock Text="{Binding Information,Mode= OneTime}"/>
 											<ToolTip.Tip>
@@ -156,6 +161,7 @@
 						<ScrollViewer HorizontalScrollBarVisibility="Disabled"
 									  VerticalScrollBarVisibility="Auto">
 							<DataGrid
+							  ClipToBounds="True"
 							  BorderBrush="#a3a3a3"
 							  ClipboardCopyMode="IncludeHeader"
 							  CanUserReorderColumns="False"
@@ -190,10 +196,51 @@
 										</DataTemplate>
 									</DataGridTemplateColumn.CellTemplate>
 								</DataGridTemplateColumn>
-								<DataGridTextColumn Binding="{Binding Item.Group, Mode=OneWay}" IsReadOnly="True" Header="Nhóm" MinWidth="60"/>
-								<DataGridTextColumn Binding="{Binding Item.TotalStudents, Mode=OneWay}" IsReadOnly="True" Header="Sĩ số" MinWidth="50" Width="auto"/>
-								<DataGridTextColumn Binding="{Binding Item.RemainingStudents, Mode=OneWay}" IsReadOnly="True" Header="Sĩ số còn lại" MinWidth="80" Width="80"/>
-								<DataGridTemplateColumn Header="Giảng viên" Width="*">
+								<DataGridTextColumn Binding="{Binding Item.Group, Mode=OneWay}" 
+													IsReadOnly="True" 
+													Header="Nhóm" 
+													MinWidth="60"/>
+								<DataGridTextColumn Binding="{Binding Item.TotalStudents, Mode=OneWay}" 
+													IsReadOnly="True"
+													Header="Sĩ số" 
+													MinWidth="50" 
+													Width="auto"/>
+								<DataGridTextColumn Binding="{Binding Item.RemainingStudents, Mode=OneWay}" 
+													IsReadOnly="True" 
+													Header="Sĩ số còn lại" 
+													MinWidth="80" 
+													Width="80"/>
+								<DataGridTemplateColumn Header="Lịch học">
+									<DataGridTemplateColumn.CellTemplate>
+										<DataTemplate x:DataType="{x:Type selectableCourseData:SelectableCourseData}">
+											<ItemsRepeater
+												ItemsSource="{Binding Item.ClassDayDatas,Mode=OneTime}"
+												 	>
+												
+												<ItemsRepeater.ItemTemplate>
+													<DataTemplate DataType="{x:Type courseData:ClassDayData}">
+														<Grid ColumnDefinitions="0.3* * 0.3*">
+															<TextBlock  Grid.Column="0"
+																Text="{Binding AttendingDay,Mode=OneTime}"
+															/>
+															<TextBlock
+																Grid.Column="1"
+																Text="{Binding Period}"
+																/>
+															<TextBlock Grid.Column="2"
+																	Text="{Binding Room,Mode=OneTime}"
+																	   />
+														</Grid>
+													</DataTemplate>
+												</ItemsRepeater.ItemTemplate>
+											
+											</ItemsRepeater>
+										</DataTemplate>
+									</DataGridTemplateColumn.CellTemplate>
+								</DataGridTemplateColumn>
+								<DataGridTemplateColumn 
+									Header="Giảng viên" 
+									Width="*">
 									<DataGridTemplateColumn.CellTemplate>
 										<DataTemplate x:DataType="{x:Type selectableCourseData:SelectableCourseData}">
 											<Grid>

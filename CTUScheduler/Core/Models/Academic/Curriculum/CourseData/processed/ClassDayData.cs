@@ -8,8 +8,8 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed
 {
     public class ClassDayData
     {
-        public string Room { get; set; }
         public int AttendingDay { get; set; }
         public string Period { get; set; }
+        public string Room { get; set; }
     }
 }

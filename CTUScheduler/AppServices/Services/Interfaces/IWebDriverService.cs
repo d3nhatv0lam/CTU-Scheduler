@@ -13,7 +13,7 @@ namespace CTUScheduler.AppServices.Services.Interfaces
     public interface IWebDriverService
     {
 
-        Subject<JsonElement?> JsonResponse { get; }
+        IObservable<JsonElement?> JsonResponse { get; }
 
         event EventHandler AlertBoxOpened;
         event EventHandler ConfirmBoxOpened;

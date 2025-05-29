@@ -86,9 +86,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
 
                 })
                 .WhereNotNull()
-                .Select(rawCourse => rawCourse.ToCourse())
-                .WhereNotNull();
-
+                .Select(rawCourse => rawCourse.ToCourse());
 
         }
 

@@ -83,6 +83,13 @@ public partial class App : Application
         services.AddSingleton<ICTUWebDriverService, CTUWebDriverService>();
         services.AddSingleton<IUserDataService, UserDataService>();
         services.AddSingleton<IDialogHostService, DialogHostService>();
+        services.AddSingleton<IViewportService, ViewportService>();
+        services.AddTransient<MainWindow>(provider =>
+        {
+            MainWindow window = new();
+            provider.GetRequiredService<IViewportService>().Initialize(window);
+            return window;
+        });
         //services.AddSingleton<ICachingNavigationServiceFactory, CachingNavigationServiceFactory>();
         ServiceProvider = services.BuildServiceProvider();
     }
@@ -94,6 +101,7 @@ public partial class App : Application
         else
         if (ServiceProvider is IDisposable disposableService)
             disposableService.Dispose();
+
         if (sender is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.Exit -= Desktop_Exit;
