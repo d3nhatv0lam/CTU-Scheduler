@@ -10,7 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace CTUScheduler.AppServices.Extensions
+namespace CTUScheduler.Core.Extensions
 {
     public static class RawRegistrationExtension
     {

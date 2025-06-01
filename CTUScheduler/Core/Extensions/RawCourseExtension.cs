@@ -9,12 +9,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CTUScheduler.AppServices.Extensions
+namespace CTUScheduler.Core.Extensions
 {
     public static class RawCourseExtension
     {
         public static Course ToCourse(this RawCourse rawCourse)
         {
+            if (rawCourse.hoc_phan_info == null) return null!;
             try
             {
                 Course course = new Course()
@@ -57,7 +58,7 @@ namespace CTUScheduler.AppServices.Extensions
 
                         );
                 });
-                course.CourseDatas = new ObservableCollection<CourseData>(courseDataDir.Values.OrderBy(x => x.Key).ToList());
+                course.Sections  = new ObservableCollection<CourseData>(courseDataDir.Values.OrderBy(x => x.Key).ToList());
 
                 return course;
             }

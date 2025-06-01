@@ -104,6 +104,7 @@
 									Padding="5"
 									Margin="0 5 0 0"
 									CornerRadius="5"
+									Command="{Binding AddCoursesCommand}"
 									>
 								<StackPanel Orientation="Horizontal">
 									<materialIcons:MaterialIcon Kind="PlusCircleOutline"  Height="20" Width="20"/>
@@ -170,7 +171,7 @@
 							  IsReadOnly="False"
 							  ColumnHeaderHeight="40"
 							  SelectionMode="Single"
-							  ItemsSource="{Binding CoursesCatalog,Mode=OneWay}"
+							  ItemsSource="{Binding SearchedCourseSections,Mode=OneWay}"
 							  AutoGenerateColumns="False">
 							<DataGrid.Styles>
 								<Style Selector="TextBlock">
@@ -216,10 +217,22 @@
 											<ItemsRepeater
 												ItemsSource="{Binding Item.ClassDayDatas,Mode=OneTime}"
 												 	>
-												
 												<ItemsRepeater.ItemTemplate>
 													<DataTemplate DataType="{x:Type courseData:ClassDayData}">
-														<Grid ColumnDefinitions="0.3* * 0.3*">
+														<Grid >
+
+															<Grid.Styles>
+																<Style Selector="TextBlock">
+																	<Setter Property="TextWrapping" Value="NoWrap"/>
+																</Style>
+															</Grid.Styles>
+															
+															<Grid.ColumnDefinitions>
+																<ColumnDefinition Width="auto" MinWidth="20" MaxWidth="50"/>
+																<ColumnDefinition Width="auto"/>
+																<ColumnDefinition Width="auto" MinWidth="50" MaxWidth="100"/>
+															</Grid.ColumnDefinitions>
+															
 															<TextBlock  Grid.Column="0"
 																Text="{Binding AttendingDay,Mode=OneTime}"
 															/>
@@ -276,7 +289,33 @@
 
 					<!--// TreeView //-->
 					<Border Grid.Row="2"  Padding="8">
-						
+						<TreeView
+							x:Name="tviewCourses"
+							ItemsSource="{Binding TreeCourses}"
+							>
+							<TreeView.ItemTemplate>
+								<TreeDataTemplate ItemsSource="{Binding Sections}" x:DataType="{x:Type courseData:Course}">
+									<TextBlock>
+										<Run Text="{Binding Code,Mode=OneTime}"/>
+										<Run Text=" - "/>
+										<Run Text="{Binding Name_VN,Mode=OneTime}"/>
+										<Run Text="("/>
+										<Run Text="{Binding Sections.Count,Mode=OneTime}"/>
+										<Run Text=")"/>
+									</TextBlock>
+								</TreeDataTemplate>
+							</TreeView.ItemTemplate>
+
+							<TreeView.DataTemplates>
+								<DataTemplate x:DataType="{x:Type courseData:CourseData}">
+									<Grid RowDefinitions="* 0.8*">
+										<ItemsRepeater ItemsSource="{Binding ClassDayDatas,Mode=OneTime}">
+
+										</ItemsRepeater>
+									</Grid>
+								</DataTemplate>
+							</TreeView.DataTemplates>
+						</TreeView>
 					</Border>
 				</Grid>
 			</Border>

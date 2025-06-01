@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using Avalonia.Platform;
 using Avalonia.Controls;
 using Avalonia;
+using CTUScheduler.Core.Extensions;
 
 namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
 {
@@ -30,12 +31,12 @@ namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
         private readonly ICTUWebDriverService _ctuWebDriverService;
         private string _txtInputCourseKey = string.Empty;
         private bool _isTxtInputCourseKeyFocused = false;
-        private ObservableAsPropertyHelper<Course> _course;
-        private ObservableAsPropertyHelper<ObservableCollection<SelectableCourseData>> _coursesCatalog;
+        private ObservableAsPropertyHelper<Course> _searchedCourse;
+        private ObservableAsPropertyHelper<ObservableCollection<SelectableCourseData>> _searchedCourseSections;
         private ObservableAsPropertyHelper<bool> _isQuickSelectPopupOpened;
         private ObservableAsPropertyHelper<ObservableCollection<QuickSelectCourse>> _quickSelectCourses;
         private QuickSelectCourse _selectedQuickSelectCourse;
-
+        private ObservableCollection<Course> _treeCourses = new ObservableCollection<Course>();
         public string? UrlPathSegment => "Handmade_Find_Course";
 
         public IScreen HostScreen { get; }
@@ -51,16 +52,23 @@ namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
         }
         public bool IsQuickSelectPopupOpened => _isQuickSelectPopupOpened.Value;
 
-        public Course Course => _course.Value;
-        public ObservableCollection<SelectableCourseData> CoursesCatalog => _coursesCatalog.Value;
+        public Course SearchedCourse => _searchedCourse.Value;
+        public ObservableCollection<SelectableCourseData> SearchedCourseSections => _searchedCourseSections.Value;
         public ObservableCollection<QuickSelectCourse> QuickSelectCourses => _quickSelectCourses.Value;
         public QuickSelectCourse SelectedQuickSelectCourse
         {
             get => _selectedQuickSelectCourse;
             set => this.RaiseAndSetIfChanged(ref _selectedQuickSelectCourse, value);
         }
-
+        public ObservableCollection<Course> TreeCourses
+        {
+            get => _treeCourses;
+            set => this.RaiseAndSetIfChanged(ref _treeCourses, value);
+        }
         public ReactiveCommand<Unit,Unit> SearchCommand { get; }
+        public ReactiveCommand<Unit,Unit> AddCoursesCommand { get; }
+        public ReactiveCommand<Course,Unit> Tree_RemoveCourseCommand { get; }
+        public ReactiveCommand<CourseData,Unit> Tree_RemoveCourseData { get; }
 
         
 
@@ -101,34 +109,59 @@ namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
                     TxtInputCourseKey = selectedQuickSelectCourse.CourseCode;
                 }).DisposeWith(_disposables);
 
-            // course response
-            _course = _ctuWebDriverService.CourseCatalogResponse
+            // current course response
+            _searchedCourse = _ctuWebDriverService.CourseCatalogResponse
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .ToProperty(this, nameof(Course))
+                .ToProperty(this, nameof(SearchedCourse))
                 .DisposeWith(_disposables);
 
             // Course -> UI items
             // Case Not null
-            _coursesCatalog = this.WhenAnyValue(x => x.Course)
+            _searchedCourseSections = this.WhenAnyValue(x => x.SearchedCourse)
                 .Select(course => course == null ? new ObservableCollection<SelectableCourseData>():ToSelectableCourseCatalogs(course))
-                .ToProperty(this, nameof(CoursesCatalog))
+                .ToProperty(this, nameof(SearchedCourseSections))
                 .DisposeWith(_disposables);
 
             SearchCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 if (string.IsNullOrEmpty(TxtInputCourseKey))
                 {
-                    CoursesCatalog.Clear();
+                    SearchedCourseSections.Clear();
                     return;
                 }
                 await _ctuWebDriverService.SearchCourse(TxtInputCourseKey);
             }).DisposeWith(_disposables);
+
+            var canAddCourse = this.WhenAnyValue(x => x.SearchedCourseSections, searchedCourseSections => searchedCourseSections != null && searchedCourseSections.Any());
+            AddCoursesCommand = ReactiveCommand.Create(() =>
+            {
+                var selectedSections = SearchedCourseSections
+                                    .Where(x => x.IsSelected)
+                                    .Select(x => x.Item)
+                                    .ToList();
+
+                if (!selectedSections.Any()) return;
+                var TreeCourseNode = TreeCourses.FirstOrDefault(x => x.Code == SearchedCourse.Code);
+                
+                if (TreeCourseNode == null)
+                {
+                    TreeCourseNode = SearchedCourse.CloneWithNewCourseDatas(selectedSections);
+                    TreeCourses.Add(TreeCourseNode);
+                }
+                else
+                {
+
+                }
+
+                
+
+            }, canAddCourse).DisposeWith(_disposables);
         }
 
         private ObservableCollection<SelectableCourseData> ToSelectableCourseCatalogs(Course course)
         {
             var items = new ObservableCollection<SelectableCourseData>();
-            foreach (var courseGroup in course.CourseDatas)
+            foreach (var courseGroup in course.Sections )
             {
                 items.Add(SelectableCourseData.ToSelectableCourseData(courseGroup));
             }

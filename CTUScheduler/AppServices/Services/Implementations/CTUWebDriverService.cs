@@ -1,9 +1,9 @@
 ﻿using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using CTUScheduler.AppServices.Extensions;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.Interfaces;
 using CTUScheduler.Core.Exceptions;
+using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;

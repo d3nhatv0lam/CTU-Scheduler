@@ -14,6 +14,7 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed
         public int Credit { get; set; }
         public int TheorySessions { get; set; }
         public int PracticalSessions { get; set; }
-        public ObservableCollection<CourseData> CourseDatas { get; set; } = new();
+        public ObservableCollection<CourseData> Sections  { get; set; } = new();
+
     }
 }
