@@ -14,7 +14,6 @@ public partial class HandmadeFindCourseView : ReactiveUserControl<HandmadeFindCo
     public HandmadeFindCourseView()
     {
         InitializeComponent();
-
         this.WhenActivated(disposables =>
         {
             this.OneWayBind(this.ViewModel, vm => vm.SearchedCourse, v => v.txtCourseInfo.Text, 

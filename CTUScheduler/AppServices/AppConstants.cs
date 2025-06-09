@@ -35,7 +35,13 @@ namespace CTUScheduler.AppServices
         // quy dinh dang ky
        
         // danh muc hoc phan
-        public const string CTU_DKMH_DANHMUCHOCPHAN_SEARCHBOX = "#rc_select_2";
-        public const string CTU_DKMH_DANHMUCHOCPHAN_SEARCH_BUTTON = "//*[@id=\"root\"]/div/div/main/div[3]/div[1]/div[1]/div/div[3]/span";
+        public const string CTU_DKMH_DANHMUCHOCPHAN_SEARCHBOX = "//p[text()=\"Mã học phần\"]/following-sibling::div//input[@role=\"combobox\"]";
+        public const string CTU_DKMH_DANHMUCHOCPHAN_SEARCH_BUTTON = "span[role=\"img\"][aria-label=\"search\"].anticon-search";
+
+
+        // Contracts
+        public const string FACEBOOK_URL = "https://www.facebook.com/profile.php?id=100088452777261";
+        public const string YOUTUBE_URL = "https://www.youtube.com/@ucduong9984";
+        public const string GITHUB_URL = "https://github.com/d3nhatv0lam";
     }
 }

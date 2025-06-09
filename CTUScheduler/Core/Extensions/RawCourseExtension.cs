@@ -38,6 +38,7 @@ namespace CTUScheduler.Core.Extensions
                             new CourseData()
                             {
                                 Key = rawCourseGroupData.key,
+                                Code = rawCourseGroupData.dkmh_tu_dien_hoc_phan_ma,
                                 Group = rawCourseGroupData.dkmh_nhom_hoc_phan_ma,
                                 Lecturer = rawCourseGroupData.dkmh_tu_dien_giang_vien_ten_vn,
                                 LecturerEmail = rawCourseGroupData.dkmh_tu_dien_giang_vien_email,
@@ -45,7 +46,7 @@ namespace CTUScheduler.Core.Extensions
                                 RemainingStudents = rawCourseGroupData.si_so_con_lai,
                                 ClassDayDatas = new List<ClassDayData>()
                                 {
-                               GetClassDayData(rawCourseGroupData)
+                                    GetClassDayData(rawCourseGroupData)
                                 }
                             },
                             // Has group => Add new ClassDayData into existing group

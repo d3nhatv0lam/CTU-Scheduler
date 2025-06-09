@@ -294,24 +294,28 @@
 									Classes="Mini"
 									Background="Blue"
 									ToolTip.Tip="Trang Fanpage của dev"
-									Content="{materialIcons:MaterialIconExt Kind=Facebook,Size=30}"/>
+									Content="{materialIcons:MaterialIconExt Kind=Facebook,Size=30}"
+									Command="{Binding OpenFacebookCommand}"/>
 								
 								<controls:FloatingButton 
 									Classes="Mini"
 									Background="Red"
 									ToolTip.Tip="Kênh Youtube của dev"
-									Content="{materialIcons:MaterialIconExt Kind=Youtube,Size=30}"/>
+									Content="{materialIcons:MaterialIconExt Kind=Youtube,Size=30}"
+									Command="{Binding OpenYoutubeCommand}"/>
 
 								<controls:FloatingButton 
 									Classes="Mini" 
 									Background="Black"
 									ToolTip.Tip="Link Github của dev"
-									Content="{materialIcons:MaterialIconExt Kind=Github,Size=30}"/>
+									Content="{materialIcons:MaterialIconExt Kind=Github,Size=30}"
+									Command="{Binding OpenGithubCommand}"/>
 								<controls:FloatingButton 
 									Classes="Mini"
 									Background="{StaticResource PrimaryColor}"
 									ToolTip.Tip="Truy cập vào trang https://htql.ctu.edu.vn"
-									Content="{materialIcons:MaterialIconExt Kind=SchoolOutline,Size=30}"/>
+									Content="{materialIcons:MaterialIconExt Kind=SchoolOutline,Size=30}"
+									Command="{Binding OpenCTUHTQLCommand}"/>
 							</DockPanel>
 						</Grid>
 					</Border>	

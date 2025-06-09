@@ -11,6 +11,7 @@
 			 xmlns:qSelectCourse ="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;assembly=CTUScheduler"
 			 xmlns:selectableCourseData="using:CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable.Components"
 			 xmlns:courseData="using:CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed"
+			 xmlns:HandmadeFindCourseViews="clr-namespace:CTUScheduler.Presentation.Views.CoursePage.AddScheduleTable;assembly=CTUScheduler"
 			 x:DataType="vm:HandmadeFindCourseViewModel"
 			 x:CompileBindings="True"
 			 xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
@@ -91,12 +92,13 @@
 								 DockPanel.Dock="Left"
 								 Command="{Binding SearchCommand}"
 								 />
-							
+							<!--// checkbox to show/hide avaiable students group //-->
 							<CheckBox DockPanel.Dock="Left" 
 									  Margin="10 5 0 0" 
 									  VerticalAlignment="Center" 
 									  Padding="0"
 									  Content="Ẩn nhóm đủ sĩ số"
+									  IsChecked="{Binding ShowOnlyAvailableSections,Mode=TwoWay}"
 									  />
 							<!--// add button //-->
 							<Button DockPanel.Dock="Right"
@@ -171,7 +173,7 @@
 							  IsReadOnly="False"
 							  ColumnHeaderHeight="40"
 							  SelectionMode="Single"
-							  ItemsSource="{Binding SearchedCourseSections,Mode=OneWay}"
+							  ItemsSource="{Binding FiltedCourseSections,Mode=OneWay}"
 							  AutoGenerateColumns="False">
 							<DataGrid.Styles>
 								<Style Selector="TextBlock">
@@ -211,38 +213,41 @@
 													Header="Sĩ số còn lại" 
 													MinWidth="80" 
 													Width="80"/>
-								<DataGridTemplateColumn Header="Lịch học">
+								<DataGridTemplateColumn Header="Lịch học" Width="180">
 									<DataGridTemplateColumn.CellTemplate>
 										<DataTemplate x:DataType="{x:Type selectableCourseData:SelectableCourseData}">
-											<ItemsRepeater
+											<ItemsRepeater VerticalAlignment="Center"
 												ItemsSource="{Binding Item.ClassDayDatas,Mode=OneTime}"
 												 	>
 												<ItemsRepeater.ItemTemplate>
 													<DataTemplate DataType="{x:Type courseData:ClassDayData}">
-														<Grid >
-
+														<Grid>
 															<Grid.Styles>
 																<Style Selector="TextBlock">
 																	<Setter Property="TextWrapping" Value="NoWrap"/>
+																	<Setter Property="HorizontalAlignment" Value="Center"/>
 																</Style>
 															</Grid.Styles>
 															
 															<Grid.ColumnDefinitions>
 																<ColumnDefinition Width="auto" MinWidth="20" MaxWidth="50"/>
-																<ColumnDefinition Width="auto"/>
+																<ColumnDefinition Width="*"/>
 																<ColumnDefinition Width="auto" MinWidth="50" MaxWidth="100"/>
 															</Grid.ColumnDefinitions>
 															
 															<TextBlock  Grid.Column="0"
 																Text="{Binding AttendingDay,Mode=OneTime}"
-															/>
+																ToolTip.Tip="Thứ đi học"
+																/>
 															<TextBlock
 																Grid.Column="1"
 																Text="{Binding Period}"
+																ToolTip.Tip="Tiết học"
 																/>
 															<TextBlock Grid.Column="2"
-																	Text="{Binding Room,Mode=OneTime}"
-																	   />
+																Text="{Binding Room,Mode=OneTime}"
+																ToolTip.Tip="Phòng học"
+																/>
 														</Grid>
 													</DataTemplate>
 												</ItemsRepeater.ItemTemplate>
@@ -257,7 +262,7 @@
 									<DataGridTemplateColumn.CellTemplate>
 										<DataTemplate x:DataType="{x:Type selectableCourseData:SelectableCourseData}">
 											<Grid>
-												<TextBlock Text="{Binding Item.Lecturer, Mode=OneWay}"/>
+												<TextBlock Text="{Binding Item.Lecturer, Mode=OneTime}"/>
 											</Grid>
 										</DataTemplate>
 									</DataGridTemplateColumn.CellTemplate>
@@ -293,28 +298,73 @@
 							x:Name="tviewCourses"
 							ItemsSource="{Binding TreeCourses}"
 							>
+
 							<TreeView.ItemTemplate>
 								<TreeDataTemplate ItemsSource="{Binding Sections}" x:DataType="{x:Type courseData:Course}">
-									<TextBlock>
-										<Run Text="{Binding Code,Mode=OneTime}"/>
-										<Run Text=" - "/>
-										<Run Text="{Binding Name_VN,Mode=OneTime}"/>
-										<Run Text="("/>
-										<Run Text="{Binding Sections.Count,Mode=OneTime}"/>
-										<Run Text=")"/>
-									</TextBlock>
+									<Grid ColumnDefinitions="* auto"
+										  ToolTip.Tip="Thứ đi học - Tiết học - Phòng học">
+										<TextBlock Grid.Column="0" 
+												   HorizontalAlignment="Left"
+												   >
+											<Run Text="{Binding Code,Mode=OneTime}"/>
+											<Run Text=" - "/>
+											<Run Text="{Binding Name_VN,Mode=OneTime}"/>
+											<Run Text="("/>
+											<Run Text="{Binding Sections.Count,Mode=OneTime}"/>
+											<Run Text=")"/>
+										</TextBlock>
+										<Button Grid.Column="1" 
+												Content="{materialIcons:MaterialIconExt Kind=CloseBoxOutline,Size=20}"
+												Height="20" Width="20"
+												Padding="2"
+												Background="Red"
+												Command="{Binding ViewModel.Tree_RemoveCourseCommand , RelativeSource={RelativeSource AncestorType=HandmadeFindCourseViews:HandmadeFindCourseView}}"
+												CommandParameter="{Binding .}"/>
+									</Grid>
 								</TreeDataTemplate>
 							</TreeView.ItemTemplate>
 
 							<TreeView.DataTemplates>
 								<DataTemplate x:DataType="{x:Type courseData:CourseData}">
-									<Grid RowDefinitions="* 0.8*">
-										<ItemsRepeater ItemsSource="{Binding ClassDayDatas,Mode=OneTime}">
+									<Grid RowDefinitions="auto auto" ColumnDefinitions="auto * auto">
+										
+										<ItemsRepeater 
+											Grid.Row="0"
+											Grid.Column="1"
+											ItemsSource="{Binding ClassDayDatas}"
+													   >
+											<ItemsRepeater.ItemTemplate>
+												<DataTemplate x:DataType="{x:Type courseData:ClassDayData}">
+													<Grid>
+														<Grid.ColumnDefinitions>
+															<ColumnDefinition Width="auto" MinWidth="30"/>
+															<ColumnDefinition Width="auto" MinWidth="80"/>
+															<ColumnDefinition Width="auto" MinWidth="50"/>
+														</Grid.ColumnDefinitions>
 
+														<TextBlock Grid.Column="0" Text="{Binding AttendingDay, Mode=OneTime}" ToolTip.Tip="thứ đi học"/>
+														<TextBlock Grid.Column="1" Text="{Binding Period, Mode=OneTime}" ToolTip.Tip="Tiết học"/>
+														<TextBlock Grid.Column="2" Text="{Binding Room, Mode=OneTime}" ToolTip.Tip="Phòng học"/>
+													</Grid>
+												</DataTemplate>
+											</ItemsRepeater.ItemTemplate>
 										</ItemsRepeater>
+										<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Lecturer}"
+												   ToolTip.Tip="Giảng viên"
+												   HorizontalAlignment="Left"/>
+										<Button Grid.Row="0"
+												Grid.RowSpan="2"
+												Grid.Column="2"
+												Height="20" Width="20"
+												Background="Red"
+												Content="{materialIcons:MaterialIconExt Kind=CloseBoxOutline,Size=20}"
+												Padding="2"
+												Command="{Binding ViewModel.Tree_RemoveSectionCommand , RelativeSource={RelativeSource AncestorType=HandmadeFindCourseViews:HandmadeFindCourseView}}"
+												CommandParameter="{Binding .}"/>
 									</Grid>
 								</DataTemplate>
 							</TreeView.DataTemplates>
+							
 						</TreeView>
 					</Border>
 				</Grid>
