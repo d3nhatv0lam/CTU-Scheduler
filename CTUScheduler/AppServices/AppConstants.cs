@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Avalonia.Animation;
+using Avalonia.Xaml.Interactions.Custom;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,15 +12,17 @@ namespace CTUScheduler.AppServices
     {
         public static readonly string PWD = AppDomain.CurrentDomain.BaseDirectory;
         public const string USERCONFG_FILENAME = "UserConfig.bin";
-
+      
         // Login Page
-        public const string CTU_SIGN_IN_URL = "https://htql.ctu.edu.vn/htql/login.php";
-        public const string CTU_SIGN_IN_USERNAME = "//*[@id=\"txtDinhDanh\"]";
-        public const string CTU_SIGN_IN_PASSWORD = "//*[@id=\"txtMatKhau\"]";
-        public const string CTU_SIGN_IN_CAPCHA = "//*[@id=\"txtMaBaoVe\"]";
-        public const string CTU_SIGN_IN_CAPCHA_IMAGE = "//*[@id=\"verify_code\"]";
-        public const string CTU_SIGN_IN_BUTTON = "//*[@id=\"login-sv\"]/tbody/tr[4]/td/input";
+        public const string CTU_SIGN_IN_URL = "https://htql.ctu.edu.vn/";
+        public const string CTU_SIGN_IN_USERNAME = "#usernameUserInput";
+        public const string CTU_SIGN_IN_PASSWORD = "#password";
+        public const string CTU_SIGN_IN_BUTTON = "#sign-in-button";
+        public const string CTU_SIGN_IN_USERNAME_ERROR = "#usernameError";
+        public const string CTU_SIGN_IN_PASSWORD_ERROR = "#passwordError";
+        public const string CTU_SIGN_IN_FAIL = "#error-msg";
         // Home Page
+        public const string CTU_HOME_URL_PATTERN = "**/htql/sinhvien/hindex.php";
         public const string CTU_HOME_URL = "https://dkmh.ctu.edu.vn/htql/sinhvien/hindex.php";
         public const string CTU_HOME_USER_INFO = "//*[@id=\"user-login\"]";
         public const string CTU_HOME_DKMH_BUTTON = "//*[@id=\"page-body\"]/div[1]/table/tbody/tr[1]/td[2]/div/table/tbody/tr[1]/td[2]/div/span/img";

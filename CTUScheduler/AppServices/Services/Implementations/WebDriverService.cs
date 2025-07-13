@@ -3,6 +3,7 @@ using CTUScheduler.AppServices.Services.Interfaces;
 using CTUScheduler.Core.Exceptions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
+using ReactiveUI;
 using Splat;
 using System;
 using System.Collections;
@@ -148,6 +149,20 @@ namespace CTUScheduler.AppServices.Services.Implementations
             return _page.Url;
         }
 
+        public async Task<bool> TryWaitForUrlAsync(string url,int timeout = 5000)
+        {
+            try
+            {
+                await _page.WaitForURLAsync(url, new PageWaitForURLOptions() { Timeout = timeout });
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
+
         public async Task WaitForTimeoutAsync(float milisecond)
         {
             await _page.WaitForTimeoutAsync(milisecond);
@@ -241,7 +256,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
             }
         }
 
-        public async Task ClickNavigateElementAsync(ILocator element, LocatorClickOptions? options = null, LoadState loadState = LoadState.Load)
+        public async Task ClickNavigateElementAsync(ILocator element, LocatorClickOptions? options = null, LoadState loadState = LoadState.NetworkIdle)
         {
             try
             {
@@ -249,9 +264,11 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 if (!await _internetStatusService.GetInternetStatus())
                     throw new Exception("Can't Navigate because no internet!");
 
-                await element.ClickAsync(options);
-                await _page.WaitForLoadStateAsync(LoadState.Load);
-                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                await Task.WhenAll(
+                        _page.WaitForLoadStateAsync(loadState),
+                        element.ClickAsync(options)
+                    );
+                 
             }
             catch
             {
@@ -259,7 +276,9 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 throw;
             }
         }
-        public async Task ClickNavigateElementAsync(string selector, LocatorClickOptions? options = null, LoadState loadState = LoadState.Load)
+
+
+        public async Task ClickNavigateElementAsync(string selector, LocatorClickOptions? options = null, LoadState loadState = LoadState.NetworkIdle)
         {
             try
             {

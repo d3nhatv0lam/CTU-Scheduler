@@ -9,6 +9,7 @@ using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.ViewModels.Base;
 using CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable.Components;
 using CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable.Interfaces;
+using DynamicData;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using System;
@@ -159,15 +160,22 @@ namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
                 if (!selectedSections.Any()) return;
 
                 var TreeCourseNode = TreeCourses.FirstOrDefault(x => x.Code == SearchedCourse.Code);
-                
+
                 if (TreeCourseNode == null)
                 {
                     TreeCourseNode = SearchedCourse.CloneWithNewCourseDatas(selectedSections);
                     TreeCourses.Add(TreeCourseNode);
+                    return;
                 }
-                else
-                {
 
+                foreach (var section in selectedSections)
+                {
+                    int index = TreeCourseNode.Sections.BinarySearch(section, Comparer<CourseData>.Create((x, y) => x.Key.CompareTo(y.Key)));
+                    if (index < 0)
+                    {
+                        index = ~index; // Get the index where the item should be inserted
+                        TreeCourseNode.Sections.Insert(index, section);
+                    }
                 }
             }, canAddCourse).DisposeWith(_disposables);
 
@@ -175,7 +183,8 @@ namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
             Tree_RemoveCourseCommand = ReactiveCommand.Create<Course>(course => RemoveCourseFromTree(course))
                                        .DisposeWith(_disposables);
 
-            Tree_RemoveSectionCommand = ReactiveCommand.Create<CourseData>(section => RemoveSectionFromTree(section)).DisposeWith(_disposables);
+            Tree_RemoveSectionCommand = ReactiveCommand.Create<CourseData>(section => RemoveSectionFromTree(section))
+                                        .DisposeWith(_disposables);
         }
 
         private ObservableCollection<SelectableCourseData> ToSelectableCourseCatalogs(Course course)

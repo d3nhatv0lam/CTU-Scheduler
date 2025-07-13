@@ -15,8 +15,7 @@ namespace CTUScheduler.AppServices.Services.Interfaces
     {
         // sign in 
         Task GoToSignInPageAsync();
-        Task<bool> TrySignInAsync(string userName, string password, string captcha);
-        Task<Bitmap?> TryGetCaptchaImageAsync();
+        Task<bool> TrySignInAsync(string userName, string password);
         // home 
         Task<(string userName, string userMSSV)> TryGetUserInfomation();
         // dkmh RegistrationInfo

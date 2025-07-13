@@ -40,7 +40,6 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
         private readonly Subject<Bitmap> _captchaImageUpdated = new Subject<Bitmap>();
         private string _userName;
         private string _password;
-        private string _captcha;
         private Bitmap _captchaImage;
         private bool _isSaveUsername;
 
@@ -57,11 +56,6 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
         {
             get => _password;
             set => this.RaiseAndSetIfChanged(ref _password, value);
-        }
-        public string Captcha
-        {
-            get => _captcha;
-            set => this.RaiseAndSetIfChanged(ref _captcha, value);
         }
         public Bitmap CaptchaImage
         {
@@ -83,7 +77,6 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
             _CTUWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
             _userName = string.Empty;
             _password = string.Empty;
-            _captcha = string.Empty;
             _captchaImage = BitmapHelper.CreateEmptyBitmap();
 
             LoadSignInData();
@@ -96,9 +89,9 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
                     return Observable.Timer(TimeSpan.FromSeconds(3)).SelectMany(_ => Observable.Throw<Unit>(ex));
                 })
                 .Retry() // retry vô hạn
-                .Subscribe(async _ =>
+                .Subscribe(_ =>
                 {
-                    await FillCapchaImage();
+                    //await FillCapchaImage();
                 })
                 .DisposeWith(_disposables);
 
@@ -125,7 +118,7 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
         {
             SignInCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                var isLogged = await _CTUWebDriverService.TrySignInAsync(UserName, Password, Captcha);
+                var isLogged = await _CTUWebDriverService.TrySignInAsync(UserName, Password);
                 if (isLogged)
                 {
                     OnLoggedIn();
@@ -133,7 +126,7 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
                 else
                 {
                     CleanCaptcha();
-                    await FillCapchaImage();
+                    //await FillCapchaImage();
                     // wait 1sec => reduce CPU usage & Lag
                     await Task.Delay(1000);
                 }
@@ -157,16 +150,16 @@ namespace CTUScheduler.Presentation.ViewModels.Sign
         {
             RxApp.MainThreadScheduler.Schedule(() =>
             {
-                Captcha = string.Empty;
+                //Captcha = string.Empty;
             });
         }
 
-        private async Task FillCapchaImage()
-        {
-            var bitMapImage = await _CTUWebDriverService.TryGetCaptchaImageAsync();
-            if (bitMapImage != null)
-                _captchaImageUpdated.OnNext(bitMapImage);
-        }
+        //private async Task FillCapchaImage()
+        //{
+        //    var bitMapImage = await _CTUWebDriverService.TryGetCaptchaImageAsync();
+        //    if (bitMapImage != null)
+        //        _captchaImageUpdated.OnNext(bitMapImage);
+        //}
 
         private void NavigateToHome()
         {

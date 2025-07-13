@@ -24,6 +24,7 @@ namespace CTUScheduler.AppServices.Services.Interfaces
         /// </exception>
         void EnsureInternetConnection();
         string GetPageUrl();
+        Task<bool> TryWaitForUrlAsync(string url, int timeout = 5000);
         Task GoToPageAsync(string url);
         Task RefreshPageAsync();
         ILocator LocatorElement(string selector);

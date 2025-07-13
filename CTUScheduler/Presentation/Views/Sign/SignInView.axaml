@@ -104,7 +104,7 @@
 							 PasswordChar="*"
 							 Margin="0 25 0 0"/>
 				
-					<Grid ColumnDefinitions="* *" Margin="0 25 0 0">
+					<!--<Grid ColumnDefinitions="* *" Margin="0 25 0 0">
 						<TextBox Grid.Column="0" 
 							x:Name="txtCaptcha"	
 							UseFloatingWatermark="True" 
@@ -117,7 +117,7 @@
 							   MaxHeight="80"
 							   x:Name="captchaImage" 
 							   Stretch="Uniform"/>
-					</Grid>
+					</Grid>-->
 
 					<CheckBox 
 						x:Name="chkSaveUsername"

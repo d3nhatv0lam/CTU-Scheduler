@@ -11,6 +11,7 @@ using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Raw;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using ReactiveUI;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -20,8 +21,11 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Reactive.Threading.Tasks;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CTUScheduler.AppServices.Services.Implementations
@@ -101,26 +105,24 @@ namespace CTUScheduler.AppServices.Services.Implementations
             await _webDriverService.GoToPageAsync(signInPageUrl);
         }
 
-        public async Task<bool> TrySignInAsync(string userName, string password, string captcha)
+        public async Task<bool> TrySignInAsync(string userName, string password)
         {
            try
            {
                 ILocator userNameInput = _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_USERNAME);
                 ILocator passwordInput = _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_PASSWORD);
-                ILocator capchaInput = _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_CAPCHA);
                 ILocator loginButton = _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_BUTTON);
 
                 await _webDriverService.FillElementAsync(userNameInput, userName);
                 await _webDriverService.FillElementAsync(passwordInput, password);
-                await _webDriverService.FillElementAsync(capchaInput, captcha);
                 await _webDriverService.ClickNavigateElementAsync(loginButton);
 
-                ILocator userLogged = _webDriverService.LocatorElement(AppConstants.CTU_HOME_USER_INFO);
+                var WaitUrl = _webDriverService.TryWaitForUrlAsync(AppConstants.CTU_HOME_URL_PATTERN);
+                var validInput = IsSignInSuccess();
 
-                if (await userLogged.IsVisibleAsync())
-                    return true;
-                else
-                    return false;
+                //return await WaitUrl.Amb(validInput).FirstAsync().ToTask();
+                var completed = await Task.WhenAny(WaitUrl, validInput);
+                return await completed;
            }
            catch
            {
@@ -128,22 +130,23 @@ namespace CTUScheduler.AppServices.Services.Implementations
            }
         }
 
-        public async Task<Bitmap?> TryGetCaptchaImageAsync()
+        private async Task<bool> IsSignInSuccess()
         {
-            try
-            { 
-                ILocator captchaImage = _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_CAPCHA_IMAGE);
-                await captchaImage.WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Visible , Timeout = 5000});
-                byte[]  imageBytes = await _webDriverService.GetImageToByteArrayAsync(captchaImage);
-                if (imageBytes.Length == 0) return null;
-
-                using var stream = new MemoryStream(imageBytes, writable: false);
-                return new Bitmap(stream);
-            }
-            catch
+            var ILocators = new[]
             {
-                return null;
-            }
+                _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_USERNAME_ERROR),
+                _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_PASSWORD_ERROR),
+                _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_FAIL)
+            };
+
+            // kiểm tra element có display none không
+            var tasks = ILocators.Select(locator =>
+                    locator.EvaluateAsync<bool>("el => getComputedStyle(el).display === 'none'")
+                ).ToArray();
+
+            bool[] results = await Task.WhenAll<bool>(tasks);
+            // display none hết => login thành công
+            return results.All(x => x);
         }
         #endregion
 

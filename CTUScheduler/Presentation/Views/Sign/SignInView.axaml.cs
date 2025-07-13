@@ -24,9 +24,7 @@ public partial class SignInView : ReactiveUserControl<SignInViewModel>
 
             this.Bind(ViewModel, vm => vm.UserName, v => v.txtUsername.Text).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.Password, x => x.txtPassword.Text).DisposeWith(disposables);
-            this.Bind(ViewModel, vm => vm.Captcha, x => x.txtCaptcha.Text).DisposeWith(disposables);
-
-            this.OneWayBind(ViewModel, vm => vm.CaptchaImage, x => x.captchaImage.Source).DisposeWith(disposables);
+         
             this.Bind(ViewModel, vm => vm.IsSaveUsername, x => x.chkSaveUsername.IsChecked).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.SignInCommand, x => x.LoginButton).DisposeWith(disposables);
         });

@@ -302,7 +302,7 @@
 							<TreeView.ItemTemplate>
 								<TreeDataTemplate ItemsSource="{Binding Sections}" x:DataType="{x:Type courseData:Course}">
 									<Grid ColumnDefinitions="* auto"
-										  ToolTip.Tip="Thứ đi học - Tiết học - Phòng học">
+										  >
 										<TextBlock Grid.Column="0" 
 												   HorizontalAlignment="Left"
 												   >
@@ -310,7 +310,7 @@
 											<Run Text=" - "/>
 											<Run Text="{Binding Name_VN,Mode=OneTime}"/>
 											<Run Text="("/>
-											<Run Text="{Binding Sections.Count,Mode=OneTime}"/>
+											<Run Text="{Binding Sections.Count,Mode=OneWay}"/>
 											<Run Text=")"/>
 										</TextBlock>
 										<Button Grid.Column="1" 
