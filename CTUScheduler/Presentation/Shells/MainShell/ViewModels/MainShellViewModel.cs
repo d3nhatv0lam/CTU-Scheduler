@@ -1,0 +1,115 @@
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Reactive;
+using System.Reactive.Disposables;
+using CTUScheduler.AppServices.Services.Interfaces;
+using CTUScheduler.Presentation.Authentication.ViewModels;
+using CTUScheduler.Presentation.Base;
+using CTUScheduler.Presentation.Home.ViewModels;
+using CTUScheduler.Presentation.Setting.ViewModels;
+using CTUScheduler.Presentation.Shells.MainShell.Models;
+using CTUScheduler.Presentation.TimeTableManager.ViewModels;
+using Material.Icons;
+using Microsoft.Extensions.DependencyInjection;
+using ReactiveUI;
+
+namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
+{
+    public class MainShellViewModel: ViewModelBase, IScreen , IRoutableViewModel, IDisposable
+    {
+        private CompositeDisposable _disposables = new CompositeDisposable();
+        private ICTUWebDriverService _CTUWebDriverService;
+        private IDialogHostService _dialogHostService;
+        private NavigationItem _selectedItem;
+        private string _userName = "họ tên";
+        private string _userMSSV = "MSSV";
+        private string _title;
+
+        public string? UrlPathSegment => "MainLayout view";
+        public RoutingState Router { get; }
+        public IScreen HostScreen { get; }
+        public ObservableCollection<NavigationItem> NavigationItems { get; }
+        public NavigationItem SelectedItem
+        {
+            get => _selectedItem;
+            set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
+        }
+
+        public string UserName
+        {
+            get => _userName;
+            set => this.RaiseAndSetIfChanged(ref _userName, value);
+        }
+        public string UserMSSV
+        {
+            get => _userMSSV;
+            set => this.RaiseAndSetIfChanged(ref _userMSSV, value);
+        }
+
+        public string Title
+        {
+            get => _title;
+            set => this.RaiseAndSetIfChanged(ref _title, value);
+        }
+        
+
+        public ReactiveCommand<Unit, Unit> LogoutCommand { get; }
+
+        public MainShellViewModel()
+        {
+
+        }
+
+        public MainShellViewModel(IScreen hostScreen)
+        {
+            Router = new RoutingState();
+            HostScreen = hostScreen;
+            _CTUWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
+            _dialogHostService = App.ServiceProvider!.GetRequiredService<IDialogHostService>();
+            NavigationItems = new ObservableCollection<NavigationItem>
+            {
+                new NavigationItem("Trang chủ",MaterialIconKind.HomeOutline,typeof(HomeViewModel)),
+                new NavigationItem("Học phần", MaterialIconKind.TableCog,typeof(TimeTableManagerViewModel)),
+                new NavigationItem("Cài đặt", MaterialIconKind.CogOutline,typeof(SettingViewModel))
+            };
+
+            this.WhenAnyValue(x => x.SelectedItem).WhereNotNull().Subscribe(item =>
+            {
+                Title = item.Title;
+                var page = (IRoutableViewModel)Activator.CreateInstance(item.ViewModelType,HostScreen)!;
+                Router.NavigateAndReset.Execute(page);
+            }).DisposeWith(_disposables);
+
+
+            TryGetUserInfo();
+
+            //SelectedItem = NavigationItems.First();
+            SelectedItem = NavigationItems[1];
+
+            LogoutCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                bool isAcceptLogout = await _dialogHostService.ShowDialog<bool>(new LogoutDialogViewModel("MainLayoutDialog"), "MainLayoutDialog");
+                if (isAcceptLogout)
+                {
+                    HostScreen.Router.NavigateAndReset.Execute(new LoginViewModel(HostScreen));
+                    Dispose();
+                }
+            }).DisposeWith(_disposables);
+        }
+
+        private async void TryGetUserInfo()
+        {
+            var userInfo = await _CTUWebDriverService.TryGetUserInfomation();
+            if (string.IsNullOrEmpty(userInfo.userName) || string.IsNullOrEmpty(userInfo.userMSSV))
+                return;
+
+            UserName = userInfo.userName;
+            UserMSSV = userInfo.userMSSV;
+        }
+
+        public void Dispose()
+        {
+            _disposables.Dispose();
+        }
+    }
+}

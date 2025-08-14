@@ -6,12 +6,6 @@ using Avalonia.Platform.Storage;
 using Avalonia.Styling;
 using CTUScheduler.AppServices.Services.Implementations;
 using CTUScheduler.AppServices.Services.Interfaces;
-using CTUScheduler.Presentation.ViewModels;
-using CTUScheduler.Presentation.ViewModels.Shells;
-using CTUScheduler.Presentation.ViewModels.SplashScreen;
-using CTUScheduler.Presentation.Views;
-using CTUScheduler.Presentation.Views.Shells;
-using CTUScheduler.Presentation.Views.SplashScreen;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
@@ -22,6 +16,12 @@ using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
+using CTUScheduler.Presentation.SplashScreen;
+using CTUScheduler.Presentation.SplashScreen.ViewModels;
+using MainView = CTUScheduler.Presentation.Shells.AppShell.Views.MainView;
+using MainWindow = CTUScheduler.Presentation.Shells.AppShell.Views.MainWindow;
+using SplashScreenWindow = CTUScheduler.Presentation.SplashScreen.Views.SplashScreenWindow;
 
 namespace CTUScheduler;
 

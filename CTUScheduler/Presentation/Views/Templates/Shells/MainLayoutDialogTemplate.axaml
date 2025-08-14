@@ -1,7 +1,0 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-					xmlns:logoutVM="clr-namespace:CTUScheduler.Presentation.ViewModels.Shells.Components;assembly=CTUScheduler"
-					xmlns:dialogHost="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia">
-  <!-- Add Resources Here -->
-
-</ResourceDictionary>

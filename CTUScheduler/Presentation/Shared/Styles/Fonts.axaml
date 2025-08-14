@@ -1,0 +1,8 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <FontFamily x:Key="Ctu-Title-Font">avares://CTUScheduler/Assets/Fonts/K2D-Bold.ttf#K2D</FontFamily>
+    <FontFamily x:Key="Ctu-Text-Font">avares://CTUScheduler/Assets/Fonts/ReadexPro-Regular.ttf#Readex Pro</FontFamily>
+    <FontFamily x:Key="Text-Font">avares://CTUScheduler/Assets/Fonts/OpenSans-Regular.ttf#Open Sans</FontFamily>
+    
+</ResourceDictionary>

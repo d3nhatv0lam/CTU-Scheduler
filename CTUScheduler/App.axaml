@@ -8,25 +8,12 @@
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
 	<Application.Resources>
-
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
-				
+				<ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Colors.axaml"></ResourceInclude>
+				<ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Fonts.axaml"></ResourceInclude>
 			</ResourceDictionary.MergedDictionaries>
 		</ResourceDictionary>
-
-
-		<SolidColorBrush x:Key="PrimaryColor" Color="#1f5ca9"/>
-		<SolidColorBrush x:Key="SecondaryColor" Color="#00afef"/>
-		<FontFamily x:Key="CTU_Title_Font">
-			avares://CTUScheduler/Assets/Fonts/K2D-Bold.ttf#K2D
-		</FontFamily>
-		<FontFamily x:Key="CTU_Text_Font">
-			avares://CTUScheduler/Assets/Fonts/ReadexPro-Regular.ttf#Readex Pro
-		</FontFamily>
-		<FontFamily x:Key="Text_Font">
-			avares://CTUScheduler/Assets/Fonts/OpenSans-Regular.ttf#Open Sans
-		</FontFamily>
 	</Application.Resources>
 	
     <Application.Styles>

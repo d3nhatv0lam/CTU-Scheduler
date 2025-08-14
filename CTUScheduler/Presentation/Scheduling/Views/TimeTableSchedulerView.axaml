@@ -1,0 +1,106 @@
+<rxui:ReactiveUserControl 
+			 x:TypeArguments="viewModels:TimeTableSchedulerViewModel"
+			 xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="500"
+             xmlns:rxui="http://reactiveui.net"
+			 x:DataType="viewModels:TimeTableSchedulerViewModel"
+			 x:CompileBindings="True"
+			 xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+			 xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Scheduling.ViewModels"
+			 x:Class="CTUScheduler.Presentation.Scheduling.Views.TimeTableSchedulerView">
+
+	<rxui:ReactiveUserControl.Styles>
+		<Style Selector="TextBlock">
+			<Setter Property="FontFamily" Value="{StaticResource Text-Font}"/>
+		</Style>
+
+		<Style Selector="TextBlock.Title">
+			<Setter Property="FontSize" Value="20"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+		</Style>
+
+		<Style Selector="TextBlock.SubTitle">
+			<Setter Property="VerticalAlignment" Value="Bottom"/>
+			<Setter Property="Margin" Value="5 0 0 3"/>
+			<Setter Property="TextAlignment" Value="DetectFromContent"/>
+			<Setter Property="FontSize" Value="13"/>
+			<Setter Property="FontWeight" Value="SemiLight"/>
+			<Setter Property="Foreground" Value="#a3a3a3"/>
+		</Style>
+		<Style Selector="Button.btnCreateSchedule">
+			<Setter Property="FontSize" Value="10"/>
+			<Setter Property="MaxWidth" Value="130"/>
+			<Setter Property="Margin" Value="0 0 15 0"/>
+			<Setter Property="CornerRadius" Value="4"/>
+		</Style>
+		<StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml"></StyleInclude>
+	</rxui:ReactiveUserControl.Styles>
+
+	<Grid ColumnDefinitions="0.22* 0.015* 0.5*">
+		<!--// left side //-->
+		<Border Grid.Column="0" Padding="0 3 0 3">
+			<Border Classes="CornerBorder">
+				<Grid RowDefinitions="auto 1 *" ClipToBounds="True">
+					<!--// title //-->
+					<TextBlock
+							 Grid.Row="0"
+							 Classes="Title"
+							 Text="Sắp xếp thời khóa biểu"
+							 HorizontalAlignment="Left"
+							 Margin="10 0 0 0"
+							 TextWrapping="WrapWithOverflow"
+						/>
+					<!-- //  Separator // -->
+					<Border Grid.Row="1" Height="1"  Padding="10 0 10 0">
+						<Separator Margin="0"  Background="#a3a3a3"/>
+					</Border>
+					<!-- // Course Edit Tree // -->
+						
+
+				</Grid>
+			</Border>
+		</Border>
+		<!--// right side //-->
+		<Border Grid.Column="2" Padding="0 3 0 3">
+			<Border Classes="CornerBorder">
+				<Grid RowDefinitions="auto 1 *">
+					<!-- // Label // -->
+					<DockPanel Grid.Row="0" LastChildFill="False">
+						<TextBlock
+							 DockPanel.Dock="Left"
+							 Classes="Title"
+							 Text="Thời Khóa Biểu"
+							 HorizontalAlignment="Left"
+							 Margin="10 0 0 0"
+										/>
+						<TextBlock DockPanel.Dock="Left"
+								   Classes="SubTitle"
+								   Text="Đã chọn 0/10 Thời khóa biểu"/>
+
+						<Button
+							 DockPanel.Dock="Right"
+							 Classes="btnCreateSchedule"
+							 x:Name="btnAddTimeTable"
+							 Content="Tạo thời khóa biểu"
+							 ToolTip.Tip="Nhấn nút sẽ tiến hành tạo thời khóa biểu cho bạn chọn!"
+							 />
+					</DockPanel>
+					<!-- //  Separator // -->
+					<Border Grid.Row="1" Height="1"  Padding="10 0 10 0">
+						<Separator Margin="0"  Background="#a3a3a3"/>
+					</Border>
+					<!-- // Timetable Generated // -->
+					<Border Grid.Row="2"  Padding="8">
+						
+					</Border>
+				</Grid>
+			</Border>
+		</Border>
+	</Grid>
+	
+</rxui:ReactiveUserControl>

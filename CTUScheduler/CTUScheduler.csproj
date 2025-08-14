@@ -39,31 +39,77 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="AppServices\Extensions\" />
     <Folder Include="Assets\Logo\" />
-    <Folder Include="Presentation\Templates\" />
-    <Folder Include="Presentation\ViewModels\CoursePage\Components\" />
-    <Folder Include="Presentation\ViewModels\HomePage\Components\" />
-    <Folder Include="Presentation\ViewModels\Shared\" />
-    <Folder Include="Presentation\Views\CoursePage\Components\" />
-    <Folder Include="Presentation\Views\HomePage\Components\" />
-    <Folder Include="Presentation\Views\Shared\" />
+    <Folder Include="Presentation\Shared\Converters\" />
+    <Folder Include="Presentation\ViewModels\Shells\" />
+    <Folder Include="Presentation\Views\Shells\Components\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Presentation\Views\CoursePage\AddScheduleTable\AddScheduleTableDialogView.axaml.cs">
-      <DependentUpon>AddScheduleTableDialogView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Presentation\Views\HomePage\HomePageView.axaml.cs">
-      <DependentUpon>HomePageView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Presentation\Views\SplashScreen\SplashScreenWindow.axaml.cs">
+    <Compile Update="Presentation\SplashScreen\Views\SplashScreenWindow.axaml.cs">
       <DependentUpon>SplashScreenWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Authentication\Views\LoginView.axaml.cs">
+      <DependentUpon>SignInView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\TimeTable\Views\TimeTableView.axaml.cs">
+      <DependentUpon>ScheduleView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Home\Views\HomeView.axaml.cs">
+      <DependentUpon>HomePageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Setting\Views\SettingView.axaml.cs">
+      <DependentUpon>SettingsPageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Shells\MainShell\Views\MainShellView.axaml.cs">
+      <DependentUpon>MainLayoutView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Shells\MainShell\Views\LogoutDialogView.axaml.cs">
+      <DependentUpon>LogoutDialogView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\TimeTableManager\Views\TimeTableManagerView.axaml.cs">
+      <DependentUpon>CoursePageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Scheduling\Views\SchedulingShellView.axaml.cs">
+      <DependentUpon>AddCourseShellView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Scheduling\Views\DialogView.axaml.cs">
+      <DependentUpon>AddScheduleTableDialogView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Scheduling\Views\HandmadeFindCourseView.axaml.cs">
+      <DependentUpon>HandmadeFindCourseView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Scheduling\Views\SelectionView.axaml.cs">
+      <DependentUpon>SelectionView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Scheduling\Views\TimeTableSchedulerView.axaml.cs">
+      <DependentUpon>TimeTableSchedulerView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Shells\AppShell\Views\MainView.axaml.cs">
+      <DependentUpon>MainView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Shells\AppShell\Views\MainWindow.axaml.cs">
+      <DependentUpon>MainWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="Presentation\Resources\Styles\Controls.axaml" />
+    <AdditionalFiles Include="Presentation\Shared\Styles\Controls.axaml" />
   </ItemGroup>
 
 </Project>
