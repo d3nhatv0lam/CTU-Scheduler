@@ -7,7 +7,6 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="550"
 			 xmlns:rxui="http://reactiveui.net"
 			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.ViewModels.CoursePage"
-			 xmlns:components="clr-namespace:CTUScheduler.Presentation.ViewModels.CoursePage.Components"
 			 x:DataType="vm:CoursePageViewModel"
 			 x:CompileBindings="True"
 			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
@@ -23,18 +22,10 @@
 		<Style Selector="TextBlock">
 			<Setter Property="FontFamily" Value="{StaticResource Text_Font}"/>
 		</Style>
+		<StyleInclude Source="avares://CTUScheduler/Presentation/Resources/Styles/Controls.axaml"></StyleInclude>
 	</rxui:ReactiveUserControl.Styles>
 
 	<Grid RowDefinitions="50 *">
-		<Grid.Styles>
-			<Style Selector="Border.CornerBorder">
-				<Setter Property="BorderBrush" Value="#a3a3a3"/>
-				<Setter Property="BorderThickness" Value="1"/>
-				<Setter Property="Background" Value="White"/>
-				<Setter Property="CornerRadius" Value="10"/>
-			</Style>
-		</Grid.Styles>
-		
 		<!--// save & load //-->
 		<Border Grid.Row="0" Background="Transparent" Padding="0 5 0 5">
 			<Border

@@ -1,23 +1,20 @@
 <rxui:ReactiveUserControl 
-	        x:TypeArguments="vm:AddScheduleTableDialogViewModel" 
+	        x:TypeArguments="vm:DialogViewModel" 
 	        xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
-			 
-			 
-
              xmlns:rxui="http://reactiveui.net"
 			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable"
-			 x:DataType="vm:AddScheduleTableDialogViewModel"
+			 x:DataType="vm:DialogViewModel"
 			 x:CompileBindings="True"
 			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
 				xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="CTUScheduler.Presentation.Views.CoursePage.AddScheduleTable.AddScheduleTableDialogView">
 	
 		<Design.DataContext>
-			<vm:AddScheduleTableDialogViewModel/>
+			<vm:DialogViewModel/>
 		</Design.DataContext>
 
 

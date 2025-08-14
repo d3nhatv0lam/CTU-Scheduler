@@ -49,14 +49,13 @@ namespace CTUScheduler.AppServices.Services.Implementations
         { 
             _internetStatusService = internetStatusService;
             _logger = logger;
-            //_playwright =  Playwright.CreateAsync().GetAwaiter().GetResult();
-            //_browser =  _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions() { Headless = false }).GetAwaiter().GetResult();
-            //_page =  _browser.NewPageAsync().GetAwaiter().GetResult();
-            CreatePlayWrightChromiumAsync().GetAwaiter().GetResult();
-
-            ConfigPageAsync().GetAwaiter().GetResult();
-
             InitObservable();
+        }
+
+        public async Task InitWebDriverService()
+        {
+            await CreatePlayWrightChromiumAsync();
+            await ConfigPageAsync();
         }
 
         protected async Task CreatePlayWrightChromiumAsync()
@@ -64,7 +63,6 @@ namespace CTUScheduler.AppServices.Services.Implementations
             _playwright = await Playwright.CreateAsync();
             _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions() { Headless = false });
             _page = await _browser.NewPageAsync();
-            
         }
 
         protected virtual async Task ConfigPageAsync()
@@ -83,13 +81,13 @@ namespace CTUScheduler.AppServices.Services.Implementations
             {
                 if (e.Type == DialogType.Alert)
                 {
-                    _logger.LogInformation("Alert: " + e.Message);
+                    _logger.LogInformation(e.Message);
                     OnAlertBoxOpened();
                     await e.DismissAsync();
                 }
                 else if (e.Type == DialogType.Confirm)
                 {
-                    _logger.LogInformation("Confirm: " + e.Message);
+                    _logger.LogInformation(e.Message);
                     OnConfimBoxOpened();
                     await e.AcceptAsync();
                 }
@@ -126,12 +124,6 @@ namespace CTUScheduler.AppServices.Services.Implementations
             {
                 _isHasInternet = status;
             }).DisposeWith(_disposables);
-
-            //Observable.FromEventPattern<IResponse>(_page, nameof(_page.Response))
-            //.Subscribe(async e =>
-            //{
-            //    string strResponse = await e.EventArgs.TextAsync();
-            //}).DisposeWith(_disposables);
         }
 
         ///<summary>

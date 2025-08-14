@@ -15,6 +15,7 @@ using CTUScheduler.Presentation.Views.SplashScreen;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using Serilog;
 using Splat;
 using System;
 using System.Diagnostics;
@@ -48,7 +49,22 @@ public partial class App : Application
         Locator.CurrentMutable.RegisterLazySingleton(() => new ConventionalViewLocator(), typeof(IViewLocator));
 
         // Load Web
-        Task.Run(() => ServiceProvider!.GetRequiredService<IWebDriverService>());
+        Task.Run(async () =>
+        {
+            try
+            {
+                var webService = ServiceProvider!.GetRequiredService<IWebDriverService>();
+                await webService.InitWebDriverService();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to initialize WebDriverService");
+                if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    desktop.Shutdown(1); // Shutdown the application with an error code
+                }
+            }
+        });
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -73,10 +89,22 @@ public partial class App : Application
 
     private void ConfigureServices(IServiceCollection services)
     {
-        services.AddLogging(configure =>
+
+        Log.Logger = new LoggerConfiguration()
+        .MinimumLevel.Debug()
+        .WriteTo.File(
+            path: "logs/log-.txt",             // File log tự động xoay theo ngày
+            rollingInterval: RollingInterval.Day,
+            retainedFileCountLimit: 7,
+            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}"
+        )
+        .WriteTo.Debug() 
+        .CreateLogger();
+
+        services.AddLogging(logging =>
         {
-            configure.AddDebug();
-            configure.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Debug);
+            logging.ClearProviders();  // Xóa các provider mặc định (nếu có)
+            logging.AddSerilog();      // Thêm Serilog
         });
         services.AddSingleton<IInternetStatusService, InternetStatusService>(provider => new InternetStatusService(TimeSpan.FromSeconds(3)));
         services.AddSingleton<IWebDriverService,WebDriverService>();
@@ -101,6 +129,8 @@ public partial class App : Application
         else
         if (ServiceProvider is IDisposable disposableService)
             disposableService.Dispose();
+
+        Log.CloseAndFlush();
 
         if (sender is IClassicDesktopStyleApplicationLifetime desktop)
         {

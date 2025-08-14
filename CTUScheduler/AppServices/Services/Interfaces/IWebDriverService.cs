@@ -12,7 +12,7 @@ namespace CTUScheduler.AppServices.Services.Interfaces
 {
     public interface IWebDriverService
     {
-
+        Task InitWebDriverService();
         IObservable<JsonElement?> JsonResponse { get; }
 
         event EventHandler AlertBoxOpened;

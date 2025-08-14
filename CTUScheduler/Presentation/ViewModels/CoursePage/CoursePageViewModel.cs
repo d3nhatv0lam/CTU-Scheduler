@@ -51,7 +51,7 @@ namespace CTUScheduler.Presentation.ViewModels.CoursePage
 
         private void OpenAddCourseDialog()
         {
-            var viewModel = new AddScheduleTableDialogViewModel("MainLayoutDialog");
+            var viewModel = new DialogViewModel("MainLayoutDialog");
             _dialogHostService.ShowDialog<Unit>(viewModel, "MainLayoutDialog");
         }
 

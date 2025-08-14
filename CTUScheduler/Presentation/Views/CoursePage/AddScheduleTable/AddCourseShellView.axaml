@@ -20,7 +20,7 @@
 	<controls:Card
 		 Padding="0"
 		 Margin="0">
-		<Grid RowDefinitions="* 35" ShowGridLines="True">
+		<Grid RowDefinitions="* 35">
 			<!--// main View //-->
 			<rxui:ViewModelViewHost Grid.Row="0"
 									ViewModel="{Binding CurrentStep}"
@@ -37,12 +37,13 @@
 						<Setter Property="VerticalAlignment" Value="Stretch"/>
 					</Style>
 				</DockPanel.Styles>
-				<Button x:Name="btnNext"  
-						DockPanel.Dock="Right" 
-						Content="{Binding BtnNextContent}"/>
+				<Button x:Name="btnNext"
+						DockPanel.Dock="Right"
+						Content="{Binding BtnNextContent}"
+						Command="{Binding NavigateNextCommand}"/>
 				<Button x:Name="btnBack"
-						DockPanel.Dock="Right" 
-						Content="Quay lại" 
+						DockPanel.Dock="Right"
+						Content="Quay lại"
 						Command="{Binding NavigateBackCommand}"/>
 			</DockPanel>
 		</Grid>

@@ -20,24 +20,17 @@
              x:Class="CTUScheduler.Presentation.Views.CoursePage.AddScheduleTable.HandmadeFindCourseView">
 
 	<rxui:ReactiveUserControl.Styles>
-
 		<Style Selector="TextBlock">
 			<Setter Property="FontFamily" Value="{StaticResource Text_Font}"/>
-		</Style>
-		
-		<Style Selector="Border.CornerBorder">
-			<Setter Property="BorderBrush" Value="#a3a3a3"/>
-			<Setter Property="BorderThickness" Value="1"/>
-			<Setter Property="Background" Value="White"/>
-			<Setter Property="CornerRadius" Value="10"/>
 		</Style>
 		<Style Selector="TextBlock.Title">
 			<Setter Property="FontSize" Value="20"/>
 			<Setter Property="FontWeight" Value="Bold"/>
 		</Style>
+		<StyleInclude Source="avares://CTUScheduler/Presentation/Resources/Styles/Controls.axaml"></StyleInclude>
 	</rxui:ReactiveUserControl.Styles>
 	
-	<Grid ColumnDefinitions="* 0.025* 0.5*">
+	<Grid ColumnDefinitions="* 10 0.5*">
 		<!--// left side //-->
 		<Border Grid.Column="0" Padding="0 3 0 3">
 			<Border Classes="CornerBorder">
@@ -161,9 +154,7 @@
 					
 					<!--// DataGrid //-->
 					<Border Grid.Row="3"  Padding="8">
-						<ScrollViewer HorizontalScrollBarVisibility="Disabled"
-									  VerticalScrollBarVisibility="Auto">
-							<DataGrid
+						<DataGrid
 							  ClipToBounds="True"
 							  BorderBrush="#a3a3a3"
 							  ClipboardCopyMode="IncludeHeader"
@@ -175,6 +166,7 @@
 							  SelectionMode="Single"
 							  ItemsSource="{Binding FiltedCourseSections,Mode=OneWay}"
 							  AutoGenerateColumns="False">
+							
 							<DataGrid.Styles>
 								<Style Selector="TextBlock">
 									<Setter Property="HorizontalAlignment" Value="Center"/>
@@ -270,8 +262,6 @@
 							</DataGrid.Columns>
 
 						</DataGrid>
-				
-						</ScrollViewer>
 						</Border>
 				</Grid>
 			</Border>

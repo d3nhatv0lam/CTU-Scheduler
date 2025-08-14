@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
 {
-    public class AddScheduleTableDialogViewModel: ViewModelBase, IScreen, IDisposable
+    public class DialogViewModel: ViewModelBase, IScreen, IDisposable
     {
         private readonly IViewportService _viewportService;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
@@ -40,9 +40,9 @@ namespace CTUScheduler.Presentation.ViewModels.CoursePage.AddScheduleTable
         public RoutingState Router { get; } = new RoutingState();
         public ReactiveCommand<Unit, Unit> CloseDialogCommand { get; protected set; }
 
-        public AddScheduleTableDialogViewModel() { }
+        public DialogViewModel() { }
 
-        public AddScheduleTableDialogViewModel(string dialogIdentifier)
+        public DialogViewModel(string dialogIdentifier)
         {
             _dialogIdentifier = dialogIdentifier;
             _viewportService = App.ServiceProvider!.GetRequiredService<IViewportService>();

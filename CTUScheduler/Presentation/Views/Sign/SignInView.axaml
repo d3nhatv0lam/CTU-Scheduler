@@ -136,7 +136,7 @@
 					/>
 
 					<TextBlock 
-							Text="#Note: Nếu ảnh captcha bị lỗi, hãy thoát app và mở lại hoặc nhấp vào nút Đăng nhập!"
+							Text="Nếu có phát sinh lỗi, hãy liên hệ mình, cảm ơn bạn.&#x0A;Chúc các bạn sử dụng app vui vẻ!"
 							FontWeight="Bold"
 							FontSize="15"
 							TextAlignment="Center" 

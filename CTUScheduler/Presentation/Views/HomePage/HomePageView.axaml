@@ -8,7 +8,6 @@
 			 xmlns:rxui="http://reactiveui.net"
 			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.ViewModels.HomePage"
 		     xmlns:model ="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;assembly=CTUScheduler"
-			 xmlns:components="clr-namespace:CTUScheduler.Presentation.ViewModels.HomePage.Components"
 			 x:DataType="vm:HomePageViewModel"
 			 x:CompileBindings="True"
 			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
@@ -24,6 +23,7 @@
 			<Setter Property="SelectionForegroundBrush" Value="White"/>
 			<Setter Property="Background" Value="Transparent"/>
 		</Style>
+		<StyleInclude Source="avares://CTUScheduler/Presentation/Resources/Styles/Controls.axaml"></StyleInclude>
 	</rxui:ReactiveUserControl.Styles>
 	
 	<Grid>
@@ -97,8 +97,7 @@
 										/>
 								
 								<StackPanel Grid.Row="1" Grid.RowSpan="2" VerticalAlignment="Stretch">
-									<TextBlock 
-										 Grid.Row="1"
+									<TextBlock
 										 Classes="TitleText"
 										 Margin="0 5 0 5"
 										 HorizontalAlignment="Left"
@@ -128,12 +127,7 @@
 				</Grid.ColumnDefinitions>
 			
 			<Grid.Styles>
-				<Style Selector="Border.CornerBorder">
-						<Setter Property="BorderBrush" Value="#a3a3a3"/>
-						<Setter Property="BorderThickness" Value="1"/>
-						<Setter Property="Background" Value="White"/>
-						<Setter Property="CornerRadius" Value="10"/>
-				</Style>
+
 			
 				<Style Selector="TextBlock.Title">
 						<Setter Property="FontSize" Value="20"/>
@@ -169,7 +163,7 @@
 										/>
 							
 							<Border Grid.Row="1" Height="1"  Padding="10 0 10 0">
-								<Separator Grid.Row="1" Margin="0"  Background="#a3a3a3"/>
+								<Separator Margin="0"  Background="#a3a3a3"/>
 							</Border>
 
 							<ScrollViewer Grid.Row="2">
@@ -197,7 +191,7 @@
 										/>
 							
 							<Border Grid.Row="1" Height="1"  Padding="10 0 10 0">
-								<Separator Grid.Row="1" Margin="0"  Background="#a3a3a3"/>
+								<Separator Margin="0"  Background="#a3a3a3"/>
 							</Border>
 
 							<SelectableTextBlock
@@ -223,7 +217,7 @@
 										/>
 							
 							<Border Grid.Row="1" Height="1"  Padding="10 0 10 0">
-								<Separator Grid.Row="1" Margin="0"  Background="#a3a3a3"/>
+								<Separator Margin="0"  Background="#a3a3a3"/>
 							</Border>
 							
 							<Border Grid.Row="2"  Padding="8">
@@ -279,7 +273,7 @@
 										/>
 							
 							<Border Grid.Row="1" Height="1"  Padding="10 0 10 0">
-								<Separator Grid.Row="1" Margin="0"  Background="#a3a3a3"/>
+								<Separator Margin="0"  Background="#a3a3a3"/>
 							
 							</Border>
 								
@@ -335,7 +329,7 @@
 							/>
 							
 						<Border Grid.Row="1" Height="1"  Padding="10 0 10 0">
-							<Separator Grid.Row="1" Margin="0"  Background="#a3a3a3"/>
+							<Separator Margin="0"  Background="#a3a3a3"/>
 						</Border>
 						<!--// All Group Registration Time //-->
 						<Border Grid.Row="2" Padding="10">
