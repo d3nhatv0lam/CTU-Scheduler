@@ -1,0 +1,40 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <!-- Add Controls for Previewer Here -->
+        </Border>
+    </Design.PreviewWith>
+
+    <!-- Button -->
+    <Style Selector="Button.BtnRemove">
+        <Setter Property="Height" Value="20"/>
+        <Setter Property="Width" Value="20"/>
+        <Setter Property="Background" Value="red"/>
+        <Setter Property="Padding" Value="2"/>
+    </Style>
+    
+    <!-- border -->
+    <!-- Height transition -->
+    <Style Selector="Border.height-transition">
+        <Setter Property="ClipToBounds" Value="True"></Setter>
+        <Setter Property="Height" Value="0"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Height" Duration="0:0:0.3" Easing="CubicEaseInOut"></DoubleTransition>
+            </Transitions>
+        </Setter>
+    </Style>
+    
+    <Style Selector="Border.hidden">
+        <Setter Property="Height" Value="0"></Setter>
+        <Setter Property="IsEnabled" Value="False"></Setter>
+    </Style>
+    
+    <Style Selector="Border.show">
+        <Setter Property="Height" Value="50"></Setter>
+        <Setter Property="IsEnabled" Value="True"></Setter>
+    </Style>
+</Styles>

@@ -107,8 +107,10 @@ namespace CTUScheduler.AppServices.Services.Implementations
 
         public async Task<bool> TrySignInAsync(string userName, string password)
         {
-           try
-           {
+            if (_webDriverService.GetPageUrl() == AppConstants.CTU_HOME_URL) 
+                return true;
+            try
+            {
                 ILocator userNameInput = _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_USERNAME);
                 ILocator passwordInput = _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_PASSWORD);
                 ILocator loginButton = _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_BUTTON);
@@ -117,17 +119,17 @@ namespace CTUScheduler.AppServices.Services.Implementations
                 await _webDriverService.FillElementAsync(passwordInput, password);
                 await _webDriverService.ClickNavigateElementAsync(loginButton);
 
-                var WaitUrl = _webDriverService.TryWaitForUrlAsync(AppConstants.CTU_HOME_URL_PATTERN);
+                var waitUrl = _webDriverService.TryWaitForUrlAsync(AppConstants.CTU_HOME_URL_PATTERN);
                 var validInput = IsSignInSuccess();
 
                 //return await WaitUrl.Amb(validInput).FirstAsync().ToTask();
-                var completed = await Task.WhenAny(WaitUrl, validInput);
+                var completed = await Task.WhenAny(waitUrl, validInput);
                 return await completed;
-           }
-           catch
-           {
+            }
+            catch
+            {
                 return false;
-           }
+            }
         }
 
         private async Task<bool> IsSignInSuccess()

@@ -40,62 +40,17 @@
 
   <ItemGroup>
     <Folder Include="Assets\Logo\" />
+    <Folder Include="Presentation\Features\Scheduling\Templates\" />
     <Folder Include="Presentation\Shared\Converters\" />
-    <Folder Include="Presentation\ViewModels\Shells\" />
-    <Folder Include="Presentation\Views\Shells\Components\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Presentation\SplashScreen\Views\SplashScreenWindow.axaml.cs">
-      <DependentUpon>SplashScreenWindow.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Authentication\Views\LoginView.axaml.cs">
-      <DependentUpon>SignInView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\TimeTable\Views\TimeTableView.axaml.cs">
-      <DependentUpon>ScheduleView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Home\Views\HomeView.axaml.cs">
-      <DependentUpon>HomePageView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Setting\Views\SettingView.axaml.cs">
-      <DependentUpon>SettingsPageView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Update="Presentation\Shells\MainShell\Views\MainShellView.axaml.cs">
       <DependentUpon>MainLayoutView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Presentation\Shells\MainShell\Views\LogoutDialogView.axaml.cs">
       <DependentUpon>LogoutDialogView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\TimeTableManager\Views\TimeTableManagerView.axaml.cs">
-      <DependentUpon>CoursePageView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Scheduling\Views\SchedulingShellView.axaml.cs">
-      <DependentUpon>AddCourseShellView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Scheduling\Views\DialogView.axaml.cs">
-      <DependentUpon>AddScheduleTableDialogView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Scheduling\Views\HandmadeFindCourseView.axaml.cs">
-      <DependentUpon>HandmadeFindCourseView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Scheduling\Views\SelectionView.axaml.cs">
-      <DependentUpon>SelectionView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Scheduling\Views\TimeTableSchedulerView.axaml.cs">
-      <DependentUpon>TimeTableSchedulerView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Presentation\Shells\AppShell\Views\MainView.axaml.cs">
@@ -106,9 +61,64 @@
       <DependentUpon>MainWindow.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Presentation\Features\Home\Views\HomeView.axaml.cs">
+      <DependentUpon>HomeView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Features\Scheduling\Views\SchedulingShellView.axaml.cs">
+      <DependentUpon>SchedulingShellView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Features\Scheduling\Views\DialogView.axaml.cs">
+      <DependentUpon>DialogView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Features\Scheduling\Views\HandmadeFindCourseView.axaml.cs">
+      <DependentUpon>HandmadeFindCourseView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Features\Scheduling\Views\SelectionView.axaml.cs">
+      <DependentUpon>SelectionView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Features\Scheduling\Views\TimeTableSchedulerView.axaml.cs">
+      <DependentUpon>TimeTableSchedulerView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Features\Setting\Views\SettingView.axaml.cs">
+      <DependentUpon>SettingView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Features\SplashScreen\Views\SplashScreenWindow.axaml.cs">
+      <DependentUpon>SplashScreenWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Features\TimeTable\Views\TimeTableView.axaml.cs">
+      <DependentUpon>TimeTableView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Features\TimeTableManager\Views\TimeTableManagerView.axaml.cs">
+      <DependentUpon>TimeTableManagerView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Features\Authentication\Views\LoginView.axaml.cs">
+      <DependentUpon>LoginView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
+    <AdditionalFiles Include="Presentation\Features\Authentication\Views\LoginView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\Home\Views\HomeView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\DialogView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\HandmadeFindCourseView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\SchedulingShellView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\SelectionView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\TimeTableSchedulerView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\Setting\Views\SettingView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\SplashScreen\Views\SplashScreenWindow.axaml" />
+    <AdditionalFiles Include="Presentation\Features\TimeTableManager\Views\TimeTableManagerView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\TimeTable\Views\TimeTableView.axaml" />
     <AdditionalFiles Include="Presentation\Shared\Styles\Controls.axaml" />
   </ItemGroup>
 

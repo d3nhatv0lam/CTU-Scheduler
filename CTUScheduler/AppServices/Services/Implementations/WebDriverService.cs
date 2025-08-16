@@ -141,7 +141,7 @@ namespace CTUScheduler.AppServices.Services.Implementations
             return _page.Url;
         }
 
-        public async Task<bool> TryWaitForUrlAsync(string url,int timeout = 5000)
+        public async Task<bool> TryWaitForUrlAsync(string url,int timeout = 10000)
         {
             try
             {

@@ -1,0 +1,249 @@
+<rxui:ReactiveUserControl
+			x:TypeArguments="viewModels:TimeTableManagerViewModel"
+			xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="550"
+			 xmlns:rxui="http://reactiveui.net"
+			 x:DataType="viewModels:TimeTableManagerViewModel"
+			 x:CompileBindings="True"
+			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+			 xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+			 xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.TimeTableManager.ViewModels"
+			 x:Class="CTUScheduler.Presentation.Features.TimeTableManager.Views.TimeTableManagerView">
+
+	<Design.DataContext>
+		<viewModels:TimeTableManagerViewModel/>
+	</Design.DataContext>
+
+	<rxui:ReactiveUserControl.Styles>
+		<Style Selector="TextBlock">
+			<Setter Property="FontFamily" Value="{StaticResource Text-Font}"/>
+		</Style>
+		<StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml"></StyleInclude>
+	</rxui:ReactiveUserControl.Styles>
+
+	<Grid RowDefinitions="50 *">
+		<!--// save & load //-->
+		<Border Grid.Row="0" Background="Transparent" Padding="0 5 0 5">
+			<Border
+				Classes="CornerBorder">
+				<DockPanel LastChildFill="False">
+					<DockPanel.Styles>
+						<Style Selector="DockPanel > TextBlock">
+							<Setter Property="VerticalAlignment" Value="Center"/>
+						</Style>
+						<Style Selector="Button">
+							<Setter Property="CornerRadius" Value="40"/>
+						</Style>
+					</DockPanel.Styles>
+					<!--// txt save time //-->
+					<TextBlock 
+						Text="Lần cuối lưu dữ liệu:"
+						Margin="10 0 0 0"/>
+					<TextBlock x:Name="txtLastSaved"
+							   Margin="5 0 0 0"
+							   Text="Chưa có"/>
+					<!--// download data button //--> 
+					<Border Padding="0 3 0 3" DockPanel.Dock="Right">
+						<Button x:Name="btnSave"
+							Margin="0 0 10 0">
+							<StackPanel Orientation="Horizontal">
+								<materialIcons:MaterialIcon Kind="MonitorArrowDownVariant"/>
+								<TextBlock VerticalAlignment="Center" Text="Tải xuống" Margin="5 0 0 0"/>
+							</StackPanel>
+							<ToolTip.Tip>
+								<TextBlock Text="Tải dữ liệu về máy của bạn!"/>
+							</ToolTip.Tip>
+						</Button>
+					</Border>
+					<!--// load data button //-->
+					<Border Padding="0 3 0 3" DockPanel.Dock="Right">
+						<Button x:Name="btnLoad" DockPanel.Dock="Right"
+							Margin="10 0 10 0">
+							<StackPanel Orientation="Horizontal">
+								<materialIcons:MaterialIcon Kind="MonitorShare"/>
+								<TextBlock VerticalAlignment="Center" Text="Tải lên" Margin="5 0 0 0"/>
+							</StackPanel>
+							<ToolTip.Tip>
+								<TextBlock Text="Nạp dữ liệu của bạn lên ứng dụng!"/>
+							</ToolTip.Tip>
+						</Button>
+					</Border>
+					
+				</DockPanel>
+			</Border>
+		</Border>
+		
+		<!--// Schedule Manager //-->
+		<Border Grid.Row="1" Background="Transparent"  Padding="0 5 0 5">
+			<Border >
+				<Grid RowDefinitions="40 40 *" >
+					<!--// TKB title //-->
+					<Panel Grid.Row="0">
+						<TextBlock
+							VerticalAlignment="Center"
+							HorizontalAlignment="Left"
+							FontSize="24"
+							FontWeight="Bold"
+							Text="Quản lý thời khóa biểu"/>
+						<Separator
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Bottom"
+						Margin="0"
+						Background="#a3a3a3"
+						Height="1"/>
+					</Panel>
+
+					<!--// Button field //-->
+					<DockPanel Grid.Row="1" LastChildFill="False" ClipToBounds="True">
+						<DockPanel.Styles>
+							<Style Selector="Button">
+								<Setter Property="Height" Value="30"/>
+								<Setter Property="CornerRadius" Value="40"/>
+								<Setter Property="Margin" Value="0 0 10 0"/>
+								<Setter Property="Padding" Value="15 0 15 0"/>
+							</Style>
+
+							<!--// fake radio button //-->
+							<Style Selector="ListBox.RadioGroup">
+								<Setter Property="ItemsPanel">
+									<ItemsPanelTemplate>
+										<StackPanel Orientation="Horizontal" />
+									</ItemsPanelTemplate>
+								</Setter>
+								<Setter Property="Background" Value="Transparent" />
+								<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+								<!--  SelectionMode determines the selection mode, Single allow single selection  -->
+								<Setter Property="SelectionMode" Value="Single" />
+							</Style>
+							<!--  UniformSize make all items be same size  -->
+							<Style Selector="ListBox.RadioGroup.UniformSize">
+								<Setter Property="ItemsPanel">
+									<ItemsPanelTemplate>
+										<UniformGrid Rows="1" />
+									</ItemsPanelTemplate>
+								</Setter>
+							</Style>
+							<Style Selector="ListBox.RadioGroup > ListBoxItem">
+								<Setter Property="Template">
+									<ControlTemplate TargetType="ListBoxItem">
+										<ToggleButton HorizontalAlignment="Stretch"
+														VerticalAlignment="Stretch"
+														HorizontalContentAlignment="Center"
+														Padding="4"
+														Content="{TemplateBinding Content}"
+														ContentTemplate="{TemplateBinding ContentTemplate}"
+														IsChecked="{TemplateBinding IsSelected,
+                                                        Mode=TwoWay}"
+														IsHitTestVisible="{Binding !IsChecked,
+                                                        RelativeSource={RelativeSource Self}}" />
+										<!--  IsHitTestVisible Binding to reverse IsChecked make it cannot uncheck, if you need uncheck then remove it  -->
+									</ControlTemplate>
+								</Setter>
+							</Style>
+
+							<Style Selector="ListBox.RadioGroup > ListBoxItem /template/ ToggleButton">
+								<Setter Property="BorderThickness" Value="1" />
+								<Setter Property="CornerRadius" Value="0" />
+							</Style>
+							<Style Selector="ListBox.RadioGroup > ListBoxItem:nth-child(1) /template/ ToggleButton">
+								<Setter Property="CornerRadius" Value="3,0,0,3" />
+							</Style>
+							<Style Selector="ListBox.RadioGroup > ListBoxItem:nth-last-child(1) /template/ ToggleButton">
+								<Setter Property="CornerRadius" Value="0,3,3,0" />
+							</Style>
+						</DockPanel.Styles>
+
+						<!--// add schedule tables //-->
+						<Button DockPanel.Dock="Left"
+								x:Name="btnAddTables"
+								Command="{Binding OpenAddCourseDialogCommand}"
+							>
+							<StackPanel Orientation="Horizontal">
+								<materialIcons:MaterialIcon Kind="TablePlus"  Height="20" Width="20"/>
+								<TextBlock VerticalAlignment="Center" Text="Thêm thời khóa biểu" Margin="5 0 0 0"/>
+							</StackPanel>
+						</Button>
+						<!--// reload schedule tables data //-->
+						<Button DockPanel.Dock="Left"
+								x:Name="btnReloadTableData"
+							>
+							<StackPanel Orientation="Horizontal">
+								<materialIcons:MaterialIcon Kind="Reload"  Height="20" Width="20"/>
+								<TextBlock VerticalAlignment="Center" Text="Cập nhật thông tin học phần" Margin="5 0 0 0"/>
+							</StackPanel>
+						</Button>
+						<!--// total schedule tables //-->
+						<TextBlock DockPanel.Dock="Left"
+									x:Name="txtTotalTable"
+									Foreground="#a3a3a3"
+									VerticalAlignment="Center"
+									HorizontalAlignment="Center"
+									Text="0 Thời khóa biểu"/>
+
+
+						<!--// list //-->
+						<ListBox Classes="RadioGroup" Height="30" DockPanel.Dock="Right">
+							<ListBox.Items>
+								<ListBoxItem>
+									<materialIcons:MaterialIcon Kind="FormatListText"  Height="20" Width="20"/>
+								</ListBoxItem>
+								<ListBoxItem>
+									<materialIcons:MaterialIcon Kind="ViewGridOutline" Height="20" Width="20"/>
+								</ListBoxItem>
+							</ListBox.Items>
+						</ListBox>
+					</DockPanel>
+					
+					<!--// Schedule area //-->
+					<Border Grid.Row="2" Classes="CornerBorder">
+						<Panel ClipToBounds="True">
+							<ScrollViewer HorizontalScrollBarVisibility="Disabled">
+								<ItemsRepeater
+									x:Name="itmRptTables">
+									<ItemsRepeater.Layout>
+										<UniformGridLayout
+											Orientation="Horizontal"
+											ItemsJustification="SpaceEvenly"
+											MinColumnSpacing="30"
+											MinRowSpacing="30"/>
+									</ItemsRepeater.Layout>
+								</ItemsRepeater>
+							</ScrollViewer>
+							
+							<!--// empty schedule table popup //-->
+							<StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+								<Interaction.Behaviors>
+									<DataTriggerBehavior Binding="{Binding CourseList.Count}" ComparisonCondition="NotEqual" Value="0">
+										<ChangePropertyAction PropertyName="IsVisible" Value="False"/>
+									</DataTriggerBehavior>
+									<DataTriggerBehavior Binding="{Binding CourseList.Count}" ComparisonCondition="Equal" Value="0">
+										<ChangePropertyAction PropertyName="IsVisible" Value="True"/>
+									</DataTriggerBehavior>
+								</Interaction.Behaviors>
+								<StackPanel.Styles>
+									<Style Selector="TextBlock">
+										<Setter Property="HorizontalAlignment" Value="Center"/>
+										<Setter Property="FontSize" Value="18"/>
+										<Setter Property="FontWeight" Value="Bold"/>
+									</Style>
+								</StackPanel.Styles>
+								<Image Source="/Assets/Images/Course/EmptyScheduleTable.png" Stretch="None"/>
+								<TextBlock
+									Text="Thêm thời khóa biểu của bạn!"/>
+								<TextBlock Text="Dễ lắm hehe"/>
+
+								
+							</StackPanel>
+
+							
+						</Panel>
+					</Border>
+				</Grid>
+			</Border>
+		</Border>
+	</Grid>
+</rxui:ReactiveUserControl>

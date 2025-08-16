@@ -16,12 +16,11 @@ using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
+using CTUScheduler.Presentation.Features.SplashScreen.Views;
 using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
-using CTUScheduler.Presentation.SplashScreen;
-using CTUScheduler.Presentation.SplashScreen.ViewModels;
 using MainView = CTUScheduler.Presentation.Shells.AppShell.Views.MainView;
 using MainWindow = CTUScheduler.Presentation.Shells.AppShell.Views.MainWindow;
-using SplashScreenWindow = CTUScheduler.Presentation.SplashScreen.Views.SplashScreenWindow;
 
 namespace CTUScheduler;
 
