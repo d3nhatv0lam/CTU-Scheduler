@@ -75,24 +75,10 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         private IStepViewModel[] CreateHandmadeSteps()
         {
             var step1 = new HandmadeFindCourseViewModel();
-            var step2 = new TimeTableSchedulerViewModel();
+            var step2 = new TimeTableSchedulerViewModel(step1.CoursesSourceList);
+            _disposables.Add(step1);
+            _disposables.Add(step2);
             
-            step1.TreeCourses
-                .ToObservableChangeSet()
-                .Select(_ => Unit.Default) // thay đổi ở chính TreeCourses (thêm/xóa course)
-                .Merge(step1.TreeCourses
-                    .ToObservableChangeSet()
-                    .MergeMany(course => course.Sections
-                        .ToObservableChangeSet()
-                        .Select(__ => Unit.Default))) // thay đổi bên trong Sections
-                .Throttle(TimeSpan.FromMilliseconds(100)) // gộp event gần nhau
-                .Subscribe(_ =>
-                {
-                    step2.ToSchedulingCourses(step1.TreeCourses);
-                })
-                .DisposeWith(_disposables);
-
-
             IStepViewModel[] steps =
             {
                 step1,
@@ -116,7 +102,10 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         private void NavigateBack()
         {
             if (CurrentStepIndex == 0)
+            {
                 HostScreen.Router.NavigateBack.Execute();
+                Dispose();
+            }
             else
                 CurrentStepIndex--;
         }

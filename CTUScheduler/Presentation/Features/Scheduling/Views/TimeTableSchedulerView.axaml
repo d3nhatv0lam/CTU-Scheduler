@@ -75,7 +75,7 @@
                             HorizontalScrollBarVisibility="Disabled"
                             VerticalScrollBarVisibility="Auto">
                             <ItemsRepeater
-                                ItemsSource="{Binding SchedulingCourses}">
+                                ItemsSource="{Binding SchedulingCourseVM.SchedulingCourses}">
                                 <ItemsRepeater.Styles>
                                     <Style Selector="ItemsRepeater Border.CornerBorder">
                                         <Setter Property="Margin" Value="0 5"></Setter>
@@ -85,7 +85,8 @@
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate DataType="{x:Type models:SchedulingCourse}">
                                         <Border Classes="CornerBorder" ClipToBounds="True">
-                                            <StackPanel>
+                                           <Border Padding="5">
+                                                <StackPanel>
                                                 <!-- // Title // -->
                                                 <TextBlock>
                                                     <Run Text="{Binding Item.Code, Mode=OneTime}" />
@@ -125,6 +126,7 @@
                                                     </ComboBox>
                                                 </Border>
                                             </StackPanel>
+                                           </Border>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsRepeater.ItemTemplate>

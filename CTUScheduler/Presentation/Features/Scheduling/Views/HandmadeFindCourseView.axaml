@@ -65,10 +65,11 @@
                                 Text="{Binding TxtInputCourseKey ,Mode=TwoWay}"
                                 Classes="outline"
                                 Theme="{StaticResource OutlineTextBox}"
-                                p1:TextFieldAssist.Label="Mã học phần">
-                                <TextBox.IsFocused>
-                                    <Binding Path="IsTxtInputCourseKeyFocused" Mode="OneWayToSource" />
-                                </TextBox.IsFocused>
+                                p1:TextFieldAssist.Label="Mã học phần"
+                                IsFocused="{Binding IsTxtInputCourseKeyFocused,Mode=OneWayToSource}">
+                                <!-- <TextBox.IsFocused> -->
+                                <!--     <Binding Path="IsTxtInputCourseKeyFocused" Mode="OneWayToSource" /> -->
+                                <!-- </TextBox.IsFocused> -->
                             </TextBox>
                             <!--// search button //-->
                             <Button
@@ -139,7 +140,6 @@
                                         </Grid>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
-
                             </ListBox>
                         </controls:Card>
                     </Popup>
@@ -277,7 +277,7 @@
                     <Border Grid.Row="2" Padding="8">
                         <TreeView
                             x:Name="tviewCourses"
-                            ItemsSource="{Binding TreeCourses}">
+                            ItemsSource="{Binding Courses}">
 
                             <TreeView.ItemTemplate>
                                 <TreeDataTemplate ItemsSource="{Binding Sections}"

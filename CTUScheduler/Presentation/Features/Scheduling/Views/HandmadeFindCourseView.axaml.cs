@@ -1,4 +1,6 @@
 ﻿using System.Reactive.Disposables;
+using Avalonia;
+using Avalonia.Input;
 using Avalonia.ReactiveUI;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 using ReactiveUI;

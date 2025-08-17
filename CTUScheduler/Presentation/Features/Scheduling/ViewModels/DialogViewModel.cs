@@ -39,7 +39,8 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         {
             _dialogIdentifier = dialogIdentifier;
             _viewportService = App.ServiceProvider!.GetRequiredService<IViewportService>();
-            CloseDialogCommand = ReactiveCommand.Create(CloseDialog).DisposeWith(_disposables);
+            CloseDialogCommand = ReactiveCommand.Create(CloseDialog)
+                .DisposeWith(_disposables);
             _viewportService.SizeChanged
                 .Subscribe(size =>
                 {
@@ -52,6 +53,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         private void CloseDialog()
         {
             DialogHost.Close(_dialogIdentifier);
+            Dispose();
         }
         public void Dispose()
         {

@@ -22,7 +22,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
 
         public ReactiveCommand<Unit,Unit> HandmadeSelectionCommand { get; protected set; }
         public ReactiveCommand<Unit,Unit> QuickSelectionCommand { get; protected set; }
-        //public ReactiveCommand<Unit, Unit> UserDataSelectionCommand { get; protected set; }
+        
         public SelectionViewModel(IScreen hostScreen)
         {
             HostScreen = hostScreen;

@@ -23,6 +23,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly ICTUWebDriverService _ctuWebDriverService;
+        private readonly SourceList<Course> _coursesSourceList = new SourceList<Course>();
         private string _txtInputCourseKey = string.Empty;
         private bool _isTxtInputCourseKeyFocused = false;
         private bool _showOnlyAvailableSections = false;
@@ -32,8 +33,10 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         private ObservableAsPropertyHelper<bool> _isQuickSelectPopupOpened;
         private ObservableAsPropertyHelper<ObservableCollection<QuickSelectCourse>> _quickSelectCourses;
         private QuickSelectCourse _selectedQuickSelectCourse;
-        private ObservableCollection<Course> _treeCourses = new ObservableCollection<Course>();
+        private ReadOnlyObservableCollection<Course> _coursesBindable;
         
+        
+        public  SourceList<Course> CoursesSourceList => _coursesSourceList;
         public string TxtInputCourseKey
         {
             get => _txtInputCourseKey;
@@ -59,11 +62,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             get => _selectedQuickSelectCourse;
             set => this.RaiseAndSetIfChanged(ref _selectedQuickSelectCourse, value);
         }
-        public ObservableCollection<Course> TreeCourses
-        {
-            get => _treeCourses;
-            set => this.RaiseAndSetIfChanged(ref _treeCourses, value);
-        }
+        public ReadOnlyObservableCollection<Course> Courses => _coursesBindable;
         public ReactiveCommand<Unit,Unit> SearchCommand { get; }
         public ReactiveCommand<Unit,Unit> AddCoursesCommand { get; }
         public ReactiveCommand<Course,Unit> Tree_RemoveCourseCommand { get; }
@@ -73,6 +72,12 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         {
             _ctuWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
 
+            // TreeView SourceList
+            _coursesSourceList.Connect()
+                .Bind(out _coursesBindable)
+                .Subscribe()
+                .DisposeWith(_disposables);
+            
             // quick select course
             this.WhenAnyValue(x => x.TxtInputCourseKey)
                 .Throttle(TimeSpan.FromMilliseconds(300))
@@ -93,7 +98,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             _isQuickSelectPopupOpened =
                this.WhenAnyValue(x => x.IsTxtInputCourseKeyFocused,
                                  x => x.QuickSelectCourses,
-                                 (tBoxFocus, qCourses) => qCourses != null? tBoxFocus && qCourses.Any(): false)
+                                 (tBoxFocus, qCourses) => qCourses != null? tBoxFocus && qCourses.Any() : false)
               .ToProperty(this, nameof(IsQuickSelectPopupOpened))
               .DisposeWith(_disposables);
 
@@ -117,8 +122,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                 .Select(course => course == null ? new ObservableCollection<SelectableCourseData>():ToSelectableCourseCatalogs(course))
                 .ToProperty(this, nameof(SearchedCourseSections))
                 .DisposeWith(_disposables);
-
-
+            
             // Filtered Course Sections
             _filtedCourseSections = this.WhenAnyValue(x => x.ShowOnlyAvailableSections, x => x.SearchedCourseSections, (showOnlyAvailableSections, searchedCourseSections) => (showOnlyAvailableSections, searchedCourseSections))
                         .Where(tuple => tuple.searchedCourseSections != null && tuple.searchedCourseSections.Any())
@@ -146,18 +150,19 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
 
                 if (!selectedSections.Any()) return;
 
-                var treeCourseNode = TreeCourses.FirstOrDefault(x => x.Code == SearchedCourse.Code);
-
+                var treeCourseNode = Courses.FirstOrDefault(x => x.Code == SearchedCourse.Code);
+                
                 if (treeCourseNode == null)
                 {
                     treeCourseNode = SearchedCourse.CloneWithNewCourseDatas(selectedSections);
-                    TreeCourses.Add(treeCourseNode);
+                    _coursesSourceList.Add(treeCourseNode);
                     return;
                 }
-
+                
+                Comparer<CourseData> comparer = Comparer<CourseData>.Create((x, y) => x.Key.CompareTo(y.Key));
                 foreach (var section in selectedSections)
                 {
-                    int index = treeCourseNode.Sections.BinarySearch(section, Comparer<CourseData>.Create((x, y) => x.Key.CompareTo(y.Key)));
+                    int index = treeCourseNode.Sections.BinarySearch(section, comparer);
                     if (index < 0)
                     {
                         index = ~index; // Get the index where the item should be inserted
@@ -181,20 +186,19 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             {
                 items.Add(SelectableCourseData.ToSelectableCourseData(courseGroup));
             }
-
             return items;
         }
 
         private void RemoveCourseFromTree(Course? course)
         {
             if (course == null) return;
-            TreeCourses.Remove(course);
+            _coursesSourceList.Remove(course);
         }
 
         private void RemoveSectionFromTree(CourseData? section)
         {
             if (section == null) return;
-            var course = TreeCourses.FirstOrDefault(x => x.Code == section.Code);
+            var course = Courses.FirstOrDefault(x => x.Code == section.Code);
             if (course == null) return;
             course.Sections.Remove(section);
             if (!course.Sections.Any()) 
@@ -203,6 +207,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
 
         public void Dispose()
         {
+            _coursesSourceList.Dispose();
             _disposables.Dispose();
         }
 
