@@ -19,7 +19,7 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Schedule
         private string _description = string.Empty;
         private readonly ObservableCollection<ScheduleCell> _scheduleCells = new ObservableCollection<ScheduleCell>();
         private readonly Dictionary<string, string> _scheduleData = new Dictionary<string, string>();
-        private DateTime _lastUpdate = DateTime.Now;
+        private DateTime _lastUpdated = DateTime.Now;
         private int _totalCredit;
         public string Name
         {
@@ -42,10 +42,10 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Schedule
         {
             get => _scheduleData;
         }
-        public DateTime LastUpdate
+        public DateTime LastUpdated
         {
-            get => _lastUpdate;
-            set => this.RaiseAndSetIfChanged(ref _lastUpdate, value);
+            get => _lastUpdated;
+            set => this.RaiseAndSetIfChanged(ref _lastUpdated, value);
         }
 
         public ScheduleTable()

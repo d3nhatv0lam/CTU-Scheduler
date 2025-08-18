@@ -9,6 +9,7 @@ using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
 using DynamicData;
+using DynamicData.Binding;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels;
@@ -20,7 +21,26 @@ public class SchedulingCourseViewModel : ViewModelBase, IDisposable
 
     public SchedulingCourseViewModel()
     {
-      
+        SchedulingCourses.ToObservableChangeSet()
+            .AutoRefresh(x => x.IsMainCourse)
+            .Subscribe(_ =>
+            {
+                var mainCourse = new List<SchedulingCourse>();
+                var alternativeCourse = new List<SchedulingCourse>();
+                foreach (var schedulingCourse in SchedulingCourses)
+                {
+                    if (schedulingCourse.IsMainCourse)
+                        mainCourse.Add(schedulingCourse);
+                    else
+                        alternativeCourse.Add(schedulingCourse);
+                }
+
+                foreach (var schedulingCourse in alternativeCourse)
+                {
+                    schedulingCourse.ReplacementOptions = mainCourse;
+                }
+            })
+            .DisposeWith(_disposables);
     }
 
     public void MapToSchedulingCourses(ReadOnlyObservableCollection<Course> courses) 
@@ -28,24 +48,17 @@ public class SchedulingCourseViewModel : ViewModelBase, IDisposable
         ClearSchedulingCourses();
         foreach (var course in courses)
         {
-            var schedulingCourse = ToSchedulingCourse(course);
+            var schedulingCourse = SchedulingCourse.CourseToSchedulingCourse(course);
             SchedulingCourses.Add(schedulingCourse);
         }
     }
-
-
+    
     private void ClearSchedulingCourses()
     {
         if (SchedulingCourses.Any())
             SchedulingCourses.Clear();
     }
     
-    private SchedulingCourse ToSchedulingCourse(Course course)
-    {
-        SchedulingCourse schedulingCourse = new SchedulingCourse(course);
-        return schedulingCourse;
-    }
-
     public void Dispose()
     {
         _disposables.Dispose();

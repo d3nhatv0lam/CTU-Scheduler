@@ -9,47 +9,52 @@ using System.Reactive.Disposables;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using CTUScheduler.Core.Models.UserSaves;
+using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.AppServices.Services.Implementations
 {
     public class UserDataService : IUserDataService , IDisposable
     {
-        private CompositeDisposable _disposables = new CompositeDisposable();
-        public UserData _UserData { get; private set; }
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private readonly ILogger<UserDataService> _logger;
+        public ScheduleSave ScheduleSaved { get; private set; }
         public bool DataChanged { get; set; } = false;
 
-        public UserDataService()
+        public UserDataService(ILogger<UserDataService> logger)
         {
-            _UserData = new UserData();
+            _logger = logger;
+            ScheduleSaved = new ScheduleSave();
         }
 
-        public void LoadUserData(string fileName)
+        public async Task<bool> TryLoadUserDataAsync(string filePath)
         {
             try
             {
-                var loadedData = JsonHelper.Deserialize<UserData>(fileName);
-                if (loadedData == null) throw new Exception("Loaded Fail!");
+                var loadedData = await JsonHelper.DeserializeFromFileAsync<ScheduleSave>(filePath);
+                ArgumentNullException.ThrowIfNull(loadedData);
 
-                _UserData = loadedData;
+                ScheduleSaved = loadedData;
+                return true;
             }
             catch (Exception ex) 
             {
-                Debug.WriteLine(ex);
-                throw;
+                _logger.LogError(ex.Message);
+                return false;
             }
-            
         }
 
-        public void SaveUserData(string fileName)
+        public async Task<bool> TrySaveUserDataAsync(string filePath)
         {
             try
             {
-                string json = JsonHelper.Serialize(_UserData);
-                Debug.WriteLine(json);
+                await JsonHelper.SerializeToFileAsync(filePath, ScheduleSaved);
+                return true;
             }
-            catch
+            catch (Exception ex) 
             {
-                throw;
+                _logger.LogError(ex.Message);
+                return false;
             }
         }
 

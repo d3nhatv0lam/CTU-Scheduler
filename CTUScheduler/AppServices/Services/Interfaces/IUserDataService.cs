@@ -6,15 +6,16 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using CTUScheduler.Core.Models.UserSaves;
 
 namespace CTUScheduler.AppServices.Services.Interfaces
 {
     public interface IUserDataService
     {
-        public UserData _UserData { get; }
+        public ScheduleSave ScheduleSaved { get; }
 
-        public void LoadUserData(string fileName);
+        Task<bool> TryLoadUserDataAsync(string filePath);
 
-        public void SaveUserData(string fileName);
+        Task<bool> TrySaveUserDataAsync(string filePath);
     }
 }

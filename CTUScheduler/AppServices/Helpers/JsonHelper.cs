@@ -22,9 +22,9 @@ namespace CTUScheduler.AppServices.Helpers
         }
 
         // ---- Deserialization ----
-        public static T? Deserialize<T>(string json, JsonSerializerOptions? options = null)
+        public static T? Deserialize<T>(string jsonString, JsonSerializerOptions? options = null)
         {
-            return JsonSerializer.Deserialize<T>(json, options ?? JsonSerializerOptions.Default);
+            return JsonSerializer.Deserialize<T>(jsonString, options ?? JsonSerializerOptions.Default);
         }
 
         public static T? Deserialize<T>(Stream jsonStream, JsonSerializerOptions? options = null)
@@ -42,6 +42,30 @@ namespace CTUScheduler.AppServices.Helpers
         {
             using var stream = File.OpenRead(filePath);
             return Deserialize<T>(stream, options);
+        }
+        
+        // ---- Serialization (Async) ----
+        public static async Task SerializeAsync<T>(Stream stream, T obj, JsonSerializerOptions? options = null)
+        {
+            await JsonSerializer.SerializeAsync(stream, obj, options ?? JsonSerializerOptions.Default);
+        }
+
+        public static async Task SerializeToFileAsync<T>(string filePath, T obj, JsonSerializerOptions? options = null)
+        {
+            await using var stream = File.Create(filePath);
+            await SerializeAsync(stream, obj, options);
+        }
+
+        // ---- Deserialization (Async) ----
+        public static async Task<T?> DeserializeAsync<T>(Stream jsonStream, JsonSerializerOptions? options = null)
+        {
+            return await JsonSerializer.DeserializeAsync<T>(jsonStream, options ?? JsonSerializerOptions.Default);
+        }
+
+        public static async Task<T?> DeserializeFromFileAsync<T>(string filePath, JsonSerializerOptions? options = null)
+        {
+            await using var stream = File.OpenRead(filePath);
+            return await DeserializeAsync<T>(stream, options);
         }
     }
 }
