@@ -1,15 +1,11 @@
-﻿using Avalonia.Media.Imaging;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace CTUScheduler.AppServices.Services.Interfaces
+namespace CTUScheduler.AppServices.Services.WebDriver
 {
     public interface ICTUWebDriverService
     {

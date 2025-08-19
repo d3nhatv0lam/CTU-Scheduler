@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reactive;
 using System.Reactive.Disposables;
-using CTUScheduler.AppServices.Services.Interfaces;
+using CTUScheduler.AppServices.Services.Viewport;
 using CTUScheduler.Presentation.Base;
 using DialogHostAvalonia;
 using Microsoft.Extensions.DependencyInjection;

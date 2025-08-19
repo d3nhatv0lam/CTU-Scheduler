@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using CTUScheduler.AppServices;
 using CTUScheduler.AppServices.Helpers;
-using CTUScheduler.AppServices.Services.Interfaces;
+using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using Microsoft.Extensions.DependencyInjection;

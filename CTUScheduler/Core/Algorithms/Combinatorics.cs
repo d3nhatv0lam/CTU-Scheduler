@@ -7,6 +7,7 @@ namespace CTUScheduler.Core.Algorithms;
 
 public static class Combinatorics
 {
+    // O(∏(sets[i].size)) 
     public static IEnumerable<List<T>> CartesianProduct<T>(
         IEnumerable<List<T>> sets,
         Func<List<T>, bool>? isValidPrefix = null,
@@ -14,11 +15,11 @@ public static class Combinatorics
         CancellationToken? token = null)
     {
         var setList = sets.ToList();
+        if (setList.Count == 0) yield break;
         
         var indices = new int[setList.Count];
         var current = new List<T>(setList.Count);
 
-        // bắt đầu với index 0
         int depth = 0;
         for (int i = 0; i < setList.Count; i++) indices[i] = -1;
 
@@ -49,7 +50,6 @@ public static class Combinatorics
 
             if (depth == setList.Count - 1)
             {
-                // đủ tổ hợp
                 if (isValidFull == null || isValidFull(current))
                     yield return new List<T>(current);
             }

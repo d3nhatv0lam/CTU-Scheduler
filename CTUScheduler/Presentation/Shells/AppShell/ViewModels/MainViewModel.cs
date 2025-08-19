@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using CTUScheduler.AppServices.Services.Interfaces;
+using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using Microsoft.Extensions.DependencyInjection;

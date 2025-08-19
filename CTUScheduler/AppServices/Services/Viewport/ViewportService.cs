@@ -1,17 +1,11 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using CTUScheduler.AppServices.Services.Interfaces;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Disposables;
+﻿using System;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text;
-using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Microsoft.Extensions.Logging;
 
-namespace CTUScheduler.AppServices.Services.Implementations
+namespace CTUScheduler.AppServices.Services.Viewport
 {
     public class ViewportService : IViewportService, IDisposable
     {

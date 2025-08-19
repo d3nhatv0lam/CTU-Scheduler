@@ -1,9 +1,12 @@
-﻿using Avalonia.Media;
-using Avalonia.Media.Imaging;
-using CTUScheduler.AppServices.Helpers;
-using CTUScheduler.AppServices.Services.Interfaces;
-using CTUScheduler.Core.Exceptions;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
 using CTUScheduler.Core.Extensions;
+using CTUScheduler.Core.Helpers;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
@@ -11,24 +14,8 @@ using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Raw;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using ReactiveUI;
-using Splat;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Reactive.Threading.Tasks;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace CTUScheduler.AppServices.Services.Implementations
+namespace CTUScheduler.AppServices.Services.WebDriver
 {
     public class CTUWebDriverService: ICTUWebDriverService, IDisposable
     {

@@ -1,16 +1,12 @@
-using Avalonia.Data.Converters;
-using CTUScheduler.AppServices.Services.Interfaces;
 using System;
-using System.Diagnostics;
 using System.Net.Http;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace CTUScheduler.AppServices.Services.Implementations;
+namespace CTUScheduler.AppServices.Services.Network;
 public class InternetStatusService : IInternetStatusService, IDisposable
 {
     private readonly CompositeDisposable _disposable = new CompositeDisposable();

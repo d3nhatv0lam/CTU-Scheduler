@@ -1,14 +1,7 @@
-﻿using CTUScheduler.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using CTUScheduler.Core.Models.UserSaves;
 
-namespace CTUScheduler.AppServices.Services.Interfaces
+namespace CTUScheduler.AppServices.Services.User
 {
     public interface IUserDataService
     {

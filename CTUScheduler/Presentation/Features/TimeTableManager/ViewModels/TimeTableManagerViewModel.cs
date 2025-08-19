@@ -2,7 +2,8 @@
 using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Disposables;
-using CTUScheduler.AppServices.Services.Interfaces;
+using CTUScheduler.AppServices.Services.Dialogs;
+using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 using Microsoft.Extensions.DependencyInjection;

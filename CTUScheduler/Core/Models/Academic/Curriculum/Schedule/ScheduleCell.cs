@@ -11,9 +11,9 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Schedule
 {
     public class ScheduleCell: ITableCell
     {
-        private static int DEFAULT_ATTENDING_DAY = 2;
-        private static int DEFAULT_START_PERIOD = 1;
-        private static int DEFAULT_NUMBER_OF_PERIODS = 1;
+        private static readonly int DEFAULT_ATTENDING_DAY = 2;
+        private static readonly int DEFAULT_START_PERIOD = 1;
+        private static readonly int DEFAULT_NUMBER_OF_PERIODS = 1;
         public int Row 
         {
             get

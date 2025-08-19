@@ -6,7 +6,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices.JavaScript;
-using CTUScheduler.AppServices.Services.Interfaces;
+using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
@@ -125,7 +125,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             
             // Filtered Course Sections
             _filtedCourseSections = this.WhenAnyValue(x => x.ShowOnlyAvailableSections, x => x.SearchedCourseSections, (showOnlyAvailableSections, searchedCourseSections) => (showOnlyAvailableSections, searchedCourseSections))
-                        .Where(tuple => tuple.searchedCourseSections != null && tuple.searchedCourseSections.Any())
+                        .Where(tuple => tuple.searchedCourseSections != null)
                         .Select(tuple => tuple.showOnlyAvailableSections ?  new ObservableCollection<SelectableCourseData>(tuple.searchedCourseSections.Where(section => section.Item.RemainingStudents > 0)): tuple.searchedCourseSections)
                         .ToProperty(this, nameof(FiltedCourseSections))
                         .DisposeWith(_disposables);

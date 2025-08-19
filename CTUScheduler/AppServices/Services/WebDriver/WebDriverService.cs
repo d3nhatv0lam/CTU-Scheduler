@@ -1,23 +1,16 @@
-﻿using Avalonia.Logging;
-using CTUScheduler.AppServices.Services.Interfaces;
-using CTUScheduler.Core.Exceptions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Playwright;
-using ReactiveUI;
-using Splat;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Services.Network;
+using CTUScheduler.Core.Exceptions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Playwright;
 
-namespace CTUScheduler.AppServices.Services.Implementations
+namespace CTUScheduler.AppServices.Services.WebDriver
 {
     public class WebDriverService : IWebDriverService, IDisposable , IAsyncDisposable
     {

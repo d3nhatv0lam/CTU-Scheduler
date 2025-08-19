@@ -9,7 +9,8 @@ using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using CTUScheduler.AppServices.Services.Interfaces;
+using CTUScheduler.AppServices.Services.User;
+using CTUScheduler.AppServices.Validators;
 using CTUScheduler.Core.Algorithms;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
@@ -28,6 +29,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly IUserDataService _userDataService;
         private readonly SchedulingCourseViewModel _schedulingCourseVM;
+        private readonly ScheduleValidator _scheduleValidator = new ScheduleValidator();
         private readonly SourceList<Course> _coursesSourceList;
         private ReadOnlyObservableCollection<Course> _courseBindable;
         private CancellationTokenSource? _cts;
@@ -101,7 +103,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             _cts = new CancellationTokenSource();
             foreach (var tableData in Combinatorics.CartesianProduct(
                          sets,
-                         prefix => true,
+                         prefix => _scheduleValidator.IsValidTimeTableFromRaw(prefix),
                          full => true,
                          _cts.Token))
             {

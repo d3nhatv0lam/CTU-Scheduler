@@ -1,15 +1,10 @@
-﻿using CTUScheduler.AppServices.Services.Interfaces;
+﻿using System;
+using System.Reactive.Threading.Tasks;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using ReactiveUI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Threading.Tasks;
-using System.Text;
-using System.Threading.Tasks;
 
-
-namespace CTUScheduler.AppServices.Services.Implementations
+namespace CTUScheduler.AppServices.Services.Navigation
 {
     public class CachingNavigationService : ICachingNavigationService
     {

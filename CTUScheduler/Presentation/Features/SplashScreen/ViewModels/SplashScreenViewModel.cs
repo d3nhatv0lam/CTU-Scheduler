@@ -5,7 +5,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using CTUScheduler.AppServices.Services.Interfaces;
+using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
 using Microsoft.Extensions.DependencyInjection;

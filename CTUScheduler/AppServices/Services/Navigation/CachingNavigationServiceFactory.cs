@@ -1,12 +1,7 @@
-﻿using CTUScheduler.AppServices.Services.Interfaces;
+﻿using System;
 using ReactiveUI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace CTUScheduler.AppServices.Services.Implementations
+namespace CTUScheduler.AppServices.Services.Navigation
 {
     public class CachingNavigationServiceFactory : ICachingNavigationServiceFactory
     {

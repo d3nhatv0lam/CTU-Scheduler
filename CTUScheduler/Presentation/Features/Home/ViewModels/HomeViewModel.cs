@@ -4,7 +4,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices;
 using CTUScheduler.AppServices.Helpers;
-using CTUScheduler.AppServices.Services.Interfaces;
+using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
 using CTUScheduler.Presentation.Base;
 using Microsoft.Extensions.DependencyInjection;

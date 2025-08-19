@@ -1,18 +1,11 @@
-﻿using CTUScheduler.AppServices.Services.Interfaces;
-using CTUScheduler.AppServices.Helpers;
-using CTUScheduler.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System;
 using System.Reactive.Disposables;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
+using CTUScheduler.Core.Helpers;
 using CTUScheduler.Core.Models.UserSaves;
 using Microsoft.Extensions.Logging;
 
-namespace CTUScheduler.AppServices.Services.Implementations
+namespace CTUScheduler.AppServices.Services.User
 {
     public class UserDataService : IUserDataService , IDisposable
     {

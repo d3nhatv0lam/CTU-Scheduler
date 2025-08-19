@@ -1,14 +1,10 @@
-﻿using Microsoft.Playwright;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Exceptions;
-using System.Reactive.Subjects;
-using System.Text.Json;
+using Microsoft.Playwright;
 
-namespace CTUScheduler.AppServices.Services.Interfaces
+namespace CTUScheduler.AppServices.Services.WebDriver
 {
     public interface IWebDriverService
     {

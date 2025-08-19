@@ -16,5 +16,20 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed
         public int AttendingDay { get; set; }
         public string Period { get; set; }
         public string Room { get; set; }
+
+        public int GetStartPeriod()
+        {
+            return Period.Trim('-').First() - '0';
+        }
+
+        public int GetPeriodCount()
+        {
+            return Period.Trim('-').Length;
+        }
+        
+        public int GetEndPeriod()
+        {
+            return Period.Trim('-').Last() - '0';
+        }
     }
 }

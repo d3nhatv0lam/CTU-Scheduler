@@ -9,7 +9,6 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed
     public class CourseData
     {
         public int Key { get; set; }
-
         public string Code { get; set; }
         public  string Group { get; set; }
         public string Lecturer { get; set; }

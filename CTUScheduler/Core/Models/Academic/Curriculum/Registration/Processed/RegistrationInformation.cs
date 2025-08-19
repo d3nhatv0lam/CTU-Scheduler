@@ -13,7 +13,7 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed
         public string Semester { get; set; }
         public int MaxCreditPerSemester { get; set; }
         public string Period { get; set; }
-        public List<GroupItem> Groups { get; set; } = new List<GroupItem>();
+        public List<GroupItem> Groups { get; set; } = new ();
         public List<PeriodItem> UserPeriod { get; set; } = new();
     }
 }

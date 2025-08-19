@@ -1,15 +1,9 @@
-﻿using Avalonia.Controls;
-using Avalonia.Threading;
-using CTUScheduler.AppServices.Services.Interfaces;
-using DialogHostAvalonia;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
+﻿using System;
 using System.Threading.Tasks;
+using Avalonia.Threading;
+using DialogHostAvalonia;
 
-namespace CTUScheduler.AppServices.Services.Implementations
+namespace CTUScheduler.AppServices.Services.Dialogs
 {
     public class DialogHostService: IDialogHostService
     {

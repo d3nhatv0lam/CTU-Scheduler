@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Subjects;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace CTUScheduler.AppServices.Services.Interfaces
+namespace CTUScheduler.AppServices.Services.Network
 {
     public interface IInternetStatusService
     {
