@@ -25,22 +25,35 @@ public class SchedulingCourseViewModel : ViewModelBase, IDisposable
             .AutoRefresh(x => x.IsMainCourse)
             .Subscribe(_ =>
             {
-                var mainCourse = new List<SchedulingCourse>();
-                var alternativeCourse = new List<SchedulingCourse>();
-                foreach (var schedulingCourse in SchedulingCourses)
+                PartitionCourses(SchedulingCourses,
+                    out var mainCourses,
+                    out var alternativeCourses);
+                
+                foreach (var schedulingCourse in alternativeCourses)
                 {
-                    if (schedulingCourse.IsMainCourse)
-                        mainCourse.Add(schedulingCourse);
-                    else
-                        alternativeCourse.Add(schedulingCourse);
-                }
-
-                foreach (var schedulingCourse in alternativeCourse)
-                {
-                    schedulingCourse.ReplacementOptions = mainCourse;
+                    schedulingCourse.ReplacementOptions = mainCourses;
                 }
             })
             .DisposeWith(_disposables);
+    }
+    
+    private void ClearSchedulingCourses()
+    {
+        if (SchedulingCourses.Any())
+            SchedulingCourses.Clear();
+    }
+
+    private void PartitionCourses(ObservableCollection<SchedulingCourse> schedulingCourses,out List<SchedulingCourse> mainCourses, out List<SchedulingCourse> alternativeCourses)
+    {
+        mainCourses = new List<SchedulingCourse>();
+        alternativeCourses = new List<SchedulingCourse>();
+        foreach (var schedulingCourse in SchedulingCourses)
+        {
+            if (schedulingCourse.IsMainCourse)
+                mainCourses.Add(schedulingCourse);
+            else
+                alternativeCourses.Add(schedulingCourse);
+        }
     }
 
     public void MapToSchedulingCourses(ReadOnlyObservableCollection<Course> courses) 
@@ -52,12 +65,35 @@ public class SchedulingCourseViewModel : ViewModelBase, IDisposable
             SchedulingCourses.Add(schedulingCourse);
         }
     }
-    
-    private void ClearSchedulingCourses()
+
+    public IEnumerable<List<Course>> GetGroupedCourses()
     {
-        if (SchedulingCourses.Any())
-            SchedulingCourses.Clear();
+        PartitionCourses(SchedulingCourses,
+            out var mainCourses,
+            out var alternativeCourses);
+        
+        List<List<Course>> sets = new ();
+        var map = new Dictionary<Course, List<Course>>();
+
+        // tạo group cho mainCourses
+        foreach (var schedulingCourse in mainCourses)
+        {
+            var list = new List<Course> { schedulingCourse.Item };
+            sets.Add(list);
+            map[schedulingCourse.Item] = list;
+        }
+
+        foreach (var schedulingCourse in alternativeCourses)
+        {
+            if (schedulingCourse.SelectedReplacement == null) continue;
+            if (map.TryGetValue(schedulingCourse.SelectedReplacement.Item, out var list))
+            {
+                list.Add(schedulingCourse.Item);
+            }
+        }
+        return sets;
     }
+    
     
     public void Dispose()
     {

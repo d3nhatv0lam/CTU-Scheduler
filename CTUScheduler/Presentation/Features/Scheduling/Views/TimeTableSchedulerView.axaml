@@ -172,6 +172,7 @@
                             Classes="btnCreateSchedule"
                             x:Name="btnAddTimeTable"
                             Content="Tạo thời khóa biểu"
+                            Command="{Binding GenerateTimeTableCommand}"
                             ToolTip.Tip="Nhấn nút sẽ tiến hành tạo thời khóa biểu cho bạn chọn!" />
                     </DockPanel>
                     <!-- //  Separator // -->

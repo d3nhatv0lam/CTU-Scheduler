@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace CTUScheduler.Core.Algorithms;
@@ -7,17 +8,19 @@ namespace CTUScheduler.Core.Algorithms;
 public static class Combinatorics
 {
     public static IEnumerable<List<T>> CartesianProduct<T>(
-        List<List<T>> sets,
+        IEnumerable<List<T>> sets,
         Func<List<T>, bool>? isValidPrefix = null,
         Func<List<T>, bool>? isValidFull = null,
         CancellationToken? token = null)
     {
-        var indices = new int[sets.Count];
-        var current = new List<T>(sets.Count);
+        var setList = sets.ToList();
+        
+        var indices = new int[setList.Count];
+        var current = new List<T>(setList.Count);
 
         // bắt đầu với index 0
         int depth = 0;
-        for (int i = 0; i < sets.Count; i++) indices[i] = -1;
+        for (int i = 0; i < setList.Count; i++) indices[i] = -1;
 
         while (depth >= 0)
         {
@@ -26,7 +29,7 @@ public static class Combinatorics
 
             indices[depth]++;
 
-            if (indices[depth] >= sets[depth].Count)
+            if (indices[depth] >= setList[depth].Count)
             {
                 indices[depth] = -1;
                 depth--;
@@ -36,15 +39,15 @@ public static class Combinatorics
 
             // chọn phần tử hiện tại
             if (current.Count > depth)
-                current[depth] = sets[depth][indices[depth]];
+                current[depth] = setList[depth][indices[depth]];
             else
-                current.Add(sets[depth][indices[depth]]);
+                current.Add(setList[depth][indices[depth]]);
 
             // kiểm tra prefix
             if (isValidPrefix != null && !isValidPrefix(current))
                 continue;
 
-            if (depth == sets.Count - 1)
+            if (depth == setList.Count - 1)
             {
                 // đủ tổ hợp
                 if (isValidFull == null || isValidFull(current))
