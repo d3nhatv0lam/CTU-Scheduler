@@ -14,8 +14,10 @@ using CTUScheduler.AppServices.Validators;
 using CTUScheduler.Core.Algorithms;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
+using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
+using CTUScheduler.Presentation.Features.TimeTable.ViewModels;
 using CTUScheduler.Presentation.Scheduling.Interfaces;
 using DynamicData;
 using DynamicData.Binding;
@@ -31,30 +33,21 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         private readonly SchedulingCourseViewModel _schedulingCourseVM;
         private readonly ScheduleValidator _scheduleValidator = new ScheduleValidator();
         private readonly SourceList<Course> _coursesSourceList;
+        private ObservableCollection<TimeTableLayoutViewModel> _timeTableLayoutViewModels = new ObservableCollection<TimeTableLayoutViewModel>();
         private ReadOnlyObservableCollection<Course> _courseBindable;
         private CancellationTokenSource? _cts;
         private bool _isGeneratingTimeTable = false;
         
-        /// <summary>
-        /// Course Section tracker
-        /// </summary>
-        /// <param name="Course"></param>
-        /// <param name="Section"></param>
-        public record SectionChoice(Course Course, CourseData Section);
-
-
         public bool IsGeneratingTimeTable
         {
             get => _isGeneratingTimeTable;
             set => this.RaiseAndSetIfChanged(ref _isGeneratingTimeTable, value);
         }
-
         
         public ViewModelActivator Activator { get; } = new ViewModelActivator();
         public ReadOnlyObservableCollection<Course> Courses => _courseBindable;
         public SchedulingCourseViewModel SchedulingCourseVM => _schedulingCourseVM;
-        public ObservableCollection<ScheduleTable> ScheduleTables { get; set; } = new ObservableCollection<ScheduleTable>();
-        
+        public ObservableCollection<TimeTableLayoutViewModel> TimeTableLayoutViewModels => _timeTableLayoutViewModels;
         public ReactiveCommand<Unit, Unit> GenerateTimeTableCommand { get; protected set; }
 
         public TimeTableSchedulerViewModel(SourceList<Course> courses)
@@ -75,6 +68,11 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                     var courseSectionFlatten = CourseSectionsTrackerFlatten(SchedulingCourseVM.GetGroupedCourses());
                     GenerateTimeTable(courseSectionFlatten);
                 })
+                .DisposeWith(_disposables);
+            
+            TimeTableLayoutViewModels.ToObservableChangeSet()
+                .DisposeMany()
+                .Subscribe()
                 .DisposeWith(_disposables);
             
             _coursesSourceList.Connect()

@@ -6,7 +6,7 @@ using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Presentation.Features.TimeTable.ViewModels;
 using ReactiveUI;
 
-namespace CTUScheduler.Presentation.TimeTable.Views;
+namespace CTUScheduler.Presentation.Features.TimeTable.Views;
 
 public partial class TimeTableView : ReactiveUserControl<TimeTableViewModel>
 {
@@ -15,7 +15,7 @@ public partial class TimeTableView : ReactiveUserControl<TimeTableViewModel>
         InitializeComponent();
         this.WhenActivated(disposables =>
         {
-            this.OneWayBind<TimeTableViewModel, TimeTableView, ObservableCollection<ScheduleCell>, IEnumerable>(ViewModel, vm => vm.ScheduleTable.ScheduleCells, x => x.scheduleTable.ItemsSource).DisposeWith(disposables);
+            this.OneWayBind<TimeTableViewModel, TimeTableView, ObservableCollection<ScheduleCell>, IEnumerable>(ViewModel, vm => vm.ScheduleCells, x => x.ScheduleTable.ItemsSource).DisposeWith(disposables);
         });
     }
 }

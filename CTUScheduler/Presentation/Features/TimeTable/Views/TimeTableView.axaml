@@ -10,15 +10,10 @@
 			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.TimeTable.ViewModels"
 			 x:DataType="vm:TimeTableViewModel"
 			 x:CompileBindings="True"
-             x:Class="CTUScheduler.Presentation.TimeTable.Views.TimeTableView">
+             x:Class="CTUScheduler.Presentation.Features.TimeTable.Views.TimeTableView">
 	
 
 	<Border BorderBrush="Black" BorderThickness="1" >
-		<Border.Styles>
-			<Style Selector="Border">
-				
-			</Style>
-		</Border.Styles>
 		<Grid>
 			<!--ColumnDefinitions="* 1 * 1 * 1 * 1 * 1 * 1 *"
 				RowDefinitions="* 1 * * * * * 0.7* * * * *"-->
@@ -110,8 +105,8 @@
 				  Grid.Column="2"
 				  Grid.ColumnSpan="11"
 				  >
-				
-				<ItemsControl x:Name="scheduleTable">
+				<!-- // Schedule Table Data // -->
+				<ItemsControl x:Name="ScheduleTable">
 					<ItemsControl.Styles>
 						<Style Selector="ContentPresenter" x:DataType="{x:Type scheduleModel:ScheduleCell}">
 							<Setter Property="Grid.Row" Value="{Binding Row}"/>

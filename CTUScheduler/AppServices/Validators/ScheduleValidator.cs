@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
+using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 
 namespace CTUScheduler.AppServices.Validators;
 
 public class ScheduleValidator
 {
-    public bool IsValidTimeTableFromRaw(List<TimeTableSchedulerViewModel.SectionChoice> timeTableData)
+    public bool IsValidTimeTableFromRaw(List<SectionChoice> timeTableData)
     {
         switch (timeTableData.Count)
         {
@@ -16,10 +17,10 @@ public class ScheduleValidator
                 return true;
         }
         
-        TimeTableSchedulerViewModel.SectionChoice newestSection = timeTableData[^1];
+        var (_, courseData) = timeTableData[^1];
         for (int i = 0; i < timeTableData.Count - 1; i++)
         {
-            if (IsOverlapTimeTable(newestSection.Section, timeTableData[i].Section))
+            if (IsOverlapTimeTable(courseData, timeTableData[i].Section))
                 return false;
         }
         return true;

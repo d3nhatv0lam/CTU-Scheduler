@@ -5,97 +5,39 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using DynamicData;
+using DynamicData.Binding;
 
 namespace CTUScheduler.Core.Models.Academic.Curriculum.Schedule
 {
-    public class ScheduleTable: ReactiveObject
+    public class ScheduleTable
     {
         public static readonly string DEFAULT_NAME = "UNNAMED";
-        private string _name = DEFAULT_NAME;
-        private string _description = string.Empty;
-        private readonly ObservableCollection<ScheduleCell> _scheduleCells = new ObservableCollection<ScheduleCell>();
-        private DateTime _lastUpdated = DateTime.Now;
-        private int _totalCredit;
-        public string Name
-        {
-            get => _name;
-            set => this.RaiseAndSetIfChanged(ref _name, value);
-        }
-        public string Description
-        {
-            get => _description;
-            set => this.RaiseAndSetIfChanged(ref _description, value);
-        }
-        public int TotalCredit
-        {
-            get => _totalCredit;
-            set => this.RaiseAndSetIfChanged(ref _totalCredit, value);
-        }
-        public Dictionary<string,string> ScheduleData { get; set; } = new Dictionary<string, string>();
-
-        public DateTime LastUpdated
-        {
-            get => _lastUpdated;
-            set => this.RaiseAndSetIfChanged(ref _lastUpdated, value);
-        }
-        
-        [JsonIgnore]
-        public ObservableCollection<ScheduleCell> ScheduleCells => _scheduleCells;
+        public string Name { get; set; } = DEFAULT_NAME;
+        public string Description { get; set; } = string.Empty;
+        public DateTime LastUpdated { get; set; } = DateTime.Now;
+        public int TotalCredit { get; set; }
+        public Dictionary<string,string> ScheduleData { get; set; } = new();
 
         public ScheduleTable()
         {
-
+        }
+        
+        public void Add(ScheduleCell scheduleCell)
+        {
+            ScheduleData.Add(scheduleCell.CourseCode, scheduleCell.Group);
         }
 
-        // private bool IsDuplicateModule(ScheduleCell cell)
-        // {
-        //     throw new DuplicateModuleException();
-        //     return true;
-        // }
-        //
-        // private bool IsMaxCreditReached(ScheduleCell cell)
-        // {
-        //     bool isReachMax = false;
-        //     if (cell.Credit + TotalCredit > 30)
-        //         isReachMax = true;
-        //     return isReachMax;
-        // }
-        // private bool IsConflictModule(ScheduleCell cell)
-        // {
-        //     bool isConflict = false;
-        //     throw new ConflictModuleException();
-        //     return isConflict;
-        // }
-        //
-        // public bool CanAddCell(ScheduleCell cell)
-        // {
-        //     try
-        //     {
-        //         if (IsMaxCreditReached(cell) && IsDuplicateModule(cell) && IsConflictModule(cell))
-        //             return true;
-        //     }
-        //     catch
-        //     {
-        //         throw;
-        //     }
-        //     return false;
-        // }
-        //
-        // public void TryAddCell(ScheduleCell cell)
-        // {
-        //     try
-        //     {
-        //         if (CanAddCell(cell))
-        //             _scheduleCells.Add(cell);
-        //     }
-        //     catch
-        //     {
-        //         throw;
-        //     }
-        // }
+        public void Add(IEnumerable<ScheduleCell> scheduleCells)
+        {
+            foreach (var cell in scheduleCells)
+                Add(cell);
+        }
+
     }
 }

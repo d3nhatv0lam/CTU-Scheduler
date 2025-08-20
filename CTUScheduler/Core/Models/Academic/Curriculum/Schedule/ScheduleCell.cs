@@ -45,5 +45,6 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Schedule
         public int NumberOfPeriods { get; set; } = DEFAULT_NUMBER_OF_PERIODS;
         public string Lecturer { get; set; }
         public int Credit { get; set; }
+        
     }
 }
