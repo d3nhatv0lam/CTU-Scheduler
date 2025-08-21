@@ -27,17 +27,15 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Schedule
         public ScheduleTable()
         {
         }
-        
-        public void Add(ScheduleCell scheduleCell)
-        {
-            ScheduleData.Add(scheduleCell.CourseCode, scheduleCell.Group);
-        }
 
-        public void Add(IEnumerable<ScheduleCell> scheduleCells)
+        public bool TryAddToScheduleData(ScheduleCell scheduleCell)
         {
-            foreach (var cell in scheduleCells)
-                Add(cell);
+            if (!ScheduleData.TryGetValue(scheduleCell.CourseCode, out _))
+            {
+                ScheduleData.Add(scheduleCell.CourseCode, scheduleCell.Group);
+                return true;
+            }
+            return false;
         }
-
     }
 }

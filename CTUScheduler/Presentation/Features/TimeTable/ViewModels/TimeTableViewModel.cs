@@ -10,12 +10,7 @@ namespace CTUScheduler.Presentation.Features.TimeTable.ViewModels
 {
     public class TimeTableViewModel : ViewModelBase
     {
-        public ObservableCollection<ScheduleCell> ScheduleCells { get; set; }
+        public ObservableCollection<ScheduleCell> ScheduleCells { get; set; } = new();
         public TimeTableViewModel() {}
-        public TimeTableViewModel(ObservableCollection<ScheduleCell> scheduleCells)
-        {
-            ScheduleCells = scheduleCells;
-        }
-        
     }
 }

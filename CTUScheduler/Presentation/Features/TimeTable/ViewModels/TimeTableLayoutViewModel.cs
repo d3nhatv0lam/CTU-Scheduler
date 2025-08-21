@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
+using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
-using DynamicData;
-using DynamicData.Binding;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.TimeTable.ViewModels;
@@ -14,14 +15,14 @@ public class TimeTableLayoutViewModel: ViewModelBase, IDisposable
 {
     private readonly CompositeDisposable _disposables = new();
     private readonly ScheduleTable _scheduleTable;
-    private readonly TimeTableViewModel _timeTableViewModel;
+    private readonly TimeTableViewModel _timeTableVM;
     private string _name;
     private string _description;
-    private readonly ObservableCollection<ScheduleCell> _scheduleCells;
     private DateTime _lastUpdated;
     private int _totalCredit;
     
     public ScheduleTable ScheduleTable => _scheduleTable;
+    public TimeTableViewModel TimeTableVM => _timeTableVM;
     public string Name
     {
         get => _name;
@@ -32,6 +33,8 @@ public class TimeTableLayoutViewModel: ViewModelBase, IDisposable
         get => _description;
         set => this.RaiseAndSetIfChanged(ref _description, value);
     }
+
+    public int SubjectsCount => ScheduleTable.ScheduleData.Count;
     public int TotalCredit
     {
         get => _totalCredit;
@@ -43,8 +46,7 @@ public class TimeTableLayoutViewModel: ViewModelBase, IDisposable
         get => _lastUpdated;
         set => this.RaiseAndSetIfChanged(ref _lastUpdated, value);
     }
-    
-    public ObservableCollection<ScheduleCell> ScheduleCells => _scheduleCells;
+
     
     public TimeTableLayoutViewModel(ScheduleTable scheduleTable)
     {
@@ -53,18 +55,19 @@ public class TimeTableLayoutViewModel: ViewModelBase, IDisposable
         _description = scheduleTable.Description;
         _lastUpdated = scheduleTable.LastUpdated;
         _totalCredit = scheduleTable.TotalCredit;
-        _scheduleCells = new();
-
-        _timeTableViewModel = new TimeTableViewModel(_scheduleCells);
         
-        ScheduleCells
-            .ToObservableChangeSet()
-            .OnItemAdded(cell =>
-            {
-                TotalCredit += cell.Credit;
-            })
-            .Subscribe()
+        _timeTableVM = new TimeTableViewModel();
+
+        this.WhenAnyValue(x => x.Name)
+            .Throttle(TimeSpan.FromMilliseconds(500))
+            .Subscribe(newName => ScheduleTable.Name = newName)
             .DisposeWith(_disposables);
+        
+        this.WhenAnyValue(x => x.Description)
+            .Throttle(TimeSpan.FromMilliseconds(500))
+            .Subscribe(newDescription => ScheduleTable.Name = newDescription)
+            .DisposeWith(_disposables);
+        
 
         this.WhenAnyValue(x => x.Name,
                 x => x.Description,
@@ -83,19 +86,24 @@ public class TimeTableLayoutViewModel: ViewModelBase, IDisposable
         _scheduleTable.TotalCredit = TotalCredit;
         _scheduleTable.LastUpdated = LastUpdated;
     }
-
-    public void AddScheduleCell(ScheduleCell scheduleCell)
+    
+    public void AddCourseSectionToTable(IEnumerable<ScheduleCell> scheduleCells)
     {
-        ScheduleTable.Add(scheduleCell);
-        ScheduleCells.Add(scheduleCell);
-    }
+        var listCell = scheduleCells.ToList();
 
-    public void AddScheduleCell(IEnumerable<ScheduleCell> scheduleCell)
-    {
-        foreach (var cell in scheduleCell)
+        if (listCell.Count == 0 || !ScheduleTable.TryAddToScheduleData(listCell[0]))
+            return;
+
+        TotalCredit += listCell[0].Credit;
+        foreach (var cell in listCell)
         {
-            AddScheduleCell(cell);
+            _timeTableVM.ScheduleCells.Add(cell);
         }
+    }
+    
+    public void AddCourseSectionToTable(SectionChoice choice)
+    {
+       
     }
 
     public void Dispose()

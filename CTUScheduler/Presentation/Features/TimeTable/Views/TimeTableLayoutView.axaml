@@ -4,14 +4,111 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+    mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
     xmlns:rxui="http://reactiveui.net"
     x:CompileBindings="True"
+    Focusable="True"
+    x:DataType="vm:TimeTableLayoutViewModel"
+    xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
     xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.TimeTable.ViewModels"
-    x:Class="CTUScheduler.Presentation.Features.TimeTable.Views.TimeTableLayoutView">
+    xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.TimeTable.Views"
+    xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    x:Class="CTUScheduler.Presentation.Features.TimeTable.Views.TimeTableLayoutView"
+    >
     
-
-    <Grid Background="White">
+    <rxui:ReactiveUserControl.Styles>
+        <Style Selector="Border.padding">
+            <Setter Property="Padding" Value="10 10 10 10"></Setter>
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        </Style>
         
+        <Style Selector=".export-container > :is(Control)">
+            <Setter Property="Margin" Value="0 0 10 0"></Setter>
+        </Style>
+        
+        <Style Selector="Button.export">
+            <Setter Property="CornerRadius" Value="10"></Setter>
+            <Setter Property="Height" Value="50"></Setter>
+            
+            <Style Selector="^ StackPanel icon|MaterialIcon">
+                <Setter Property="Height" Value="20"></Setter>
+                <Setter Property="Width" Value="20"></Setter>
+            </Style>
+        </Style>
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml"></StyleInclude>
+    </rxui:ReactiveUserControl.Styles>
+
+    <Grid RowDefinitions="50 *" Background="White">
+        <!-- // Top - Title // -->
+        <Border Grid.Row="0"
+                Classes="padding">
+            <TextBlock 
+                x:Name="TitleTextBlock"
+                Classes="Headline5"
+                Text="Thời khóa biểu: ???"></TextBlock>
+        </Border>
+        
+        <!-- // Bottom // -->
+        <Border Grid.Row="1"
+                Classes="padding" >
+            <Grid ColumnDefinitions="0.3* 20 *">
+                <!-- // TimeTable Information // -->
+                <Grid Grid.Column="0" RowDefinitions="* *">
+                    <TextBox  
+                            x:Name="DescriptionTextBox"
+                            UseFloatingWatermark="True" 
+                             p1:TextFieldAssist.Label="Mô tả" 
+                             Classes="filled"
+                             VerticalAlignment="Stretch"
+                             Theme="{StaticResource FilledTextBox}" 
+                             AcceptsReturn="True" 
+                             TextWrapping="Wrap" 
+                    />
+                    
+                    <Grid Grid.Row="1" RowDefinitions="* * * auto" ShowGridLines="True">
+                        <TextBlock Grid.Row="0"
+                                   x:Name="SubjectsCountTextBlock"
+                                   Text="Tổng số môn: ???"></TextBlock>
+                        <TextBlock Grid.Row="1"
+                                   x:Name="TotalCreditTextBlock"
+                                   Text="Tổng số tín chỉ: ???"></TextBlock>
+                        <TextBlock Grid.Row="2"
+                                   x:Name="LastUpdateTextBlock"
+                                   Text="Lần cuối cập nhật: ???"></TextBlock>
+                        
+                        <!-- // Export Field // -->
+                        <StackPanel Grid.Row="3" 
+                                    Classes="export-container"
+                                    Orientation="Horizontal">
+                            <Button
+                                Classes="export"
+                                ToolTip.Tip="Xuất thời khóa biểu dưới dạng file ảnh png">
+                                <StackPanel Orientation="Horizontal">
+                                    <icon:MaterialIcon Kind="DownloadOutline"/>
+                                    <TextBlock Text="IMG"></TextBlock>
+                                </StackPanel>
+                            </Button>
+                            <Button
+                                Classes="export"
+                                ToolTip.Tip="Xuất thời khóa biểu dưới dạng file Excel"
+                                >
+                                <StackPanel Orientation="Horizontal">
+                                    <icon:MaterialIcon Kind="DownloadOutline"/>
+                                    <TextBlock Text="Excel"></TextBlock>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+                
+                <!-- // TimeTable View // -->
+                <views:TimeTableView 
+                    Grid.Column="2" 
+                    DataContext="{Binding TimeTableVM}"/>
+
+            </Grid>
+        </Border>
     </Grid>
 </rxui:ReactiveUserControl>
