@@ -89,7 +89,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 
             LogoutCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                bool isAcceptLogout = await _dialogHostService.ShowDialog<bool>(new LogoutDialogViewModel("MainLayoutDialog"), "MainLayoutDialog");
+                bool isAcceptLogout = await _dialogHostService.ShowDialog<bool>(new LogoutDialogViewModel(DialogHostService.DialogIdentifier.MainLayout), DialogHostService.DialogIdentifier.MainLayout);
                 if (isAcceptLogout)
                 {
                     HostScreen.Router.NavigateAndReset.Execute(new LoginViewModel(HostScreen));

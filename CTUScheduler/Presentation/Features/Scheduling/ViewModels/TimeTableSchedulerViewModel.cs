@@ -17,6 +17,7 @@ using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
+using CTUScheduler.Presentation.Features.TimeTable.Models;
 using CTUScheduler.Presentation.Features.TimeTable.ViewModels;
 using CTUScheduler.Presentation.Scheduling.Interfaces;
 using DynamicData;
@@ -33,7 +34,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         private readonly SchedulingCourseViewModel _schedulingCourseVM;
         private readonly ScheduleValidator _scheduleValidator = new ScheduleValidator();
         private readonly SourceList<Course> _coursesSourceList;
-        private ObservableCollection<TimeTableLayoutViewModel> _timeTableLayoutViewModels = new ObservableCollection<TimeTableLayoutViewModel>();
+        private ObservableCollection<SelectableTimetableLayout> _timeTableLayoutViewModels = new ();
         private ReadOnlyObservableCollection<Course> _courseBindable;
         private CancellationTokenSource? _cts;
         private bool _isGeneratingTimeTable = false;
@@ -47,7 +48,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         public ViewModelActivator Activator { get; } = new ViewModelActivator();
         public ReadOnlyObservableCollection<Course> Courses => _courseBindable;
         public SchedulingCourseViewModel SchedulingCourseVM => _schedulingCourseVM;
-        public ObservableCollection<TimeTableLayoutViewModel> TimeTableLayoutViewModels => _timeTableLayoutViewModels;
+        public ObservableCollection<SelectableTimetableLayout> TimeTableLayoutViewModels => _timeTableLayoutViewModels;
         public ReactiveCommand<Unit, Unit> GenerateTimeTableCommand { get; protected set; }
 
         public TimeTableSchedulerViewModel(SourceList<Course> courses)
@@ -99,19 +100,22 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             _cts?.Cancel();
             _cts?.Dispose();
             _cts = new CancellationTokenSource();
+            TimeTableLayoutViewModels.Clear();
             foreach (var tableData in Combinatorics.CartesianProduct(
                          sets,
                          prefix => _scheduleValidator.IsValidTimeTableFromRaw(prefix),
                          full => true,
                          _cts.Token))
             {
-                foreach (var table in tableData)
+                var layout = new TimeTableLayoutViewModel(new ScheduleTable());
+                foreach (var data in tableData)
                 {
-                    Debug.WriteLine(table.Course.Code + " " + table.Section.Group);;
+                    layout.AddCourseSectionToTable(data);
                 }
-                Debug.WriteLine("");
+                TimeTableLayoutViewModels.Add(new SelectableTimetableLayout(layout));
             }
         }
+        
         
         private IEnumerable<List<SectionChoice>> CourseSectionsTrackerFlatten(IEnumerable<List<Course>> courseSets)
         {

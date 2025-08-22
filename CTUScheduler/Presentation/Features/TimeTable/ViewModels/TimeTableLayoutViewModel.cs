@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
@@ -54,7 +55,6 @@ public class TimeTableLayoutViewModel: ViewModelBase, IDisposable
         _name = scheduleTable.Name;
         _description = scheduleTable.Description;
         _lastUpdated = scheduleTable.LastUpdated;
-        _totalCredit = scheduleTable.TotalCredit;
         
         _timeTableVM = new TimeTableViewModel();
 
@@ -75,35 +75,22 @@ public class TimeTableLayoutViewModel: ViewModelBase, IDisposable
             .Subscribe(_ =>
             {
                 LastUpdated = DateTime.Now;
+                ScheduleTable.LastUpdated = LastUpdated;
             })
             .DisposeWith(_disposables);
-    }
-
-    public void SaveChanges()
-    {
-        _scheduleTable.Name = Name;
-        _scheduleTable.Description = Description;
-        _scheduleTable.TotalCredit = TotalCredit;
-        _scheduleTable.LastUpdated = LastUpdated;
-    }
-    
-    public void AddCourseSectionToTable(IEnumerable<ScheduleCell> scheduleCells)
-    {
-        var listCell = scheduleCells.ToList();
-
-        if (listCell.Count == 0 || !ScheduleTable.TryAddToScheduleData(listCell[0]))
-            return;
-
-        TotalCredit += listCell[0].Credit;
-        foreach (var cell in listCell)
-        {
-            _timeTableVM.ScheduleCells.Add(cell);
-        }
     }
     
     public void AddCourseSectionToTable(SectionChoice choice)
     {
+       var listCell= choice.ToScheduleCells().ToList();
+       if (listCell.Count == 0 || !ScheduleTable.TryAddToScheduleData(choice))
+           return;
        
+       TotalCredit += listCell[0].Credit;
+       foreach (var cell in listCell)
+       {
+           _timeTableVM.ScheduleCells.Add(cell);
+       }
     }
 
     public void Dispose()

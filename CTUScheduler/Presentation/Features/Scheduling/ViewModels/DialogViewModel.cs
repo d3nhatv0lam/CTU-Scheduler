@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reactive;
 using System.Reactive.Disposables;
+using CTUScheduler.AppServices.Services.Dialogs;
 using CTUScheduler.AppServices.Services.Viewport;
 using CTUScheduler.Presentation.Base;
 using DialogHostAvalonia;
@@ -13,7 +14,6 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
     {
         private readonly IViewportService _viewportService;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
-        private readonly string _dialogIdentifier;
         private double _height;
         private double _width;
 
@@ -35,11 +35,11 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
 
         public DialogViewModel() { }
 
-        public DialogViewModel(string dialogIdentifier)
+        public DialogViewModel(DialogHostService.DialogIdentifier dialogIdentifier)
         {
-            _dialogIdentifier = dialogIdentifier;
             _viewportService = App.ServiceProvider!.GetRequiredService<IViewportService>();
-            CloseDialogCommand = ReactiveCommand.Create(CloseDialog)
+            
+            CloseDialogCommand = ReactiveCommand.Create(() => DialogHost.Close(dialogIdentifier.ToString()))
                 .DisposeWith(_disposables);
             _viewportService.SizeChanged
                 .Subscribe(size =>
@@ -49,12 +49,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                 }) .DisposeWith(_disposables);
             Router.Navigate.Execute(new SelectionViewModel(this));
         }
-
-        private void CloseDialog()
-        {
-            DialogHost.Close(_dialogIdentifier);
-            Dispose();
-        }
+        
         public void Dispose()
         {
             _disposables.Dispose();

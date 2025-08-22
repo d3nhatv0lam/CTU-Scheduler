@@ -20,22 +20,11 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Schedule
         public static readonly string DEFAULT_NAME = "UNNAMED";
         public string Name { get; set; } = DEFAULT_NAME;
         public string Description { get; set; } = string.Empty;
-        public DateTime LastUpdated { get; set; } = DateTime.Now;
-        public int TotalCredit { get; set; }
         public Dictionary<string,string> ScheduleData { get; set; } = new();
+        public DateTime LastUpdated { get; set; } = DateTime.Now;
 
         public ScheduleTable()
         {
-        }
-
-        public bool TryAddToScheduleData(ScheduleCell scheduleCell)
-        {
-            if (!ScheduleData.TryGetValue(scheduleCell.CourseCode, out _))
-            {
-                ScheduleData.Add(scheduleCell.CourseCode, scheduleCell.Group);
-                return true;
-            }
-            return false;
         }
     }
 }
