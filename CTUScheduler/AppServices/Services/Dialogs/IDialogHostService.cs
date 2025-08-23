@@ -4,6 +4,6 @@ namespace CTUScheduler.AppServices.Services.Dialogs
 {
     public interface IDialogHostService
     {
-        Task<T?> ShowDialog<T>(object viewModel, DialogHostService.DialogIdentifier identifier);
+        Task<T?> ShowDialogAsync<T>(object viewModel, DialogHostService.DialogIdentifier identifier);
     }
 }

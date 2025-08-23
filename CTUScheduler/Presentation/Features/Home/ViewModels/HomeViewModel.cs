@@ -41,10 +41,10 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .ToProperty(this, nameof(RegistrationInfo));
 
-            OpenFacebookCommand = ReactiveCommand.Create(() => OpenURL(AppConstants.FACEBOOK_URL)).DisposeWith(_disposable);
-            OpenYoutubeCommand = ReactiveCommand.Create(() => OpenURL(AppConstants.YOUTUBE_URL)).DisposeWith(_disposable);
-            OpenGithubCommand = ReactiveCommand.Create(() => OpenURL(AppConstants.GITHUB_URL)).DisposeWith(_disposable);
-            OpenCTUHTQLCommand = ReactiveCommand.Create(() => OpenURL(AppConstants.CTU_SIGN_IN_URL)).DisposeWith(_disposable);
+            OpenFacebookCommand = ReactiveCommand.Create(() => OpenUrl(AppConstants.FACEBOOK_URL)).DisposeWith(_disposable);
+            OpenYoutubeCommand = ReactiveCommand.Create(() => OpenUrl(AppConstants.YOUTUBE_URL)).DisposeWith(_disposable);
+            OpenGithubCommand = ReactiveCommand.Create(() => OpenUrl(AppConstants.GITHUB_URL)).DisposeWith(_disposable);
+            OpenCTUHTQLCommand = ReactiveCommand.Create(() => OpenUrl(AppConstants.CTU_SIGN_IN_URL)).DisposeWith(_disposable);
 
             this.WhenActivated((CompositeDisposable disposable) =>
             {
@@ -55,7 +55,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
             LoadPage();
         }
 
-        private void OpenURL(string url)
+        private void OpenUrl(string url)
         {
             ProcessHelper.OpenUrl(url);
         }

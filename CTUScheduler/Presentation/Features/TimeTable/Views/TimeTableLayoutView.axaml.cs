@@ -18,23 +18,27 @@ public partial class TimeTableLayoutView : ReactiveUserControl<TimeTableLayoutVi
         {
             this.OneWayBind(ViewModel,
                 x => x.Name,
-                v => v.TitleTextBlock.Text)
+                v => v.TitleTextBlock.Text,
+                 title => $"Thời khóa biểu: {title}")
                 .DisposeWith(disposable);
-            this.OneWayBind(ViewModel,
+            this.Bind(ViewModel,
                 x => x.Description,
                 v => v.DescriptionTextBox.Text
                 ).DisposeWith(disposable);
             this.OneWayBind(ViewModel,
                 x => x.SubjectsCount,
-                v => v.SubjectsCountTextBlock.Text)
+                v => v.SubjectsCountTextBlock.Text,
+                text => $"Số môn: {text}")
                 .DisposeWith(disposable);
             this.OneWayBind(ViewModel,
                     x => x.TotalCredit,
-                    v => v.TotalCreditTextBlock.Text)
+                    v => v.TotalCreditTextBlock.Text,
+                    text => $"Số tín chỉ: {text}")
                 .DisposeWith(disposable);
             this.OneWayBind(ViewModel,
                 x => x.LastUpdated,
-                v => v.LastUpdateTextBlock.Text)
+                v => v.LastUpdateTextBlock.Text,
+                updateTime => $"Last updated: {updateTime}")
                 .DisposeWith(disposable);
         });
     }

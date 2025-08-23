@@ -1,19 +1,22 @@
-﻿using Avalonia.Input;
+﻿using Avalonia.Media;
 using CTUScheduler.Core.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
-namespace CTUScheduler.Core.Models.Academic.Curriculum.Schedule
+namespace CTUScheduler.Presentation.Features.TimeTable.ViewModels
 {
-    public class ScheduleCell: ITableCell
+    public class ScheduleCellViewModel: ITableCell
     {
         private static readonly int DEFAULT_ATTENDING_DAY = 2;
         private static readonly int DEFAULT_START_PERIOD = 1;
         private static readonly int DEFAULT_NUMBER_OF_PERIODS = 1;
+        
+        public enum RemainingLevel
+        {
+            None,
+            Low,    // Dưới 10%
+            Medium, // 10–40%
+            High    // Trên 40%
+        }
+        
         public int Row 
         {
             get
@@ -34,6 +37,21 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Schedule
         public int RowSpan => NumberOfPeriods;
         public int ColumnSpan { get; set; } = 1;
 
+        public IBrush BackgroundColor { get; set; } = Brushes.Transparent;
+        public RemainingLevel RemainingStatus
+        {
+            get
+            {
+                double ratio = (double)RemainingStudents / TotalStudents;
+                if (ratio == 0) return RemainingLevel.None;
+                if (ratio < 0.1) return RemainingLevel.Low;
+                if (ratio <= 0.4) return RemainingLevel.Medium;
+                return RemainingLevel.High;
+            }
+        }
+        public bool IsLowStatus => RemainingStatus == RemainingLevel.Low;
+        public bool IsMediumStatus => RemainingStatus == RemainingLevel.Medium;
+        public bool IsHighStatus => RemainingStatus == RemainingLevel.High;
         public string CourseCode { get; set; }
         public string CourseName_VN { get; set; }
         public string Group { get; set; }
@@ -45,6 +63,8 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Schedule
         public int NumberOfPeriods { get; set; } = DEFAULT_NUMBER_OF_PERIODS;
         public string Lecturer { get; set; }
         public int Credit { get; set; }
+        
+        public string RemainingConcatTotalStudents => $"Sĩ số: {RemainingStudents}/{TotalStudents}";
         
     }
 }

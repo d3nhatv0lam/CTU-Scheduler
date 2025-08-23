@@ -13,9 +13,5 @@ public partial class TimeTableView : ReactiveUserControl<TimeTableViewModel>
     public TimeTableView()
     {
         InitializeComponent();
-        this.WhenActivated(disposables =>
-        {
-            this.OneWayBind<TimeTableViewModel, TimeTableView, ObservableCollection<ScheduleCell>, IEnumerable>(ViewModel, vm => vm.ScheduleCells, x => x.ScheduleTable.ItemsSource).DisposeWith(disposables);
-        });
     }
 }

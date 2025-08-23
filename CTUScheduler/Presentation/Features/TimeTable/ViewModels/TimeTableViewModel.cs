@@ -4,13 +4,14 @@ using System.Diagnostics;
 using System.Text.Json;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Presentation.Base;
+using CTUScheduler.Presentation.Features.TimeTable.Models;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.TimeTable.ViewModels
 {
     public class TimeTableViewModel : ViewModelBase
     {
-        public ObservableCollection<ScheduleCell> ScheduleCells { get; set; } = new();
+        public ObservableCollection<ScheduleCellViewModel> ScheduleCells { get; set; } = new();
         public TimeTableViewModel() {}
     }
 }

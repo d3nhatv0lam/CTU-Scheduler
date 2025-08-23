@@ -2,7 +2,7 @@
 
 namespace CTUScheduler.Core.Interfaces;
 
-public interface ITransferData<in TSource,in TTarget> 
+public interface ITransfer<in TSource,in TTarget> 
     where TSource: class
     where TTarget: class
 {

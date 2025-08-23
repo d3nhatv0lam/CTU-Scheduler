@@ -1,30 +1,33 @@
 ﻿using System.Collections.Generic;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Presentation.Features.TimeTable.Models;
+using CTUScheduler.Presentation.Features.TimeTable.ViewModels;
 
 namespace CTUScheduler.Core.Extensions;
 
 public static class SectionChoiceExtension
 {
-    public static IEnumerable<ScheduleCell> ToScheduleCells(this SectionChoice sectionChoice)
+    public static IEnumerable<ScheduleCellViewModel> ToScheduleCells(this SectionChoice sectionChoice)
     {
-        List<ScheduleCell> cells = new();
+        List<ScheduleCellViewModel> cells = new();
 
         foreach (var classDayData in sectionChoice.Section.ClassDayDatas)
         {
-            ScheduleCell cell = new();
-            cell.CourseCode = sectionChoice.Course.Code;
-            cell.CourseName_VN = sectionChoice.Course.Name_VN;
-            cell.Group = sectionChoice.Section.Group;
-            cell.TotalStudents = sectionChoice.Section.TotalStudents;
-            cell.RemainingStudents = sectionChoice.Section.RemainingStudents;
-            cell.Lecturer = sectionChoice.Section.Lecturer;
-            cell.Credit = sectionChoice.Course.Credit;
+            ScheduleCellViewModel cellViewModel = new();
+            cellViewModel.CourseCode = sectionChoice.Course.Code;
+            cellViewModel.CourseName_VN = sectionChoice.Course.Name_VN;
+            cellViewModel.Group = sectionChoice.Section.Group;
+            cellViewModel.TotalStudents = sectionChoice.Section.TotalStudents;
+            cellViewModel.RemainingStudents = sectionChoice.Section.RemainingStudents;
+            cellViewModel.Lecturer = sectionChoice.Section.Lecturer;
+            cellViewModel.Credit = sectionChoice.Course.Credit;
             
-            cell.AttendingDay = classDayData.AttendingDay;
-            cell.StartPeriod = classDayData.GetStartPeriod();
-            cell.NumberOfPeriods = classDayData.GetPeriodCount();
-            cells.Add(cell);
+            cellViewModel.AttendingDay = classDayData.AttendingDay;
+            cellViewModel.Room = classDayData.Room;
+            cellViewModel.StartPeriod = classDayData.GetStartPeriod();
+            cellViewModel.NumberOfPeriods = classDayData.GetPeriodCount();
+            cells.Add(cellViewModel);
         }
 
         return cells;

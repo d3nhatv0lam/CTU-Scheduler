@@ -9,6 +9,7 @@ using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Services.Dialogs;
 using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Validators;
 using CTUScheduler.Core.Algorithms;
@@ -30,6 +31,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
     public class TimeTableSchedulerViewModel: ViewModelBase, IStepViewModel, IDisposable , IActivatableViewModel
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private readonly IDialogHostService _dialogHostService;
         private readonly IUserDataService _userDataService;
         private readonly SchedulingCourseViewModel _schedulingCourseVM;
         private readonly ScheduleValidator _scheduleValidator = new ScheduleValidator();
@@ -49,15 +51,16 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         public ReadOnlyObservableCollection<Course> Courses => _courseBindable;
         public SchedulingCourseViewModel SchedulingCourseVM => _schedulingCourseVM;
         public ObservableCollection<SelectableTimetableLayout> TimeTableLayoutViewModels => _timeTableLayoutViewModels;
-        public ReactiveCommand<Unit, Unit> GenerateTimeTableCommand { get; protected set; }
-
+        public ReactiveCommand<Unit, Unit> GenerateTimeTableCommand { get;  }
+        public ReactiveCommand<SelectableTimetableLayout,Unit> OpenTimetableDetailsCommand { get; }
         public TimeTableSchedulerViewModel(SourceList<Course> courses)
         {
             _coursesSourceList = courses;
             _userDataService = App.ServiceProvider!.GetRequiredService<IUserDataService>();
+            _dialogHostService = App.ServiceProvider!.GetRequiredService<IDialogHostService>();
             _schedulingCourseVM = new SchedulingCourseViewModel();
 
-            GenerateTimeTableCommand = ReactiveCommand.Create( () =>
+            GenerateTimeTableCommand = ReactiveCommand.CreateFromTask(async () =>
                 {
                     // if (IsGeneratingTimeTable)
                     // {
@@ -67,8 +70,13 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                     //
                     // IsGeneratingTimeTable = true;
                     var courseSectionFlatten = CourseSectionsTrackerFlatten(SchedulingCourseVM.GetGroupedCourses());
-                    GenerateTimeTable(courseSectionFlatten);
+                    await GenerateTimeTable(courseSectionFlatten);
                 })
+                .DisposeWith(_disposables);
+            
+            OpenTimetableDetailsCommand = ReactiveCommand
+                .Create<SelectableTimetableLayout>((selectableTimetableLayout) =>
+                    OpenTimetableDetails(selectableTimetableLayout))
                 .DisposeWith(_disposables);
             
             TimeTableLayoutViewModels.ToObservableChangeSet()
@@ -86,7 +94,13 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                 SchedulingCourseVM.MapToSchedulingCourses(Courses);
             });
         }
-        
+
+        private void OpenTimetableDetails(SelectableTimetableLayout selectableTimetableLayout)
+        {
+            var timetableLayoutViewModel = selectableTimetableLayout.Item;
+            _dialogHostService.ShowDialogAsync<Unit>(timetableLayoutViewModel,
+                DialogHostService.DialogIdentifier.Timetable);
+        }
 
         private void StopGenerateTimeTable()
         {
@@ -95,7 +109,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         }
         
         
-        private void GenerateTimeTable(IEnumerable<List<SectionChoice>> sets)
+        private async Task GenerateTimeTable(IEnumerable<List<SectionChoice>> sets)
         {
             _cts?.Cancel();
             _cts?.Dispose();
@@ -112,7 +126,8 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                 {
                     layout.AddCourseSectionToTable(data);
                 }
-                TimeTableLayoutViewModels.Add(new SelectableTimetableLayout(layout));
+                var selectableLayoutViewModel = new SelectableTimetableLayout(layout);
+                TimeTableLayoutViewModels.Add(selectableLayoutViewModel);
             }
         }
         

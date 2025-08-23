@@ -52,8 +52,6 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             get => _title;
             set => this.RaiseAndSetIfChanged(ref _title, value);
         }
-        
-
         public ReactiveCommand<Unit, Unit> LogoutCommand { get; }
 
         public MainShellViewModel()
@@ -74,12 +72,14 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                 new NavigationItem("Cài đặt", MaterialIconKind.CogOutline,typeof(SettingViewModel))
             };
 
-            this.WhenAnyValue(x => x.SelectedItem).WhereNotNull().Subscribe(item =>
-            {
-                Title = item.Title;
-                var page = (IRoutableViewModel)Activator.CreateInstance(item.ViewModelType,HostScreen)!;
-                Router.NavigateAndReset.Execute(page);
-            }).DisposeWith(_disposables);
+            this.WhenAnyValue(x => x.SelectedItem)
+                .WhereNotNull()
+                .Subscribe(item =>
+                {
+                    Title = item.Title;
+                    var page = (IRoutableViewModel)Activator.CreateInstance(item.ViewModelType,HostScreen)!;
+                    Router.NavigateAndReset.Execute(page);
+                }).DisposeWith(_disposables);
 
 
             TryGetUserInfo();
@@ -89,7 +89,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 
             LogoutCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                bool isAcceptLogout = await _dialogHostService.ShowDialog<bool>(new LogoutDialogViewModel(DialogHostService.DialogIdentifier.MainLayout), DialogHostService.DialogIdentifier.MainLayout);
+                bool isAcceptLogout = await _dialogHostService.ShowDialogAsync<bool>(new LogoutDialogViewModel(), DialogHostService.DialogIdentifier.MainLayout);
                 if (isAcceptLogout)
                 {
                     HostScreen.Router.NavigateAndReset.Execute(new LoginViewModel(HostScreen));
@@ -103,7 +103,6 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             var userInfo = await _CTUWebDriverService.TryGetUserInfomation();
             if (string.IsNullOrEmpty(userInfo.userName) || string.IsNullOrEmpty(userInfo.userMSSV))
                 return;
-
             UserName = userInfo.userName;
             UserMSSV = userInfo.userMSSV;
         }

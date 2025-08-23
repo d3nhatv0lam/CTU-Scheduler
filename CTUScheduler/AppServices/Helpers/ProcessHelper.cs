@@ -6,51 +6,67 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CTUScheduler.AppServices.Helpers
+namespace CTUScheduler.AppServices.Helpers;
+
+public static class ProcessHelper
 {
-    public static class ProcessHelper
+    public static void OpenUrl(string url)
     {
-        public static void OpenUrl(string url)
+        try
         {
+            if (TryOpenUrlWithWindows()) return;
+            if (TryOpenUrlWithLinux()) return;
+            if (TryOpenUrlWithMac()) return;
+
+            throw new NotSupportedException("Unsupported OS");
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e.Message);
+        }
+
+        bool TryOpenUrlWithWindows()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return false;
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                }
+            };
+            process.Start();
+            return true;
+        }
+
+        bool TryOpenUrlWithLinux()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return false;
             try
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    var process = new Process
-                    {
-                        StartInfo = new ProcessStartInfo
-                        {
-                            FileName = url,
-                            UseShellExecute = true
-                        }
-                    };
-                    process.Start();
-                    return;
-                }
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    try
-                    {
-                        Process.Start("xdg-open", url);
-                    }
-                    catch (System.ComponentModel.Win32Exception)
-                    {
-                        // Nếu `xdg-open` không tồn tại, thử `x-www-browser`
-                        Process.Start("x-www-browser", url);
-                    }
-                    return;
-                }
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    Process.Start("open", url);
-                    return;
-                }
-                throw new NotSupportedException("Unsupported OS");
+                Process.Start("xdg-open", url);
+                return true;
             }
-            catch (Exception e)
+            catch (System.ComponentModel.Win32Exception)
             {
-                Debug.WriteLine(e.Message);
+                try
+                {
+                    // Nếu `xdg-open` không tồn tại, thử `x-www-browser`
+                    Process.Start("x-www-browser", url);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
             }
+        }
+        bool TryOpenUrlWithMac()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return false;
+            Process.Start("open", url);
+            return true;
         }
     }
 }

@@ -8,10 +8,45 @@
 			 xmlns:rxui="http://reactiveui.net"
 			 xmlns:scheduleModel="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.Schedule"
 			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.TimeTable.ViewModels"
+			 xmlns:models="clr-namespace:CTUScheduler.Presentation.Features.TimeTable.Models"
 			 x:DataType="vm:TimeTableViewModel"
 			 x:CompileBindings="True"
              x:Class="CTUScheduler.Presentation.Features.TimeTable.Views.TimeTableView">
 	
+	<rxui:ReactiveUserControl.Styles>
+		<Style Selector="Border.cell-container" x:DataType="vm:ScheduleCellViewModel">
+			<Setter Property="BorderBrush" Value="Black"></Setter>
+			<Setter Property="BorderThickness" Value="1"></Setter>
+			<!-- // Default style // -->
+			<Style Selector="^ Border.students-remaining-status">
+				<Setter Property="Background" Value="Gray"></Setter>
+			</Style>
+			<Style Selector="^ ScrollViewer StackPanel">
+				<Setter Property="Background" Value="{Binding BackgroundColor}"></Setter>
+			</Style>
+			<Style Selector="^ ScrollViewer StackPanel > :is(Control)">
+				<Setter Property="Margin" Value="0 2"></Setter>
+			</Style>
+			<Style Selector="^ ScrollViewer StackPanel TextBlock">
+				<Setter Property="TextAlignment" Value="Center"/>
+				<Setter Property="VerticalAlignment" Value="Center"/>
+				<Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+				<Setter Property="FontWeight" Value="Bold"/>
+				<Setter Property="Foreground" Value="Black"/>
+			</Style>
+			
+			<!-- // Red Style // -->
+			<Style Selector="^.red Border.students-remaining-status">
+				<Setter Property="Background" Value="Red"></Setter>
+			</Style>
+			<Style Selector="^.yellow Border.students-remaining-status">
+				<Setter Property="Background" Value="#FFB302"></Setter>
+			</Style>
+			<Style Selector="^.green Border.students-remaining-status">
+				<Setter Property="Background" Value="#00E200"></Setter>
+			</Style>
+		</Style>
+	</rxui:ReactiveUserControl.Styles>
 
 	<Border BorderBrush="Black" BorderThickness="1" >
 		<Grid
@@ -107,9 +142,10 @@
 				  >
 				<!-- // Schedule Table Data // -->
 				<ItemsControl x:Name="ScheduleTable"
+				              ItemsSource="{Binding ScheduleCells, Mode=OneWay}"
 				              Padding="0">
 					<ItemsControl.Styles>
-						<Style Selector="ContentPresenter" x:DataType="{x:Type scheduleModel:ScheduleCell}">
+						<Style Selector="ContentPresenter" x:DataType="{x:Type vm:ScheduleCellViewModel}">
 							<Setter Property="Grid.Row" Value="{Binding Row}"/>
 							<Setter Property="Grid.Column" Value="{Binding Column}"/>
 							<Setter Property="Grid.RowSpan" Value="{Binding RowSpan}"/>
@@ -150,12 +186,30 @@
 					</ItemsControl.ItemsPanel>
 
 					<ItemsControl.ItemTemplate>
-						<DataTemplate x:DataType="{x:Type scheduleModel:ScheduleCell}">
+						<DataTemplate x:DataType="{x:Type vm:ScheduleCellViewModel}">
 							<Border
-								BorderBrush="Black"
-								BorderThickness="1"
-								Background="Red">
-								<TextBlock Text="Hello"/>
+								Classes="cell-container"
+								Classes.red="{Binding IsLowStatus}"
+								Classes.yellow="{Binding IsMediumStatus}"
+								Classes.green="{Binding IsHighStatus}"
+								>
+								<Grid ColumnDefinitions="0.1* *">
+									<Border Classes="students-remaining-status" Grid.Column="0"/>
+									<ScrollViewer
+										Grid.Column="1"
+										VerticalScrollBarVisibility="Auto" 
+										Theme="{StaticResource MaterialModernScrollViewer}" 
+										>
+										<StackPanel>
+											<TextBlock Text="{Binding CourseCode,Mode=OneWay}"></TextBlock>
+											<TextBlock Text="{Binding CourseName_VN,Mode=OneWay}"></TextBlock>
+											<TextBlock Text="{Binding Group,StringFormat=Nhóm:{0},Mode=OneWay}"></TextBlock>
+											<TextBlock Text="{Binding Room,StringFormat=Phòng:{0},Mode=OneWay}"></TextBlock>
+											<TextBlock Text="{Binding RemainingConcatTotalStudents, Mode=OneWay}"></TextBlock>
+											<TextBlock Text="{Binding Lecturer,Mode=OneWay}"></TextBlock>
+										</StackPanel>
+									</ScrollViewer>
+								</Grid>
 							</Border>
 						</DataTemplate>
 					</ItemsControl.ItemTemplate>

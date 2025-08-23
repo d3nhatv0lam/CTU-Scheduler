@@ -239,7 +239,9 @@
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             Identifier="Timetable"
-            CloseOnClickAway="True">
+            CloseOnClickAway="True"
+            DisableOpeningAnimation="True"
+            >
             <dialogHostAvalonia:DialogHost.PopupPositioner>
                 <positioners:AlignmentDialogPopupPositioner
                     Margin="100"

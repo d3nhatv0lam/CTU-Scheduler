@@ -193,8 +193,8 @@
                         <Border Grid.Row="2" Padding="8" ClipToBounds="False">
                             <ScrollViewer>
                                 <Border>
-                                    <ItemsRepeater
-                                        ItemsSource="{Binding TimeTableLayoutViewModels}">
+                                    <ItemsRepeater ClipToBounds="False"
+                                                   ItemsSource="{Binding TimeTableLayoutViewModels}">
                                         <ItemsRepeater.Layout>
                                             <UniformGridLayout
                                                 MinRowSpacing="30"
@@ -238,6 +238,8 @@
                                                             <Button Background="Transparent"
                                                                     Padding="0"
                                                                     BorderThickness="0"
+                                                                    Command="{Binding Path= ((viewModels:TimeTableSchedulerViewModel)DataContext).OpenTimetableDetailsCommand, RelativeSource={RelativeSource  Mode=FindAncestor, AncestorType=views:TimeTableSchedulerView}}"
+                                                                    CommandParameter="{Binding .}"
                                                                     >
                                                             </Button>
                                                         </Grid>

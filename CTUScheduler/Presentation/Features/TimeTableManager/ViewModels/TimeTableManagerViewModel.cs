@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Disposables;
@@ -11,8 +12,9 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.TimeTableManager.ViewModels
 {
-    public class TimeTableManagerViewModel: ViewModelBase, IRoutableViewModel, IActivatableViewModel
+    public class TimeTableManagerViewModel: ViewModelBase, IRoutableViewModel, IActivatableViewModel, IDisposable
     {
+        private readonly CompositeDisposable _disposable = new CompositeDisposable();
         private readonly ICTUWebDriverService _CTUWebDriverService;
         private readonly IDialogHostService _dialogHostService;
         public string? UrlPathSegment => "TimeTableManagerViewModel";
@@ -22,7 +24,6 @@ namespace CTUScheduler.Presentation.Features.TimeTableManager.ViewModels
         public ObservableCollection<string> CourseList { get; set; } = new ObservableCollection<string>() { };
 
         public ReactiveCommand<Unit, Unit> OpenAddCourseDialogCommand { get; protected set; }
-
         
         public TimeTableManagerViewModel()
         {
@@ -34,20 +35,15 @@ namespace CTUScheduler.Presentation.Features.TimeTableManager.ViewModels
             _CTUWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
 
             GoToCourseCatalogPage();
-            OpenAddCourseDialogCommand = ReactiveCommand.Create(OpenAddCourseDialog);
-
-            this.WhenActivated((CompositeDisposable disposeables) => 
-            {
-                Debug.Write("actived!!!!!");
-                OpenAddCourseDialogCommand.DisposeWith(disposeables);
-            });
+            OpenAddCourseDialogCommand = ReactiveCommand.Create(OpenAddCourseDialog)
+                .DisposeWith(_disposable);
             
         }
 
         private void OpenAddCourseDialog()
         {
-            var viewModel = new DialogViewModel(DialogHostService.DialogIdentifier.MainLayout);
-            _dialogHostService.ShowDialog<Unit>(viewModel, DialogHostService.DialogIdentifier.MainLayout);
+            var viewModel = new DialogViewModel();
+            _dialogHostService.ShowDialogAsync<Unit>(viewModel, DialogHostService.DialogIdentifier.MainLayout);
         }
 
         public void GoToCourseCatalogPage()
@@ -60,7 +56,11 @@ namespace CTUScheduler.Presentation.Features.TimeTableManager.ViewModels
             {
 
             }
-            
+        }
+
+        public void Dispose()
+        {
+            _disposable.Dispose();
         }
     }
 }

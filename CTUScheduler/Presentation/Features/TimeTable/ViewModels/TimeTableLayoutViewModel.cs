@@ -5,9 +5,11 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using CTUScheduler.Core.Extensions;
+using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
+using CTUScheduler.Presentation.Features.TimeTable.Resources;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.TimeTable.ViewModels;
@@ -47,7 +49,6 @@ public class TimeTableLayoutViewModel: ViewModelBase, IDisposable
         get => _lastUpdated;
         set => this.RaiseAndSetIfChanged(ref _lastUpdated, value);
     }
-
     
     public TimeTableLayoutViewModel(ScheduleTable scheduleTable)
     {
@@ -85,10 +86,12 @@ public class TimeTableLayoutViewModel: ViewModelBase, IDisposable
        var listCell= choice.ToScheduleCells().ToList();
        if (listCell.Count == 0 || !ScheduleTable.TryAddToScheduleData(choice))
            return;
-       
+
+       var cellColor = ColorPalettes.Colors[SubjectsCount - 1];
        TotalCredit += listCell[0].Credit;
        foreach (var cell in listCell)
        {
+           cell.BackgroundColor = cellColor;
            _timeTableVM.ScheduleCells.Add(cell);
        }
     }
