@@ -17,7 +17,7 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Schedule
 {
     public class ScheduleTable
     {
-        public static readonly string DEFAULT_NAME = "UNNAMED";
+        public static readonly string DEFAULT_NAME = "Unnamed";
         public string Name { get; set; } = DEFAULT_NAME;
         public string Description { get; set; } = string.Empty;
         public Dictionary<string,string> ScheduleData { get; set; } = new();

@@ -8,6 +8,15 @@ namespace CTUScheduler.AppServices.Validators;
 
 public class ScheduleValidator
 {
+    /// <summary>
+    /// Check valid timetable from raw data
+    /// </summary>
+    /// <param name="timeTableData">
+    /// List of section choice, used to build timetable
+    /// </param>
+    /// <returns>
+    /// True if valid, false if invalid
+    /// </returns>
     public bool IsValidTimeTableFromRaw(List<SectionChoice> timeTableData)
     {
         switch (timeTableData.Count)
@@ -37,7 +46,7 @@ public class ScheduleValidator
 
                 if (IsConflict(xTime, yTime))
                     return true;
-                // điều kiện cổ của không lập
+                // old condition
                 // if (xTime.GetStartPeriod() < yTime.GetStartPeriod() 
                 //     && xTime.GetEndPeriod() < yTime.GetStartPeriod())
                 //     continue;

@@ -8,8 +8,7 @@
 			 xmlns:rxui="http://reactiveui.net"
 			 xmlns:scheduleModel="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.Schedule"
 			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.TimeTable.ViewModels"
-			 xmlns:models="clr-namespace:CTUScheduler.Presentation.Features.TimeTable.Models"
-			 x:DataType="vm:TimeTableViewModel"
+			x:DataType="vm:TimeTableViewModel"
 			 x:CompileBindings="True"
              x:Class="CTUScheduler.Presentation.Features.TimeTable.Views.TimeTableView">
 	

@@ -14,12 +14,12 @@
     xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
     xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    xmlns:timetableModel="clr-namespace:CTUScheduler.Presentation.Features.TimeTable.Models"
     xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels"
     xmlns:timetableView="clr-namespace:CTUScheduler.Presentation.Features.TimeTable.Views"
     xmlns:dialogHost="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
     xmlns:positioners="clr-namespace:DialogHostAvalonia.Positioners;assembly=DialogHost.Avalonia"
     xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Views"
+    xmlns:timetableModel="clr-namespace:CTUScheduler.Presentation.Shared.Models"
     x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.TimeTableSchedulerView">
 
     <rxui:ReactiveUserControl.Resources>
@@ -81,7 +81,7 @@
                                 HorizontalScrollBarVisibility="Disabled"
                                 VerticalScrollBarVisibility="Auto">
                                 <ItemsRepeater
-                                    ItemsSource="{Binding SchedulingCourseVM.SchedulingCourses}">
+                                    ItemsSource="{Binding SchedulingCourseOptionVM.SchedulingCourses}">
                                     <ItemsRepeater.Styles>
                                         <Style Selector="ItemsRepeater Border.CornerBorder">
                                             <Setter Property="Margin" Value="0 5"></Setter>

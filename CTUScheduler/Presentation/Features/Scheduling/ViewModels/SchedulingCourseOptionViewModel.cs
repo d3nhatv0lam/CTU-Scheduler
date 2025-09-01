@@ -14,12 +14,12 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 
-public class SchedulingCourseViewModel : ViewModelBase, IDisposable
+public class SchedulingCourseOptionViewModel : ViewModelBase, IDisposable
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
     public ObservableCollection<SchedulingCourse> SchedulingCourses { get; set; } = new ObservableCollection<SchedulingCourse>();
 
-    public SchedulingCourseViewModel()
+    public SchedulingCourseOptionViewModel()
     {
         SchedulingCourses.ToObservableChangeSet()
             .AutoRefresh(x => x.IsMainCourse)

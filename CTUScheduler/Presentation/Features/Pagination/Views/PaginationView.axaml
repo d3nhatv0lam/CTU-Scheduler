@@ -1,0 +1,49 @@
+﻿<rxui:ReactiveUserControl x:TypeArguments="viewModels:IPaginationBinding"
+                          xmlns="https://github.com/avaloniaui"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                          mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="70"
+                          xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Pagination.Interfaces"
+                          xmlns:rxui="http://reactiveui.net"
+                          xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.Pagination.Views"
+                          x:DataType="viewModels:IPaginationBinding"
+                          x:CompileBindings="True"
+                          x:Class="CTUScheduler.Presentation.Features.Pagination.Views.PaginationView">
+    <rxui:ReactiveUserControl.Styles>
+        <Style Selector="Border.container">
+            <Setter Property="CornerRadius" Value="8"></Setter>
+        </Style>
+        <Style Selector="Button.Navigate">
+            <Setter Property="VerticalAlignment" Value="Stretch"></Setter>
+            <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
+            <Setter Property="FontSize" Value="30"></Setter>
+        </Style>
+        
+        <Style Selector="StackPanel.page-number-container, StackPanel.page-number-container > TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+        </Style>
+    </rxui:ReactiveUserControl.Styles>
+    <Border Classes="container">
+        <Grid ColumnDefinitions="* * *">
+            <Button Grid.Column="0"
+                Classes="Navigate" 
+                Content="&lt;"
+                Command="{Binding PreviousPageCommand}"></Button>
+            
+            <StackPanel Classes="page-number-container" 
+                        Grid.Column="1"
+                        Orientation="Horizontal">
+                <TextBlock Classes="Headline6" Text="{Binding CurrentPage,Mode=OneWay}"></TextBlock>
+                <TextBlock Classes="Headline6" Text="/"></TextBlock>
+                <TextBlock Classes="Headline6" Text="{Binding TotalPages, Mode=OneWay}"></TextBlock>
+            </StackPanel>
+            
+            <Button Grid.Column="2" 
+                    Classes="Navigate" 
+                    Content="&gt;"
+                    Command="{Binding  NextPageCommand}"></Button>
+        </Grid>
+    </Border>
+</rxui:ReactiveUserControl>

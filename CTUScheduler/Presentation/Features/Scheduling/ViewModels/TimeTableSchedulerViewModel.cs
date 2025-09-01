@@ -17,10 +17,11 @@ using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
+using CTUScheduler.Presentation.Features.Pagination.ViewModels;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
-using CTUScheduler.Presentation.Features.TimeTable.Models;
 using CTUScheduler.Presentation.Features.TimeTable.ViewModels;
 using CTUScheduler.Presentation.Scheduling.Interfaces;
+using CTUScheduler.Presentation.Shared.Models;
 using DynamicData;
 using DynamicData.Binding;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,11 +34,12 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly IDialogHostService _dialogHostService;
         private readonly IUserDataService _userDataService;
-        private readonly SchedulingCourseViewModel _schedulingCourseVM;
+        private readonly SchedulingCourseOptionViewModel _schedulingCourseOptionVM;
         private readonly ScheduleValidator _scheduleValidator = new ScheduleValidator();
-        private readonly SourceList<Course> _coursesSourceList;
-        private ObservableCollection<SelectableTimetableLayout> _timeTableLayoutViewModels = new ();
-        private ReadOnlyObservableCollection<Course> _courseBindable;
+        private readonly PaginationViewModel<SelectableTimetableLayout> _paginationViewModel;
+        
+        private readonly ObservableCollection<SelectableTimetableLayout> _timeTableLayoutViewModels = new ();
+        private readonly ObservableAsPropertyHelper<ObservableCollection<SelectableTimetableLayout>> _pagedTimeTableLayoutViewModels;
         private CancellationTokenSource? _cts;
         private bool _isGeneratingTimeTable = false;
         
@@ -48,18 +50,18 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         }
         
         public ViewModelActivator Activator { get; } = new ViewModelActivator();
-        public ReadOnlyObservableCollection<Course> Courses => _courseBindable;
-        public SchedulingCourseViewModel SchedulingCourseVM => _schedulingCourseVM;
+        public SchedulingCourseOptionViewModel SchedulingCourseOptionVM => _schedulingCourseOptionVM;
         public ObservableCollection<SelectableTimetableLayout> TimeTableLayoutViewModels => _timeTableLayoutViewModels;
+        public ObservableCollection<SelectableTimetableLayout> PagedTimeTableLayoutViewModels => _pagedTimeTableLayoutViewModels.Value;
         public ReactiveCommand<Unit, Unit> GenerateTimeTableCommand { get;  }
         public ReactiveCommand<SelectableTimetableLayout,Unit> OpenTimetableDetailsCommand { get; }
         public TimeTableSchedulerViewModel(SourceList<Course> courses)
         {
-            _coursesSourceList = courses;
             _userDataService = App.ServiceProvider!.GetRequiredService<IUserDataService>();
             _dialogHostService = App.ServiceProvider!.GetRequiredService<IDialogHostService>();
-            _schedulingCourseVM = new SchedulingCourseViewModel();
-
+            _schedulingCourseOptionVM = new SchedulingCourseOptionViewModel();
+            _paginationViewModel = new(12);
+            
             GenerateTimeTableCommand = ReactiveCommand.CreateFromTask(async () =>
                 {
                     // if (IsGeneratingTimeTable)
@@ -69,13 +71,12 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                     // }
                     //
                     // IsGeneratingTimeTable = true;
-                    var courseSectionFlatten = CourseSectionsTrackerFlatten(SchedulingCourseVM.GetGroupedCourses());
+                    var courseSectionFlatten = CourseSectionsTrackerFlatten(SchedulingCourseOptionVM.GetGroupedCourses());
                     await GenerateTimeTable(courseSectionFlatten);
                 })
                 .DisposeWith(_disposables);
             
-            OpenTimetableDetailsCommand = ReactiveCommand
-                .Create<SelectableTimetableLayout>((selectableTimetableLayout) =>
+            OpenTimetableDetailsCommand = ReactiveCommand.Create<SelectableTimetableLayout>((selectableTimetableLayout) =>
                     OpenTimetableDetails(selectableTimetableLayout))
                 .DisposeWith(_disposables);
             
@@ -84,14 +85,16 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                 .Subscribe()
                 .DisposeWith(_disposables);
             
-            _coursesSourceList.Connect()
-                .Bind(out _courseBindable)
+            
+            
+            courses.Connect()
+                .Bind(out var courseBindable)
                 .Subscribe()
                 .DisposeWith(_disposables);
             
             this.WhenActivated((CompositeDisposable disposable) =>
             {
-                SchedulingCourseVM.MapToSchedulingCourses(Courses);
+                SchedulingCourseOptionVM.MapToSchedulingCourses(courseBindable);
             });
         }
 
@@ -109,7 +112,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         }
         
         
-        private async Task GenerateTimeTable(IEnumerable<List<SectionChoice>> sets)
+        private Task GenerateTimeTable(IEnumerable<List<SectionChoice>> sets)
         {
             _cts?.Cancel();
             _cts?.Dispose();
@@ -129,6 +132,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                 var selectableLayoutViewModel = new SelectableTimetableLayout(layout);
                 TimeTableLayoutViewModels.Add(selectableLayoutViewModel);
             }
+            return Task.CompletedTask;
         }
         
         
@@ -143,7 +147,8 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
 
         public void Dispose()
         {
-            SchedulingCourseVM.Dispose();
+            SchedulingCourseOptionVM.Dispose();
+            _paginationViewModel.Dispose();
             _disposables.Dispose();
         }
     }
