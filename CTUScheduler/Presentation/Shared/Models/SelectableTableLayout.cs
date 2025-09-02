@@ -1,17 +1,12 @@
 ﻿using System;
 using CTUScheduler.Core.Models.Shared;
-using CTUScheduler.Presentation.Features.TimeTable.ViewModels;
+using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 
 namespace CTUScheduler.Presentation.Shared.Models;
 
-public class SelectableTimetableLayout: SelectableItem<TimeTableLayoutViewModel>, IDisposable
+public class SelectableTimetableLayout: SelectableItem<TimetableLayoutViewModel>
 {
-    public SelectableTimetableLayout(TimeTableLayoutViewModel vm) : base(vm)
+    public SelectableTimetableLayout(TimetableLayoutViewModel vm) : base(vm)
     {
-    }
-
-    public void Dispose()
-    {
-        Item?.Dispose();
     }
 }

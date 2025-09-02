@@ -1,12 +1,12 @@
 using Avalonia.ReactiveUI;
-using CTUScheduler.Presentation.Features.TimeTableManager.ViewModels;
+using CTUScheduler.Presentation.Features.TimetableManager.ViewModels;
 using ReactiveUI;
 
-namespace CTUScheduler.Presentation.Features.TimeTableManager.Views;
+namespace CTUScheduler.Presentation.Features.TimetableManager.Views;
 
-public partial class TimeTableManagerView : ReactiveUserControl<TimeTableManagerViewModel>
+public partial class TimetableManagerView : ReactiveUserControl<TimetableManagerViewModel>
 {
-    public TimeTableManagerView()
+    public TimetableManagerView()
     {
         InitializeComponent();
 

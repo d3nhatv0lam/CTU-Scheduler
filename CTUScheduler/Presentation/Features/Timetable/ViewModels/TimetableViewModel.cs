@@ -6,11 +6,11 @@ using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Presentation.Base;
 using ReactiveUI;
 
-namespace CTUScheduler.Presentation.Features.TimeTable.ViewModels
+namespace CTUScheduler.Presentation.Features.Timetable.ViewModels
 {
-    public class TimeTableViewModel : ViewModelBase
+    public class TimetableViewModel : ViewModelBase
     {
         public ObservableCollection<ScheduleCellViewModel> ScheduleCells { get; set; } = new();
-        public TimeTableViewModel() {}
+        public TimetableViewModel() {}
     }
 }

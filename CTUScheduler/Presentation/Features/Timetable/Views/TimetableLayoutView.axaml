@@ -1,5 +1,5 @@
 ﻿<rxui:ReactiveUserControl
-    x:TypeArguments="vm:TimeTableLayoutViewModel"
+    x:TypeArguments="vm:TimetableLayoutViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -8,13 +8,13 @@
     xmlns:rxui="http://reactiveui.net"
     x:CompileBindings="True"
     Focusable="True"
-    x:DataType="vm:TimeTableLayoutViewModel"
+    x:DataType="vm:TimetableLayoutViewModel"
     xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
     xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
-    xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.TimeTable.ViewModels"
-    xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.TimeTable.Views"
+    xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Timetable.ViewModels"
+    xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Views"
     xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    x:Class="CTUScheduler.Presentation.Features.TimeTable.Views.TimeTableLayoutView">
+    x:Class="CTUScheduler.Presentation.Features.Timetable.Views.TimetableLayoutView">
 
     <rxui:ReactiveUserControl.Styles>
         <Style Selector="Border.padding">
@@ -107,7 +107,7 @@
                     </Grid>
 
                     <!-- // TimeTable View // -->
-                    <views:TimeTableView
+                    <views:TimetableView
                         Grid.Column="2"
                         DataContext="{Binding TimeTableVM}" />
 

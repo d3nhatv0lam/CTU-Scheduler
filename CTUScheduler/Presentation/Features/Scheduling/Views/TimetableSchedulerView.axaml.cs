@@ -3,9 +3,9 @@ using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.Views;
 
-public partial class TimeTableSchedulerView : ReactiveUserControl<TimeTableSchedulerViewModel>
+public partial class TimetableSchedulerView : ReactiveUserControl<TimetableSchedulerViewModel>
 {
-    public TimeTableSchedulerView()
+    public TimetableSchedulerView()
     {
         InitializeComponent();
     }

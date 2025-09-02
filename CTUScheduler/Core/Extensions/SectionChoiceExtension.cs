@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
-using CTUScheduler.Presentation.Features.TimeTable.ViewModels;
+using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 
 namespace CTUScheduler.Core.Extensions;
 

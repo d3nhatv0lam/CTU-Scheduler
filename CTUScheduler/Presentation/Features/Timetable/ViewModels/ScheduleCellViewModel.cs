@@ -1,7 +1,7 @@
 ﻿using Avalonia.Media;
 using CTUScheduler.Core.Interfaces;
 
-namespace CTUScheduler.Presentation.Features.TimeTable.ViewModels
+namespace CTUScheduler.Presentation.Features.Timetable.ViewModels
 {
     public class ScheduleCellViewModel: ITableCell
     {

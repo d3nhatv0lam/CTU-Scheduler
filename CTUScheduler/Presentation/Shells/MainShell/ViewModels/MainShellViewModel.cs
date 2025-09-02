@@ -8,7 +8,7 @@ using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Features.Home.ViewModels;
 using CTUScheduler.Presentation.Features.Setting.ViewModels;
-using CTUScheduler.Presentation.Features.TimeTableManager.ViewModels;
+using CTUScheduler.Presentation.Features.TimetableManager.ViewModels;
 using CTUScheduler.Presentation.Shells.MainShell.Models;
 using Material.Icons;
 using Microsoft.Extensions.DependencyInjection;
@@ -68,7 +68,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             NavigationItems = new ObservableCollection<NavigationItem>
             {
                 new NavigationItem("Trang chủ",MaterialIconKind.HomeOutline,typeof(HomeViewModel)),
-                new NavigationItem("Học phần", MaterialIconKind.TableCog,typeof(TimeTableManagerViewModel)),
+                new NavigationItem("Học phần", MaterialIconKind.TableCog,typeof(TimetableManagerViewModel)),
                 new NavigationItem("Cài đặt", MaterialIconKind.CogOutline,typeof(SettingViewModel))
             };
 

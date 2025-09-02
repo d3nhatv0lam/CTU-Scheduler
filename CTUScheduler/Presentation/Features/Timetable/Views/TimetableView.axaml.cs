@@ -3,14 +3,14 @@ using System.Collections.ObjectModel;
 using System.Reactive.Disposables;
 using Avalonia.ReactiveUI;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
-using CTUScheduler.Presentation.Features.TimeTable.ViewModels;
+using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 using ReactiveUI;
 
-namespace CTUScheduler.Presentation.Features.TimeTable.Views;
+namespace CTUScheduler.Presentation.Features.Timetable.Views;
 
-public partial class TimeTableView : ReactiveUserControl<TimeTableViewModel>
+public partial class TimetableView : ReactiveUserControl<TimetableViewModel>
 {
-    public TimeTableView()
+    public TimetableView()
     {
         InitializeComponent();
     }

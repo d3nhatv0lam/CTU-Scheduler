@@ -19,8 +19,8 @@
     xmlns:views="clr-namespace:CTUScheduler.Presentation.Shells.MainShell.Views"
     xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Views"
     xmlns:viewModels1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels"
-    xmlns:timetableViewModel="clr-namespace:CTUScheduler.Presentation.Features.TimeTable.ViewModels"
-    xmlns:timetableView="clr-namespace:CTUScheduler.Presentation.Features.TimeTable.Views"
+    xmlns:timetableViewModel="clr-namespace:CTUScheduler.Presentation.Features.Timetable.ViewModels"
+    xmlns:timetableView="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Views"
     x:Class="CTUScheduler.Presentation.Shells.MainShell.Views.MainShellView">
 
     <rxui:ReactiveUserControl.Styles>
@@ -248,8 +248,8 @@
                     />
             </dialogHostAvalonia:DialogHost.PopupPositioner>
             <dialogHostAvalonia:DialogHost.DataTemplates>
-                <DataTemplate x:DataType="timetableViewModel:TimeTableLayoutViewModel">
-                    <timetableView:TimeTableLayoutView/>
+                <DataTemplate x:DataType="timetableViewModel:TimetableLayoutViewModel">
+                    <timetableView:TimetableLayoutView/>
                 </DataTemplate>
             </dialogHostAvalonia:DialogHost.DataTemplates>
         </dialogHostAvalonia:DialogHost>

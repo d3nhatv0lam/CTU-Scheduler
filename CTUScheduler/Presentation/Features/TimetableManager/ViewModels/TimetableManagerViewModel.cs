@@ -10,14 +10,14 @@ using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 
-namespace CTUScheduler.Presentation.Features.TimeTableManager.ViewModels
+namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 {
-    public class TimeTableManagerViewModel: ViewModelBase, IRoutableViewModel, IActivatableViewModel, IDisposable
+    public class TimetableManagerViewModel: ViewModelBase, IRoutableViewModel, IActivatableViewModel, IDisposable
     {
         private readonly CompositeDisposable _disposable = new CompositeDisposable();
         private readonly ICTUWebDriverService _CTUWebDriverService;
         private readonly IDialogHostService _dialogHostService;
-        public string? UrlPathSegment => "TimeTableManagerViewModel";
+        public string? UrlPathSegment => "TimetableManagerViewModel";
         public IScreen HostScreen { get; }
         public ViewModelActivator Activator { get; } = new ViewModelActivator();
 
@@ -25,10 +25,10 @@ namespace CTUScheduler.Presentation.Features.TimeTableManager.ViewModels
 
         public ReactiveCommand<Unit, Unit> OpenAddCourseDialogCommand { get; protected set; }
         
-        public TimeTableManagerViewModel()
+        public TimetableManagerViewModel()
         {
         }
-        public TimeTableManagerViewModel(IScreen hostScreen)
+        public TimetableManagerViewModel(IScreen hostScreen)
         {
             HostScreen = hostScreen;
             _dialogHostService = App.ServiceProvider!.GetRequiredService<IDialogHostService>();

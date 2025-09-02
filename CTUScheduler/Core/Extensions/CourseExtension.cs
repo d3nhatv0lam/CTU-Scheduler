@@ -31,7 +31,7 @@ namespace CTUScheduler.Core.Extensions
                 Credit = course.Credit,
                 TheorySessions = course.TheorySessions,
                 PracticalSessions = course.PracticalSessions,
-                Sections  = new ObservableCollection<CourseData>(newCourseDatas)
+                Sections = new List<CourseData>(newCourseDatas)
             };
         }
     }

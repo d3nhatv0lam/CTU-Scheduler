@@ -59,7 +59,7 @@ namespace CTUScheduler.Core.Extensions
 
                         );
                 });
-                course.Sections  = new ObservableCollection<CourseData>(courseDataDir.Values.OrderBy(x => x.Key).ToList());
+                course.Sections  = new List<CourseData>(courseDataDir.Values.OrderBy(x => x.Key).ToList());
 
                 return course;
             }

@@ -319,7 +319,7 @@
 			<!--// Right side //-->
 			<Border Grid.Column="1" Padding="15" ClipToBounds="True">
 				<Border Classes="CornerBorder">
-					<Grid RowDefinitions="auto 1 *" >
+					<Grid RowDefinitions="auto 1 *" ClipToBounds="True">
 						<TextBlock
 							Grid.Row="0"
 							Classes="Title"

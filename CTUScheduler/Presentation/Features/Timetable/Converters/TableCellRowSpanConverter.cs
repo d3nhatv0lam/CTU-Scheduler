@@ -3,7 +3,7 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using CTUScheduler.Core.Interfaces;
 
-namespace CTUScheduler.Presentation.TimeTable.Converters
+namespace CTUScheduler.Presentation.Features.Timetable.Converters
 {
     public class TableCellRowSpanConverter : IValueConverter
     {

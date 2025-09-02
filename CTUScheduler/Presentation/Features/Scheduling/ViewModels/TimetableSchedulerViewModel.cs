@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
@@ -19,27 +20,24 @@ using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Pagination.ViewModels;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
-using CTUScheduler.Presentation.Features.TimeTable.ViewModels;
+using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 using CTUScheduler.Presentation.Scheduling.Interfaces;
 using CTUScheduler.Presentation.Shared.Models;
 using DynamicData;
 using DynamicData.Binding;
+using Material.Styles.Themes.Base;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
 {
-    public class TimeTableSchedulerViewModel: ViewModelBase, IStepViewModel, IDisposable , IActivatableViewModel
+    public class TimetableSchedulerViewModel: ViewModelBase, IStepViewModel, IDisposable , IActivatableViewModel
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly IDialogHostService _dialogHostService;
-        private readonly IUserDataService _userDataService;
         private readonly SchedulingCourseOptionViewModel _schedulingCourseOptionVM;
         private readonly ScheduleValidator _scheduleValidator = new ScheduleValidator();
         private readonly PaginationViewModel<SelectableTimetableLayout> _paginationViewModel;
-        
-        private readonly ObservableCollection<SelectableTimetableLayout> _timeTableLayoutViewModels = new ();
-        private readonly ObservableAsPropertyHelper<ObservableCollection<SelectableTimetableLayout>> _pagedTimeTableLayoutViewModels;
         private CancellationTokenSource? _cts;
         private bool _isGeneratingTimeTable = false;
         
@@ -51,13 +49,11 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         
         public ViewModelActivator Activator { get; } = new ViewModelActivator();
         public SchedulingCourseOptionViewModel SchedulingCourseOptionVM => _schedulingCourseOptionVM;
-        public ObservableCollection<SelectableTimetableLayout> TimeTableLayoutViewModels => _timeTableLayoutViewModels;
-        public ObservableCollection<SelectableTimetableLayout> PagedTimeTableLayoutViewModels => _pagedTimeTableLayoutViewModels.Value;
-        public ReactiveCommand<Unit, Unit> GenerateTimeTableCommand { get;  }
+        public PaginationViewModel<SelectableTimetableLayout> PaginationViewModel => _paginationViewModel;
+        public ReactiveCommand<Unit, Unit> GenerateTimeTableCommand { get; }
         public ReactiveCommand<SelectableTimetableLayout,Unit> OpenTimetableDetailsCommand { get; }
-        public TimeTableSchedulerViewModel(SourceList<Course> courses)
+        public TimetableSchedulerViewModel(SourceList<Course> courses)
         {
-            _userDataService = App.ServiceProvider!.GetRequiredService<IUserDataService>();
             _dialogHostService = App.ServiceProvider!.GetRequiredService<IDialogHostService>();
             _schedulingCourseOptionVM = new SchedulingCourseOptionViewModel();
             _paginationViewModel = new(12);
@@ -79,13 +75,6 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             OpenTimetableDetailsCommand = ReactiveCommand.Create<SelectableTimetableLayout>((selectableTimetableLayout) =>
                     OpenTimetableDetails(selectableTimetableLayout))
                 .DisposeWith(_disposables);
-            
-            TimeTableLayoutViewModels.ToObservableChangeSet()
-                .DisposeMany()
-                .Subscribe()
-                .DisposeWith(_disposables);
-            
-            
             
             courses.Connect()
                 .Bind(out var courseBindable)
@@ -112,27 +101,48 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         }
         
         
-        private Task GenerateTimeTable(IEnumerable<List<SectionChoice>> sets)
+        private async Task GenerateTimeTable(IEnumerable<List<SectionChoice>> sets)
         {
             _cts?.Cancel();
             _cts?.Dispose();
             _cts = new CancellationTokenSource();
-            TimeTableLayoutViewModels.Clear();
-            foreach (var tableData in Combinatorics.CartesianProduct(
-                         sets,
-                         prefix => _scheduleValidator.IsValidTimeTableFromRaw(prefix),
-                         full => true,
-                         _cts.Token))
+            PaginationViewModel.Clear();
+            await Task.Run(() =>
             {
-                var layout = new TimeTableLayoutViewModel(new ScheduleTable());
-                foreach (var data in tableData)
+                var batch = new List<SelectableTimetableLayout>();
+                foreach (var tableData in Combinatorics.CartesianProduct(
+                             sets,
+                             prefix => _scheduleValidator.IsValidTimeTableFromRaw(prefix),
+                             full => true,
+                             _cts.Token))
                 {
-                    layout.AddCourseSectionToTable(data);
+                    var layout = new TimetableLayoutViewModel(new ScheduleTable());
+                    foreach (var data in tableData)
+                        layout.AddCourseSectionToTable(data);
+                    
+                    var selectableLayoutViewModel = new SelectableTimetableLayout(layout);
+                    batch.Add(selectableLayoutViewModel);
+
+                    if (batch.Count > 30)
+                    {
+                        var copyList = batch.ToList();
+                        batch.Clear();
+
+                        RxApp.MainThreadScheduler.Schedule(() =>
+                        {
+                            _paginationViewModel.AddAll(copyList);
+                        });
+                    }
                 }
-                var selectableLayoutViewModel = new SelectableTimetableLayout(layout);
-                TimeTableLayoutViewModels.Add(selectableLayoutViewModel);
-            }
-            return Task.CompletedTask;
+                if (batch.Count > 0)
+                {
+                    RxApp.MainThreadScheduler.Schedule(() =>
+                    {
+                        PaginationViewModel.AddAll(batch);
+                    });
+                }
+                batch.Clear();
+            });
         }
         
         

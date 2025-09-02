@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Avalonia.Media;
 
-namespace CTUScheduler.Presentation.Features.TimeTable.Resources;
+namespace CTUScheduler.Presentation.Features.Timetable.Resources;
 
 public static class ColorPalettes
 {

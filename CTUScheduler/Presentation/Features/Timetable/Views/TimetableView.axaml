@@ -1,5 +1,5 @@
 <rxui:ReactiveUserControl 
-			x:TypeArguments="vm:TimeTableViewModel" 
+			x:TypeArguments="vm:TimetableViewModel" 
 			 xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,10 +7,10 @@
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
 			 xmlns:rxui="http://reactiveui.net"
 			 xmlns:scheduleModel="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.Schedule"
-			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.TimeTable.ViewModels"
-			x:DataType="vm:TimeTableViewModel"
+			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Timetable.ViewModels"
+			x:DataType="vm:TimetableViewModel"
 			 x:CompileBindings="True"
-             x:Class="CTUScheduler.Presentation.Features.TimeTable.Views.TimeTableView">
+             x:Class="CTUScheduler.Presentation.Features.Timetable.Views.TimetableView">
 	
 	<rxui:ReactiveUserControl.Styles>
 		<Style Selector="Border.cell-container" x:DataType="vm:ScheduleCellViewModel">

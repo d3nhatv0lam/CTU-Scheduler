@@ -1,31 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using CTUScheduler.Core.Extensions;
-using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Features.TimeTable.Resources;
+using CTUScheduler.Presentation.Features.Timetable.Resources;
 using ReactiveUI;
 
-namespace CTUScheduler.Presentation.Features.TimeTable.ViewModels;
+namespace CTUScheduler.Presentation.Features.Timetable.ViewModels;
 
-public class TimeTableLayoutViewModel: ViewModelBase, IDisposable
+public class TimetableLayoutViewModel: ViewModelBase, IDisposable
 {
     private readonly CompositeDisposable _disposables = new();
     private readonly ScheduleTable _scheduleTable;
-    private readonly TimeTableViewModel _timeTableVM;
+    private readonly TimetableViewModel _timeTableVM;
     private string _name;
     private string _description;
     private DateTime _lastUpdated;
     private int _totalCredit;
     
     public ScheduleTable ScheduleTable => _scheduleTable;
-    public TimeTableViewModel TimeTableVM => _timeTableVM;
+    public TimetableViewModel TimeTableVM => _timeTableVM;
     public string Name
     {
         get => _name;
@@ -50,14 +47,14 @@ public class TimeTableLayoutViewModel: ViewModelBase, IDisposable
         set => this.RaiseAndSetIfChanged(ref _lastUpdated, value);
     }
     
-    public TimeTableLayoutViewModel(ScheduleTable scheduleTable)
+    public TimetableLayoutViewModel(ScheduleTable scheduleTable)
     {
         _scheduleTable = scheduleTable;
         _name = scheduleTable.Name;
         _description = scheduleTable.Description;
         _lastUpdated = scheduleTable.LastUpdated;
         
-        _timeTableVM = new TimeTableViewModel();
+        _timeTableVM = new TimetableViewModel();
 
         this.WhenAnyValue(x => x.Name)
             .Throttle(TimeSpan.FromMilliseconds(500))

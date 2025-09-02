@@ -4,14 +4,14 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
-using CTUScheduler.Presentation.Features.TimeTable.ViewModels;
+using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 using ReactiveUI;
 
-namespace CTUScheduler.Presentation.Features.TimeTable.Views;
+namespace CTUScheduler.Presentation.Features.Timetable.Views;
 
-public partial class TimeTableLayoutView : ReactiveUserControl<TimeTableLayoutViewModel>
+public partial class TimetableLayoutView : ReactiveUserControl<TimetableLayoutViewModel>
 {
-    public TimeTableLayoutView()
+    public TimetableLayoutView()
     {
         InitializeComponent();
         this.WhenActivated(disposable =>

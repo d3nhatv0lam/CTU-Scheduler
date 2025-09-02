@@ -1,21 +1,21 @@
 <rxui:ReactiveUserControl
-			x:TypeArguments="viewModels:TimeTableManagerViewModel"
+			x:TypeArguments="viewModels:TimetableManagerViewModel"
 			xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="550"
 			 xmlns:rxui="http://reactiveui.net"
-			 x:DataType="viewModels:TimeTableManagerViewModel"
+			 x:DataType="viewModels:TimetableManagerViewModel"
 			 x:CompileBindings="True"
 			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
 			 xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
 			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-			 xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.TimeTableManager.ViewModels"
-			 x:Class="CTUScheduler.Presentation.Features.TimeTableManager.Views.TimeTableManagerView">
+			 xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.TimetableManager.ViewModels"
+			 x:Class="CTUScheduler.Presentation.Features.TimetableManager.Views.TimetableManagerView">
 
 	<Design.DataContext>
-		<viewModels:TimeTableManagerViewModel/>
+		<viewModels:TimetableManagerViewModel/>
 	</Design.DataContext>
 
 	<rxui:ReactiveUserControl.Styles>

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -20,14 +22,18 @@ public class PaginationViewModel<T>: ReactiveObject, IDisposable, IPaginationBin
     private readonly SourceList<T> _data;
     private readonly BehaviorSubject<PageRequest> _pageRequest;
     private ReadOnlyObservableCollection<T> _bindablePagedData;
-    private ObservableAsPropertyHelper<int> _totalPages;
+    private int _totalPages;
     private int _currentPage;
     private bool _isFirstPage;
     private bool _isLastPage;
     
     public ReadOnlyObservableCollection<T> PagedData => _bindablePagedData;
-    
-    public int TotalPages => _totalPages.Value;
+
+    public int TotalPages
+    {
+        get => _totalPages;
+        private set => this.RaiseAndSetIfChanged(ref _totalPages, value);
+    }
     public int PageSize { get; }
 
     public int CurrentPage
@@ -69,7 +75,7 @@ public class PaginationViewModel<T>: ReactiveObject, IDisposable, IPaginationBin
     {
         _data = data ?? throw new ArgumentNullException(nameof(data));
         PageSize = pageSize > 0 ? pageSize : DEFAULT_PAGE_SIZE;
-        _currentPage = 1;
+        _currentPage = 0;
         _pageRequest = new BehaviorSubject<PageRequest>(new PageRequest(CurrentPage, PageSize));
         ObservableInit();
         CommandInit();
@@ -77,34 +83,38 @@ public class PaginationViewModel<T>: ReactiveObject, IDisposable, IPaginationBin
 
     private void ObservableInit()
     {
-        var dataConnection =  _data.Connect();
-
-        _totalPages = dataConnection
+        _data.CountChanged
+            .Throttle(TimeSpan.FromMilliseconds(500))
+            .Select(count => (int)Math.Ceiling(count / (double)PageSize))
+            .DistinctUntilChanged()
+            .Subscribe(totalPages =>
+            {
+                TotalPages = totalPages;
+            });
+           
+        _data.Connect()
+            .Throttle(TimeSpan.FromMilliseconds(500))
+            .ObserveOn(RxApp.TaskpoolScheduler)
             .Page<T>(_pageRequest)
-            .Select(x => x.Response.Pages)
-            .ToProperty(this, nameof(TotalPages), out _totalPages)
-            .DisposeWith(_disposables);
-        
-        dataConnection
-            .DisposeMany()
-            .Page<T>(_pageRequest)
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _bindablePagedData)
             .Subscribe()
+            .DisposeWith(_disposables);
+        
+        this.WhenAnyValue(x => x.CurrentPage)
+            .Where(page => page >= 0)
+            .DistinctUntilChanged()
+            .Subscribe(newPage => _pageRequest.OnNext(new PageRequest(newPage,PageSize)))
             .DisposeWith(_disposables);
 
         this.WhenAnyValue(x => x.TotalPages)
             .Subscribe(totalPage =>
             {
-                if (totalPage <= 1)
-                    CurrentPage = 1;
+                CurrentPage = totalPage > 0 ? 1 : 0;
             })
             .DisposeWith(_disposables);
         
-        this.WhenAnyValue(x => x.CurrentPage)
-            .Subscribe(newPage => _pageRequest.OnNext(new PageRequest(newPage, PageSize)))
-            .DisposeWith(_disposables);
-
-        this.WhenAnyValue(x => CurrentPage, x => x.TotalPages)
+        this.WhenAnyValue(x => x.CurrentPage, x => x.TotalPages)
             .Subscribe(tuple =>
             {
                 var (currentPage, totalPages) = tuple;
@@ -117,30 +127,33 @@ public class PaginationViewModel<T>: ReactiveObject, IDisposable, IPaginationBin
     private void CommandInit()
     {
         var canGoNext = this.WhenAnyValue(x => x.IsLastPage, isLastPage => !isLastPage);
-        NextPageCommand = ReactiveCommand.CreateFromTask(NextPageAsync,canGoNext);
+        NextPageCommand = ReactiveCommand.Create(GoNextPage,canGoNext);
         
         var canGoPrevious = this.WhenAnyValue(x => x.IsFirstPage, isFirstPage => !isFirstPage);
-        PreviousPageCommand = ReactiveCommand.CreateFromTask(PreviousPageAsync,canGoPrevious);
+        PreviousPageCommand = ReactiveCommand.Create(GoPreviousPage,canGoPrevious);
     }
 
-    public Task NextPageAsync()
+    public void GoNextPage()
     {
         if (!IsLastPage)
             CurrentPage++;
-        return Task.CompletedTask;
     }
 
-    public Task PreviousPageAsync()
+    public void GoPreviousPage()
     {
         if (!IsFirstPage)
             CurrentPage--;
-        return Task.CompletedTask;
     }
     
     public void AddItem(T item)
     {
         ArgumentNullException.ThrowIfNull(item, nameof(item));
         _data.Add(item);
+    }
+
+    public void AddAll(IEnumerable<T> items)
+    {
+        _data.AddRange(items);
     }
 
     public void Clear()

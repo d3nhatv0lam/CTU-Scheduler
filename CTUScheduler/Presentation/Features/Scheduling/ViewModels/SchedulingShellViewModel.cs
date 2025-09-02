@@ -75,7 +75,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         private IStepViewModel[] CreateHandmadeSteps()
         {
             var step1 = new HandmadeFindCourseViewModel();
-            var step2 = new TimeTableSchedulerViewModel(step1.CoursesSourceList);
+            var step2 = new TimetableSchedulerViewModel(step1.CoursesSourceList);
             _disposables.Add(step1);
             _disposables.Add(step2);
             

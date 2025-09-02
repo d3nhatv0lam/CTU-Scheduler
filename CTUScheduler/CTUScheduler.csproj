@@ -81,8 +81,8 @@
       <DependentUpon>SelectionView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Presentation\Features\Scheduling\Views\TimeTableSchedulerView.axaml.cs">
-      <DependentUpon>TimeTableSchedulerView.axaml</DependentUpon>
+    <Compile Update="Presentation\Features\Scheduling\Views\TimetableSchedulerView.axaml.cs">
+      <DependentUpon>TimetableSchedulerView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Presentation\Features\Setting\Views\SettingView.axaml.cs">
@@ -93,12 +93,12 @@
       <DependentUpon>SplashScreenWindow.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Presentation\Features\TimeTable\Views\TimeTableView.axaml.cs">
-      <DependentUpon>TimeTableView.axaml</DependentUpon>
+    <Compile Update="Presentation\Features\Timetable\Views\TimetableView.axaml.cs">
+      <DependentUpon>TimetableView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Presentation\Features\TimeTableManager\Views\TimeTableManagerView.axaml.cs">
-      <DependentUpon>TimeTableManagerView.axaml</DependentUpon>
+    <Compile Update="Presentation\Features\TimetableManager\Views\TimetableManagerView.axaml.cs">
+      <DependentUpon>TimetableManagerView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Presentation\Features\Authentication\Views\LoginView.axaml.cs">
@@ -114,11 +114,11 @@
     <AdditionalFiles Include="Presentation\Features\Scheduling\Views\HandmadeFindCourseView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Scheduling\Views\SchedulingShellView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Scheduling\Views\SelectionView.axaml" />
-    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\TimeTableSchedulerView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\TimetableSchedulerView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Setting\Views\SettingView.axaml" />
     <AdditionalFiles Include="Presentation\Features\SplashScreen\Views\SplashScreenWindow.axaml" />
-    <AdditionalFiles Include="Presentation\Features\TimeTableManager\Views\TimeTableManagerView.axaml" />
-    <AdditionalFiles Include="Presentation\Features\TimeTable\Views\TimeTableView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\TimetableManager\Views\TimetableManagerView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\Timetable\Views\TimetableView.axaml" />
     <AdditionalFiles Include="Presentation\Shared\Styles\Controls.axaml" />
   </ItemGroup>
 

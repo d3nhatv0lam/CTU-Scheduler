@@ -3,9 +3,10 @@
                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                          mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="70"
+                          mc:Ignorable="d" d:DesignWidth="150" d:DesignHeight="35"
                           xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Pagination.Interfaces"
                           xmlns:rxui="http://reactiveui.net"
+                          Background="Transparent"
                           xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.Pagination.Views"
                           x:DataType="viewModels:IPaginationBinding"
                           x:CompileBindings="True"
@@ -15,9 +16,21 @@
             <Setter Property="CornerRadius" Value="8"></Setter>
         </Style>
         <Style Selector="Button.Navigate">
+            <Setter Property="MinWidth" Value="30"></Setter>
+            <Setter Property="FontSize" Value="30"></Setter>
+            <Setter Property="Padding" Value="0"></Setter>
             <Setter Property="VerticalAlignment" Value="Stretch"></Setter>
             <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
-            <Setter Property="FontSize" Value="30"></Setter>
+            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+        </Style>
+        
+        <Style Selector="StackPanel.page-number-container">
+            <Setter Property="Margin" Value="5 0"></Setter>
+        </Style>
+        
+        <Style Selector="TextBlock.page-number">
+            <Setter Property="FontSize" Value="20"></Setter>
+            <Setter Property="FontFamily" Value="{StaticResource Text-Font}"></Setter>
         </Style>
         
         <Style Selector="StackPanel.page-number-container, StackPanel.page-number-container > TextBlock">
@@ -25,6 +38,7 @@
             <Setter Property="HorizontalAlignment" Value="Center"></Setter>
         </Style>
     </rxui:ReactiveUserControl.Styles>
+    
     <Border Classes="container">
         <Grid ColumnDefinitions="* * *">
             <Button Grid.Column="0"
@@ -35,9 +49,9 @@
             <StackPanel Classes="page-number-container" 
                         Grid.Column="1"
                         Orientation="Horizontal">
-                <TextBlock Classes="Headline6" Text="{Binding CurrentPage,Mode=OneWay}"></TextBlock>
-                <TextBlock Classes="Headline6" Text="/"></TextBlock>
-                <TextBlock Classes="Headline6" Text="{Binding TotalPages, Mode=OneWay}"></TextBlock>
+                <TextBlock Classes="page-number" Text="{Binding CurrentPage,Mode=OneWay}"></TextBlock>
+                <TextBlock Classes="page-number" Text="/"></TextBlock>
+                <TextBlock Classes="page-number" Text="{Binding TotalPages, Mode=OneWay}"></TextBlock>
             </StackPanel>
             
             <Button Grid.Column="2" 
