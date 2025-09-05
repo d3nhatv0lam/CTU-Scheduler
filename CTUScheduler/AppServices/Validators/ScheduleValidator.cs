@@ -35,11 +35,11 @@ public class ScheduleValidator
         return true;
     }
 
-    public bool IsOverlapTimeTable(CourseData x, CourseData y)
+    public bool IsOverlapTimeTable(CourseSection x, CourseSection y)
     {
-        foreach (var xTime in x.ClassDayDatas)
+        foreach (var xTime in x.ClassDays)
         {
-            foreach (var yTime in y.ClassDayDatas)
+            foreach (var yTime in y.ClassDays)
             {
                 if (xTime.AttendingDay != yTime.AttendingDay) 
                     continue;
@@ -47,22 +47,22 @@ public class ScheduleValidator
                 if (IsConflict(xTime, yTime))
                     return true;
                 // old condition
-                // if (xTime.GetStartPeriod() < yTime.GetStartPeriod() 
-                //     && xTime.GetEndPeriod() < yTime.GetStartPeriod())
+                // if (xTime.StartPeriod() < yTime.StartPeriod() 
+                //     && xTime.EndPeriod() < yTime.StartPeriod())
                 //     continue;
                 //
-                // if (xTime.GetStartPeriod() > yTime.GetStartPeriod() 
-                //     && xTime.GetStartPeriod() > yTime.GetEndPeriod()) 
+                // if (xTime.StartPeriod() > yTime.StartPeriod() 
+                //     && xTime.StartPeriod() > yTime.EndPeriod()) 
                 //     continue;  
                 // return true;
             }
         }
         return false;
         
-        bool IsConflict(ClassDayData x, ClassDayData y)
+        bool IsConflict(ClassDay x, ClassDay y)
         {
             // Trùng nhau nếu KHÔNG thỏa điều kiện "một cái hoàn toàn trước hoặc sau cái kia"
-            return !(x.GetEndPeriod() < y.GetStartPeriod() || y.GetEndPeriod() < x.GetStartPeriod());
+            return !(x.EndPeriod() < y.StartPeriod() || y.EndPeriod() < x.StartPeriod());
         }
     }
     

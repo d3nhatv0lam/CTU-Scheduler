@@ -4,16 +4,16 @@ using CTUScheduler.Presentation.Shared.Models;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.Models
 {
-    public class SelectableCourseData: SelectableItem<CourseData>
+    public class SelectableCourseData: SelectableItem<CourseSection>
     {
-        public SelectableCourseData(CourseData courseData, bool isSelected = false): base(courseData, isSelected)
+        public SelectableCourseData(CourseSection courseSection, bool isSelected = false): base(courseSection, isSelected)
         {
 
         }
 
-        public static SelectableCourseData ToSelectableCourseData(CourseData courseData)
+        public static SelectableCourseData ToSelectableCourseData(CourseSection courseSection)
         {
-            return new SelectableCourseData(courseData);
+            return new SelectableCourseData(courseSection);
         }
     }
 }

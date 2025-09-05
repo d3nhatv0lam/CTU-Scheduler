@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+﻿using CTUScheduler.Core.Interfaces;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Shared.Models

@@ -20,6 +20,7 @@ using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Pagination.ViewModels;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
+using CTUScheduler.Presentation.Features.Timetable.Models;
 using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 using CTUScheduler.Presentation.Scheduling.Interfaces;
 using CTUScheduler.Presentation.Shared.Models;
@@ -130,18 +131,21 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
 
                         RxApp.MainThreadScheduler.Schedule(() =>
                         {
-                            _paginationViewModel.AddAll(copyList);
+                            PaginationViewModel.AddAll(copyList);
                         });
                     }
                 }
                 if (batch.Count > 0)
                 {
+                    var copyList = batch.ToList();
+                    batch.Clear();
+
                     RxApp.MainThreadScheduler.Schedule(() =>
                     {
-                        PaginationViewModel.AddAll(batch);
+                        PaginationViewModel.AddAll(copyList);
                     });
                 }
-                batch.Clear();
+                
             });
         }
         

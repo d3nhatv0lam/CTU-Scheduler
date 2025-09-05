@@ -22,6 +22,7 @@
     xmlns:timetableModel="clr-namespace:CTUScheduler.Presentation.Shared.Models"
     xmlns:paginationViewModels="clr-namespace:CTUScheduler.Presentation.Features.Pagination.Views"
     xmlns:paginationViews="clr-namespace:CTUScheduler.Presentation.Features.Pagination.Views"
+    xmlns:timetableModel1="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Models"
     x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.TimetableSchedulerView">
 
     <rxui:ReactiveUserControl.Resources>
@@ -223,7 +224,7 @@
                                         </ItemsRepeater.Layout>
 
                                         <ItemsRepeater.ItemTemplate>
-                                            <DataTemplate x:DataType="timetableModel:SelectableTimetableLayout">
+                                            <DataTemplate x:DataType="timetableModel1:SelectableTimetableLayout">
                                                 <controls:Card
                                                     Width="250"
                                                     Height="220">

@@ -2,4 +2,4 @@
 
 namespace CTUScheduler.Core.Models.Shared;
 
-public record SectionChoice(Course Course, CourseData Section);
+public record SectionChoice(Course Course, CourseSection Section);

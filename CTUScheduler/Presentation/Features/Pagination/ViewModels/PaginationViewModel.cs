@@ -87,13 +87,13 @@ public class PaginationViewModel<T>: ReactiveObject, IDisposable, IPaginationBin
             .Throttle(TimeSpan.FromMilliseconds(500))
             .Select(count => (int)Math.Ceiling(count / (double)PageSize))
             .DistinctUntilChanged()
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(totalPages =>
             {
                 TotalPages = totalPages;
             });
            
         _data.Connect()
-            .Throttle(TimeSpan.FromMilliseconds(500))
             .ObserveOn(RxApp.TaskpoolScheduler)
             .Page<T>(_pageRequest)
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -108,6 +108,7 @@ public class PaginationViewModel<T>: ReactiveObject, IDisposable, IPaginationBin
             .DisposeWith(_disposables);
 
         this.WhenAnyValue(x => x.TotalPages)
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(totalPage =>
             {
                 CurrentPage = totalPage > 0 ? 1 : 0;
@@ -115,6 +116,7 @@ public class PaginationViewModel<T>: ReactiveObject, IDisposable, IPaginationBin
             .DisposeWith(_disposables);
         
         this.WhenAnyValue(x => x.CurrentPage, x => x.TotalPages)
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(tuple =>
             {
                 var (currentPage, totalPages) = tuple;

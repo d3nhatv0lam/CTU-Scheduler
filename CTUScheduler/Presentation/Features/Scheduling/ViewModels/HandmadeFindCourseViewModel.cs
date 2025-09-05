@@ -66,7 +66,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         public ReactiveCommand<Unit,Unit> SearchCommand { get; }
         public ReactiveCommand<Unit,Unit> AddCoursesCommand { get; }
         public ReactiveCommand<Course,Unit> Tree_RemoveCourseCommand { get; }
-        public ReactiveCommand<CourseData,Unit> Tree_RemoveSectionCommand { get; }
+        public ReactiveCommand<CourseSection,Unit> Tree_RemoveSectionCommand { get; }
         
         public HandmadeFindCourseViewModel()
         {
@@ -159,7 +159,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                     return;
                 }
                 
-                Comparer<CourseData> comparer = Comparer<CourseData>.Create((x, y) => x.Key.CompareTo(y.Key));
+                Comparer<CourseSection> comparer = Comparer<CourseSection>.Create((x, y) => x.Key.CompareTo(y.Key));
                 foreach (var section in selectedSections)
                 {
                     int index = treeCourseNode.Sections.BinarySearch(section, comparer);
@@ -175,7 +175,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             Tree_RemoveCourseCommand = ReactiveCommand.Create<Course>(course => RemoveCourseFromTree(course))
                                        .DisposeWith(_disposables);
 
-            Tree_RemoveSectionCommand = ReactiveCommand.Create<CourseData>(section => RemoveSectionFromTree(section))
+            Tree_RemoveSectionCommand = ReactiveCommand.Create<CourseSection>(section => RemoveSectionFromTree(section))
                                         .DisposeWith(_disposables);
         }
 
@@ -195,7 +195,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             _coursesSourceList.Remove(course);
         }
 
-        private void RemoveSectionFromTree(CourseData? section)
+        private void RemoveSectionFromTree(CourseSection? section)
         {
             if (section == null) return;
             var course = Courses.FirstOrDefault(x => x.Code == section.Code);

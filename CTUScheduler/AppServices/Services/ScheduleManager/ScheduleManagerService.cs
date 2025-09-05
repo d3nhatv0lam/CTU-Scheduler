@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.User;
+using CTUScheduler.Presentation.Features.Timetable.Models;
 using CTUScheduler.Presentation.Shared.Models;
 using DynamicData;
 using Microsoft.Extensions.Logging;

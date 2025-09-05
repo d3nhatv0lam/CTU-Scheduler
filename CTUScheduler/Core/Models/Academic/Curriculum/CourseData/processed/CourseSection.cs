@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed
 {
-    public class CourseData
+    public class CourseSection
     {
         public int Key { get; set; }
         public string Code { get; set; }
@@ -15,18 +15,17 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed
         public string LecturerEmail { get; set; }
         public int TotalStudents { get; set; }
         public int RemainingStudents { get; set; }
-        public List<ClassDayData> ClassDayDatas { get; set; } = new List<ClassDayData>();
+        public List<ClassDay> ClassDays { get; set; } = new ();
 
         public override string ToString()
         {
             StringBuilder strBuilder = new StringBuilder($"Nhóm:{Group} - {Lecturer} - {RemainingStudents}/{TotalStudents}\n");
-            strBuilder.Append("ClassDayDatas:\n");
+            strBuilder.Append("ClassDays:\n");
 
-            foreach (var classDayData in ClassDayDatas)
+            foreach (var classDayData in ClassDays)
             {
-                strBuilder.Append($"AttendingDay: {classDayData.AttendingDay} {classDayData.Period} {classDayData.Room} \n");
+                strBuilder.Append($"AttendingDay: {classDayData.AttendingDay} {classDayData.Period} {classDayData.Room}\n");
             }
-
             return strBuilder.ToString();
         }
     }

@@ -22,7 +22,7 @@ namespace CTUScheduler.Core.Extensions
             };
         }
 
-        public static Course CloneWithNewCourseDatas(this Course course, IEnumerable<CourseData> newCourseDatas)
+        public static Course CloneWithNewCourseDatas(this Course course, IEnumerable<CourseSection> newCourseDatas)
         {
             return new Course
             {
@@ -31,7 +31,7 @@ namespace CTUScheduler.Core.Extensions
                 Credit = course.Credit,
                 TheorySessions = course.TheorySessions,
                 PracticalSessions = course.PracticalSessions,
-                Sections = new List<CourseData>(newCourseDatas)
+                Sections = new List<CourseSection>(newCourseDatas)
             };
         }
     }

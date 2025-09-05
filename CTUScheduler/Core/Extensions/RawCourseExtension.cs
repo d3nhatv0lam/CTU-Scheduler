@@ -27,7 +27,7 @@ namespace CTUScheduler.Core.Extensions
                     PracticalSessions = rawCourse.hoc_phan_info.dkmh_tu_dien_hoc_phan_so_tiet_thuc_hanh,
                 };
 
-                ConcurrentDictionary<string, CourseData> courseDataDir = new();
+                ConcurrentDictionary<string, CourseSection> courseDataDir = new();
 
                 Parallel.ForEach(rawCourse.data, (rawCourseGroupData) =>
                 {
@@ -35,7 +35,7 @@ namespace CTUScheduler.Core.Extensions
                             // is this group already exist?
                             rawCourseGroupData.dkmh_nhom_hoc_phan_ma,
                             // Not: Add new Group data
-                            new CourseData()
+                            new CourseSection()
                             {
                                 Key = rawCourseGroupData.key,
                                 Code = rawCourseGroupData.dkmh_tu_dien_hoc_phan_ma,
@@ -44,22 +44,22 @@ namespace CTUScheduler.Core.Extensions
                                 LecturerEmail = rawCourseGroupData.dkmh_tu_dien_giang_vien_email,
                                 TotalStudents = rawCourseGroupData.dkmh_tu_dien_lop_hoc_phan_si_so,
                                 RemainingStudents = rawCourseGroupData.si_so_con_lai,
-                                ClassDayDatas = new List<ClassDayData>()
+                                ClassDays = new List<ClassDay>()
                                 {
                                     GetClassDayData(rawCourseGroupData)
                                 }
                             },
-                            // Has group => Add new ClassDayData into existing group
+                            // Has group => Add new ClassDay into existing group
                             (group, existing) =>
                             {
                                 var newClassDay = GetClassDayData(rawCourseGroupData);
-                                existing.ClassDayDatas.Add(newClassDay);
+                                existing.ClassDays.Add(newClassDay);
                                 return existing;
                             }
 
                         );
                 });
-                course.Sections  = new List<CourseData>(courseDataDir.Values.OrderBy(x => x.Key).ToList());
+                course.Sections  = new List<CourseSection>(courseDataDir.Values.OrderBy(x => x.Key).ToList());
 
                 return course;
             }
@@ -68,9 +68,9 @@ namespace CTUScheduler.Core.Extensions
                 return null!;
             }
             // local funtion
-            ClassDayData GetClassDayData(RawCourseData rawCourseGroupData)
+            ClassDay GetClassDayData(RawCourseData rawCourseGroupData)
             {
-                return new ClassDayData()
+                return new ClassDay()
                 {
                     AttendingDay = rawCourseGroupData.dkmh_thu_trong_tuan_ma,
                     Period = rawCourseGroupData.tiet_hoc,

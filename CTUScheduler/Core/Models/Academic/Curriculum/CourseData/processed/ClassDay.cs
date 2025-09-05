@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed
 {
-    public class ClassDayData
+    public class ClassDay
     {
         /// <summary>
         /// từ thứ 2 -> 7
@@ -17,19 +17,8 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed
         public string Period { get; set; }
         public string Room { get; set; }
 
-        public int GetStartPeriod()
-        {
-            return Period.Trim('-').First() - '0';
-        }
-
-        public int GetPeriodCount()
-        {
-            return Period.Trim('-').Length;
-        }
-        
-        public int GetEndPeriod()
-        {
-            return Period.Trim('-').Last() - '0';
-        }
+        public int StartPeriod() => Period.Trim('-').First() - '0';
+        public int PeriodCount() => Period.Trim('-').Length;
+        public int EndPeriod() => Period.Trim('-').Last() - '0';
     }
 }

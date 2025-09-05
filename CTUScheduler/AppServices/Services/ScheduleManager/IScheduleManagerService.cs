@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CTUScheduler.Presentation.Features.Timetable.Models;
 using CTUScheduler.Presentation.Shared.Models;
 using DynamicData;
 

@@ -202,9 +202,9 @@
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="{x:Type selectableCourseData:SelectableCourseData}">
                                             <ItemsRepeater VerticalAlignment="Center"
-                                                           ItemsSource="{Binding Item.ClassDayDatas,Mode=OneTime}">
+                                                           ItemsSource="{Binding Item.ClassDays,Mode=OneTime}">
                                                 <ItemsRepeater.ItemTemplate>
-                                                    <DataTemplate DataType="{x:Type courseData:ClassDayData}">
+                                                    <DataTemplate DataType="{x:Type courseData:ClassDay}">
                                                         <Grid>
                                                             <Grid.Styles>
                                                                 <Style Selector="TextBlock">
@@ -302,16 +302,16 @@
                             </TreeView.ItemTemplate>
 
                             <TreeView.DataTemplates>
-                                <DataTemplate x:DataType="{x:Type courseData:CourseData}">
+                                <DataTemplate x:DataType="{x:Type courseData:CourseSection}">
                                     <Grid RowDefinitions="auto auto" 
                                           ColumnDefinitions="auto * auto">
 
                                         <ItemsRepeater
                                             Grid.Row="0"
                                             Grid.Column="1"
-                                            ItemsSource="{Binding ClassDayDatas}">
+                                            ItemsSource="{Binding ClassDays}">
                                             <ItemsRepeater.ItemTemplate>
-                                                <DataTemplate x:DataType="{x:Type courseData:ClassDayData}">
+                                                <DataTemplate x:DataType="{x:Type courseData:ClassDay}">
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="auto" MinWidth="30" />

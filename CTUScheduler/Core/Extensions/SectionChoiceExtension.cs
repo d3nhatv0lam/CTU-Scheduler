@@ -11,7 +11,7 @@ public static class SectionChoiceExtension
     {
         List<ScheduleCellViewModel> cells = new();
 
-        foreach (var classDayData in sectionChoice.Section.ClassDayDatas)
+        foreach (var classDayData in sectionChoice.Section.ClassDays)
         {
             ScheduleCellViewModel cellViewModel = new();
             cellViewModel.CourseCode = sectionChoice.Course.Code;
@@ -24,8 +24,8 @@ public static class SectionChoiceExtension
             
             cellViewModel.AttendingDay = classDayData.AttendingDay;
             cellViewModel.Room = classDayData.Room;
-            cellViewModel.StartPeriod = classDayData.GetStartPeriod();
-            cellViewModel.NumberOfPeriods = classDayData.GetPeriodCount();
+            cellViewModel.StartPeriod = classDayData.StartPeriod();
+            cellViewModel.NumberOfPeriods = classDayData.PeriodCount();
             cells.Add(cellViewModel);
         }
 
