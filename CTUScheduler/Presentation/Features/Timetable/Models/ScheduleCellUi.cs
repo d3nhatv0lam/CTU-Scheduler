@@ -5,8 +5,11 @@ namespace CTUScheduler.Presentation.Features.Timetable.Models
 {
     public class ScheduleCellUi: ITableCell
     {
+        // ReSharper disable once InconsistentNaming
         private static readonly int DEFAULT_ATTENDING_DAY = 2;
+        // ReSharper disable once InconsistentNaming
         private static readonly int DEFAULT_START_PERIOD = 1;
+        // ReSharper disable once InconsistentNaming
         private static readonly int DEFAULT_NUMBER_OF_PERIODS = 1;
         
         public enum RemainingLevel
@@ -27,7 +30,7 @@ namespace CTUScheduler.Presentation.Features.Timetable.Models
             }
         }
         /// <summary>
-        /// ThuDiHoc <=> Column index difference 2
+        /// ThuDiHoc = Column index difference 2
         /// </summary>
         public int Column => AttendingDay - 2;
 
@@ -52,16 +55,17 @@ namespace CTUScheduler.Presentation.Features.Timetable.Models
         public bool IsLowStatus => RemainingStatus == RemainingLevel.Low;
         public bool IsMediumStatus => RemainingStatus == RemainingLevel.Medium;
         public bool IsHighStatus => RemainingStatus == RemainingLevel.High;
-        public string CourseCode { get; set; }
-        public string CourseName_VN { get; set; }
-        public string Group { get; set; }
+        public string CourseCode { get; set; } = string.Empty;
+        // ReSharper disable once InconsistentNaming
+        public string CourseName_VN { get; set; } = string.Empty;
+        public string Group { get; set; } = string.Empty;
         public int TotalStudents { get; set; }
         public int RemainingStudents { get; set; }
-        public string Room { get; set; }
+        public string Room { get; set; } = string.Empty;
         public int AttendingDay { get; set; } = DEFAULT_ATTENDING_DAY;
         public int StartPeriod { get; set; } = DEFAULT_START_PERIOD;
         public int NumberOfPeriods { get; set; } = DEFAULT_NUMBER_OF_PERIODS;
-        public string Lecturer { get; set; }
+        public string Lecturer { get; set; } = string.Empty;
         public int Credit { get; set; }
         
         public string RemainingConcatTotalStudents => $"Sĩ số: {RemainingStudents}/{TotalStudents}";

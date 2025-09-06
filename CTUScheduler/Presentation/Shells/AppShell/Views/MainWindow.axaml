@@ -11,7 +11,7 @@
 		WindowState="Maximized"
 		WindowStartupLocation="CenterScreen"
         x:Class="CTUScheduler.Presentation.Shells.AppShell.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/Logo/icon.ico"
 		Height="600" Width="1000"
 		MinWidth="350"
 		x:DataType="vm:MainViewModel"

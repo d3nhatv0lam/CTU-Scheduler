@@ -1,7 +1,6 @@
 ﻿using CTUScheduler.Presentation.Features.Timetable.ViewModels;
-using CTUScheduler.Presentation.Shared.Models;
 
-namespace CTUScheduler.Presentation.Features.Timetable.Models;
+namespace CTUScheduler.Presentation.Shared.Models;
 
 public class SelectableTimetableLayout: SelectableItem<TimetableLayoutViewModel>
 {

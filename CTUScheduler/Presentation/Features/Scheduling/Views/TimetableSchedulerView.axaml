@@ -224,7 +224,7 @@
                                         </ItemsRepeater.Layout>
 
                                         <ItemsRepeater.ItemTemplate>
-                                            <DataTemplate x:DataType="timetableModel1:SelectableTimetableLayout">
+                                            <DataTemplate x:DataType="timetableModel:SelectableTimetableLayout">
                                                 <controls:Card
                                                     Width="250"
                                                     Height="220">

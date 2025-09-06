@@ -197,8 +197,9 @@
 									<ScrollViewer
 										Grid.Column="1"
 										VerticalScrollBarVisibility="Auto" 
+										
 										Theme="{StaticResource MaterialModernScrollViewer}" 
-										>
+									>
 										<StackPanel>
 											<TextBlock Text="{Binding CourseCode,Mode=OneWay}"></TextBlock>
 											<TextBlock Text="{Binding CourseName_VN,Mode=OneWay}"></TextBlock>

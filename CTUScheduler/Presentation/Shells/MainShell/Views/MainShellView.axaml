@@ -17,8 +17,6 @@
     xmlns:vm="clr-namespace:CTUScheduler.Presentation.Shells.MainShell.ViewModels"
     xmlns:models="clr-namespace:CTUScheduler.Presentation.Shells.MainShell.Models"
     xmlns:views="clr-namespace:CTUScheduler.Presentation.Shells.MainShell.Views"
-    xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Views"
-    xmlns:viewModels1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels"
     xmlns:timetableViewModel="clr-namespace:CTUScheduler.Presentation.Features.Timetable.ViewModels"
     xmlns:timetableView="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Views"
     xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels"
