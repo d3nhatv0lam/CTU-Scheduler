@@ -1,9 +1,9 @@
 ﻿using Avalonia.Media;
 using CTUScheduler.Core.Interfaces;
 
-namespace CTUScheduler.Presentation.Features.Timetable.ViewModels
+namespace CTUScheduler.Presentation.Features.Timetable.Models
 {
-    public class ScheduleCellViewModel: ITableCell
+    public class ScheduleCellUi: ITableCell
     {
         private static readonly int DEFAULT_ATTENDING_DAY = 2;
         private static readonly int DEFAULT_START_PERIOD = 1;

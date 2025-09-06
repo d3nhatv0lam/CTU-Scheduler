@@ -71,7 +71,7 @@
 
         
         <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml"></StyleInclude>
-        <StyleInclude Source="avares://CTUScheduler/Presentation/Features/Scheduling/Styles/controls.axaml"></StyleInclude>
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Features/Scheduling/Shared/Styles/controls.axaml"></StyleInclude>
     </rxui:ReactiveUserControl.Styles>
 
 

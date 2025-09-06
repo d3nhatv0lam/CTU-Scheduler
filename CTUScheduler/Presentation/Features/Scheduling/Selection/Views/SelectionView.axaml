@@ -1,17 +1,17 @@
 <rxui:ReactiveUserControl 
-			 x:TypeArguments="viewModels1:SelectionViewModel" 
+			 x:TypeArguments="viewModels:SelectionViewModel" 
 			 xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="474"
 			  xmlns:rxui="http://reactiveui.net"
-			 x:DataType="viewModels1:SelectionViewModel"
+			 x:DataType="viewModels:SelectionViewModel"
 			 x:CompileBindings="True"
 			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
 			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-			 xmlns:viewModels1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels"
-			 x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.SelectionView">
+			 xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels"
+			 x:Class="CTUScheduler.Presentation.Features.Scheduling.Selection.Views.SelectionView">
 
 	<rxui:ReactiveUserControl.Styles>
 		<Style Selector="TextBlock">
@@ -39,7 +39,7 @@
 		</Style>
 	</rxui:ReactiveUserControl.Styles>
 	
-	
+	<!-- // Manual Selection // -->
 	<Grid ColumnDefinitions="* 1 *" >
 		<StackPanel Grid.Column="0" >
 			<TextBlock Classes="Title" Text="Soạn Thời khóa biểu thủ công"/>
@@ -52,7 +52,9 @@
 			<TextBlock Classes="Text" Text="Chọn các thời khóa biểu bạn muốn"/>
 
 			<Border Padding="10">
-				<Button x:Name="btnHandmadeSelection" Content="Chọn"/>
+				<Button x:Name="BtnManualSelection" 
+				        Content="Chọn" 
+				        Command="{Binding ManualSelectionCommand}"/>
 			</Border>
 
 		</StackPanel>
@@ -60,7 +62,7 @@
 		<Border Grid.Column="1" Padding="0 10 0 10">
 			<Rectangle Fill="#a3a3a3"/>
 		</Border>
-		
+		<!-- // Quick selection // -->
 		<StackPanel Grid.Column="2">
 			<TextBlock Classes="Title" Text="Soạn thời khóa biểu nhanh"/>
 			<TextBlock Classes="Subtitle" Text="Thời khóa biểu tổng quát"/>
@@ -70,6 +72,7 @@
 			<TextBlock Classes="Text" Text="Chọn các học phần bạn muốn học"/>
 			<TextBlock Classes="Text" Text="Tạo các thời khóa biểu"/>
 			<TextBlock Classes="Text" Text="Chọn các thời khóa biểu bạn muốn"/>
+			
 			<Border Padding="10">
 				<Button Content="Chọn"/>
 			</Border> 

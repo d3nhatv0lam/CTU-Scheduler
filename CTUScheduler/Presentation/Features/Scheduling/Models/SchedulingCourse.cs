@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
+using CTUScheduler.Presentation.Shared.Models.Academic;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.Models;

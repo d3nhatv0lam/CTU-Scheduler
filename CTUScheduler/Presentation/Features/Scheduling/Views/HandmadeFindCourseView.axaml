@@ -7,7 +7,6 @@
     mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="500"
     xmlns:rxui="http://reactiveui.net"
     xmlns:qSelectCourse="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;assembly=CTUScheduler"
-    xmlns:courseData="using:CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed"
     x:DataType="viewModels1:HandmadeFindCourseViewModel"
     x:CompileBindings="True"
     xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
@@ -15,6 +14,7 @@
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:viewModels1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels"
     xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Views"
+    xmlns:courseUiModels="using:CTUScheduler.Presentation.Shared.Models.Academic"
     xmlns:selectableCourseData="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Models"
     x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.HandmadeFindCourseView">
 
@@ -27,7 +27,7 @@
             <Setter Property="FontWeight" Value="Bold" />
         </Style>
         <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml"/>
-        <StyleInclude Source="avares://CTUScheduler/Presentation/Features/Scheduling/Styles/controls.axaml"></StyleInclude>
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Features/Scheduling/Shared/Styles/controls.axaml"></StyleInclude>
     </rxui:ReactiveUserControl.Styles>
 
     <Grid ColumnDefinitions="* 10 0.5*">
@@ -176,7 +176,7 @@
                             <DataGrid.Columns>
                                 <DataGridTemplateColumn Header="Chọn" Width="69" CanUserResize="False">
                                     <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="{x:Type selectableCourseData:SelectableCourseData}">
+                                        <DataTemplate x:DataType="{x:Type selectableCourseData:SelectableCourseSectionUi}">
                                             <CheckBox
                                                 VerticalAlignment="Center"
                                                 HorizontalAlignment="Center"
@@ -200,11 +200,11 @@
                                                     Width="80" />
                                 <DataGridTemplateColumn Header="Lịch học" Width="180">
                                     <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="{x:Type selectableCourseData:SelectableCourseData}">
+                                        <DataTemplate x:DataType="{x:Type selectableCourseData:SelectableCourseSectionUi}">
                                             <ItemsRepeater VerticalAlignment="Center"
                                                            ItemsSource="{Binding Item.ClassDays,Mode=OneTime}">
                                                 <ItemsRepeater.ItemTemplate>
-                                                    <DataTemplate DataType="{x:Type courseData:ClassDay}">
+                                                    <DataTemplate DataType="{x:Type courseUiModels:ClassDayUi}">
                                                         <Grid>
                                                             <Grid.Styles>
                                                                 <Style Selector="TextBlock">
@@ -244,7 +244,7 @@
                                     Header="Giảng viên"
                                     Width="*">
                                     <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="{x:Type selectableCourseData:SelectableCourseData}">
+                                        <DataTemplate x:DataType="{x:Type selectableCourseData:SelectableCourseSectionUi}">
                                             <Grid>
                                                 <TextBlock Text="{Binding Item.Lecturer, Mode=OneTime}" />
                                             </Grid>
@@ -281,7 +281,7 @@
 
                             <TreeView.ItemTemplate>
                                 <TreeDataTemplate ItemsSource="{Binding Sections}"
-                                                  x:DataType="{x:Type courseData:Course}">
+                                                  x:DataType="{x:Type courseUiModels:CourseUi}">
                                     <Grid ColumnDefinitions="* auto">
                                         <TextBlock Grid.Column="0"
                                                    HorizontalAlignment="Left">
@@ -302,7 +302,7 @@
                             </TreeView.ItemTemplate>
 
                             <TreeView.DataTemplates>
-                                <DataTemplate x:DataType="{x:Type courseData:CourseSection}">
+                                <DataTemplate x:DataType="{x:Type courseUiModels:CourseSectionUi}">
                                     <Grid RowDefinitions="auto auto" 
                                           ColumnDefinitions="auto * auto">
 
@@ -311,7 +311,7 @@
                                             Grid.Column="1"
                                             ItemsSource="{Binding ClassDays}">
                                             <ItemsRepeater.ItemTemplate>
-                                                <DataTemplate x:DataType="{x:Type courseData:ClassDay}">
+                                                <DataTemplate x:DataType="{x:Type courseUiModels:ClassDayUi}">
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="auto" MinWidth="30" />

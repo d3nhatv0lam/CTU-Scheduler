@@ -12,5 +12,5 @@ public class CourseSectionUi
     public string LecturerEmail { get; set; }
     public int TotalStudents { get; set; }
     public int RemainingStudents { get; set; }
-    public ObservableCollection<ClassDay> ClassDays { get; set; } = new ();
+    public ObservableCollection<ClassDayUi> ClassDays { get; set; } = new ();
 }

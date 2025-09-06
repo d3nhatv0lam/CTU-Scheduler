@@ -5,14 +5,13 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Runtime.InteropServices.JavaScript;
 using CTUScheduler.AppServices.Services.WebDriver;
-using CTUScheduler.Core.Extensions;
-using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
 using CTUScheduler.Presentation.Scheduling.Interfaces;
+using CTUScheduler.Presentation.Shared.Mappers;
+using CTUScheduler.Presentation.Shared.Models.Academic;
 using DynamicData;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
@@ -23,20 +22,21 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly ICTUWebDriverService _ctuWebDriverService;
-        private readonly SourceList<Course> _coursesSourceList = new SourceList<Course>();
+        private readonly CourseMapper _courseMapper = new();
+        private readonly SourceList<CourseUi> _coursesSourceList = new();
         private string _txtInputCourseKey = string.Empty;
-        private bool _isTxtInputCourseKeyFocused = false;
-        private bool _showOnlyAvailableSections = false;
-        private ObservableAsPropertyHelper<Course> _searchedCourse;
-        private ObservableAsPropertyHelper<ObservableCollection<SelectableCourseData>> _searchedCourseSections;
-        private ObservableAsPropertyHelper<ObservableCollection<SelectableCourseData>> _filtedCourseSections;
+        private bool _isTxtInputCourseKeyFocused;
+        private bool _showOnlyAvailableSections;
+        private ObservableAsPropertyHelper<CourseUi> _searchedCourse;
+        private ObservableAsPropertyHelper<ObservableCollection<SelectableCourseSectionUi>> _searchedCourseSections;
+        private ObservableAsPropertyHelper<ObservableCollection<SelectableCourseSectionUi>> _filtedCourseSections;
         private ObservableAsPropertyHelper<bool> _isQuickSelectPopupOpened;
         private ObservableAsPropertyHelper<ObservableCollection<QuickSelectCourse>> _quickSelectCourses;
-        private QuickSelectCourse _selectedQuickSelectCourse;
-        private ReadOnlyObservableCollection<Course> _coursesBindable;
+        private QuickSelectCourse _selectedQuickSelectCourse = null!;
+        private ReadOnlyObservableCollection<CourseUi> _coursesBindable;
         
         
-        public  SourceList<Course> CoursesSourceList => _coursesSourceList;
+        public  SourceList<CourseUi> CoursesSourceList => _coursesSourceList;
         public string TxtInputCourseKey
         {
             get => _txtInputCourseKey;
@@ -53,20 +53,20 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             get => _showOnlyAvailableSections;
             set => this.RaiseAndSetIfChanged(ref _showOnlyAvailableSections, value);
         }
-        public Course SearchedCourse => _searchedCourse.Value;
-        public ObservableCollection<SelectableCourseData> SearchedCourseSections => _searchedCourseSections.Value;
-        public ObservableCollection<SelectableCourseData> FiltedCourseSections => _filtedCourseSections.Value;
+        public CourseUi SearchedCourse => _searchedCourse.Value;
+        public ObservableCollection<SelectableCourseSectionUi> SearchedCourseSections => _searchedCourseSections.Value;
+        public ObservableCollection<SelectableCourseSectionUi> FiltedCourseSections => _filtedCourseSections.Value;
         public ObservableCollection<QuickSelectCourse> QuickSelectCourses => _quickSelectCourses.Value;
         public QuickSelectCourse SelectedQuickSelectCourse
         {
             get => _selectedQuickSelectCourse;
             set => this.RaiseAndSetIfChanged(ref _selectedQuickSelectCourse, value);
         }
-        public ReadOnlyObservableCollection<Course> Courses => _coursesBindable;
+        public ReadOnlyObservableCollection<CourseUi> Courses => _coursesBindable;
         public ReactiveCommand<Unit,Unit> SearchCommand { get; }
         public ReactiveCommand<Unit,Unit> AddCoursesCommand { get; }
-        public ReactiveCommand<Course,Unit> Tree_RemoveCourseCommand { get; }
-        public ReactiveCommand<CourseSection,Unit> Tree_RemoveSectionCommand { get; }
+        public ReactiveCommand<CourseUi,Unit> Tree_RemoveCourseCommand { get; }
+        public ReactiveCommand<CourseSectionUi,Unit> Tree_RemoveSectionCommand { get; }
         
         public HandmadeFindCourseViewModel()
         {
@@ -83,9 +83,9 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                 .Throttle(TimeSpan.FromMilliseconds(300))
                 .Where(x => !string.IsNullOrEmpty(x))
                 .ObserveOn(RxApp.TaskpoolScheduler)
-                .Subscribe(async courseData =>
+                .Subscribe( courseData =>
                 {
-                    await _ctuWebDriverService.FillCourseKey(courseData);
+                    _ctuWebDriverService.FillCourseKey(courseData);
                 })
                 .DisposeWith(_disposables);
 
@@ -94,7 +94,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
               .ToProperty(this, nameof(QuickSelectCourses))
               .DisposeWith(_disposables);
 
-            // quick select course popup opened expression
+            // quick select course popup opened the expression
             _isQuickSelectPopupOpened =
                this.WhenAnyValue(x => x.IsTxtInputCourseKeyFocused,
                                  x => x.QuickSelectCourses,
@@ -113,20 +113,23 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
 
             // current course response
             _searchedCourse = _ctuWebDriverService.CourseCatalogResponse
+                .Select(course => _courseMapper.ToCourseUi(course))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .ToProperty(this, nameof(SearchedCourse))
                 .DisposeWith(_disposables);
 
             // Course -> UI items
             _searchedCourseSections = this.WhenAnyValue(x => x.SearchedCourse)
-                .Select(course => course == null ? new ObservableCollection<SelectableCourseData>():ToSelectableCourseCatalogs(course))
+                .Select(courseUi => courseUi == null ? new ObservableCollection<SelectableCourseSectionUi>() : GetSelectableSectionUi(courseUi))
                 .ToProperty(this, nameof(SearchedCourseSections))
                 .DisposeWith(_disposables);
             
             // Filtered Course Sections
             _filtedCourseSections = this.WhenAnyValue(x => x.ShowOnlyAvailableSections, x => x.SearchedCourseSections, (showOnlyAvailableSections, searchedCourseSections) => (showOnlyAvailableSections, searchedCourseSections))
                         .Where(tuple => tuple.searchedCourseSections != null)
-                        .Select(tuple => tuple.showOnlyAvailableSections ?  new ObservableCollection<SelectableCourseData>(tuple.searchedCourseSections.Where(section => section.Item.RemainingStudents > 0)): tuple.searchedCourseSections)
+                        .Select(tuple => tuple.showOnlyAvailableSections 
+                            ? new ObservableCollection<SelectableCourseSectionUi>(tuple.searchedCourseSections.Where(section => section.Item.RemainingStudents > 0))
+                            : tuple.searchedCourseSections)
                         .ToProperty(this, nameof(FiltedCourseSections))
                         .DisposeWith(_disposables);
 
@@ -148,18 +151,18 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                                     .Select(x => x.Item)
                                     .ToList();
 
-                if (!selectedSections.Any()) return;
+                if (selectedSections.Count == 0) return;
 
                 var treeCourseNode = Courses.FirstOrDefault(x => x.Code == SearchedCourse.Code);
                 
                 if (treeCourseNode == null)
                 {
-                    treeCourseNode = SearchedCourse.CloneWithNewCourseDatas(selectedSections);
+                    treeCourseNode = CloneWithNewCourseSections(SearchedCourse, selectedSections);
                     _coursesSourceList.Add(treeCourseNode);
                     return;
                 }
                 
-                Comparer<CourseSection> comparer = Comparer<CourseSection>.Create((x, y) => x.Key.CompareTo(y.Key));
+                var comparer = Comparer<CourseSectionUi>.Create((x, y) => x.Key.CompareTo(y.Key));
                 foreach (var section in selectedSections)
                 {
                     int index = treeCourseNode.Sections.BinarySearch(section, comparer);
@@ -172,30 +175,43 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             }, canAddCourse).DisposeWith(_disposables);
 
 
-            Tree_RemoveCourseCommand = ReactiveCommand.Create<Course>(course => RemoveCourseFromTree(course))
+            Tree_RemoveCourseCommand = ReactiveCommand.Create<CourseUi>(course => RemoveCourseFromTree(course))
                                        .DisposeWith(_disposables);
 
-            Tree_RemoveSectionCommand = ReactiveCommand.Create<CourseSection>(section => RemoveSectionFromTree(section))
+            Tree_RemoveSectionCommand = ReactiveCommand.Create<CourseSectionUi>(section => RemoveSectionFromTree(section))
                                         .DisposeWith(_disposables);
         }
 
-        private ObservableCollection<SelectableCourseData> ToSelectableCourseCatalogs(Course course)
+        private CourseUi CloneWithNewCourseSections(CourseUi course, IEnumerable<CourseSectionUi> sections)
         {
-            var items = new ObservableCollection<SelectableCourseData>();
-            foreach (var courseGroup in course.Sections)
+            return new CourseUi
             {
-                items.Add(SelectableCourseData.ToSelectableCourseData(courseGroup));
+                Code = course.Code,
+                Name_VN = course.Name_VN,
+                Credit = course.Credit,
+                TheorySessions = course.TheorySessions,
+                PracticalSessions = course.PracticalSessions,
+                Sections = new ObservableCollection<CourseSectionUi>(sections)
+            };
+        }
+
+        private ObservableCollection<SelectableCourseSectionUi> GetSelectableSectionUi(CourseUi course)
+        {
+            var items = new ObservableCollection<SelectableCourseSectionUi>();
+            foreach (var courseSectionUi in course.Sections)
+            {
+                items.Add(new SelectableCourseSectionUi(courseSectionUi));
             }
             return items;
         }
-
-        private void RemoveCourseFromTree(Course? course)
+        
+        private void RemoveCourseFromTree(CourseUi? course)
         {
             if (course == null) return;
             _coursesSourceList.Remove(course);
         }
 
-        private void RemoveSectionFromTree(CourseSection? section)
+        private void RemoveSectionFromTree(CourseSectionUi? section)
         {
             if (section == null) return;
             var course = Courses.FirstOrDefault(x => x.Code == section.Code);
@@ -210,7 +226,5 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             _coursesSourceList.Dispose();
             _disposables.Dispose();
         }
-
-        
     }
 }

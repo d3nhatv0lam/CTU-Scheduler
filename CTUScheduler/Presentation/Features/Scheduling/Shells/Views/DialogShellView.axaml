@@ -1,20 +1,20 @@
 <rxui:ReactiveUserControl
-    x:TypeArguments="viewModels1:DialogViewModel"
+    x:TypeArguments="viewModels:DialogShellViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
+    mc:Ignorable="d" d:DesignWidth="850" d:DesignHeight="500"
     xmlns:rxui="http://reactiveui.net"
-    x:DataType="viewModels1:DialogViewModel"
+    x:DataType="viewModels:DialogShellViewModel"
     x:CompileBindings="True"
     xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    xmlns:viewModels1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels"
-    x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.DialogView">
+    xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels"
+    x:Class="CTUScheduler.Presentation.Features.Scheduling.Shells.Views.DialogShellView">
 
     <Design.DataContext>
-        <viewModels1:DialogViewModel />
+        <viewModels:DialogShellViewModel />
     </Design.DataContext>
 
 

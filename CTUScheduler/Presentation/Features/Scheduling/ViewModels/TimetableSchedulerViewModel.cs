@@ -23,7 +23,9 @@ using CTUScheduler.Presentation.Features.Scheduling.Models;
 using CTUScheduler.Presentation.Features.Timetable.Models;
 using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 using CTUScheduler.Presentation.Scheduling.Interfaces;
+using CTUScheduler.Presentation.Shared.Mappers;
 using CTUScheduler.Presentation.Shared.Models;
+using CTUScheduler.Presentation.Shared.Models.Academic;
 using DynamicData;
 using DynamicData.Binding;
 using Material.Styles.Themes.Base;
@@ -39,6 +41,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         private readonly SchedulingCourseOptionViewModel _schedulingCourseOptionVM;
         private readonly ScheduleValidator _scheduleValidator = new ScheduleValidator();
         private readonly PaginationViewModel<SelectableTimetableLayout> _paginationViewModel;
+        private readonly CourseMapper _courseMapper = new();
         private CancellationTokenSource? _cts;
         private bool _isGeneratingTimeTable = false;
         
@@ -53,7 +56,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         public PaginationViewModel<SelectableTimetableLayout> PaginationViewModel => _paginationViewModel;
         public ReactiveCommand<Unit, Unit> GenerateTimeTableCommand { get; }
         public ReactiveCommand<SelectableTimetableLayout,Unit> OpenTimetableDetailsCommand { get; }
-        public TimetableSchedulerViewModel(SourceList<Course> courses)
+        public TimetableSchedulerViewModel(SourceList<CourseUi> courses)
         {
             _dialogHostService = App.ServiceProvider!.GetRequiredService<IDialogHostService>();
             _schedulingCourseOptionVM = new SchedulingCourseOptionViewModel();
@@ -76,15 +79,25 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             OpenTimetableDetailsCommand = ReactiveCommand.Create<SelectableTimetableLayout>((selectableTimetableLayout) =>
                     OpenTimetableDetails(selectableTimetableLayout))
                 .DisposeWith(_disposables);
-            
-            courses.Connect()
-                .Bind(out var courseBindable)
-                .Subscribe()
-                .DisposeWith(_disposables);
-            
+ 
             this.WhenActivated((CompositeDisposable disposable) =>
             {
-                SchedulingCourseOptionVM.MapToSchedulingCourses(courseBindable);
+                // courses.Connect()
+                //     .ObserveOn(RxApp.TaskpoolScheduler)
+                //     .Transform(courseUi => _courseMapper.ToCourse(courseUi))
+                //     .ObserveOn(RxApp.MainThreadScheduler)
+                //     .Bind(out var courseBindable)
+                //     .Subscribe()
+                //     .DisposeWith(disposable);
+                //
+                // SchedulingCourseOptionVM.MapToSchedulingCourses(courseBindable);
+                
+                courses.Connect()
+                    .Transform(courseUi => _courseMapper.ToCourse(courseUi))
+                    .Bind(out var courseBindable)
+                    .Subscribe(courseList => SchedulingCourseOptionVM.MapToSchedulingCourses(courseBindable))
+                    .DisposeWith(disposable);
+
             });
         }
 

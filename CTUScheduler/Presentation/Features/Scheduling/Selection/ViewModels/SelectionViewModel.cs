@@ -2,9 +2,11 @@
 using System.Reactive;
 using System.Reactive.Disposables;
 using CTUScheduler.Presentation.Base;
+using CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels;
+using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 using ReactiveUI;
 
-namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
+namespace CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels
 {
     public class SelectionViewModel : ViewModelBase, IRoutableViewModel, IDisposable
     {
@@ -12,7 +14,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
 
         public enum SelectionType
         {
-            Handmade,
+            Manual,
             Quick
         };
 
@@ -20,13 +22,13 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
 
         public IScreen HostScreen { get; }
 
-        public ReactiveCommand<Unit,Unit> HandmadeSelectionCommand { get; protected set; }
+        public ReactiveCommand<Unit,Unit> ManualSelectionCommand { get; protected set; }
         public ReactiveCommand<Unit,Unit> QuickSelectionCommand { get; protected set; }
         
         public SelectionViewModel(IScreen hostScreen)
         {
             HostScreen = hostScreen;
-            HandmadeSelectionCommand = ReactiveCommand.Create(() => NavigateToSelection(SelectionType.Handmade)).DisposeWith(_disposables);
+            ManualSelectionCommand = ReactiveCommand.Create(() => NavigateToSelection(SelectionType.Manual)).DisposeWith(_disposables);
             QuickSelectionCommand = ReactiveCommand.Create(() => NavigateToSelection(SelectionType.Quick)).DisposeWith(_disposables);
         }
 

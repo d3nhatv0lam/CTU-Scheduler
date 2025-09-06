@@ -8,6 +8,7 @@ using System.Reactive.Linq;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
+using CTUScheduler.Presentation.Shared.Models.Academic;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
@@ -17,7 +18,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 public class SchedulingCourseOptionViewModel : ViewModelBase, IDisposable
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
-    public ObservableCollection<SchedulingCourse> SchedulingCourses { get; set; } = new ObservableCollection<SchedulingCourse>();
+    public ObservableCollection<SchedulingCourse> SchedulingCourses { get; set; } = new ();
 
     public SchedulingCourseOptionViewModel()
     {

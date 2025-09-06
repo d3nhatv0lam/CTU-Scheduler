@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Reactive;
 using System.Reactive.Disposables;
-using CTUScheduler.AppServices.Services.Dialogs;
 using CTUScheduler.AppServices.Services.Viewport;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Base;
-using DialogHostAvalonia;
+using CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels;
+using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 
-namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
+namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
 {
-    public class DialogViewModel: ViewModelBase, IScreen, IDisposable, ICloseableDialog
+    public class DialogShellViewModel: ViewModelBase, IScreen, IDisposable, ICloseableDialog
     {
         private readonly IViewportService _viewportService;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
@@ -35,7 +35,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         public ReactiveCommand<Unit, Unit> CloseDialogCommand { get; protected set; }
         
 
-        public DialogViewModel()
+        public DialogShellViewModel()
         {
             _viewportService = App.ServiceProvider!.GetRequiredService<IViewportService>();
             

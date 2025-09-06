@@ -6,14 +6,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
 			 xmlns:rxui="http://reactiveui.net"
-			 xmlns:scheduleModel="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.Schedule"
 			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Timetable.ViewModels"
-			x:DataType="vm:TimetableViewModel"
+			 xmlns:models="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Models"
+			 x:DataType="vm:TimetableViewModel"
 			 x:CompileBindings="True"
              x:Class="CTUScheduler.Presentation.Features.Timetable.Views.TimetableView">
 	
 	<rxui:ReactiveUserControl.Styles>
-		<Style Selector="Border.cell-container" x:DataType="vm:ScheduleCellViewModel">
+		<Style Selector="Border.cell-container" x:DataType="models:ScheduleCellUi">
 			<Setter Property="BorderBrush" Value="Black"></Setter>
 			<Setter Property="BorderThickness" Value="1"></Setter>
 			<!-- // Default style // -->
@@ -144,7 +144,7 @@
 				              ItemsSource="{Binding ScheduleCells, Mode=OneWay}"
 				              Padding="0">
 					<ItemsControl.Styles>
-						<Style Selector="ContentPresenter" x:DataType="{x:Type vm:ScheduleCellViewModel}">
+						<Style Selector="ContentPresenter" x:DataType="{x:Type models:ScheduleCellUi}">
 							<Setter Property="Grid.Row" Value="{Binding Row}"/>
 							<Setter Property="Grid.Column" Value="{Binding Column}"/>
 							<Setter Property="Grid.RowSpan" Value="{Binding RowSpan}"/>
@@ -185,7 +185,7 @@
 					</ItemsControl.ItemsPanel>
 
 					<ItemsControl.ItemTemplate>
-						<DataTemplate x:DataType="{x:Type vm:ScheduleCellViewModel}">
+						<DataTemplate x:DataType="{x:Type models:ScheduleCellUi}">
 							<Border
 								Classes="cell-container"
 								Classes.red="{Binding IsLowStatus}"

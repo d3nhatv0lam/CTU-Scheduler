@@ -21,6 +21,8 @@
     xmlns:viewModels1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels"
     xmlns:timetableViewModel="clr-namespace:CTUScheduler.Presentation.Features.Timetable.ViewModels"
     xmlns:timetableView="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Views"
+    xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels"
+    xmlns:views2="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Shells.Views"
     x:Class="CTUScheduler.Presentation.Shells.MainShell.Views.MainShellView">
 
     <rxui:ReactiveUserControl.Styles>
@@ -37,8 +39,8 @@
                 <DataTemplate x:DataType="{x:Type vm:LogoutDialogViewModel}">
                     <views:LogoutDialogView />
                 </DataTemplate>
-                <DataTemplate x:DataType="{x:Type viewModels1:DialogViewModel}">
-                    <views1:DialogView />
+                <DataTemplate x:DataType="{x:Type viewModels:DialogShellViewModel}">
+                    <views2:DialogShellView />
                 </DataTemplate>
             </dialogHostAvalonia:DialogHost.DataTemplates>
             <!-- // Main Content // -->

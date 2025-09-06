@@ -3,13 +3,13 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using CTUScheduler.Presentation.Base;
+using CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels;
+using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 using CTUScheduler.Presentation.Scheduling.Interfaces;
-using DynamicData;
-using DynamicData.Binding;
 using ReactiveUI;
 using Serilog;
 
-namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
+namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
 {
     public class SchedulingShellViewModel : ViewModelBase, IRoutableViewModel, IDisposable
     {
@@ -66,7 +66,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         {
             _stepsVM = selectionType switch 
             { 
-                SelectionViewModel.SelectionType.Handmade => CreateHandmadeSteps(),
+                SelectionViewModel.SelectionType.Manual => CreateHandmadeSteps(),
                 //SelectionViewModel.SelectionType.Quick => new IStepViewModel[] { new QuickSelectionViewModel() },
                 _ => throw new ArgumentOutOfRangeException(nameof(selectionType), selectionType, null)
             };

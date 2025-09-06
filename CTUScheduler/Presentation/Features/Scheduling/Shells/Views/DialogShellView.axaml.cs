@@ -1,16 +1,16 @@
 using System.Reactive.Disposables;
 using Avalonia.ReactiveUI;
-using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
+using CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels;
 using ReactiveUI;
 
-namespace CTUScheduler.Presentation.Features.Scheduling.Views;
+namespace CTUScheduler.Presentation.Features.Scheduling.Shells.Views;
 
-public partial class DialogView : ReactiveUserControl<DialogViewModel>
+public partial class DialogShellView : ReactiveUserControl<DialogShellViewModel>
 {
 
     private readonly double _heightScale = 0.8;
     private readonly double _widthScale = 0.85;
-    public DialogView()
+    public DialogShellView()
     {
         InitializeComponent();
         this.WhenActivated(disposables =>

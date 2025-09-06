@@ -6,6 +6,7 @@ using System.Reactive.Disposables;
 using CTUScheduler.AppServices.Services.Dialogs;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Presentation.Base;
+using CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
@@ -42,7 +43,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 
         private void OpenAddCourseDialog()
         {
-            var viewModel = new DialogViewModel();
+            var viewModel = new DialogShellViewModel();
             _dialogHostService.ShowDialogAsync<Unit>(viewModel, DialogHostService.DialogIdentifier.MainLayout);
         }
 
