@@ -6,19 +6,20 @@ using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using CTUScheduler.AppServices.Services.Network;
+using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
-using MainWindow = CTUScheduler.Presentation.Shells.AppShell.Views.MainWindow;
 
 namespace CTUScheduler.Presentation.Features.SplashScreen.ViewModels
 {
-    public class SplashScreenViewModel : ViewModelBase , IDisposable
+    public class SplashScreenViewModel : ViewModelBase , IDisposable, IRequestClose
     {
         private readonly IInternetStatusService _internetStatusService;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private string _message = "Đang kiểm tra kết nối mạng..";
+        
+        public event Action<object?>? RequestClose;
         
         public string Message
         {
@@ -47,7 +48,7 @@ namespace CTUScheduler.Presentation.Features.SplashScreen.ViewModels
                         .Do(_ => Message = "Đang khởi động ứng dụng..")
                         .SelectMany(_ => Observable.Timer(TimeSpan.FromSeconds(1)))
                         .ObserveOn(RxApp.MainThreadScheduler)
-                        .Subscribe(_ => RunMainWindow())
+                        .Subscribe(_ => RequestClose?.Invoke(null))
                         .DisposeWith(_disposables);
                     }
                     catch
@@ -55,22 +56,6 @@ namespace CTUScheduler.Presentation.Features.SplashScreen.ViewModels
                         RxApp.MainThreadScheduler.Schedule(() => Message = "Lỗi Khi khởi động, Hãy mở lại app!");
                     }
                 }).DisposeWith(_disposables);
-        }
-
-
-        private void RunMainWindow()
-        {
-            if (Application.Current!.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            {    
-                var loadingScreen = desktop.MainWindow;
-                MainWindow mainWindow = App.ServiceProvider!.GetRequiredService<MainWindow>();
-                mainWindow.DataContext = new MainViewModel();
-
-                desktop.MainWindow = mainWindow;
-
-                desktop.MainWindow.Show();
-                loadingScreen!.Close();
-            }
         }
 
         private void CloseApplication()

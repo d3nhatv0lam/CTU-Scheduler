@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.Dialogs;
-using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Validators;
 using CTUScheduler.Core.Algorithms;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
@@ -19,16 +14,12 @@ using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Pagination.ViewModels;
-using CTUScheduler.Presentation.Features.Scheduling.Models;
-using CTUScheduler.Presentation.Features.Timetable.Models;
 using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 using CTUScheduler.Presentation.Scheduling.Interfaces;
 using CTUScheduler.Presentation.Shared.Mappers;
 using CTUScheduler.Presentation.Shared.Models;
 using CTUScheduler.Presentation.Shared.Models.Academic;
 using DynamicData;
-using DynamicData.Binding;
-using Material.Styles.Themes.Base;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 
@@ -43,7 +34,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         private readonly PaginationViewModel<SelectableTimetableLayout> _paginationViewModel;
         private readonly CourseMapper _courseMapper = new();
         private CancellationTokenSource? _cts;
-        private bool _isGeneratingTimeTable = false;
+        private bool _isGeneratingTimeTable;
         
         public bool IsGeneratingTimeTable
         {
@@ -58,7 +49,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         public ReactiveCommand<SelectableTimetableLayout,Unit> OpenTimetableDetailsCommand { get; }
         public TimetableSchedulerViewModel(SourceList<CourseUi> courses)
         {
-            _dialogHostService = App.ServiceProvider!.GetRequiredService<IDialogHostService>();
+            _dialogHostService = App.ServiceProvider.GetRequiredService<IDialogHostService>();
             _schedulingCourseOptionVM = new SchedulingCourseOptionViewModel();
             _paginationViewModel = new(12);
             
@@ -80,7 +71,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                     OpenTimetableDetails(selectableTimetableLayout))
                 .DisposeWith(_disposables);
  
-            this.WhenActivated((CompositeDisposable disposable) =>
+            this.WhenActivated(disposable =>
             {
                 // courses.Connect()
                 //     .ObserveOn(RxApp.TaskpoolScheduler)
@@ -95,17 +86,15 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                 courses.Connect()
                     .Transform(courseUi => _courseMapper.ToCourse(courseUi))
                     .Bind(out var courseBindable)
-                    .Subscribe(courseList => SchedulingCourseOptionVM.MapToSchedulingCourses(courseBindable))
+                    .Subscribe(_ => SchedulingCourseOptionVM.MapToSchedulingCourses(courseBindable))
                     .DisposeWith(disposable);
-
             });
         }
 
         private void OpenTimetableDetails(SelectableTimetableLayout selectableTimetableLayout)
         {
             var timetableLayoutViewModel = selectableTimetableLayout.Item;
-            _dialogHostService.ShowDialogAsync<Unit>(timetableLayoutViewModel,
-                DialogHostService.DialogIdentifier.Timetable);
+            _dialogHostService.ShowDialogAsync<Unit>(timetableLayoutViewModel, DialogHostService.DialogIdentifier.Timetable);
         }
 
         private void StopGenerateTimeTable()
@@ -113,7 +102,6 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             _cts?.Cancel();
             IsGeneratingTimeTable = false;
         }
-        
         
         private async Task GenerateTimeTable(IEnumerable<List<SectionChoice>> sets)
         {
@@ -127,7 +115,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                 foreach (var tableData in Combinatorics.CartesianProduct(
                              sets,
                              prefix => _scheduleValidator.IsValidTimeTableFromRaw(prefix),
-                             full => true,
+                             _ => true,
                              _cts.Token))
                 {
                     var layout = new TimetableLayoutViewModel(new ScheduleTable());
@@ -158,7 +146,6 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                         PaginationViewModel.AddAll(copyList);
                     });
                 }
-                
             });
         }
         

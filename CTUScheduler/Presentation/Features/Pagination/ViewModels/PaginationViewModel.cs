@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading.Tasks;
-using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Features.Pagination.Interfaces;
 using DynamicData;
 using ReactiveUI;
@@ -16,8 +13,8 @@ namespace CTUScheduler.Presentation.Features.Pagination.ViewModels;
 
 public class PaginationViewModel<T>: ReactiveObject, IDisposable, IPaginationBinding, IPaginationViewModel<T> where T : class
 {
-    private const int DEFAULT_PAGE_SIZE = 12;
-    private readonly bool _ownsData = false; 
+    protected const int DEFAULT_PAGE_SIZE = 12;
+    private readonly bool _ownsData; 
     private readonly CompositeDisposable _disposables = new();
     private readonly SourceList<T> _data;
     private readonly BehaviorSubject<PageRequest> _pageRequest;
@@ -27,6 +24,10 @@ public class PaginationViewModel<T>: ReactiveObject, IDisposable, IPaginationBin
     private bool _isFirstPage;
     private bool _isLastPage;
     
+    protected CompositeDisposable Disposables => _disposables;
+    protected ISourceList<T> Data => _data;
+    protected BehaviorSubject<PageRequest> PageRequest => _pageRequest;
+    public IEnumerable<T> CurrentData => _data.Items;
     public ReadOnlyObservableCollection<T> PagedData => _bindablePagedData;
 
     public int TotalPages
@@ -71,17 +72,24 @@ public class PaginationViewModel<T>: ReactiveObject, IDisposable, IPaginationBin
         
     }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     public PaginationViewModel(SourceList<T> data,int pageSize)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
         _data = data ?? throw new ArgumentNullException(nameof(data));
         PageSize = pageSize > 0 ? pageSize : DEFAULT_PAGE_SIZE;
         _currentPage = 0;
         _pageRequest = new BehaviorSubject<PageRequest>(new PageRequest(CurrentPage, PageSize));
-        ObservableInit();
-        CommandInit();
+        Initialize();
+    }
+    
+    private void Initialize()
+    {
+        OnObservableInit();
+        OnCommandInit();
     }
 
-    private void ObservableInit()
+    protected virtual void OnObservableInit()
     {
         _data.CountChanged
             .Throttle(TimeSpan.FromMilliseconds(500))
@@ -92,10 +100,10 @@ public class PaginationViewModel<T>: ReactiveObject, IDisposable, IPaginationBin
             {
                 TotalPages = totalPages;
             });
-           
+        
         _data.Connect()
             .ObserveOn(RxApp.TaskpoolScheduler)
-            .Page<T>(_pageRequest)
+            .Page(_pageRequest)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _bindablePagedData)
             .Subscribe()
@@ -126,7 +134,7 @@ public class PaginationViewModel<T>: ReactiveObject, IDisposable, IPaginationBin
             .DisposeWith(_disposables);
     }
 
-    private void CommandInit()
+    protected virtual void OnCommandInit()
     {
         var canGoNext = this.WhenAnyValue(x => x.IsLastPage, isLastPage => !isLastPage);
         NextPageCommand = ReactiveCommand.Create(GoNextPage,canGoNext);
@@ -135,30 +143,31 @@ public class PaginationViewModel<T>: ReactiveObject, IDisposable, IPaginationBin
         PreviousPageCommand = ReactiveCommand.Create(GoPreviousPage,canGoPrevious);
     }
 
-    public void GoNextPage()
+    public virtual void GoNextPage()
     {
         if (!IsLastPage)
             CurrentPage++;
     }
 
-    public void GoPreviousPage()
+    public virtual void GoPreviousPage()
     {
         if (!IsFirstPage)
             CurrentPage--;
     }
     
-    public void AddItem(T item)
+    public virtual void AddItem(T item)
     {
         ArgumentNullException.ThrowIfNull(item, nameof(item));
         _data.Add(item);
     }
+   
 
-    public void AddAll(IEnumerable<T> items)
+    public virtual void AddAll(IEnumerable<T> items)
     {
         _data.AddRange(items);
     }
 
-    public void Clear()
+    public virtual void Clear()
     {
         _data.Clear();
     }

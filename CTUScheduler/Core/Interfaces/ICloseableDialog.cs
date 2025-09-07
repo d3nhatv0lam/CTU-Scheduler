@@ -1,8 +1,6 @@
-﻿using System;
+﻿namespace CTUScheduler.Core.Interfaces;
 
-namespace CTUScheduler.Core.Interfaces;
-
-public interface ICloseableDialog
+public interface ICloseableDialog: IRequestClose
 {
-    event Action<object?>? RequestClose;
+    
 }

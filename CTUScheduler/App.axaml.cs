@@ -30,7 +30,7 @@ namespace CTUScheduler;
 public partial class App : Application
 {
     public static string AppVersion { get; } = "0.1";
-    public static IServiceProvider? ServiceProvider { get; private set; }
+    public static IServiceProvider ServiceProvider { get; private set; } = null!;
 
     public override void Initialize()
     {
@@ -39,12 +39,9 @@ public partial class App : Application
         // đăng ký ServiceCollection
         var services = new ServiceCollection();
         ConfigureServices(services);
-
         ServiceProvider = services.BuildServiceProvider();
     }
-
-
-
+    
     public override void OnFrameworkInitializationCompleted()
     {
         // load view
@@ -61,23 +58,18 @@ public partial class App : Application
             catch (Exception ex)
             {
                 Log.Error(ex, "Failed to initialize WebDriverService");
-                if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop1)
                 {
-                    desktop.Shutdown(1); // Shutdown the application with an error code
+                    desktop1.Shutdown(1); // Shutdown the application with an error code
                 }
             }
         });
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            
-            desktop.MainWindow = new SplashScreenWindow
-            {
-                DataContext = new SplashScreenViewModel()
-            };
-            desktop.MainWindow.Show();
+            var splashScreen = InitSplashScreenWindow(desktop);
+            desktop.MainWindow = splashScreen;
             desktop.Exit += Desktop_Exit;
-            
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {
@@ -91,7 +83,6 @@ public partial class App : Application
 
     private void ConfigureServices(IServiceCollection services)
     {
-
         Log.Logger = new LoggerConfiguration()
         .MinimumLevel.Debug()
         .WriteTo.File(
@@ -121,7 +112,28 @@ public partial class App : Application
             return window;
         });
         //services.AddSingleton<ICachingNavigationServiceFactory, CachingNavigationServiceFactory>();
-        ServiceProvider = services.BuildServiceProvider();
+    }
+    
+    private Window InitSplashScreenWindow(IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        var splashScreenViewModel = new SplashScreenViewModel();
+        var splashScreen = new SplashScreenWindow()
+        {
+            DataContext = splashScreenViewModel
+        };
+        Action<object?>? handler = null;
+        handler = (_) =>
+        {
+            splashScreenViewModel.RequestClose -= handler;
+            MainWindow mainWindow = App.ServiceProvider!.GetRequiredService<MainWindow>();
+            mainWindow.DataContext = new MainViewModel();
+
+            desktop.MainWindow = mainWindow;
+            desktop.MainWindow?.Show();
+            splashScreen.Close();
+        };
+        splashScreenViewModel.RequestClose += handler;
+        return splashScreen;
     }
 
     private async void Desktop_Exit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
@@ -132,7 +144,7 @@ public partial class App : Application
         if (ServiceProvider is IDisposable disposableService)
             disposableService.Dispose();
 
-        Log.CloseAndFlush();
+        await Log.CloseAndFlushAsync();
 
         if (sender is IClassicDesktopStyleApplicationLifetime desktop)
         {
