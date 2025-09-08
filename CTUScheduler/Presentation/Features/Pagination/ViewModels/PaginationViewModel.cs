@@ -26,7 +26,8 @@ public class PaginationViewModel<T>: ReactiveObject, IDisposable, IPaginationBin
     
     protected CompositeDisposable Disposables => _disposables;
     protected ISourceList<T> Data => _data;
-    protected BehaviorSubject<PageRequest> PageRequest => _pageRequest;
+    protected IObservable<IChangeSet<T>> DataSharedConnection => _data.Connect().Publish().RefCount();
+    protected IObservable<PageRequest> PageRequest => _pageRequest.AsObservable();
     public IEnumerable<T> CurrentData => _data.Items;
     public ReadOnlyObservableCollection<T> PagedData => _bindablePagedData;
 
@@ -101,7 +102,7 @@ public class PaginationViewModel<T>: ReactiveObject, IDisposable, IPaginationBin
                 TotalPages = totalPages;
             });
         
-        _data.Connect()
+        DataSharedConnection
             .ObserveOn(RxApp.TaskpoolScheduler)
             .Page(_pageRequest)
             .ObserveOn(RxApp.MainThreadScheduler)
