@@ -4,8 +4,8 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels;
+using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
-using CTUScheduler.Presentation.Scheduling.Interfaces;
 using ReactiveUI;
 using Serilog;
 
@@ -17,7 +17,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
         private string _btnNextContent = "Tiếp theo";
         private IStepViewModel[] _stepsVM;
         private int _currentStepIndex = 0;
-        private ObservableAsPropertyHelper<IStepViewModel> _currentStep;
+        private readonly ObservableAsPropertyHelper<IStepViewModel> _currentStep;
 
         public int CurrentStepIndex
         {
@@ -44,9 +44,6 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
         public SchedulingShellViewModel(IScreen hostScreen, SelectionViewModel.SelectionType selectionType)
         {
             HostScreen = hostScreen;
-            NavigateBackCommand = ReactiveCommand.Create(NavigateBack).DisposeWith(_disposables);
-            NavigateNextCommand = ReactiveCommand.Create(NavigateNext).DisposeWith(_disposables);
-
             InitWizard(selectionType);
 
             _currentStep = this.WhenAnyValue(x => x.CurrentStepIndex)
@@ -56,23 +53,36 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
             
             CurrentStepIndex = 0;
 
-            this.WhenAnyValue(x => x._stepsVM, x => x.CurrentStepIndex).Subscribe(tuple =>
-            {
-                BtnNextContent = tuple.Item2 == tuple.Item1.Length - 1 ? "Hoàn thành" : "Tiếp theo";
-            });
+            this.WhenAnyValue(x => x._stepsVM, x => x.CurrentStepIndex)
+                .Subscribe(tuple =>
+                {
+                    var (steps, index) = tuple;
+                    BtnNextContent = index == steps.Length - 1 ? "Hoàn thành" : "Tiếp theo";
+                });
+            
+            NavigateBackCommand = ReactiveCommand.Create(NavigateBack).DisposeWith(_disposables);
+            var canNavigateNext = this.WhenAnyValue(x => x.CurrentStep)
+                .Select(currentStep =>
+                {
+                    if (currentStep is INextStepCondition nextStepCondition)
+                        return nextStepCondition.WhenAnyValue(x => x.IsNextStepEnabled);
+                    return Observable.Return(true);
+                })
+                .Switch();
+            NavigateNextCommand = ReactiveCommand.Create(NavigateNext,canNavigateNext).DisposeWith(_disposables);
         }
 
         private void InitWizard(SelectionViewModel.SelectionType selectionType)
         {
             _stepsVM = selectionType switch 
             { 
-                SelectionViewModel.SelectionType.Manual => CreateHandmadeSteps(),
+                SelectionViewModel.SelectionType.Manual => CreateManualSteps(),
                 //SelectionViewModel.SelectionType.Quick => new IStepViewModel[] { new QuickSelectionViewModel() },
                 _ => throw new ArgumentOutOfRangeException(nameof(selectionType), selectionType, null)
             };
         }
 
-        private IStepViewModel[] CreateHandmadeSteps()
+        private IStepViewModel[] CreateManualSteps()
         {
             var step1 = new HandmadeFindCourseViewModel();
             var step2 = new TimetableSchedulerViewModel(step1.CoursesSourceList);

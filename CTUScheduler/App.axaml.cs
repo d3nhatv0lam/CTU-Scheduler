@@ -16,6 +16,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.Dialogs;
 using CTUScheduler.AppServices.Services.Network;
+using CTUScheduler.AppServices.Services.ScheduleManager;
 using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Services.Viewport;
 using CTUScheduler.AppServices.Services.WebDriver;
@@ -105,6 +106,7 @@ public partial class App : Application
         services.AddSingleton<IUserDataService, UserDataService>();
         services.AddSingleton<IDialogHostService, DialogHostService>();
         services.AddSingleton<IViewportService, ViewportService>();
+        services.AddSingleton<IScheduleManagerService, ScheduleManagerService>();
         services.AddTransient<MainWindow>(provider =>
         {
             MainWindow window = new();

@@ -1,26 +1,23 @@
-﻿using Avalonia.Media;
-using CTUScheduler.Core.Interfaces;
+﻿using CTUScheduler.Core.Interfaces;
+using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Timetable.Models
 {
-    public class ScheduleCellUi: ITableCell
+    public class ScheduleCellUi : ITableCell
     {
         // ReSharper disable once InconsistentNaming
         private static readonly int DEFAULT_ATTENDING_DAY = 2;
+
         // ReSharper disable once InconsistentNaming
         private static readonly int DEFAULT_START_PERIOD = 1;
+
         // ReSharper disable once InconsistentNaming
         private static readonly int DEFAULT_NUMBER_OF_PERIODS = 1;
+
+        private readonly ScheduleGroupCellShared _shared;
+        public ScheduleGroupCellShared Shared => _shared;
         
-        public enum RemainingLevel
-        {
-            None,
-            Low,    // Dưới 10%
-            Medium, // 10–40%
-            High    // Trên 40%
-        }
-        
-        public int Row 
+        public int Row
         {
             get
             {
@@ -29,6 +26,7 @@ namespace CTUScheduler.Presentation.Features.Timetable.Models
                 return StartPeriod;
             }
         }
+
         /// <summary>
         /// ThuDiHoc = Column index difference 2
         /// </summary>
@@ -38,37 +36,17 @@ namespace CTUScheduler.Presentation.Features.Timetable.Models
         /// Số tiết học
         /// </summary>
         public int RowSpan => NumberOfPeriods;
-        public int ColumnSpan { get; set; } = 1;
 
-        public IBrush BackgroundColor { get; set; } = Brushes.Transparent;
-        public RemainingLevel RemainingStatus
-        {
-            get
-            {
-                double ratio = (double)RemainingStudents / TotalStudents;
-                if (ratio == 0) return RemainingLevel.None;
-                if (ratio < 0.1) return RemainingLevel.Low;
-                if (ratio <= 0.4) return RemainingLevel.Medium;
-                return RemainingLevel.High;
-            }
-        }
-        public bool IsLowStatus => RemainingStatus == RemainingLevel.Low;
-        public bool IsMediumStatus => RemainingStatus == RemainingLevel.Medium;
-        public bool IsHighStatus => RemainingStatus == RemainingLevel.High;
-        public string CourseCode { get; set; } = string.Empty;
-        // ReSharper disable once InconsistentNaming
-        public string CourseName_VN { get; set; } = string.Empty;
-        public string Group { get; set; } = string.Empty;
-        public int TotalStudents { get; set; }
-        public int RemainingStudents { get; set; }
+        public int ColumnSpan { get; set; } = 1;
+        
         public string Room { get; set; } = string.Empty;
         public int AttendingDay { get; set; } = DEFAULT_ATTENDING_DAY;
         public int StartPeriod { get; set; } = DEFAULT_START_PERIOD;
         public int NumberOfPeriods { get; set; } = DEFAULT_NUMBER_OF_PERIODS;
-        public string Lecturer { get; set; } = string.Empty;
-        public int Credit { get; set; }
-        
-        public string RemainingConcatTotalStudents => $"Sĩ số: {RemainingStudents}/{TotalStudents}";
-        
+
+        public ScheduleCellUi(ScheduleGroupCellShared shared)
+        {
+            _shared = shared;
+        }
     }
 }

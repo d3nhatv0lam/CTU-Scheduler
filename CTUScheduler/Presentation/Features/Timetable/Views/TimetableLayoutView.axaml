@@ -26,6 +26,7 @@
 
         <Style Selector=".export-container > :is(Control)">
             <Setter Property="Margin" Value="0 0 10 0"></Setter>
+            <Setter Property="ClipToBounds" Value="True"></Setter>
         </Style>
 
         <Style Selector="Button.export">
@@ -85,7 +86,7 @@
                             <!-- // Export Field // -->
                             <StackPanel Grid.Row="3"
                                         Classes="export-container"
-                                        Orientation="Horizontal">
+                                        Orientation="Horizontal" >
                                 <Button
                                     Classes="export"
                                     ToolTip.Tip="Xuất thời khóa biểu dưới dạng file ảnh png">

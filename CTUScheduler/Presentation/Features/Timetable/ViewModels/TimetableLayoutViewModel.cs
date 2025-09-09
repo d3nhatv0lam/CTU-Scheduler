@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
@@ -9,7 +8,7 @@ using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Timetable.Resources;
-using DynamicData;
+using CTUScheduler.Presentation.Shared.Extensions;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Timetable.ViewModels;
@@ -57,8 +56,9 @@ public class TimetableLayoutViewModel: ViewModelBase, IDisposable
         _lastUpdated = scheduleTable.LastUpdated;
         _timeTableVM = new TimetableViewModel();
 
+        // BuildTimetable();
+        
         // init color palette for schedule table
-
         if (!ColorPalettes.IsInitialized)
         {
             RxApp.MainThreadScheduler.Schedule(() =>
@@ -67,8 +67,7 @@ public class TimetableLayoutViewModel: ViewModelBase, IDisposable
             });
             ColorPalettes.IsInitialized = true;
         }
-       
-
+        
         this.WhenAnyValue(x => x.Name)
             .Throttle(TimeSpan.FromMilliseconds(500))
             .Subscribe(newName => _scheduleTable.Name = newName)
@@ -90,25 +89,28 @@ public class TimetableLayoutViewModel: ViewModelBase, IDisposable
             })
             .DisposeWith(_disposables);
     }
+
+    private void BuildTimetable()
+    {
+        
+    }
     
     public void AddCourseSectionToTable(SectionChoice choice)
-    {
-       var listCell= choice.ToScheduleCells().ToList();
-       if (listCell.Count == 0 || !_scheduleTable.TryAddToScheduleData(choice))
+    { 
+        var (groupCellShared, cells) = choice.ToScheduleCells();
+        var cellList = cells.ToList();
+        if (cellList.Count == 0 || !_scheduleTable.TryAddToScheduleData(choice))
            return;
-
-       var cellColor = ColorPalettes.Colors[SubjectsCount - 1];
-       TotalCredit += listCell[0].Credit;
-       foreach (var cell in listCell)
-           cell.BackgroundColor = cellColor;
-       
-        _timeTableVM.ScheduleCells.AddRange(listCell);
+        TotalCredit += groupCellShared.Credit;
+        _timeTableVM.AddCells(groupCellShared, cellList);
     }
+    
     
     public ScheduleTable ToModel() => _scheduleTable;
 
     public void Dispose()
     {
+        TimeTableVM.Dispose();
         _disposables.Dispose();
     }
 }

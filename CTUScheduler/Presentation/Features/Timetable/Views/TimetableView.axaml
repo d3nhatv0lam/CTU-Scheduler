@@ -21,7 +21,7 @@
 				<Setter Property="Background" Value="Gray"></Setter>
 			</Style>
 			<Style Selector="^ ScrollViewer StackPanel">
-				<Setter Property="Background" Value="{Binding BackgroundColor}"></Setter>
+				<Setter Property="Background" Value="{Binding Shared.BackgroundColor}"></Setter>
 			</Style>
 			<Style Selector="^ ScrollViewer StackPanel > :is(Control)">
 				<Setter Property="Margin" Value="0 2"></Setter>
@@ -188,25 +188,24 @@
 						<DataTemplate x:DataType="{x:Type models:ScheduleCellUi}">
 							<Border
 								Classes="cell-container"
-								Classes.red="{Binding IsLowStatus}"
-								Classes.yellow="{Binding IsMediumStatus}"
-								Classes.green="{Binding IsHighStatus}"
+								Classes.red="{Binding Shared.IsLowStatus}"
+								Classes.yellow="{Binding Shared.IsMediumStatus}"
+								Classes.green="{Binding Shared.IsHighStatus}"
 								>
 								<Grid ColumnDefinitions="0.1* *">
 									<Border Classes="students-remaining-status" Grid.Column="0"/>
 									<ScrollViewer
 										Grid.Column="1"
 										VerticalScrollBarVisibility="Auto" 
-										
 										Theme="{StaticResource MaterialModernScrollViewer}" 
 									>
 										<StackPanel>
-											<TextBlock Text="{Binding CourseCode,Mode=OneWay}"></TextBlock>
-											<TextBlock Text="{Binding CourseName_VN,Mode=OneWay}"></TextBlock>
-											<TextBlock Text="{Binding Group,StringFormat=Nhóm:{0},Mode=OneWay}"></TextBlock>
+											<TextBlock Text="{Binding Shared.CourseCode,Mode=OneWay}"></TextBlock>
+											<TextBlock Text="{Binding Shared.CourseName_VN,Mode=OneWay}"></TextBlock>
+											<TextBlock Text="{Binding Shared.Group,StringFormat=Nhóm:{0},Mode=OneWay}"></TextBlock>
 											<TextBlock Text="{Binding Room,StringFormat=Phòng:{0},Mode=OneWay}"></TextBlock>
-											<TextBlock Text="{Binding RemainingConcatTotalStudents, Mode=OneWay}"></TextBlock>
-											<TextBlock Text="{Binding Lecturer,Mode=OneWay}"></TextBlock>
+											<TextBlock Text="{Binding Shared.RemainingConcatTotalStudents, Mode=OneWay}"></TextBlock>
+											<TextBlock Text="{Binding Shared.Lecturer,Mode=OneWay}"></TextBlock>
 										</StackPanel>
 									</ScrollViewer>
 								</Grid>

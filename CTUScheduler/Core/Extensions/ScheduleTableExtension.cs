@@ -11,11 +11,7 @@ public static class ScheduleTableExtension
     {
         var courseCode = sectionChoice.Course.Code;
         var group = sectionChoice.Section.Group;
-        if (!scheduleTable.ScheduleData.TryGetValue(courseCode, out _))
-        {
-            scheduleTable.ScheduleData.Add(courseCode, group);
-            return true;
-        }
-        return false;
+        
+        return scheduleTable.ScheduleData.TryAdd(courseCode, group);
     }
 }

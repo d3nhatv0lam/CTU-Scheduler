@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using CTUScheduler.Presentation.Features.Timetable.Models;
-using CTUScheduler.Presentation.Shared.Models;
+using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
+using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 using DynamicData;
 
 namespace CTUScheduler.AppServices.Services.ScheduleManager;
@@ -13,13 +13,13 @@ namespace CTUScheduler.AppServices.Services.ScheduleManager;
 public interface IScheduleManagerService
 {
     public DateTime LastSaved { get; }
-    public IObservable<IChangeSet<SelectableTimetableLayout>> TimetableLayouts  { get; }
+    public IObservable<IChangeSet<TimetableLayoutViewModel>> TimetableLayouts { get; }
     public IObservable<int> TimetableCountChanged { get; }
 
     public void ClearTimetables();
-    public void AddTimetable(SelectableTimetableLayout timetable);
-    public void AddRangeTimetable(IEnumerable<SelectableTimetableLayout> timetables);
-    public void RemoveTimetable(SelectableTimetableLayout timetable);
+    public void AddTimetable(ScheduleTable timetable);
+    public void AddRangeTimetable(IEnumerable<ScheduleTable> timetables);
+    public void RemoveTimetable(ScheduleTable timetable);
     /// <summary>
     /// Update data of all Timetables in runtime
     /// </summary>
@@ -29,10 +29,10 @@ public interface IScheduleManagerService
     ///  Save Timetables from runtime to .json file
     /// </summary>
     /// <returns></returns>
-    public Task<bool> TrySaveScheduleAsync(string path);
+    public Task<bool> TrySaveScheduleAsync();
     /// <summary>
     /// Load Timetables from save to TimetableLayouts
     /// </summary>
     /// <returns></returns>
-    public Task<bool> TryLoadScheduleAsync(string path);
+    public Task<bool> TryLoadScheduleAsync();
 }

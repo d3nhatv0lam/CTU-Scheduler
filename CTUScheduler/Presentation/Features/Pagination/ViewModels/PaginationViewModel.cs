@@ -103,6 +103,7 @@ public class PaginationViewModel<T>: ReactiveObject, IDisposable, IPaginationBin
             });
         
         DataSharedConnection
+            .DisposeMany()
             .ObserveOn(RxApp.TaskpoolScheduler)
             .Page(_pageRequest)
             .ObserveOn(RxApp.MainThreadScheduler)

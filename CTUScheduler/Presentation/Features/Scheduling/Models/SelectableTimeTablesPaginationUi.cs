@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using CTUScheduler.Presentation.Features.Pagination.ViewModels;
 using CTUScheduler.Presentation.Shared.Models;
 using DynamicData;
@@ -26,6 +27,7 @@ public class SelectableTimeTablesPaginationUi: PaginationViewModel<SelectableTim
         init => this.RaiseAndSetIfChanged(ref _maxPageCanSelect, value);
     }
     
+    protected IObservable<IChangeSet<SelectableTimetableLayout>> SelectedTimetableChanged { get; private set; } = null!;
     public IObservable<int> SelectedTimetableCountChanged { get; private set; } = null!;
        
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
@@ -37,18 +39,19 @@ public class SelectableTimeTablesPaginationUi: PaginationViewModel<SelectableTim
 
     protected override void OnObservableInit()
     {
-        
         base.OnObservableInit();
-        SelectedTimetableCountChanged = DataSharedConnection
+        SelectedTimetableChanged = DataSharedConnection
             .AutoRefresh(x => x.IsSelected)
             .Filter(x => x.IsSelected)
+            .Replay(1) 
+            .RefCount();
+        
+        SelectedTimetableCountChanged = SelectedTimetableChanged
             .Count()
-            .Do(x => Debug.WriteLine("Count Changed: {0}", x))
             .Replay(1) 
             .RefCount();
         
         SelectedTimetableCountChanged
-            .Do(x => Debug.WriteLine("new cout: {0}", x))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(count => SelectedTimetableCount = count)
             .DisposeWith(Disposables);
@@ -71,5 +74,12 @@ public class SelectableTimeTablesPaginationUi: PaginationViewModel<SelectableTim
                 }
             })
             .DisposeWith(Disposables);
+    }
+
+    public async Task<IReadOnlyCollection<SelectableTimetableLayout>> GetSelectedTimetables()
+    {
+        return await SelectedTimetableChanged
+            .ToCollection()
+            .FirstAsync();
     }
 }

@@ -9,7 +9,7 @@ using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
-using CTUScheduler.Presentation.Scheduling.Interfaces;
+using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Shared.Mappers;
 using CTUScheduler.Presentation.Shared.Models.Academic;
 using DynamicData;
