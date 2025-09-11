@@ -3,13 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
-using CTUScheduler.Presentation.Features.Timetable.Models;
-using CTUScheduler.Presentation.Features.Timetable.ViewModels;
-using CTUScheduler.Presentation.Shared.Models;
 using DynamicData;
 using Microsoft.Extensions.Logging;
 
@@ -21,11 +17,12 @@ public class ScheduleManagerService: IScheduleManagerService, IDisposable
     private readonly IUserDataService _userDataService;
     private readonly ILogger<ScheduleManagerService> _logger;
     private readonly SourceList<ScheduleTable> _data = new();
-    public DateTime LastSaved { get; set; }
-    public IObservable<IChangeSet<TimetableLayoutViewModel>> TimetableLayouts => _data
+    public DateTime LastSaved { get; private set; }
+
+    public IObservable<IChangeSet<ScheduleTable>> Timetables => _data
         .Connect()
-        .Transform(x => new TimetableLayoutViewModel(x))
-        .DisposeMany();
+        .Publish()
+        .RefCount();
     
     public IObservable<int> TimetableCountChanged => _data.CountChanged;
 
@@ -65,8 +62,8 @@ public class ScheduleManagerService: IScheduleManagerService, IDisposable
 
     public async Task<bool> TrySaveScheduleAsync()
     {
-        BindScheduleSave();
         var path = "";
+        BindScheduleSave();
         var isSaved =  await _userDataService.TrySaveUserDataAsync(path);
         if (!isSaved)
         {

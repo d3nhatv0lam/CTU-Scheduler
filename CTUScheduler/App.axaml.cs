@@ -14,14 +14,17 @@ using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using CTUScheduler.AppServices.Services.Dialogs;
+using Avalonia.Input;
 using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.AppServices.Services.ScheduleManager;
 using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Services.Viewport;
 using CTUScheduler.AppServices.Services.WebDriver;
+using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
+using CTUScheduler.Presentation.Services.Dialogs;
+using CTUScheduler.Presentation.Services.TimetableDialog;
 using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
 using MainView = CTUScheduler.Presentation.Shells.AppShell.Views.MainView;
 using MainWindow = CTUScheduler.Presentation.Shells.AppShell.Views.MainWindow;
@@ -105,6 +108,7 @@ public partial class App : Application
         services.AddSingleton<ICTUWebDriverService, CTUWebDriverService>();
         services.AddSingleton<IUserDataService, UserDataService>();
         services.AddSingleton<IDialogHostService, DialogHostService>();
+        services.AddSingleton<ITimetableDialogService, TimetableDialogService>();
         services.AddSingleton<IViewportService, ViewportService>();
         services.AddSingleton<IScheduleManagerService, ScheduleManagerService>();
         services.AddTransient<MainWindow>(provider =>
@@ -123,18 +127,21 @@ public partial class App : Application
         {
             DataContext = splashScreenViewModel
         };
-        Action<object?>? handler = null;
-        handler = (_) =>
+        if (splashScreenViewModel is IRequestClose requestClose)
         {
-            splashScreenViewModel.RequestClose -= handler;
-            MainWindow mainWindow = App.ServiceProvider!.GetRequiredService<MainWindow>();
-            mainWindow.DataContext = new MainViewModel();
+            Action<object?>? handler = null;
+            handler = (_) =>
+            {
+                requestClose.RequestClose -= handler;
+                MainWindow mainWindow = App.ServiceProvider!.GetRequiredService<MainWindow>();
+                mainWindow.DataContext = new MainViewModel();
 
-            desktop.MainWindow = mainWindow;
-            desktop.MainWindow?.Show();
-            splashScreen.Close();
-        };
-        splashScreenViewModel.RequestClose += handler;
+                desktop.MainWindow = mainWindow;
+                desktop.MainWindow?.Show();
+                splashScreen.Close();
+            };
+            requestClose.RequestClose += handler;
+        }
         return splashScreen;
     }
 

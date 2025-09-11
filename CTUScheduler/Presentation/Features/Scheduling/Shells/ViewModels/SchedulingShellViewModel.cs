@@ -2,21 +2,24 @@
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
+using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Serilog;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
 {
-    public class SchedulingShellViewModel : ViewModelBase, IRoutableViewModel, IDisposable
+    public class SchedulingShellViewModel : ViewModelBase, IRoutableViewModel, IDisposable, IActivatableViewModel
     {
         private readonly CompositeDisposable _disposables = new();
         private string _btnNextContent = "Tiếp theo";
-        private IStepViewModel[] _stepsVM;
-        private int _currentStepIndex = 0;
+        private IStepViewModel[] _stepsVM = null!;
+        private int _currentStepIndex;
         private readonly ObservableAsPropertyHelper<IStepViewModel> _currentStep;
 
         public int CurrentStepIndex
@@ -33,6 +36,8 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
             get => _btnNextContent;
             set => this.RaiseAndSetIfChanged(ref _btnNextContent, value);
         }
+
+        public ViewModelActivator Activator { get; } = new();
         public ReactiveCommand<Unit, Unit> NavigateNextCommand { get; protected set; }
         public ReactiveCommand<Unit, Unit> NavigateBackCommand { get; protected set; }
 
@@ -45,9 +50,9 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
         {
             HostScreen = hostScreen;
             InitWizard(selectionType);
-
+            
             _currentStep = this.WhenAnyValue(x => x.CurrentStepIndex)
-                    .Select(index => _stepsVM![index])
+                    .Select(index => _stepsVM[index])
                     .ToProperty(this, nameof(CurrentStep), scheduler: RxApp.MainThreadScheduler)
                     .DisposeWith(_disposables);
             
@@ -60,7 +65,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
                     BtnNextContent = index == steps.Length - 1 ? "Hoàn thành" : "Tiếp theo";
                 });
             
-            NavigateBackCommand = ReactiveCommand.Create(NavigateBack).DisposeWith(_disposables);
+            NavigateBackCommand = ReactiveCommand.CreateFromTask(NavigateBack).DisposeWith(_disposables);
             var canNavigateNext = this.WhenAnyValue(x => x.CurrentStep)
                 .Select(currentStep =>
                 {
@@ -69,7 +74,17 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
                     return Observable.Return(true);
                 })
                 .Switch();
-            NavigateNextCommand = ReactiveCommand.Create(NavigateNext,canNavigateNext).DisposeWith(_disposables);
+            NavigateNextCommand = ReactiveCommand.CreateFromTask(async () => await NavigateNext(),canNavigateNext)
+                .DisposeWith(_disposables);
+            
+            this.WhenActivated((CompositeDisposable disposables) =>
+            {
+                Disposable.Create(() =>
+                {
+                    Dispose();
+                    Log.Information("SchedulingShellViewModel: Disposed");
+                }).DisposeWith(disposables);
+            });
         }
 
         private void InitWizard(SelectionViewModel.SelectionType selectionType)
@@ -90,15 +105,23 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
             _disposables.Add(step2);
             
             IStepViewModel[] steps =
-            {
+            [
                 step1,
                 step2
-            };
+            ];
             return steps;
         }
 
-        private void NavigateNext()
+        private async Task NavigateNext()
         {
+            await OnNavigate();
+            if (CurrentStepIndex == _stepsVM.Length - 1)
+            {
+                if (HostScreen is ICloseableDialog closeableDialog)
+                    closeableDialog.Close();
+                else Log.Warning("SchedulingShellViewModel: CurrentStepIndex reach step but can't close dialog");
+            }
+            else
             if (CurrentStepIndex < _stepsVM.Length - 1)
             {
                 CurrentStepIndex++;
@@ -109,15 +132,24 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
             }
         }
 
-        private void NavigateBack()
+        private async Task NavigateBack()
         {
+            await OnNavigate();
             if (CurrentStepIndex == 0)
             {
                 HostScreen.Router.NavigateBack.Execute();
-                Dispose();
             }
             else
                 CurrentStepIndex--;
+        }
+
+        private async Task OnNavigate()
+        {
+            // ReSharper disable once SuspiciousTypeConversion.Global
+            if (CurrentStep is ICleanup cleanup)
+                cleanup.Cleanup();
+            if (CurrentStep is ICleanupAsync cleanupAsync)
+                await cleanupAsync.CleanupAsync();
         }
 
         public void Dispose()

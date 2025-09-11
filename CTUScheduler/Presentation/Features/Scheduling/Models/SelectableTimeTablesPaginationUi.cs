@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using CTUScheduler.Presentation.Features.Pagination.ViewModels;
 using CTUScheduler.Presentation.Shared.Models;
@@ -17,6 +19,9 @@ public class SelectableTimeTablesPaginationUi: PaginationViewModel<SelectableTim
 {
     private int _selectedTimetableCount;
     private int _maxPageCanSelect;
+    
+    private readonly BehaviorSubject<IReadOnlyCollection<SelectableTimetableLayout>> _selectedTimetablesSubject = 
+        new(Array.Empty<SelectableTimetableLayout>());
     public int SelectedTimetableCount { 
         get => _selectedTimetableCount;
         set => this.RaiseAndSetIfChanged(ref _selectedTimetableCount, value);
@@ -35,20 +40,32 @@ public class SelectableTimeTablesPaginationUi: PaginationViewModel<SelectableTim
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
         MaxPageCanSelect = maxPageCanSelect;
+        Disposables.Add(_selectedTimetablesSubject);
     }
 
     protected override void OnObservableInit()
     {
         base.OnObservableInit();
-        SelectedTimetableChanged = DataSharedConnection
+
+        var filteredStream = DataSharedConnection
             .AutoRefresh(x => x.IsSelected)
             .Filter(x => x.IsSelected)
-            .Replay(1) 
+            .Publish()
             .RefCount();
-        
-        SelectedTimetableCountChanged = SelectedTimetableChanged
+
+        // Subscribe để cập nhật BehaviorSubject từ filteredStream
+        filteredStream
+            .ToCollection()
+            .Subscribe(_selectedTimetablesSubject);
+
+        // Tạo các derived streams từ filteredStream chung
+        SelectedTimetableChanged = filteredStream
+            .Replay(1)
+            .RefCount();
+
+        SelectedTimetableCountChanged = filteredStream
             .Count()
-            .Replay(1) 
+            .Replay(1)
             .RefCount();
         
         SelectedTimetableCountChanged
@@ -78,8 +95,11 @@ public class SelectableTimeTablesPaginationUi: PaginationViewModel<SelectableTim
 
     public async Task<IReadOnlyCollection<SelectableTimetableLayout>> GetSelectedTimetables()
     {
-        return await SelectedTimetableChanged
-            .ToCollection()
-            .FirstAsync();
+        return await _selectedTimetablesSubject
+            .FirstAsync()
+            .Timeout(TimeSpan.FromSeconds(1)) // Safety net
+            .Catch(Observable.Return(
+                (IReadOnlyCollection<SelectableTimetableLayout>)[]
+            )); // Fallback
     }
 }

@@ -9,10 +9,12 @@
 			 x:DataType="viewModels:TimetableManagerViewModel"
 			 x:CompileBindings="True"
 			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
-			 xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
-			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+			xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 			 xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.TimetableManager.ViewModels"
-			 x:Class="CTUScheduler.Presentation.Features.TimetableManager.Views.TimetableManagerView">
+			xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.TimetableManager.Views"
+			xmlns:timetableViewModel="clr-namespace:CTUScheduler.Presentation.Features.Timetable.ViewModels"
+			xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Views"
+			x:Class="CTUScheduler.Presentation.Features.TimetableManager.Views.TimetableManagerView">
 
 	<Design.DataContext>
 		<viewModels:TimetableManagerViewModel/>
@@ -160,7 +162,7 @@
 						<!--// add schedule tables //-->
 						<Button DockPanel.Dock="Left"
 								x:Name="btnAddTables"
-								Command="{Binding OpenAddCourseDialogCommand}"
+								Command="{Binding ShowAddCourseDialogCommand}"
 							>
 							<StackPanel Orientation="Horizontal">
 								<materialIcons:MaterialIcon Kind="TablePlus"  Height="20" Width="20"/>
@@ -203,24 +205,67 @@
 						<Panel ClipToBounds="True">
 							<ScrollViewer HorizontalScrollBarVisibility="Disabled">
 								<ItemsRepeater
-									x:Name="itmRptTables">
+									x:Name="itmRptTables"
+									ItemsSource="{Binding TimetableLayouts}"
+									>
 									<ItemsRepeater.Layout>
 										<UniformGridLayout
-											Orientation="Horizontal"
-											ItemsJustification="SpaceEvenly"
+											MinRowSpacing="30"
 											MinColumnSpacing="30"
-											MinRowSpacing="30"/>
+											ItemsJustification="SpaceEvenly">
+										</UniformGridLayout>
 									</ItemsRepeater.Layout>
+									
+									<ItemsRepeater.ItemTemplate>
+                                            <DataTemplate x:DataType="timetableViewModel:TimetableLayoutViewModel">
+                                                <controls:Card
+                                                    Width="250"
+                                                    Height="220">
+                                                    <Grid
+                                                        RowDefinitions="auto auto auto *">
+                                                        <TextBlock Grid.Row="1"
+                                                                   Text="{Binding Name, StringFormat=Thời khóa biểu: {0}}">
+                                                        </TextBlock>
+                                                        <TextBlock Grid.Row="2"
+                                                                   Text="{Binding Description,StringFormat=Mô tả: {0}}">
+                                                        </TextBlock>
+
+                                                        <Grid Grid.Row="3">
+                                                            <!-- // TimeTable preview // -->
+                                                            <Border>
+                                                                <Viewbox Stretch="Uniform">
+                                                                    <views1:TimetableView
+                                                                        IsHitTestVisible="False"
+                                                                        Width="650"
+                                                                        Height="390"
+                                                                        VerticalAlignment="Stretch"
+                                                                        HorizontalAlignment="Stretch"
+                                                                        DataContext="{Binding TimeTableVM}" />
+                                                                </Viewbox>
+                                                            </Border>
+                                                            <!-- // Open Timetable View // -->
+                                                            <Button Background="Transparent"
+                                                                    Padding="0"
+                                                                    BorderThickness="0"
+                                                                    Command="{Binding Path= ((viewModels:TimetableManagerViewModel)DataContext).ShowTimetableDetailsCommand, RelativeSource={RelativeSource  Mode=FindAncestor, AncestorType=views:TimetableManagerView}}"
+                                                                    CommandParameter="{Binding .}">
+                                                            </Button>
+                                                        </Grid>
+                                                    </Grid>
+                                                </controls:Card>
+                                            </DataTemplate>
+                                        </ItemsRepeater.ItemTemplate>
+									
 								</ItemsRepeater>
 							</ScrollViewer>
 							
 							<!--// empty schedule table popup //-->
 							<StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
 								<Interaction.Behaviors>
-									<DataTriggerBehavior Binding="{Binding CourseList.Count}" ComparisonCondition="NotEqual" Value="0">
+									<DataTriggerBehavior Binding="{Binding TimetableLayouts.Count}" ComparisonCondition="NotEqual" Value="0">
 										<ChangePropertyAction PropertyName="IsVisible" Value="False"/>
 									</DataTriggerBehavior>
-									<DataTriggerBehavior Binding="{Binding CourseList.Count}" ComparisonCondition="Equal" Value="0">
+									<DataTriggerBehavior Binding="{Binding TimetableLayouts.Count}" ComparisonCondition="Equal" Value="0">
 										<ChangePropertyAction PropertyName="IsVisible" Value="True"/>
 									</DataTriggerBehavior>
 								</Interaction.Behaviors>

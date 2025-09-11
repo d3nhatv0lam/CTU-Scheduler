@@ -4,18 +4,15 @@ using Avalonia.Threading;
 using CTUScheduler.Core.Interfaces;
 using DialogHostAvalonia;
 
-namespace CTUScheduler.AppServices.Services.Dialogs
+namespace CTUScheduler.Presentation.Services.Dialogs
 {
-    public class DialogHostService: IDialogHostService
+    public partial class DialogHostService: IDialogHostService
     {
-        public enum DialogIdentifier
-        {
-            MainLayout,
-            Timetable,
-        }
-        public DialogHostService() {}
-
-        public async Task<T?> ShowDialogAsync<T>(object viewModel, DialogIdentifier identifier)
+        public async Task<TResult?> ShowDialogAsync<TViewModel, TResult>(
+            TViewModel viewModel, 
+            DialogIdentifier identifier, 
+            bool isDisposeViewModel = true)
+            where TViewModel: class
         {
             try
             {
@@ -35,11 +32,12 @@ namespace CTUScheduler.AppServices.Services.Dialogs
                     closeableDialog2.RequestClose -= handler;
                 }
                 
-                return result is T t? t: default;
+                return result is TResult t? t: default;
             }
             finally
             {
-                (viewModel as IDisposable)?.Dispose();
+                if (isDisposeViewModel)
+                    (viewModel as IDisposable)?.Dispose();
             }
         }
     }

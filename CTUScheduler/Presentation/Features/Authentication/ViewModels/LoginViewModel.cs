@@ -4,11 +4,8 @@ using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using Avalonia.Media.Imaging;
 using CTUScheduler.AppServices;
-using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
@@ -21,13 +18,10 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly ICTUWebDriverService _CTUWebDriverService;
-        private readonly Subject<Bitmap> _captchaImageUpdated = new Subject<Bitmap>();
-        private string _userName;
-        private string _password;
-        private Bitmap _captchaImage;
+        private string _userName = string.Empty;
+        private string _password = string.Empty;
         private bool _isSaveUsername;
-
-
+        
         public string? UrlPathSegment => "LoginViewModel";
         public IScreen HostScreen { get; }
 
@@ -40,11 +34,6 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         {
             get => _password;
             set => this.RaiseAndSetIfChanged(ref _password, value);
-        }
-        public Bitmap CaptchaImage
-        {
-            get => _captchaImage;
-            set => this.RaiseAndSetIfChanged(ref _captchaImage, value);
         }
         public bool IsSaveUsername
         {
@@ -59,12 +48,8 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         {
             HostScreen = hostScreen;
             _CTUWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
-            _userName = string.Empty;
-            _password = string.Empty;
-            _captchaImage = BitmapHelper.CreateEmptyBitmap();
-
+            
             LoadSignInData();
-            _disposables.Add(_captchaImageUpdated);
 
             // auto try Goto Signin until success
             Observable.Defer(() => Observable.StartAsync(GoToSignPage))
@@ -87,15 +72,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
 
         private void InitObservable()
         {
-
-            _captchaImageUpdated
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(bitMapImage =>
-                {
-                    var oldImage = CaptchaImage;
-                    CaptchaImage = bitMapImage;
-                    oldImage.Dispose();
-                }).DisposeWith(_disposables);
+            
         }
 
         private void InitCommand()
@@ -109,12 +86,9 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                 }
                 else
                 {
-                    CleanCaptcha();
-                    //await FillCapchaImage();
                     // wait 1sec => reduce CPU usage & Lag
                     await Task.Delay(1000);
                 }
-
             }).DisposeWith(_disposables);
         }
 
@@ -126,25 +100,11 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         private void OnLoggedIn()
         {
             SaveSignInData();
+            Password = string.Empty;
             RxApp.MainThreadScheduler.Schedule(NavigateToHome);
             Dispose();
         }
-
-        private void CleanCaptcha()
-        {
-            RxApp.MainThreadScheduler.Schedule(() =>
-            {
-                //Captcha = string.Empty;
-            });
-        }
-
-        //private async Task FillCapchaImage()
-        //{
-        //    var bitMapImage = await _CTUWebDriverService.TryGetCaptchaImageAsync();
-        //    if (bitMapImage != null)
-        //        _captchaImageUpdated.OnNext(bitMapImage);
-        //}
-
+        
         private void NavigateToHome()
         {
             HostScreen.Router.NavigateAndReset.Execute(new MainShellViewModel(HostScreen));

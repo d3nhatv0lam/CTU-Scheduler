@@ -2,13 +2,13 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Disposables;
-using CTUScheduler.AppServices.Services.Dialogs;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Features.Home.ViewModels;
 using CTUScheduler.Presentation.Features.Setting.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableManager.ViewModels;
+using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Shells.MainShell.Models;
 using Material.Icons;
 using Microsoft.Extensions.DependencyInjection;
@@ -89,7 +89,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 
             LogoutCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                bool isAcceptLogout = await _dialogHostService.ShowDialogAsync<bool>(new LogoutDialogViewModel(), DialogHostService.DialogIdentifier.MainLayout);
+                bool isAcceptLogout = await _dialogHostService.ShowDialogAsync<LogoutDialogViewModel,bool>(new LogoutDialogViewModel(), DialogIdentifier.MainLayout);
                 if (isAcceptLogout)
                 {
                     HostScreen.Router.NavigateAndReset.Execute(new LoginViewModel(HostScreen));

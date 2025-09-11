@@ -9,7 +9,5 @@ public partial class TimetableManagerView : ReactiveUserControl<TimetableManager
     public TimetableManagerView()
     {
         InitializeComponent();
-
-        this.WhenActivated(disposables => { });
     }
 }

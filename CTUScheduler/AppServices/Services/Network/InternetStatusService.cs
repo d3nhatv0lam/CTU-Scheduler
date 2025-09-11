@@ -9,15 +9,15 @@ using System.Threading.Tasks;
 namespace CTUScheduler.AppServices.Services.Network;
 public class InternetStatusService : IInternetStatusService, IDisposable
 {
-    private readonly CompositeDisposable _disposable = new CompositeDisposable();
-    private readonly Subject<bool> _internetStatusOnRefresh = new Subject<bool>();
-    private const string requestUrl = "https://www.google.com";
+    private readonly CompositeDisposable _disposable = new ();
+    private readonly Subject<bool> _internetStatusOnRefresh = new ();
+    protected const string REQUEST_URL = "https://www.google.com";
     private readonly HttpClient _httpClient;
-    private bool _lastStatus;
+
     /// <summary>
     /// Phát ra giá trị trạng thái Internet được làm mới
     /// </summary>
-    public Subject<bool> InternetStatusOnRefresh => _internetStatusOnRefresh;
+    public IObservable<bool> InternetStatusOnRefresh => _internetStatusOnRefresh.AsObservable();
 
     /// <summary>
     /// Sự kiện thay đổi trạng thái kết nối, truyền vào giá trị boolean (true: có kết nối, false: mất kết nối).
@@ -48,16 +48,13 @@ public class InternetStatusService : IInternetStatusService, IDisposable
                 // Mỗi tick thì chuyển đổi sang Task kiểm tra kết nối rồi chuyển kết quả về là Observable<bool>
                 .SelectMany(async _ => await CheckInternetAsync().ToObservable())
                 // Update InternetStatusOnRefresh
-                .Do(status => InternetStatusOnRefresh.OnNext(status))
+                .Do(status => _internetStatusOnRefresh.OnNext(status))
                 // Chỉ thông báo khi trạng thái thay đổi (không thông báo liên tục cùng trạng thái)
                 .DistinctUntilChanged()
-                .Subscribe(status =>
-                {
-                    _lastStatus = status;
-                    OnConnectivityChanged(status);
-                }).DisposeWith(_disposable);
+                .Subscribe(status => OnConnectivityChanged(status)
+                ).DisposeWith(_disposable);
 
-        _disposable.Add(InternetStatusOnRefresh);
+        _disposable.Add(_internetStatusOnRefresh);
         _disposable.Add(_httpClient);
     }
 
@@ -75,7 +72,7 @@ public class InternetStatusService : IInternetStatusService, IDisposable
         try
         {
             // Endpoint có thể thay đổi tuỳ ứng dụng, ở đây dùng google.com làm ví dụ.
-            var response = await _httpClient.GetAsync(requestUrl);
+            var response = await _httpClient.GetAsync(REQUEST_URL);
             return response.IsSuccessStatusCode;
         }
         catch

@@ -30,8 +30,12 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
             set => this.RaiseAndSetIfChanged(ref _width, value);
         }
         public event Action<object?>? RequestClose;
-        
-        public RoutingState Router { get; } = new RoutingState();
+        public void Close(object? result = null)
+        {
+            RequestClose?.Invoke(null);
+        }
+
+        public RoutingState Router { get; } = new ();
         public ReactiveCommand<Unit, Unit> CloseDialogCommand { get; protected set; }
         
 
@@ -39,7 +43,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
         {
             _viewportService = App.ServiceProvider!.GetRequiredService<IViewportService>();
             
-            CloseDialogCommand = ReactiveCommand.Create(() => RequestClose?.Invoke(null))
+            CloseDialogCommand = ReactiveCommand.Create(() => Close())
                 .DisposeWith(_disposables);
             _viewportService.SizeChanged
                 .Subscribe(size =>
@@ -47,6 +51,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
                     Height = size.Height;
                     Width = size.Width;
                 }) .DisposeWith(_disposables);
+            
             Router.Navigate.Execute(new SelectionViewModel(this));
         }
         

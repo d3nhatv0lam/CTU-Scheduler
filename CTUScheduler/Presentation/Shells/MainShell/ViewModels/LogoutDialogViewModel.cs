@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reactive;
 using System.Reactive.Disposables;
-using CTUScheduler.AppServices.Services.Dialogs;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Base;
 using DialogHostAvalonia;
@@ -15,12 +14,16 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
         public ReactiveCommand<Unit,Unit> AcceptCommand { get; }
         public ReactiveCommand<Unit, Unit> CancelCommand { get; }
         public event Action<object?>? RequestClose;
-        
+        public void Close(object? result = null)
+        {
+            RequestClose?.Invoke(result);
+        }
+
         public LogoutDialogViewModel()
         {
-            AcceptCommand = ReactiveCommand.Create(() => RequestClose?.Invoke(true))
+            AcceptCommand = ReactiveCommand.Create(() => Close(true))
                 .DisposeWith(_disposables);
-            CancelCommand = ReactiveCommand.Create(() => RequestClose?.Invoke(false))
+            CancelCommand = ReactiveCommand.Create(() => Close(false))
                 .DisposeWith(_disposables);
         }
         

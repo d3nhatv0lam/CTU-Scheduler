@@ -7,7 +7,6 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CTUScheduler.AppServices.Services.Dialogs;
 using CTUScheduler.AppServices.Services.ScheduleManager;
 using CTUScheduler.AppServices.Validators;
 using CTUScheduler.Core.Algorithms;
@@ -19,6 +18,8 @@ using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Features.Timetable.ViewModels;
+using CTUScheduler.Presentation.Services.Dialogs;
+using CTUScheduler.Presentation.Services.TimetableDialog;
 using CTUScheduler.Presentation.Shared.Mappers;
 using CTUScheduler.Presentation.Shared.Models;
 using CTUScheduler.Presentation.Shared.Models.Academic;
@@ -28,11 +29,12 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 
-public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDisposable, IActivatableViewModel, INextStepCondition, ICleanupAsync
+public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDisposable, IActivatableViewModel,
+    INextStepCondition, ICleanupAsync
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
     private readonly IScheduleManagerService _scheduleManagerService;
-    private readonly IDialogHostService _dialogHostService;
+    private readonly ITimetableDialogService _timetableDialogService;
     private readonly SchedulingCourseOptionViewModel _schedulingCourseOptionVM;
     private readonly ScheduleValidator _scheduleValidator = new ScheduleValidator();
     private readonly SelectableTimeTablesPaginationUi _paginationTimeTableViewModel;
@@ -41,7 +43,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
     private readonly ObservableAsPropertyHelper<bool> _isNextStepEnabled;
     private CancellationTokenSource? _cts;
     private bool _isGeneratingTimeTable;
-  
+
 
     public bool IsGeneratingTimeTable
     {
@@ -53,17 +55,17 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
     public SchedulingCourseOptionViewModel SchedulingCourseOptionVM => _schedulingCourseOptionVM;
     public SelectableTimeTablesPaginationUi PaginationTimeTableViewModel => _paginationTimeTableViewModel;
     public string LimitTimetableSelectedDisplayed => _limitTimetableSelectedDisplayedHelper.Value;
-    
+
     public bool IsNextStepEnabled => _isNextStepEnabled.Value;
     public ReactiveCommand<Unit, Unit> GenerateTimeTableCommand { get; }
-    public ReactiveCommand<SelectableTimetableLayout, Unit> OpenTimetableDetailsCommand { get; }
+    public ReactiveCommand<SelectableTimetableLayout, Unit> ShowTimetableDetailsCommand { get; }
 
     public TimetableSchedulerViewModel(SourceList<CourseUi> courses)
     {
         _scheduleManagerService = App.ServiceProvider.GetRequiredService<IScheduleManagerService>();
-        _dialogHostService = App.ServiceProvider.GetRequiredService<IDialogHostService>();
+        _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
         _schedulingCourseOptionVM = new SchedulingCourseOptionViewModel();
-        _paginationTimeTableViewModel = new(12,10);
+        _paginationTimeTableViewModel = new(12, 10);
 
         _limitTimetableSelectedDisplayedHelper = this.WhenAnyValue(
                 x => x.PaginationTimeTableViewModel.SelectedTimetableCount,
@@ -80,23 +82,24 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
             .Select(count => count > 0)
             .ToProperty(this, nameof(IsNextStepEnabled), scheduler: RxApp.MainThreadScheduler)
             .DisposeWith(_disposables);
-        
+
         GenerateTimeTableCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                // if (IsGeneratingTimeTable)
-                // {
-                //     StopGenerateTimeTable();
-                //     return;
-                // }
-                //
-                // IsGeneratingTimeTable = true;
+                if (IsGeneratingTimeTable)
+                {
+                    StopGenerateTimeTable();
+                    return;
+                }
+
+                IsGeneratingTimeTable = true;
                 var courseSectionFlatten = CourseSectionsTrackerFlatten(SchedulingCourseOptionVM.GetGroupedCourses());
                 await GenerateTimeTable(courseSectionFlatten);
+                IsGeneratingTimeTable = false;
             })
             .DisposeWith(_disposables);
 
-        OpenTimetableDetailsCommand = ReactiveCommand.Create<SelectableTimetableLayout>((selectableTimetableLayout) =>
-                OpenTimetableDetails(selectableTimetableLayout))
+        ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<SelectableTimetableLayout>(async selectableTimetableLayout =>
+               await _timetableDialogService.ShowTimetableDetails(selectableTimetableLayout.Item))
             .DisposeWith(_disposables);
 
         this.WhenActivated(disposable =>
@@ -108,13 +111,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
                 .DisposeWith(disposable);
         });
     }
-
-    private void OpenTimetableDetails(SelectableTimetableLayout selectableTimetableLayout)
-    {
-        var timetableLayoutViewModel = selectableTimetableLayout.Item;
-        _dialogHostService.ShowDialogAsync<Unit>(timetableLayoutViewModel,
-            DialogHostService.DialogIdentifier.Timetable);
-    }
+    
 
     private void StopGenerateTimeTable()
     {
@@ -171,14 +168,14 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
                 .ToList()
             );
     }
-    
+
     public async Task CleanupAsync()
     {
         var timetablesModel = new List<ScheduleTable>();
         foreach (var timetableLayout in await PaginationTimeTableViewModel.GetSelectedTimetables())
         {
-            var scheduletableModel = timetableLayout.Item.ToModel();
-            timetablesModel.Add(scheduletableModel);
+            var scheduleTableModel = timetableLayout.Item.ToModel();
+            timetablesModel.Add(scheduleTableModel);
         }
         PaginationTimeTableViewModel.Clear();
         _scheduleManagerService.AddRangeTimetable(timetablesModel);
@@ -190,6 +187,4 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
         PaginationTimeTableViewModel.Dispose();
         _disposables.Dispose();
     }
-
-    
 }

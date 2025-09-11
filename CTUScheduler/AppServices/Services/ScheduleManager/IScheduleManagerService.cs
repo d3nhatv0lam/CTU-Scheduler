@@ -13,7 +13,7 @@ namespace CTUScheduler.AppServices.Services.ScheduleManager;
 public interface IScheduleManagerService
 {
     public DateTime LastSaved { get; }
-    public IObservable<IChangeSet<TimetableLayoutViewModel>> TimetableLayouts { get; }
+    public IObservable<IChangeSet<ScheduleTable>> Timetables { get; }
     public IObservable<int> TimetableCountChanged { get; }
 
     public void ClearTimetables();

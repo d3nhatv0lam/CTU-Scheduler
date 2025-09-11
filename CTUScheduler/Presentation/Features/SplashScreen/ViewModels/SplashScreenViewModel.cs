@@ -20,7 +20,11 @@ namespace CTUScheduler.Presentation.Features.SplashScreen.ViewModels
         private string _message = "Đang kiểm tra kết nối mạng..";
         
         public event Action<object?>? RequestClose;
-        
+        public void Close(object? result = null)
+        {
+            RequestClose?.Invoke(null);
+        }
+
         public string Message
         {
             get => _message;
@@ -48,7 +52,7 @@ namespace CTUScheduler.Presentation.Features.SplashScreen.ViewModels
                         .Do(_ => Message = "Đang khởi động ứng dụng..")
                         .SelectMany(_ => Observable.Timer(TimeSpan.FromSeconds(1)))
                         .ObserveOn(RxApp.MainThreadScheduler)
-                        .Subscribe(_ => RequestClose?.Invoke(null))
+                        .Subscribe(_ => Close())
                         .DisposeWith(_disposables);
                     }
                     catch
