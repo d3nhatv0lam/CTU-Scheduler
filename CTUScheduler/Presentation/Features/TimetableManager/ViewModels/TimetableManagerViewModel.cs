@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Disposables;
-using System.Runtime.InteropServices;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.ScheduleManager;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels;
-using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.TimetableDialog;
@@ -26,12 +24,17 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly IScheduleManagerService _scheduleManagerService;
         private readonly IDialogHostService _dialogHostService;
         private readonly ITimetableDialogService _timetableDialogService;
-        private ReadOnlyObservableCollection<TimetableLayoutViewModel> _bindableTimetableLayouts;
+        private readonly ReadOnlyObservableCollection<TimetableLayoutViewModel> _bindableTimetableLayouts = ReadOnlyObservableCollection<TimetableLayoutViewModel>.Empty;
+        private readonly ObservableAsPropertyHelper<int> _timetableLayoutsCount;
+        private readonly ObservableAsPropertyHelper<bool> _isEmptyTimetableLayouts;
         public string? UrlPathSegment => "TimetableManagerViewModel";
         public IScreen HostScreen { get; }
         public ViewModelActivator Activator { get; } = new ();
         
         public ReadOnlyObservableCollection<TimetableLayoutViewModel> TimetableLayouts => _bindableTimetableLayouts;
+        public int TimetableLayoutsCount => _timetableLayoutsCount.Value;
+        public bool IsEmptyTimetableLayouts => _isEmptyTimetableLayouts.Value;
+        
         public ReactiveCommand<Unit, Unit> ShowAddCourseDialogCommand { get; protected set; }
         public ReactiveCommand<TimetableLayoutViewModel, Unit> ShowTimetableDetailsCommand { get; }
         
@@ -46,16 +49,27 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             _CTUWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
             _scheduleManagerService = App.ServiceProvider!.GetRequiredService<IScheduleManagerService>();
             
-            this.WhenActivated((CompositeDisposable disposable) =>
-            {
-                _scheduleManagerService.Timetables
-                    .Transform(x => new TimetableLayoutViewModel(x))
-                    .DisposeMany()
-                    .Bind(out _bindableTimetableLayouts)
-                    .Subscribe()
-                    .DisposeWith(_disposables);
-            });
 
+            _scheduleManagerService.Timetables
+                .Transform(x => new TimetableLayoutViewModel(x))
+                .DisposeMany()
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Bind(out _bindableTimetableLayouts)
+                .Subscribe()
+                .DisposeWith(_disposables);
+
+            _timetableLayoutsCount = _scheduleManagerService.TimetableCountChanged
+                .StartWith(0)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .ToProperty(this, nameof(TimetableLayoutsCount))
+                .DisposeWith(_disposables);
+
+            _isEmptyTimetableLayouts = this.WhenAnyValue(x => x.TimetableLayoutsCount)
+                .Select(count => count == 0)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .ToProperty(this, nameof(IsEmptyTimetableLayouts))
+                .DisposeWith(_disposables);
+            
             GoToCourseCatalogPage();
             ShowAddCourseDialogCommand = ReactiveCommand.CreateFromTask(OpenAddCourseDialog)
                 .DisposeWith(_disposables);
