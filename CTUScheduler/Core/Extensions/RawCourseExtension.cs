@@ -1,12 +1,8 @@
-﻿using Avalonia.Controls.ApplicationLifetimes;
-using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
+﻿using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CTUScheduler.Core.Extensions
@@ -15,7 +11,7 @@ namespace CTUScheduler.Core.Extensions
     {
         public static Course ToCourse(this RawCourse rawCourse)
         {
-            if (rawCourse.hoc_phan_info == null) return null!;
+            if (rawCourse.hoc_phan_info is null) return null!;
             try
             {
                 Course course = new Course()
@@ -49,7 +45,7 @@ namespace CTUScheduler.Core.Extensions
                                     GetClassDayData(rawCourseGroupData)
                                 }
                             },
-                            // Has group => Add new ClassDay into existing group
+                            // Has group => Add new ClassDay into an existing group
                             (group, existing) =>
                             {
                                 var newClassDay = GetClassDayData(rawCourseGroupData);

@@ -23,7 +23,8 @@ public class TimetableViewModel : ViewModelBase, IDisposable
 
     public void AddCells(ScheduleGroupCellShared groupCellShared, List<ScheduleCellUi> cells)
     {
-        GroupCells.Add(groupCellShared.CourseCode, groupCellShared);
+        var key = $"{groupCellShared.CourseCode}-{groupCellShared.Group}";
+        GroupCells.Add(key, groupCellShared);
         
         var cellsColor = ColorPalettes.Colors[GroupCells.Count - 1];
         groupCellShared.BackgroundColor = cellsColor;

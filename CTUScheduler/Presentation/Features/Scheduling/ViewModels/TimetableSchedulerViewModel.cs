@@ -65,7 +65,10 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
         _scheduleManagerService = App.ServiceProvider.GetRequiredService<IScheduleManagerService>();
         _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
         _schedulingCourseOptionVM = new SchedulingCourseOptionViewModel();
-        _paginationTimeTableViewModel = new(12, 10);
+
+        var maxScheduleTableCanSelect =
+            _scheduleManagerService.MaxTimetableCount - _scheduleManagerService.CurrentTimetableCount;
+        _paginationTimeTableViewModel = new(12, maxScheduleTableCanSelect);
 
         _limitTimetableSelectedDisplayedHelper = this.WhenAnyValue(
                 x => x.PaginationTimeTableViewModel.SelectedTimetableCount,
@@ -90,7 +93,6 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
                     StopGenerateTimeTable();
                     return;
                 }
-
                 IsGeneratingTimeTable = true;
                 var courseSectionFlatten = CourseSectionsTrackerFlatten(SchedulingCourseOptionVM.GetGroupedCourses());
                 await GenerateTimeTable(courseSectionFlatten);

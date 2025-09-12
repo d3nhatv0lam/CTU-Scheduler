@@ -44,13 +44,13 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         public TimetableManagerViewModel(IScreen hostScreen)
         {
             HostScreen = hostScreen;
-            _dialogHostService = App.ServiceProvider!.GetRequiredService<IDialogHostService>();
-            _timetableDialogService = App.ServiceProvider!.GetRequiredService<ITimetableDialogService>();
-            _CTUWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
-            _scheduleManagerService = App.ServiceProvider!.GetRequiredService<IScheduleManagerService>();
+            _dialogHostService = App.ServiceProvider.GetRequiredService<IDialogHostService>();
+            _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
+            _CTUWebDriverService = App.ServiceProvider.GetRequiredService<ICTUWebDriverService>();
+            _scheduleManagerService = App.ServiceProvider.GetRequiredService<IScheduleManagerService>();
             
 
-            _scheduleManagerService.Timetables
+            _scheduleManagerService.TimetableChanges
                 .Transform(x => new TimetableLayoutViewModel(x))
                 .DisposeMany()
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -58,16 +58,13 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 .Subscribe()
                 .DisposeWith(_disposables);
 
-            _timetableLayoutsCount = _scheduleManagerService.TimetableCountChanged
-                .StartWith(0)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .ToProperty(this, nameof(TimetableLayoutsCount))
+            _timetableLayoutsCount = _scheduleManagerService.TimetableCountChanges
+                .ToProperty(this, nameof(TimetableLayoutsCount),scheduler: RxApp.MainThreadScheduler)
                 .DisposeWith(_disposables);
 
             _isEmptyTimetableLayouts = this.WhenAnyValue(x => x.TimetableLayoutsCount)
                 .Select(count => count == 0)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .ToProperty(this, nameof(IsEmptyTimetableLayouts))
+                .ToProperty(this, nameof(IsEmptyTimetableLayouts), scheduler: RxApp.MainThreadScheduler)
                 .DisposeWith(_disposables);
             
             GoToCourseCatalogPage();
@@ -85,7 +82,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             await _dialogHostService.ShowDialogAsync<DialogShellViewModel,Unit>(viewModel, DialogIdentifier.MainLayout);
         }
 
-        public void GoToCourseCatalogPage()
+        private void GoToCourseCatalogPage()
         {
             try
             {
@@ -93,7 +90,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             }
             catch
             {
-
+                // ignored
             }
         }
 

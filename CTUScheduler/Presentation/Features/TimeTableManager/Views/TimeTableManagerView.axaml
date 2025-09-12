@@ -224,12 +224,13 @@
                                                 Height="220">
                                                 <Grid
                                                     RowDefinitions="auto auto auto *">
-                                                    <TextBlock Grid.Row="1"
+                                                    <TextBlock Grid.Row="0"
                                                                Text="{Binding Name, StringFormat=Thời khóa biểu: {0}}">
                                                     </TextBlock>
-                                                    <TextBlock Grid.Row="2"
+                                                    <TextBlock Grid.Row="1"
                                                                Text="{Binding Description,StringFormat=Mô tả: {0}}">
                                                     </TextBlock>
+                                                    <TextBlock Grid.Row="2" Text="{Binding LastUpdated,Mode=OneWay,StringFormat=Lần cuối cập nhật: {0}}"></TextBlock>
 
                                                     <Grid Grid.Row="3">
                                                         <!-- // TimeTable preview // -->

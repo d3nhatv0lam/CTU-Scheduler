@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Runtime.ExceptionServices;
 using CTUScheduler.Core.Extensions;
+using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
@@ -18,6 +21,7 @@ public class TimetableLayoutViewModel: ViewModelBase, IDisposable
     private readonly CompositeDisposable _disposables = new();
     private readonly ScheduleTable _scheduleTable;
     private readonly TimetableViewModel _timeTableVM;
+    private Dictionary<string, Course> _scheduleCourseData = new();
     private string _name;
     private string _description;
     private DateTime _lastUpdated;
@@ -102,10 +106,14 @@ public class TimetableLayoutViewModel: ViewModelBase, IDisposable
         if (cellList.Count == 0 || !_scheduleTable.TryAddToScheduleData(choice))
            return;
         TotalCredit += groupCellShared.Credit;
+        
+        var courseWithNewSection = choice.Course.CloneWithNewCourseSections([choice.Section]);
+        
+        _scheduleCourseData.Add(courseWithNewSection.Code, courseWithNewSection);
         _timeTableVM.AddCells(groupCellShared, cellList);
     }
-    
-    
+
+    public (List<Course>,ScheduleTable) GetScheduleSaveData() => (_scheduleCourseData.Values.ToList(), _scheduleTable);
     public ScheduleTable ToModel() => _scheduleTable;
 
     public void Dispose()

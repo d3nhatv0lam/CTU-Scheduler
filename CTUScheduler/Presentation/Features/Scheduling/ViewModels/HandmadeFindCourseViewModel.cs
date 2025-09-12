@@ -10,6 +10,7 @@ using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
+using CTUScheduler.Presentation.Shared.Extensions;
 using CTUScheduler.Presentation.Shared.Mappers;
 using CTUScheduler.Presentation.Shared.Models.Academic;
 using DynamicData;
@@ -157,7 +158,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                 
                 if (treeCourseNode == null)
                 {
-                    treeCourseNode = CloneWithNewCourseSections(SearchedCourse, selectedSections);
+                    treeCourseNode = SearchedCourse.CloneWithNewCourseSections(selectedSections);
                     _coursesSourceList.Add(treeCourseNode);
                     return;
                 }
@@ -182,18 +183,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                                         .DisposeWith(_disposables);
         }
 
-        private CourseUi CloneWithNewCourseSections(CourseUi course, IEnumerable<CourseSectionUi> sections)
-        {
-            return new CourseUi
-            {
-                Code = course.Code,
-                Name_VN = course.Name_VN,
-                Credit = course.Credit,
-                TheorySessions = course.TheorySessions,
-                PracticalSessions = course.PracticalSessions,
-                Sections = new ObservableCollection<CourseSectionUi>(sections)
-            };
-        }
+        
 
         private ObservableCollection<SelectableCourseSectionUi> GetSelectableSectionUi(CourseUi course)
         {

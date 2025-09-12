@@ -5,6 +5,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.User;
+using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using DynamicData;
 using Microsoft.Extensions.Logging;
@@ -13,18 +14,24 @@ namespace CTUScheduler.AppServices.Services.ScheduleManager;
 
 public class ScheduleManagerService: IScheduleManagerService, IDisposable
 {
+    protected const int MAX_TIMETABLE_COUNT_LIMIT = 10;
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
     private readonly IUserDataService _userDataService;
     private readonly ILogger<ScheduleManagerService> _logger;
+    private readonly SourceCache<Course, string> _courseData = new (course => course.Code);
     private readonly SourceList<ScheduleTable> _data = new();
+
+    public int MaxTimetableCount => MAX_TIMETABLE_COUNT_LIMIT;
+    public int CurrentTimetableCount => _data.Count;
+   
     public DateTime LastSaved { get; private set; }
 
-    public IObservable<IChangeSet<ScheduleTable>> Timetables => _data
+    public IObservable<IChangeSet<ScheduleTable>> TimetableChanges => _data
         .Connect()
         .Publish()
         .RefCount();
     
-    public IObservable<int> TimetableCountChanged => _data.CountChanged;
+    public IObservable<int> TimetableCountChanges => _data.CountChanged.StartWith(_data.Count).Replay(1).RefCount();
 
     public ScheduleManagerService(IUserDataService userDataService, ILogger<ScheduleManagerService> logger)
     {

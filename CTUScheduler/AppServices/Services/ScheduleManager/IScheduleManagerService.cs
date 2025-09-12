@@ -8,30 +8,33 @@ using DynamicData;
 namespace CTUScheduler.AppServices.Services.ScheduleManager;
 
 /// <summary>
-/// Coordinator between Timetables in runtime and UserService's data
+/// Coordinator between TimetableChanges in runtime and UserService's data
 /// </summary>
 public interface IScheduleManagerService
 {
+    public int MaxTimetableCount { get; }
+    public int CurrentTimetableCount { get; }
     public DateTime LastSaved { get; }
-    public IObservable<IChangeSet<ScheduleTable>> Timetables { get; }
-    public IObservable<int> TimetableCountChanged { get; }
+    public IObservable<IChangeSet<ScheduleTable>> TimetableChanges { get; }
+    public IObservable<int> TimetableCountChanges { get; }
+    
 
     public void ClearTimetables();
     public void AddTimetable(ScheduleTable timetable);
     public void AddRangeTimetable(IEnumerable<ScheduleTable> timetables);
     public void RemoveTimetable(ScheduleTable timetable);
     /// <summary>
-    /// Update data of all Timetables in runtime
+    /// Update data of all TimetableChanges in runtime
     /// </summary>
     /// <returns></returns>
     public Task UpdateTimetablesDataAsync();
     /// <summary>
-    ///  Save Timetables from runtime to .json file
+    ///  Save TimetableChanges from runtime to .json file
     /// </summary>
     /// <returns></returns>
     public Task<bool> TrySaveScheduleAsync();
     /// <summary>
-    /// Load Timetables from save to TimetableLayouts
+    /// Load TimetableChanges from save to TimetableLayouts
     /// </summary>
     /// <returns></returns>
     public Task<bool> TryLoadScheduleAsync();
