@@ -56,7 +56,9 @@ namespace CTUScheduler.AppServices.Services.WebDriver
                 .Select(rawJasonData => ToCourseCatalogQuickSelectJsonData(rawJasonData))
                 .WhereNotNull()
                 .Select(jsonData => JsonHelper.Deserialize<ObservableCollection<QuickSelectCourse>>((JsonElement)jsonData!))
-                .WhereNotNull();
+                .WhereNotNull()
+                .Publish()
+                .RefCount();
 
             // Course Catalog response
             _courseCatalogResponse =
@@ -77,7 +79,9 @@ namespace CTUScheduler.AppServices.Services.WebDriver
 
                 })
                 .WhereNotNull()
-                .Select(rawCourse => rawCourse.ToCourse());
+                .Select(rawCourse => rawCourse.ToCourse())
+                .Publish()
+                .RefCount();
 
         }
 
@@ -267,9 +271,16 @@ namespace CTUScheduler.AppServices.Services.WebDriver
 
         #region DKMH_DanhMucHocPhan
 
+        private bool IsCourseCatalogPage(string? url = null)
+        {
+            string currentUrl = url ?? _webDriverService.GetPageUrl();
+            return currentUrl.Contains(AppConstants.CTU_DKMH_URL_KEY) && currentUrl.EndsWith(AppConstants.CTU_DKMH_DANHMUCHOCPHAN_URL_KEY);;
+        }
+        
         public async Task GoToCourseCatalogPage()
         {
             string currentUrl = _webDriverService.GetPageUrl();
+            if (IsCourseCatalogPage(currentUrl)) return;
             try
             {
                 // Current url is DKMH page

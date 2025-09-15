@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Text.Json;
+using System.Threading.Tasks;
 using CTUScheduler.Core.Models.UserSaves;
 
 namespace CTUScheduler.AppServices.Services.User
@@ -7,8 +8,8 @@ namespace CTUScheduler.AppServices.Services.User
     {
         public ScheduleSave ScheduleSaved { get; }
 
-        Task<bool> TryLoadUserDataAsync(string filePath);
+        Task<bool> TryLoadUserDataAsync(string filePath, JsonSerializerOptions? options = null);
 
-        Task<bool> TrySaveUserDataAsync(string filePath);
+        Task<bool> TrySaveUserDataAsync(string filePath, JsonSerializerOptions? options = null);
     }
 }

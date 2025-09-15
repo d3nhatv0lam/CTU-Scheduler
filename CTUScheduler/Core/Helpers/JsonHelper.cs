@@ -14,23 +14,23 @@ namespace CTUScheduler.Core.Helpers
         // ---- Serialization ----
         public static string Serialize<T>(T obj, JsonSerializerOptions? options = null)
         {
-            return JsonSerializer.Serialize(obj, options ?? JsonSerializerOptions.Default);
+            return JsonSerializer.Serialize(obj, options);
         }
 
         // ---- Deserialization ----
         public static T? Deserialize<T>(string jsonString, JsonSerializerOptions? options = null)
         {
-            return JsonSerializer.Deserialize<T>(jsonString, options ?? JsonSerializerOptions.Default);
+            return JsonSerializer.Deserialize<T>(jsonString, options);
         }
 
         public static T? Deserialize<T>(Stream jsonStream, JsonSerializerOptions? options = null)
         {
-            return JsonSerializer.Deserialize<T>(jsonStream, options ?? JsonSerializerOptions.Default);
+            return JsonSerializer.Deserialize<T>(jsonStream, options);
         }
 
         public static T? Deserialize<T>(JsonElement jsonData, JsonSerializerOptions? options = null)
         {
-            return jsonData.Deserialize<T>(options ?? JsonSerializerOptions.Default);
+            return jsonData.Deserialize<T>(options);
         }
 
         // ---- File Operations ----
@@ -43,7 +43,7 @@ namespace CTUScheduler.Core.Helpers
         // ---- Serialization (Async) ----
         public static async Task SerializeAsync<T>(Stream stream, T obj, JsonSerializerOptions? options = null)
         {
-            await JsonSerializer.SerializeAsync(stream, obj, options ?? JsonSerializerOptions.Default);
+            await JsonSerializer.SerializeAsync(stream, obj, options);
         }
 
         public static async Task SerializeToFileAsync<T>(string filePath, T obj, JsonSerializerOptions? options = null)
@@ -55,7 +55,7 @@ namespace CTUScheduler.Core.Helpers
         // ---- Deserialization (Async) ----
         public static async Task<T?> DeserializeAsync<T>(Stream jsonStream, JsonSerializerOptions? options = null)
         {
-            return await JsonSerializer.DeserializeAsync<T>(jsonStream, options ?? JsonSerializerOptions.Default);
+            return await JsonSerializer.DeserializeAsync<T>(jsonStream, options);
         }
 
         public static async Task<T?> DeserializeFromFileAsync<T>(string filePath, JsonSerializerOptions? options = null)

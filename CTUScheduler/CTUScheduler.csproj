@@ -115,4 +115,8 @@
     <AdditionalFiles Include="Presentation\Shared\Styles\Controls.axaml" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Presentation\Features\Timetable\Interfaces\" />
+  </ItemGroup>
+
 </Project>

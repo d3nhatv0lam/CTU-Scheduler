@@ -21,8 +21,11 @@ using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Services.Viewport;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Core.Interfaces;
+using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
+using CTUScheduler.Presentation.Features.Timetable.ViewModels;
+using CTUScheduler.Presentation.Services.Adapter;
 using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.TimetableDialog;
 using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
@@ -111,6 +114,7 @@ public partial class App : Application
         services.AddSingleton<ITimetableDialogService, TimetableDialogService>();
         services.AddSingleton<IViewportService, ViewportService>();
         services.AddSingleton<IScheduleManagerService, ScheduleManagerService>();
+        services.AddSingleton<ITimetableLayoutAdapter, TimetableLayoutVmAdapter>();
         services.AddTransient<MainWindow>(provider =>
         {
             MainWindow window = new();

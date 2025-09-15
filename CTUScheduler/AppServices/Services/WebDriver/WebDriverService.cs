@@ -20,7 +20,7 @@ namespace CTUScheduler.AppServices.Services.WebDriver
         private IPlaywright _playwright = null!;
         private IBrowser _browser = null!;
         private IPage _page = null!;
-        private Subject<JsonElement?> _jsonResponseSubject = new Subject<JsonElement?>();
+        private Subject<JsonElement?> _jsonResponseSubject = new ();
         protected bool _isHasInternet;
 
         public IObservable<JsonElement?> JsonResponse => _jsonResponseSubject.AsObservable();

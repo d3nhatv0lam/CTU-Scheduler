@@ -6,6 +6,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Runtime.ExceptionServices;
 using CTUScheduler.Core.Extensions;
+using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
@@ -16,16 +17,17 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Timetable.ViewModels;
 
-public class TimetableLayoutViewModel: ViewModelBase, IDisposable
+public class TimetableLayoutViewModel: ViewModelBase, IUpdatable, IRequestUpdate<TimetableLayoutViewModel>, IDisposable
 {
     private readonly CompositeDisposable _disposables = new();
     private readonly ScheduleTable _scheduleTable;
     private readonly TimetableViewModel _timeTableVM;
-    private Dictionary<string, Course> _scheduleCourseData = new();
+    private readonly Dictionary<string, Course> _scheduleCourseData = new();
     private string _name;
     private string _description;
     private DateTime _lastUpdated;
     private int _totalCredit;
+    public event Action<TimetableLayoutViewModel>? RequestUpdate;
     
     public TimetableViewModel TimeTableVM => _timeTableVM;
     public string Name
@@ -43,15 +45,15 @@ public class TimetableLayoutViewModel: ViewModelBase, IDisposable
     public int TotalCredit
     {
         get => _totalCredit;
-        set => this.RaiseAndSetIfChanged(ref _totalCredit, value);
+        private set => this.RaiseAndSetIfChanged(ref _totalCredit, value);
     }
 
     public DateTime LastUpdated
     {
         get => _lastUpdated;
-        set => this.RaiseAndSetIfChanged(ref _lastUpdated, value);
+        private set => this.RaiseAndSetIfChanged(ref _lastUpdated, value);
     }
-    
+
     public TimetableLayoutViewModel(ScheduleTable scheduleTable)
     {
         _scheduleTable = scheduleTable;
@@ -59,8 +61,6 @@ public class TimetableLayoutViewModel: ViewModelBase, IDisposable
         _description = scheduleTable.Description;
         _lastUpdated = scheduleTable.LastUpdated;
         _timeTableVM = new TimetableViewModel();
-
-        // BuildTimetable();
         
         // init color palette for schedule table
         if (!ColorPalettes.IsInitialized)
@@ -94,9 +94,27 @@ public class TimetableLayoutViewModel: ViewModelBase, IDisposable
             .DisposeWith(_disposables);
     }
 
+    protected virtual void OnRequestUpdate()
+    {
+        RequestUpdate?.Invoke(this);
+    }
+
     private void BuildTimetable()
     {
-        
+        // 1. lấy data từ schedule table
+        // 2. yếu cầu manager đưa data
+        // 3. update view model
+    }
+    
+    public void Update()
+    {
+        OnRequestUpdate();
+    }
+
+    public void UpdateTimetableData(CourseSection section)
+    {
+        TimeTableVM.UpdateGroupCells(section);
+        LastUpdated = DateTime.Now;
     }
     
     public void AddCourseSectionToTable(SectionChoice choice)
@@ -112,9 +130,15 @@ public class TimetableLayoutViewModel: ViewModelBase, IDisposable
         _scheduleCourseData.Add(courseWithNewSection.Code, courseWithNewSection);
         _timeTableVM.AddCells(groupCellShared, cellList);
     }
-
-    public (List<Course>,ScheduleTable) GetScheduleSaveData() => (_scheduleCourseData.Values.ToList(), _scheduleTable);
+    
+    public IEnumerable<Tuple<string,string>> GetScheduleData() => _scheduleTable.ScheduleData.Select(x => new Tuple<string, string>(x.Key, x.Value));
+    public ScheduleTableData GetScheduleSaveData() => new (_scheduleCourseData.Values.ToList(), _scheduleTable);
     public ScheduleTable ToModel() => _scheduleTable;
+
+    public void AddDisposable(IDisposable disposable)
+    {
+        disposable.DisposeWith(_disposables);
+    }
 
     public void Dispose()
     {

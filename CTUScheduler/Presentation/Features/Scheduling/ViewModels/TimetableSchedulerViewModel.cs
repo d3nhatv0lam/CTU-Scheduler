@@ -173,14 +173,12 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
 
     public async Task CleanupAsync()
     {
-        var timetablesModel = new List<ScheduleTable>();
-        foreach (var timetableLayout in await PaginationTimeTableViewModel.GetSelectedTimetables())
+        foreach (var selectableTimetableLayout in await PaginationTimeTableViewModel.GetSelectedTimetables())
         {
-            var scheduleTableModel = timetableLayout.Item.ToModel();
-            timetablesModel.Add(scheduleTableModel);
+            ScheduleTableData data = selectableTimetableLayout.Item.GetScheduleSaveData();
+            _scheduleManagerService.AddTimetable(data);
         }
         PaginationTimeTableViewModel.Clear();
-        _scheduleManagerService.AddRangeTimetable(timetablesModel);
     }
 
     public void Dispose()

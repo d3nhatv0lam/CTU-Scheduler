@@ -51,6 +51,7 @@
                     <!--// download data button //-->
                     <Border Padding="0 3 0 3" DockPanel.Dock="Right">
                         <Button x:Name="btnSave"
+                                Command="{Binding SaveScheduleCommand}"
                                 Margin="0 0 10 0">
                             <StackPanel Orientation="Horizontal">
                                 <materialIcons:MaterialIcon Kind="MonitorArrowDownVariant" />
@@ -171,7 +172,8 @@
                         </Button>
                         <!--// reload schedule tables data //-->
                         <Button DockPanel.Dock="Left"
-                                x:Name="btnReloadTableData">
+                                x:Name="btnReloadTableData"
+                                Command="{Binding ReloadAllTimetableCommand}">
                             <StackPanel Orientation="Horizontal">
                                 <materialIcons:MaterialIcon Kind="Reload" Height="20" Width="20" />
                                 <TextBlock VerticalAlignment="Center" Text="Cập nhật thông tin học phần"

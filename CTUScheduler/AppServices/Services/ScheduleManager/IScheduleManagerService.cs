@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
+using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 using DynamicData;
 
@@ -18,16 +20,12 @@ public interface IScheduleManagerService
     public IObservable<IChangeSet<ScheduleTable>> TimetableChanges { get; }
     public IObservable<int> TimetableCountChanges { get; }
     
-
-    public void ClearTimetables();
-    public void AddTimetable(ScheduleTable timetable);
-    public void AddRangeTimetable(IEnumerable<ScheduleTable> timetables);
+    
+    public void AddTimetable(ScheduleTableData data);
+    public void AddRangeTimetable(IEnumerable<ScheduleTableData> data);
     public void RemoveTimetable(ScheduleTable timetable);
-    /// <summary>
-    /// Update data of all TimetableChanges in runtime
-    /// </summary>
-    /// <returns></returns>
-    public Task UpdateTimetablesDataAsync();
+    public Task ReloadCourseDataAsync();
+    public CourseSection? GetCourseSection(string code, string group);
     /// <summary>
     ///  Save TimetableChanges from runtime to .json file
     /// </summary>

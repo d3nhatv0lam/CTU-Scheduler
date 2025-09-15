@@ -39,6 +39,7 @@ namespace CTUScheduler.AppServices
         // quy dinh dang ky
        
         // danh muc hoc phan
+        public const string CTU_DKMH_DANHMUCHOCPHAN_URL_KEY = "/danhmuchocphan";
         public const string CTU_DKMH_DANHMUCHOCPHAN_SEARCHBOX = "//p[text()=\"Mã học phần\"]/following-sibling::div//input[@role=\"combobox\"]";
         public const string CTU_DKMH_DANHMUCHOCPHAN_SEARCH_BUTTON = "span[role=\"img\"][aria-label=\"search\"].anticon-search";
 
