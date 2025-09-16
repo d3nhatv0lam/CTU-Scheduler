@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using CTUScheduler.AppServices.Models;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
+using CTUScheduler.Core.Models.Shared;
 using DynamicData;
 
 namespace CTUScheduler.AppServices.Services.ScheduleManager;
 
-public interface ICourseManagerService
+internal interface ICourseManager
 {
     public void AddOrUpdateCourse(Course course);
     public void AddOrUpdateCourse(IEnumerable<Course> courses);
@@ -14,7 +15,8 @@ public interface ICourseManagerService
     public void Clear();
     
     public Course? GetCourse(string code);
-    public CourseSection? GetSection(string courseCode, string group);
+    public CourseSection? GetSection(string code, string group);
+    public SectionChoice? GetSectionChoice(string code, string group);
     
     public List<Course> GetCourses();
     

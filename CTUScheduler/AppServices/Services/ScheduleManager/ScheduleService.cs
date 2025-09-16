@@ -20,13 +20,13 @@ using ReactiveUI;
 
 namespace CTUScheduler.AppServices.Services.ScheduleManager;
 
-public class ScheduleManagerService: IScheduleManagerService, IDisposable
+public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposable
 {
     protected const int MAX_TIMETABLE_COUNT_LIMIT = 10;
     private readonly CompositeDisposable _disposables = new ();
-    private readonly ILogger<ScheduleManagerService> _logger;
+    private readonly ILogger<ScheduleService> _logger;
     private readonly IUserDataService _userDataService;
-    private readonly ICourseManagerService _courseManagerService;
+    private readonly ICourseManager _courseManager;
     private readonly ICTUWebDriverService _CTUWebDriverService;
     private readonly SourceList<ScheduleTable> _data = new();
     private readonly Subject<bool> _isReloadingSubject = new ();
@@ -45,20 +45,20 @@ public class ScheduleManagerService: IScheduleManagerService, IDisposable
         .Replay(1)
         .RefCount();
 
-    public ScheduleManagerService(
+    public ScheduleService(
         IUserDataService userDataService,
         ICTUWebDriverService CTUWebDriverService,
-        ILogger<ScheduleManagerService> logger)
+        ILogger<ScheduleService> logger)
     {
         _userDataService = userDataService;
-        _courseManagerService = new CourseManagerService();
+        _courseManager = new CourseManager();
         _CTUWebDriverService = CTUWebDriverService;
         _logger = logger;
     }
     
     private void ClearTimetables()
     {
-        _courseManagerService.Clear();
+        _courseManager.Clear();
         _data.Clear();
     }
     
@@ -67,7 +67,7 @@ public class ScheduleManagerService: IScheduleManagerService, IDisposable
         var courseList = data.courses.ToList();
         if (courseList.Count == 0 || data.scheduleTable is null) return;
 
-        _courseManagerService.AddOrUpdateCourse(courseList);
+        _courseManager.AddOrUpdateCourse(courseList);
         _data.Add(data.scheduleTable);
         _logger.LogInformation("Added timetable");
     }
@@ -93,7 +93,7 @@ public class ScheduleManagerService: IScheduleManagerService, IDisposable
         {
             _isReloadingSubject.OnNext(true);
             await _CTUWebDriverService.GoToCourseCatalogPage();
-            foreach (var (code, groups) in _courseManagerService.GetCourseGroups())
+            foreach (var (code, groups) in _courseManager.GetCourseGroups())
             {
                 var responseTask = _CTUWebDriverService.CourseCatalogResponse
                     .WhereNotNull()
@@ -111,7 +111,7 @@ public class ScheduleManagerService: IScheduleManagerService, IDisposable
                 };
                 course.Sections = course.Sections.Where(x => groups.Contains(x.Group)).ToList();
                 
-                _courseManagerService.AddOrUpdateCourse(course);
+                _courseManager.AddOrUpdateCourse(course);
                 await Task.Delay(800);
             }
         }
@@ -125,9 +125,19 @@ public class ScheduleManagerService: IScheduleManagerService, IDisposable
         }
     }
 
+    public Course? GetCourse(string code)
+    {
+        return _courseManager.GetCourse(code);
+    }
+
     public CourseSection? GetCourseSection(string code, string group)
     {
-       return  _courseManagerService.GetSection(code, group);
+       return  _courseManager.GetSection(code, group);
+    }
+
+    public SectionChoice? GetSectionChoice(string code, string group)
+    {
+       return _courseManager.GetSectionChoice(code, group);
     }
 
     public async Task<bool> TrySaveScheduleAsync()
@@ -149,7 +159,7 @@ public class ScheduleManagerService: IScheduleManagerService, IDisposable
     {
         var path = "";
         bool isLoaded =  await _userDataService.TryLoadUserDataAsync(path);
-        if (!isLoaded)
+        if (!isLoaded || !ValidateScheduleTables())
         {
             _logger.LogError("Failed to load schedule");
             return false;
@@ -161,7 +171,7 @@ public class ScheduleManagerService: IScheduleManagerService, IDisposable
 
     private void BindScheduleSave()
     {
-        _userDataService.ScheduleSaved.Courses = _courseManagerService.GetCourses();
+        _userDataService.ScheduleSaved.Courses = _courseManager.GetCourses();
         _userDataService.ScheduleSaved.ScheduleTables = _data.Items.ToList();
         _userDataService.ScheduleSaved.LastSaved = LastSaved;
     }
@@ -169,9 +179,32 @@ public class ScheduleManagerService: IScheduleManagerService, IDisposable
     private void BindScheduleManager()
     {
         ClearTimetables();
-        _courseManagerService.AddOrUpdateCourse(_userDataService.ScheduleSaved.Courses);
         _data.AddRange(_userDataService.ScheduleSaved.ScheduleTables);
         LastSaved = _userDataService.ScheduleSaved.LastSaved;
+    }
+
+    private bool ValidateScheduleTables()
+    {
+        _courseManager.AddOrUpdateCourse(_userDataService.ScheduleSaved.Courses);
+        var tables = _userDataService.ScheduleSaved.ScheduleTables;
+        foreach (var table in tables)
+        {
+            foreach (var (code,group) in table.ScheduleData)
+            {
+                if (_courseManager.GetSection(code, group) is null)
+                {
+                    OnValidateScheduleTablesFail();
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    protected virtual void OnValidateScheduleTablesFail()
+    {
+        _userDataService.ClearScheduleSaved();
+        _courseManager.Clear();
     }
 
     public void Dispose()

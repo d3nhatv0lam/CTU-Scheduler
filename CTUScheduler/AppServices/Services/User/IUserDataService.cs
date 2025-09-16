@@ -6,8 +6,9 @@ namespace CTUScheduler.AppServices.Services.User
 {
     public interface IUserDataService
     {
-        public ScheduleSave ScheduleSaved { get; }
+        ScheduleSave ScheduleSaved { get; }
 
+        void ClearScheduleSaved();
         Task<bool> TryLoadUserDataAsync(string filePath, JsonSerializerOptions? options = null);
 
         Task<bool> TrySaveUserDataAsync(string filePath, JsonSerializerOptions? options = null);

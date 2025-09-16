@@ -33,7 +33,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
     INextStepCondition, ICleanupAsync
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
-    private readonly IScheduleManagerService _scheduleManagerService;
+    private readonly IScheduleService _scheduleService;
     private readonly ITimetableDialogService _timetableDialogService;
     private readonly SchedulingCourseOptionViewModel _schedulingCourseOptionVM;
     private readonly ScheduleValidator _scheduleValidator = new ScheduleValidator();
@@ -62,12 +62,12 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
 
     public TimetableSchedulerViewModel(SourceList<CourseUi> courses)
     {
-        _scheduleManagerService = App.ServiceProvider.GetRequiredService<IScheduleManagerService>();
+        _scheduleService = App.ServiceProvider.GetRequiredService<IScheduleService>();
         _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
         _schedulingCourseOptionVM = new SchedulingCourseOptionViewModel();
 
         var maxScheduleTableCanSelect =
-            _scheduleManagerService.MaxTimetableCount - _scheduleManagerService.CurrentTimetableCount;
+            _scheduleService.MaxTimetableCount - _scheduleService.CurrentTimetableCount;
         _paginationTimeTableViewModel = new(12, maxScheduleTableCanSelect);
 
         _limitTimetableSelectedDisplayedHelper = this.WhenAnyValue(
@@ -138,7 +138,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
             {
                 var layout = new TimetableLayoutViewModel(new ScheduleTable());
                 foreach (var data in tableData)
-                    layout.AddCourseSectionToTable(data);
+                    layout.TryAddSectionChoice(data);
 
                 var selectableLayoutViewModel = new SelectableTimetableLayout(layout);
                 batch.Add(selectableLayoutViewModel);
@@ -176,7 +176,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
         foreach (var selectableTimetableLayout in await PaginationTimeTableViewModel.GetSelectedTimetables())
         {
             ScheduleTableData data = selectableTimetableLayout.Item.GetScheduleSaveData();
-            _scheduleManagerService.AddTimetable(data);
+            _scheduleService.AddTimetable(data);
         }
         PaginationTimeTableViewModel.Clear();
     }

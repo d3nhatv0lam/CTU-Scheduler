@@ -15,7 +15,7 @@ public class TimetableViewModel : ViewModelBase, IDisposable
     private Dictionary<string, ScheduleGroupCellShared> GroupCells { get; } = new();
     public ObservableCollection<ScheduleCellUi> ScheduleCells { get; } = new();
 
-    public void AddCells(ScheduleGroupCellShared groupCellShared, List<ScheduleCellUi> cells)
+    public void AddCells(ScheduleGroupCellShared groupCellShared, IEnumerable<ScheduleCellUi> cells)
     {
         var key = $"{groupCellShared.CourseCode}-{groupCellShared.Group}";
         GroupCells.Add(key, groupCellShared);

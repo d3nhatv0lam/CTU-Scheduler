@@ -15,9 +15,9 @@
 		Focusable="True"
 		x:Class="CTUScheduler.Presentation.Features.Authentication.Views.LoginView">
 	
-	<UserControl.KeyBindings>
+	<rxui:ReactiveUserControl.KeyBindings>
 		<KeyBinding Gesture="Enter" Command="{Binding SignInCommand}" />
-	</UserControl.KeyBindings>
+	</rxui:ReactiveUserControl.KeyBindings>
 
 	<UserControl.Styles>
 		<themes:CustomMaterialTheme  PrimaryColor="Blue" SecondaryColor="#1f5ca9"/>

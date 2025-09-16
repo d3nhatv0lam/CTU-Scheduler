@@ -5,16 +5,17 @@ using CTUScheduler.AppServices.Mappers;
 using CTUScheduler.AppServices.Models;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
+using CTUScheduler.Core.Models.Shared;
 using DynamicData;
 
 namespace CTUScheduler.AppServices.Services.ScheduleManager;
 
-public class CourseManagerService: ICourseManagerService, IDisposable
+internal class CourseManager: ICourseManager, IDisposable
 {
     private readonly CourseMapper _courseMapper = new();
     private readonly SourceCache<EditableCourse, string> _courses;
 
-    public CourseManagerService()
+    public CourseManager()
     {
         _courses = new SourceCache<EditableCourse, string>(course => course.Code);
     }
@@ -67,13 +68,22 @@ public class CourseManagerService: ICourseManagerService, IDisposable
         return _courseMapper.ToCourse(lookup.Value);
     }
 
-    public CourseSection? GetSection(string courseCode, string group)
+    public CourseSection? GetSection(string code, string group)
     {
-        var lookup = _courses.Lookup(courseCode);
+        var lookup = _courses.Lookup(code);
         if (!lookup.HasValue) return null;
         var sectionLookup = lookup.Value.Sections.Lookup(group);
         if (!sectionLookup.HasValue) return null;
         return sectionLookup.Value;
+    }
+    
+    public SectionChoice? GetSectionChoice(string code, string group)
+    {
+        var courseLookup = _courses.Lookup(code);
+        if (!courseLookup.HasValue) return null;
+        var sectionLookup = courseLookup.Value.Sections.Lookup(group);
+        if (!sectionLookup.HasValue) return null;
+        return new SectionChoice(_courseMapper.ToCourse(courseLookup.Value), sectionLookup.Value);
     }
 
     public List<Course> GetCourses()

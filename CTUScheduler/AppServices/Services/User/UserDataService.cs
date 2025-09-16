@@ -20,6 +20,15 @@ namespace CTUScheduler.AppServices.Services.User
             ScheduleSaved = new ScheduleSave();
         }
 
+        public void ClearScheduleSaved()
+        {
+            ScheduleSaved.Courses.Clear();
+            ScheduleSaved.Courses.TrimExcess();
+            ScheduleSaved.ScheduleTables.Clear();
+            ScheduleSaved.ScheduleTables.TrimExcess();
+            ScheduleSaved.LastSaved = DateTime.Now;
+        }
+
         public async Task<bool> TryLoadUserDataAsync(string filePath, JsonSerializerOptions? options = null)
         {
             try

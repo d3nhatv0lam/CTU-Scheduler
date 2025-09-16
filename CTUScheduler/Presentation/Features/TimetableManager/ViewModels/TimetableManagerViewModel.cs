@@ -22,7 +22,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly ICTUWebDriverService _CTUWebDriverService;
-        private readonly IScheduleManagerService _scheduleManagerService;
+        private readonly IScheduleService _scheduleService;
         private readonly ITimetableLayoutAdapter _timetableLayoutVmAdapter;
         private readonly IDialogHostService _dialogHostService;
         private readonly ITimetableDialogService _timetableDialogService;
@@ -57,9 +57,9 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
             _timetableLayoutVmAdapter = App.ServiceProvider.GetRequiredService<ITimetableLayoutAdapter>();
             _CTUWebDriverService = App.ServiceProvider.GetRequiredService<ICTUWebDriverService>();
-            _scheduleManagerService = App.ServiceProvider.GetRequiredService<IScheduleManagerService>();
+            _scheduleService = App.ServiceProvider.GetRequiredService<IScheduleService>();
 
-            _scheduleManagerService.TimetableChanges
+            _scheduleService.TimetableChanges
                 .Transform(x => _timetableLayoutVmAdapter.GetOrCreateLayout(x))
                 .DisposeMany()
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -67,7 +67,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 .Subscribe()
                 .DisposeWith(_disposables);
 
-            _timetableLayoutsCount = _scheduleManagerService.TimetableCountChanges
+            _timetableLayoutsCount = _scheduleService.TimetableCountChanges
                 .ToProperty(this, nameof(TimetableLayoutsCount), scheduler: RxApp.MainThreadScheduler)
                 .DisposeWith(_disposables);
 
@@ -93,7 +93,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 
             SaveScheduleCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                await _scheduleManagerService.TrySaveScheduleAsync();
+                await _scheduleService.TrySaveScheduleAsync();
             }).DisposeWith(_disposables);
         }
 

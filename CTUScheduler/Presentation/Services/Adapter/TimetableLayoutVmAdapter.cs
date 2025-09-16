@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.ScheduleManager;
 using CTUScheduler.Core.Interfaces;
+using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Features.Timetable.ViewModels;
@@ -15,25 +17,42 @@ namespace CTUScheduler.Presentation.Services.Adapter;
 
 public class TimetableLayoutVmAdapter: ITimetableLayoutAdapter
 {
-    private readonly IScheduleManagerService _scheduleManagerService;
+    private readonly ICourseScheduleService _scheduleService;
     private readonly ILogger<TimetableLayoutVmAdapter> _logger;
     private readonly Dictionary<ScheduleTable,TimetableLayoutViewModel> _vmDict = new();
 
     private readonly Action<TimetableLayoutViewModel> _requestUpdateHandler;
+    private readonly Action<TimetableLayoutViewModel> _requestBuildTimetableHandler;
     
-    public TimetableLayoutVmAdapter(IScheduleManagerService scheduleManagerService, ILogger<TimetableLayoutVmAdapter> logger)
+    public TimetableLayoutVmAdapter(ICourseScheduleService scheduleService, ILogger<TimetableLayoutVmAdapter> logger)
     {
-        _scheduleManagerService = scheduleManagerService;
+        _scheduleService = scheduleService;
         _logger = logger;
+        
+        _requestBuildTimetableHandler = vm =>
+        {
+            var list = vm.GetScheduleData();
+            var timetableBuildData = list.Select(x =>
+                {
+                    var (code, group) = x;
+                    return _scheduleService.GetSectionChoice(code, group);
+                })
+                .OfType<SectionChoice>()
+                .ToList();
+            vm.ApplyBuildTimetableData(timetableBuildData);
+        };
+        
         _requestUpdateHandler =  vm =>
         {
             var list = vm.GetScheduleData();
-            foreach (var (code,group) in list)
+            var updatedSections = list.Select(x =>
             {
-                var section = _scheduleManagerService.GetCourseSection(code, group);
-                if (section is null) continue;
-                vm.UpdateTimetableData(section);
-            }
+                var (code,group) = x;
+                return _scheduleService.GetCourseSection(code, group);
+            })
+            .OfType<CourseSection>()
+            .ToList();
+            vm.ApplyUpdatedTimetableData(updatedSections);
         };
     }
     
@@ -54,7 +73,7 @@ public class TimetableLayoutVmAdapter: ITimetableLayoutAdapter
     
     public async Task UpdateAsync()
     {
-        await _scheduleManagerService.ReloadCourseDataAsync();
+        await _scheduleService.ReloadCourseDataAsync();
         foreach (var vm in _vmDict.Values)
         {
             vm.Update();
@@ -67,10 +86,14 @@ public class TimetableLayoutVmAdapter: ITimetableLayoutAdapter
         try
         {
             _vmDict.Add(viewModel.ToModel(), viewModel);
-            viewModel.RequestUpdate += _requestUpdateHandler;
+            viewModel.UpdateRequested += _requestUpdateHandler;
+            viewModel.BuildTimetableRequested += _requestBuildTimetableHandler;
+            viewModel.BuildTimetable();
         }
         catch (Exception ex)
         {
+            viewModel.UpdateRequested -= _requestUpdateHandler;
+            viewModel.BuildTimetableRequested -= _requestBuildTimetableHandler;
             _logger.LogError(ex, "Failed to register timetable layout view model");
         }
     }
@@ -81,7 +104,8 @@ public class TimetableLayoutVmAdapter: ITimetableLayoutAdapter
         try
         {
             _vmDict.Remove(viewModel.ToModel());
-            viewModel.RequestUpdate -= _requestUpdateHandler;
+            viewModel.UpdateRequested -= _requestUpdateHandler;
+            viewModel.BuildTimetableRequested -= _requestBuildTimetableHandler;
         }
         catch (Exception ex)
         {

@@ -26,6 +26,7 @@ using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
 using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 using CTUScheduler.Presentation.Services.Adapter;
+using CTUScheduler.Presentation.Services.AppToplevel;
 using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.TimetableDialog;
 using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
@@ -38,7 +39,6 @@ public partial class App : Application
 {
     public static string AppVersion { get; } = "0.1";
     public static IServiceProvider ServiceProvider { get; private set; } = null!;
-
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -84,6 +84,7 @@ public partial class App : Application
             {
                 DataContext = new MainViewModel()
             };
+            
         }
         base.OnFrameworkInitializationCompleted();
     }
@@ -110,18 +111,28 @@ public partial class App : Application
         services.AddSingleton<IWebDriverService,WebDriverService>();
         services.AddSingleton<ICTUWebDriverService, CTUWebDriverService>();
         services.AddSingleton<IUserDataService, UserDataService>();
+        services.AddSingleton<ScheduleService>()
+            .AddSingleton<IScheduleService, ScheduleService>(sp => sp.GetRequiredService<ScheduleService>())
+            .AddSingleton<ICourseScheduleService, ScheduleService>(sp => sp.GetRequiredService<ScheduleService>());
+
+        ConfigurePresentationServices(services);
+        //services.AddSingleton<ICachingNavigationServiceFactory, CachingNavigationServiceFactory>();
+    }
+    
+    private void ConfigurePresentationServices(IServiceCollection services)
+    {
+        services.AddSingleton<IToplevelService, ToplevelService>();
+        services.AddSingleton<IViewportService, ViewportService>();
         services.AddSingleton<IDialogHostService, DialogHostService>();
         services.AddSingleton<ITimetableDialogService, TimetableDialogService>();
-        services.AddSingleton<IViewportService, ViewportService>();
-        services.AddSingleton<IScheduleManagerService, ScheduleManagerService>();
         services.AddSingleton<ITimetableLayoutAdapter, TimetableLayoutVmAdapter>();
         services.AddTransient<MainWindow>(provider =>
         {
             MainWindow window = new();
+            provider.GetRequiredService<IToplevelService>().Initialize(window);
             provider.GetRequiredService<IViewportService>().Initialize(window);
             return window;
         });
-        //services.AddSingleton<ICachingNavigationServiceFactory, CachingNavigationServiceFactory>();
     }
     
     private Window InitSplashScreenWindow(IClassicDesktopStyleApplicationLifetime desktop)

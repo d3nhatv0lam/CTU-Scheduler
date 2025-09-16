@@ -11,13 +11,19 @@ using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
+using CTUScheduler.Presentation.Features.Timetable.Interfaces;
 using CTUScheduler.Presentation.Features.Timetable.Resources;
 using CTUScheduler.Presentation.Shared.Extensions;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Timetable.ViewModels;
 
-public class TimetableLayoutViewModel: ViewModelBase, IUpdatable, IRequestUpdate<TimetableLayoutViewModel>, IDisposable
+public class TimetableLayoutViewModel: 
+    ViewModelBase,
+    IRequestBuildTimetable, 
+    IUpdatable, 
+    IRequestUpdate<TimetableLayoutViewModel>, 
+    IDisposable
 {
     private readonly CompositeDisposable _disposables = new();
     private readonly ScheduleTable _scheduleTable;
@@ -27,7 +33,9 @@ public class TimetableLayoutViewModel: ViewModelBase, IUpdatable, IRequestUpdate
     private string _description;
     private DateTime _lastUpdated;
     private int _totalCredit;
-    public event Action<TimetableLayoutViewModel>? RequestUpdate;
+    
+    public event Action<TimetableLayoutViewModel>? BuildTimetableRequested;
+    public event Action<TimetableLayoutViewModel>? UpdateRequested;
     
     public TimetableViewModel TimeTableVM => _timeTableVM;
     public string Name
@@ -96,28 +104,43 @@ public class TimetableLayoutViewModel: ViewModelBase, IUpdatable, IRequestUpdate
 
     protected virtual void OnRequestUpdate()
     {
-        RequestUpdate?.Invoke(this);
+        UpdateRequested?.Invoke(this);
     }
 
-    private void BuildTimetable()
+    protected virtual void OnBuildTimetable()
     {
-        // 1. lấy data từ schedule table
-        // 2. yếu cầu manager đưa data
-        // 3. update view model
+        BuildTimetableRequested?.Invoke(this);
     }
-    
+
+    public void BuildTimetable()
+    {
+        OnBuildTimetable();
+    }
     public void Update()
     {
         OnRequestUpdate();
     }
 
-    public void UpdateTimetableData(CourseSection section)
+    public void ApplyUpdatedTimetableData(IEnumerable<CourseSection> sections)
     {
-        TimeTableVM.UpdateGroupCells(section);
+        foreach (var section in sections)
+        {
+            TimeTableVM.UpdateGroupCells(section);
+        }
         LastUpdated = DateTime.Now;
     }
+
+    public void ApplyBuildTimetableData(IEnumerable<SectionChoice> choices)
+    {
+        foreach (var choice in choices)
+        {
+            var (groupCellShared, cells) = choice.ToScheduleCells();
+            TotalCredit += groupCellShared.Credit;
+            _timeTableVM.AddCells(groupCellShared, cells);
+        }
+    }
     
-    public void AddCourseSectionToTable(SectionChoice choice)
+    public void TryAddSectionChoice(SectionChoice choice)
     { 
         var (groupCellShared, cells) = choice.ToScheduleCells();
         var cellList = cells.ToList();
