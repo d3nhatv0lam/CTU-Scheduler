@@ -23,7 +23,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly ICTUWebDriverService _CTUWebDriverService;
         private readonly IScheduleManagerService _scheduleManagerService;
-        private readonly IAdapter<TimetableLayoutViewModel> _timetableLayoutVmAdapter;
+        private readonly ITimetableLayoutAdapter _timetableLayoutVmAdapter;
         private readonly IDialogHostService _dialogHostService;
         private readonly ITimetableDialogService _timetableDialogService;
 
@@ -60,17 +60,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             _scheduleManagerService = App.ServiceProvider.GetRequiredService<IScheduleManagerService>();
 
             _scheduleManagerService.TimetableChanges
-                .Transform(x =>
-                {
-                    var layout = new TimetableLayoutViewModel(x);
-                    _timetableLayoutVmAdapter.Register(layout);
-                    var disposable = Disposable.Create(() =>
-                    {
-                        _timetableLayoutVmAdapter.Unregister(layout);
-                    });
-                    layout.AddDisposable(disposable);
-                    return layout;
-                })
+                .Transform(x => _timetableLayoutVmAdapter.GetOrCreateLayout(x))
                 .DisposeMany()
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _bindableTimetableLayouts)

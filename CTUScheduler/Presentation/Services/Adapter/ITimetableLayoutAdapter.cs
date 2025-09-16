@@ -5,5 +5,5 @@ namespace CTUScheduler.Presentation.Services.Adapter;
 
 public interface ITimetableLayoutAdapter: IAdapter<TimetableLayoutViewModel>
 {
-    void GetOrCreateLayout(ScheduleTable table);
+    TimetableLayoutViewModel GetOrCreateLayout(ScheduleTable table);
 }
