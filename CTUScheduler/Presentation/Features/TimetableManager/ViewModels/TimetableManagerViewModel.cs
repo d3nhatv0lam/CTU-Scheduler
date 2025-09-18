@@ -4,6 +4,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.AppServices.Services.ScheduleManager;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Presentation.Base;
@@ -18,14 +19,15 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 {
-    public class TimetableManagerViewModel : ViewModelBase, IRoutableViewModel, IActivatableViewModel, IDisposable
+    public class TimetableManagerViewModel : ViewModelBase, IRoutableViewModel, IDisposable
     {
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private readonly CompositeDisposable _disposables = new ();
         private readonly ICTUWebDriverService _CTUWebDriverService;
         private readonly IScheduleService _scheduleService;
         private readonly ITimetableLayoutAdapter _timetableLayoutVmAdapter;
         private readonly IDialogHostService _dialogHostService;
         private readonly ITimetableDialogService _timetableDialogService;
+        private readonly IInternetStatusService  _internetStatusService;
 
         private readonly ReadOnlyObservableCollection<TimetableLayoutViewModel> _bindableTimetableLayouts =
             ReadOnlyObservableCollection<TimetableLayoutViewModel>.Empty;
@@ -34,8 +36,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly ObservableAsPropertyHelper<bool> _isEmptyTimetableLayouts;
         public string? UrlPathSegment => "TimetableManagerViewModel";
         public IScreen HostScreen { get; }
-        public ViewModelActivator Activator { get; } = new();
-
         public ReadOnlyObservableCollection<TimetableLayoutViewModel> TimetableLayouts => _bindableTimetableLayouts;
         public int TimetableLayoutsCount => _timetableLayoutsCount.Value;
         public bool IsEmptyTimetableLayouts => _isEmptyTimetableLayouts.Value;
@@ -58,6 +58,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             _timetableLayoutVmAdapter = App.ServiceProvider.GetRequiredService<ITimetableLayoutAdapter>();
             _CTUWebDriverService = App.ServiceProvider.GetRequiredService<ICTUWebDriverService>();
             _scheduleService = App.ServiceProvider.GetRequiredService<IScheduleService>();
+            _internetStatusService = App.ServiceProvider.GetRequiredService<IInternetStatusService>();
 
             _scheduleService.TimetableChanges
                 .Transform(x => _timetableLayoutVmAdapter.GetOrCreateLayout(x))
@@ -80,11 +81,12 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             ShowAddCourseDialogCommand = ReactiveCommand.CreateFromTask(OpenAddCourseDialog)
                 .DisposeWith(_disposables);
             
+            var canReloadAllTimetable = _internetStatusService.InternetStatusOnRefresh.ObserveOn(RxApp.MainThreadScheduler);
             ReloadAllTimetableCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 if (IsEmptyTimetableLayouts) return;
                 await _timetableLayoutVmAdapter.UpdateAsync();
-            }).DisposeWith(_disposables);
+            },canReloadAllTimetable).DisposeWith(_disposables);
 
             ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<TimetableLayoutViewModel>(async
                     timetableLayoutViewModel =>
