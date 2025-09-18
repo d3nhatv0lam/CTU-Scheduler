@@ -115,6 +115,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
 
             // current course response
             _searchedCourse = _ctuWebDriverService.CourseCatalogResponse
+                .WhereNotNull()
                 .Select(course => _courseMapper.ToCourseUi(course))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .ToProperty(this, nameof(SearchedCourse))
@@ -122,7 +123,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
 
             // Course -> UI items
             _searchedCourseSections = this.WhenAnyValue(x => x.SearchedCourse)
-                .Select(courseUi => courseUi == null ? new ObservableCollection<SelectableCourseSectionUi>() : GetSelectableSectionUi(courseUi))
+                .Select(courseUi => courseUi is null ? new ObservableCollection<SelectableCourseSectionUi>() : GetSelectableSectionUi(courseUi))
                 .ToProperty(this, nameof(SearchedCourseSections))
                 .DisposeWith(_disposables);
             

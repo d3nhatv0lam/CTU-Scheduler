@@ -21,7 +21,7 @@ namespace CTUScheduler.AppServices.Services.WebDriver
     {
         private readonly IWebDriverService _webDriverService;
         private readonly ILogger<CTUWebDriverService> _logger;
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private readonly CompositeDisposable _disposables = new();
         private readonly IObservable<RegistrationInformation> _registrationInformationResponse;
         private readonly IObservable<ObservableCollection<QuickSelectCourse>> _courseCatalogQuickSelectResponse;
         private readonly IObservable<Course> _courseCatalogResponse;
