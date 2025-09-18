@@ -4,4 +4,4 @@ using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 
 namespace CTUScheduler.Core.Models.Shared;
 
-public record ScheduleTableData(IEnumerable<Course> courses, ScheduleTable scheduleTable);
+public record ScheduleTableBuildData(IEnumerable<Course> Courses, ScheduleTable ScheduleTable);
