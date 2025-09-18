@@ -175,8 +175,8 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
     {
         foreach (var selectableTimetableLayout in await PaginationTimeTableViewModel.GetSelectedTimetables())
         {
-            ScheduleTableData data = selectableTimetableLayout.Item.GetScheduleSaveData();
-            _scheduleService.AddTimetable(data);
+            ScheduleTableBuildData buildData = selectableTimetableLayout.Item.GetScheduleSaveData();
+            _scheduleService.AddTimetable(buildData);
         }
         PaginationTimeTableViewModel.Clear();
     }

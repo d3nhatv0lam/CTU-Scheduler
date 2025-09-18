@@ -19,8 +19,12 @@ public interface IScheduleService
     public IObservable<int> TimetableCountChanges { get; }
     
     
-    public void AddTimetable(ScheduleTableData data);
-    public void AddRangeTimetable(IEnumerable<ScheduleTableData> data);
+    /// <summary>
+    /// Add schedule table to manager, do nothing if existed or invalid data
+    /// </summary>
+    /// <param name="buildData"></param>
+    public void AddTimetable(ScheduleTableBuildData buildData);
+    public void AddRangeTimetable(IEnumerable<ScheduleTableBuildData> data);
     public void RemoveTimetable(ScheduleTable timetable);
 
     /// <summary>

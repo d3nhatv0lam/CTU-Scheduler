@@ -74,9 +74,8 @@ namespace CTUScheduler.AppServices.Services.WebDriver
                     catch
                     {
                         _logger.LogDebug("Exception when Derserialize RawCourse, may by empty SearchBox");
-                        return default!;
+                        return null;
                     }
-
                 })
                 .WhereNotNull()
                 .Select(rawCourse => rawCourse.ToCourse())
@@ -230,8 +229,6 @@ namespace CTUScheduler.AppServices.Services.WebDriver
         {
             try
             {
-                string userKey = string.Empty;
-                string userUnit = string.Empty;
                 if (!_webDriverService.GetPageUrl().Contains(AppConstants.CTU_DKMH_URL_KEY)) 
                     throw new Exception("Not in DKMH page");
 
@@ -249,19 +246,20 @@ namespace CTUScheduler.AppServices.Services.WebDriver
                 ILocator userUnitElement = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_INFO_UNIT);
 
                 var result = await Task.WhenAll(userKeyElement.InnerTextAsync(), userUnitElement.InnerTextAsync());
-                userKey = result[0].ToString()!;
-                userUnit = result[1].ToString()!;
+                string userKey = result[0]!;
+                string userUnit = result[1]!;
 
                 // close dialog
-                await _webDriverService.LocatorElement(".ant-modal-close").WaitForAsync(new() { State = WaitForSelectorState.Visible });
+                await _webDriverService.LocatorElement(".ant-modal-close")
+                    .WaitForAsync(new() { State = WaitForSelectorState.Visible });
                 ILocator userInfoCloseButton = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_INFO_CLOSE_BUTTON);
                 await userInfoCloseButton.ClickAsync();
-
-
+                
                 return (userKey, userUnit);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex,"Exception when TryGetUserKeyAndUnit");
                 return (string.Empty, string.Empty);
             }
            

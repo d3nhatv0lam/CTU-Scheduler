@@ -1,24 +1,26 @@
-﻿using System.Collections.Generic;
-using CTUScheduler.AppServices.Models;
+﻿using System;
+using System.Collections.Generic;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Shared;
-using DynamicData;
 
 namespace CTUScheduler.AppServices.Services.ScheduleManager;
 
-internal interface ICourseManager
+public interface ICourseManager
 {
-    public void AddOrUpdateCourse(Course course);
-    public void AddOrUpdateCourse(IEnumerable<Course> courses);
-    public void RemoveCourse(string code);
-    public void RemoveSection(string code, string group);
-    public void Clear();
+    
+    IDisposable RegisterTimetable(IEnumerable<Course> courses);
+    public void UpdateCourse(Course course);
+    public void UpdateCourses(IEnumerable<Course> courses);
+    public void ClearAll();
     
     public Course? GetCourse(string code);
-    public CourseSection? GetSection(string code, string group);
+    public CourseSection? GetCourseSection(string code, string group);
     public SectionChoice? GetSectionChoice(string code, string group);
+    public List<Course> GetAllCourses();
     
-    public List<Course> GetCourses();
-    
-    public IEnumerable<(string, IEnumerable<string>)> GetCourseGroups();
+    /// <summary>
+    /// Get all course code - all groups of this course in Manager via Key
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<(string courseCode, IEnumerable<string> groups)> GetAllCourseSectionGroupKeys();
 }

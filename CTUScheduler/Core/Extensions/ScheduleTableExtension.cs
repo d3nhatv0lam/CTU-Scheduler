@@ -12,6 +12,6 @@ public static class ScheduleTableExtension
         var courseCode = sectionChoice.Course.Code;
         var group = sectionChoice.Section.Group;
         
-        return scheduleTable.ScheduleData.TryAdd(courseCode, group);
+        return scheduleTable.SavedCourseGroupKeys.TryAdd(courseCode, group);
     }
 }

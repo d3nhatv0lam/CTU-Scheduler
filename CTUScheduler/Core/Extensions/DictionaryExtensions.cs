@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace CTUScheduler.Core.Extensions;
 
@@ -20,5 +22,15 @@ public static class DictionaryExtensions
                 return false;
         }
         return true;
+    }
+
+    public static string GetDictionaryId<TKey,TValue>(
+        this IReadOnlyDictionary<TKey, TValue> dictionary,
+        Func<TKey,string> keySelector,
+        Func<TKey,string> valueSelector)
+    {
+        return string.Join("|", dictionary
+            .OrderBy(kv => keySelector(kv.Key))
+            .Select(kv => $"{keySelector(kv.Key)}:{valueSelector(kv.Key)}"));
     }
 }

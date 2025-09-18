@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
 using CTUScheduler.Presentation.Base;
@@ -141,7 +142,9 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                     SearchedCourseSections.Clear();
                     return;
                 }
-                await _ctuWebDriverService.SearchCourse(TxtInputCourseKey);
+                await Task.WhenAll(
+                    Task.Delay(500),
+                    _ctuWebDriverService.SearchCourse(TxtInputCourseKey));
             }).DisposeWith(_disposables);
 
             var canAddCourse = this.WhenAnyValue(x => x.SearchedCourseSections, searchedCourseSections => searchedCourseSections != null && searchedCourseSections.Any());

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
@@ -28,7 +29,9 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     private readonly IUserDataService _userDataService;
     private readonly ICourseManager _courseManager;
     private readonly ICTUWebDriverService _CTUWebDriverService;
+    
     private readonly SourceList<ScheduleTable> _data = new();
+    private readonly ConcurrentDictionary<ScheduleTable, IDisposable> _timetableRegistrations = new();
     private readonly Subject<bool> _isReloadingSubject = new ();
 
     public int MaxTimetableCount => MAX_TIMETABLE_COUNT_LIMIT;
@@ -54,25 +57,29 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         _courseManager = new CourseManager();
         _CTUWebDriverService = CTUWebDriverService;
         _logger = logger;
+        
     }
     
-    private void ClearTimetables()
-    {
-        _courseManager.Clear();
-        _data.Clear();
-    }
-    
-    public void AddTimetable(ScheduleTableData data)
-    {
-        var courseList = data.courses.ToList();
-        if (courseList.Count == 0 || data.scheduleTable is null) return;
 
-        _courseManager.AddOrUpdateCourse(courseList);
-        _data.Add(data.scheduleTable);
+    
+    public void AddTimetable(ScheduleTableBuildData buildData)
+    {
+        var courseList = buildData.Courses.ToList();
+        var scheduleTable = buildData.ScheduleTable;
+        if (courseList.Count == 0 || buildData.ScheduleTable is null) return;
+        
+        var isExisted = _data.Items
+            .Any(x => scheduleTable.SavedCourseGroupKeys.DictionaryEquals(x.SavedCourseGroupKeys));
+        if (isExisted) return;
+
+        var timetableRegistration = _courseManager.RegisterTimetable(courseList);
+        _timetableRegistrations.TryAdd(scheduleTable, timetableRegistration);
+
+        _data.Add(scheduleTable);
         _logger.LogInformation("Added timetable");
     }
 
-    public void AddRangeTimetable(IEnumerable<ScheduleTableData> data)
+    public void AddRangeTimetable(IEnumerable<ScheduleTableBuildData> data)
     {
         foreach (var scheduleTableData in data)
         {
@@ -84,6 +91,8 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     public void RemoveTimetable(ScheduleTable timetable)
     {
         _data.Remove(timetable);
+        _timetableRegistrations.TryRemove(timetable, out var timetableRegistration);
+        timetableRegistration?.Dispose();
         _logger.LogInformation("Removed timetable");
     }
 
@@ -92,8 +101,9 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         try
         {
             _isReloadingSubject.OnNext(true);
+            
             await _CTUWebDriverService.GoToCourseCatalogPage();
-            foreach (var (code, groups) in _courseManager.GetCourseGroups())
+            foreach (var (code, groups) in _courseManager.GetAllCourseSectionGroupKeys())
             {
                 var responseTask = _CTUWebDriverService.CourseCatalogResponse
                     .WhereNotNull()
@@ -111,7 +121,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
                 };
                 course.Sections = course.Sections.Where(x => groups.Contains(x.Group)).ToList();
                 
-                _courseManager.AddOrUpdateCourse(course);
+                _courseManager.UpdateCourse(course);
                 await Task.Delay(800);
             }
         }
@@ -132,7 +142,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
 
     public CourseSection? GetCourseSection(string code, string group)
     {
-       return  _courseManager.GetSection(code, group);
+       return  _courseManager.GetCourseSection(code, group);
     }
 
     public SectionChoice? GetSectionChoice(string code, string group)
@@ -171,7 +181,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
 
     private void BindScheduleSave()
     {
-        _userDataService.ScheduleSaved.Courses = _courseManager.GetCourses();
+        _userDataService.ScheduleSaved.Courses = _courseManager.GetAllCourses();
         _userDataService.ScheduleSaved.ScheduleTables = _data.Items.ToList();
         _userDataService.ScheduleSaved.LastSaved = LastSaved;
     }
@@ -185,13 +195,13 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
 
     private bool ValidateScheduleTables()
     {
-        _courseManager.AddOrUpdateCourse(_userDataService.ScheduleSaved.Courses);
+        _courseManager.UpdateCourses(_userDataService.ScheduleSaved.Courses);
         var tables = _userDataService.ScheduleSaved.ScheduleTables;
         foreach (var table in tables)
         {
-            foreach (var (code,group) in table.ScheduleData)
+            foreach (var (code,group) in table.SavedCourseGroupKeys)
             {
-                if (_courseManager.GetSection(code, group) is null)
+                if (_courseManager.GetCourseSection(code, group) is null)
                 {
                     OnValidateScheduleTablesFail();
                     return false;
@@ -204,7 +214,14 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     protected virtual void OnValidateScheduleTablesFail()
     {
         _userDataService.ClearScheduleSaved();
-        _courseManager.Clear();
+        _courseManager.ClearAll();
+    }
+    
+    private void ClearTimetables()
+    {
+        _courseManager.ClearAll();
+        _timetableRegistrations.Clear();
+        _data.Clear();
     }
 
     public void Dispose()

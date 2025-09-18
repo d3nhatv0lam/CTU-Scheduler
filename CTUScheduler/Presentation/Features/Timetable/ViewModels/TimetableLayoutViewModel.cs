@@ -49,7 +49,7 @@ public class TimetableLayoutViewModel:
         set => this.RaiseAndSetIfChanged(ref _description, value);
     }
 
-    public int SubjectsCount => _scheduleTable.ScheduleData.Count;
+    public int SubjectsCount => _scheduleTable.SavedCourseGroupKeys.Count;
     public int TotalCredit
     {
         get => _totalCredit;
@@ -154,8 +154,8 @@ public class TimetableLayoutViewModel:
         _timeTableVM.AddCells(groupCellShared, cellList);
     }
     
-    public IEnumerable<Tuple<string,string>> GetScheduleData() => _scheduleTable.ScheduleData.Select(x => new Tuple<string, string>(x.Key, x.Value));
-    public ScheduleTableData GetScheduleSaveData() => new (_scheduleCourseData.Values.ToList(), _scheduleTable);
+    public IEnumerable<Tuple<string,string>> GetScheduleData() => _scheduleTable.SavedCourseGroupKeys.Select(x => new Tuple<string, string>(x.Key, x.Value));
+    public ScheduleTableBuildData GetScheduleSaveData() => new (_scheduleCourseData.Values.ToList(), _scheduleTable);
     public ScheduleTable ToModel() => _scheduleTable;
 
     public void AddDisposable(IDisposable disposable)

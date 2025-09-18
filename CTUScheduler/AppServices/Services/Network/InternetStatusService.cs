@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 namespace CTUScheduler.AppServices.Services.Network;
 public class InternetStatusService : IInternetStatusService, IDisposable
 {
-    private readonly CompositeDisposable _disposable = new ();
-    private readonly Subject<bool> _internetStatusOnRefresh = new ();
     protected const string REQUEST_URL = "https://www.google.com";
+    private readonly CompositeDisposable _disposable = new ();
+    private readonly Subject<bool> _internetStatusOnRefresh = new();
     private readonly HttpClient _httpClient;
 
     /// <summary>
