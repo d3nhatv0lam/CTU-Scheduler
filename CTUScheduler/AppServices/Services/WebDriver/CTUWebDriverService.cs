@@ -124,13 +124,15 @@ namespace CTUScheduler.AppServices.Services.WebDriver
 
         private async Task<bool> IsSignInSuccess()
         {
+            await Task.Delay(300);
+            
             var iLocators = new[]
             {
                 _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_USERNAME_ERROR),
                 _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_PASSWORD_ERROR),
                 _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_FAIL)
             };
-
+            
             // kiểm tra element có display none không
             var tasks = iLocators.Select(locator =>
                     locator.EvaluateAsync<bool>("el => getComputedStyle(el).display === 'none'")

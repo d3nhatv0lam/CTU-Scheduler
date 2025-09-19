@@ -32,7 +32,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     
     private readonly SourceList<ScheduleTable> _data = new();
     private readonly ConcurrentDictionary<ScheduleTable, IDisposable> _timetableRegistrations = new();
-    private readonly Subject<bool> _isReloadingSubject = new ();
+    private readonly Subject<bool> _isReloadingSubject = new();
 
     public int MaxTimetableCount => MAX_TIMETABLE_COUNT_LIMIT;
     public int CurrentTimetableCount => _data.Count;
@@ -64,14 +64,15 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     
     public void AddTimetable(ScheduleTableBuildData buildData)
     {
+        if (!buildData.IsValid()) return;
+        
         var courseList = buildData.Courses.ToList();
         var scheduleTable = buildData.ScheduleTable;
-        if (courseList.Count == 0 || buildData.ScheduleTable is null) return;
         
         var isExisted = _data.Items
             .Any(x => scheduleTable.SavedCourseGroupKeys.DictionaryEquals(x.SavedCourseGroupKeys));
         if (isExisted) return;
-
+        
         var timetableRegistration = _courseManager.RegisterTimetable(courseList);
         _timetableRegistrations.TryAdd(scheduleTable, timetableRegistration);
 
@@ -118,7 +119,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
                 {
                     _logger.LogError($"No response received for course code: {code}");
                     continue;
-                };
+                }
                 course.Sections = course.Sections.Where(x => groups.Contains(x.Group)).ToList();
                 
                 _courseManager.UpdateCourse(course);

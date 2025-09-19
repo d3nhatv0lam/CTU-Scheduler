@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
+using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 
 namespace CTUScheduler.AppServices.Services.ScheduleManager;
 
 public interface ICourseManager
 {
-    
     IDisposable RegisterTimetable(IEnumerable<Course> courses);
+    public void RegisterTimetable(IEnumerable<Course> courses, ScheduleTable table);
+    public void UnregisterTimetable(ScheduleTable table);
+    
     public void UpdateCourse(Course course);
     public void UpdateCourses(IEnumerable<Course> courses);
     public void ClearAll();

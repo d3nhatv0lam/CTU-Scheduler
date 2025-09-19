@@ -8,24 +8,21 @@
 		Height="400"
 		Width="300"
 		Icon="/Assets/Logo/icon.ico"
+		ShowInTaskbar="False"
 		TransparencyLevelHint="Transparent"
 		Background="Transparent"
 		WindowStartupLocation="CenterScreen"
-        x:Class="CTUScheduler.Presentation.Features.SplashScreen.Views.SplashScreenWindow"
 		ExtendClientAreaToDecorationsHint="True"
 		ExtendClientAreaTitleBarHeightHint="0"
 		CanResize="False"
 		xmlns:rxui="http://reactiveui.net"
 		x:DataType="viewModels:SplashScreenViewModel"
 		x:CompileBindings="True"
-		xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
-		xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
 		xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
 		xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 		xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.SplashScreen.ViewModels"
+		x:Class="CTUScheduler.Presentation.Features.SplashScreen.Views.SplashScreenWindow"
 		Title="Splash Screen">
-
-
 	
     <Border Background="{StaticResource PrimaryColor}" CornerRadius="10">
 		<Grid RowDefinitions="auto * *">

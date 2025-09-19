@@ -7,6 +7,7 @@ using CTUScheduler.AppServices.Mappers;
 using CTUScheduler.AppServices.Models;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
+using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using DynamicData;
 
@@ -40,7 +41,17 @@ public class CourseManager: ICourseManager, IDisposable
         }
         return disposables;
     }
-    
+
+    public void RegisterTimetable(IEnumerable<Course> courses, ScheduleTable table)
+    {
+        
+    }
+
+    public void UnregisterTimetable(ScheduleTable table)
+    {
+        
+    }
+
     public void UpdateCourse(Course course)
     {
         var lookup = _courses.Lookup(course.Code);
