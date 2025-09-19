@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <ApplicationIcon>..\CTUScheduler\Assets\Logo\icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,5 +16,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CTUScheduler\CTUScheduler.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\CTUScheduler\Assets\Logo\icon.ico">
+      <Link>icon.ico</Link>
+    </None>
   </ItemGroup>
 </Project>
