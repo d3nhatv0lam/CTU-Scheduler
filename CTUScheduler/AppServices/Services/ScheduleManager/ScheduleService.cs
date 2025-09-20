@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
@@ -31,7 +32,6 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     private readonly ICTUWebDriverService _CTUWebDriverService;
     
     private readonly SourceList<ScheduleTable> _data = new();
-    private readonly ConcurrentDictionary<ScheduleTable, IDisposable> _timetableRegistrations = new();
     private readonly Subject<bool> _isReloadingSubject = new();
 
     public int MaxTimetableCount => MAX_TIMETABLE_COUNT_LIMIT;
@@ -64,19 +64,18 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     
     public void AddTimetable(ScheduleTableBuildData buildData)
     {
-        if (!buildData.IsValid()) return;
-        
-        var courseList = buildData.Courses.ToList();
-        var scheduleTable = buildData.ScheduleTable;
+        if (!buildData.TryTrim(out var trimmedBuildData)) return;
+
+        var courses = trimmedBuildData.Courses;
+        var scheduleTable = trimmedBuildData.ScheduleTable;
         
         var isExisted = _data.Items
             .Any(x => scheduleTable.SavedCourseGroupKeys.DictionaryEquals(x.SavedCourseGroupKeys));
         if (isExisted) return;
         
-        var timetableRegistration = _courseManager.RegisterTimetable(courseList);
-        _timetableRegistrations.TryAdd(scheduleTable, timetableRegistration);
-
+        _courseManager.RegisterTimetable(courses, scheduleTable);
         _data.Add(scheduleTable);
+        
         _logger.LogInformation("Added timetable");
     }
 
@@ -92,8 +91,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     public void RemoveTimetable(ScheduleTable timetable)
     {
         _data.Remove(timetable);
-        _timetableRegistrations.TryRemove(timetable, out var timetableRegistration);
-        timetableRegistration?.Dispose();
+        _courseManager.UnregisterTimetable(timetable);
         _logger.LogInformation("Removed timetable");
     }
 
@@ -221,9 +219,44 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     private void ClearTimetables()
     {
         _courseManager.ClearAll();
-        _timetableRegistrations.Clear();
         _data.Clear();
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="courses"></param>
+    /// <param name="tables"></param>
+    /// <returns>courses with trimmed, fit with tables</returns>
+    /// <exception cref="ArgumentNullException">courses is null</exception>
+    private IEnumerable<Course> TrimCourses(IEnumerable<Course> courses, IEnumerable<ScheduleTable> tables)
+    {
+        if (courses == null)
+            throw new ArgumentNullException(nameof(courses));
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (tables == null)
+            return courses;
+        
+        var courseList = courses.ToList();
+        var timetableCourseKeys = tables
+            .SelectMany(t => t.SavedCourseGroupKeys)
+            .GroupBy(kvp => kvp.Key, kvp => kvp.Value)
+            .ToDictionary(g => g.Key, g => g.ToHashSet());
+        
+        var courseDict = courseList.ToDictionary(c => c.Code, c => c);
+
+        foreach (var (code, groups) in timetableCourseKeys)
+        {
+            if (!courseDict.TryGetValue(code, out var existedCourse))
+                continue;
+
+            existedCourse.Sections = existedCourse.Sections
+                .Where(s => groups.Contains(s.Group))
+                .ToList();
+        }
+        return courseList;
+    }
+    
 
     public void Dispose()
     {

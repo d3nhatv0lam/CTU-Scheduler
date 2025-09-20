@@ -8,10 +8,15 @@ namespace CTUScheduler.AppServices.Services.ScheduleManager;
 
 public interface ICourseManager
 {
-    IDisposable RegisterTimetable(IEnumerable<Course> courses);
     public void RegisterTimetable(IEnumerable<Course> courses, ScheduleTable table);
+    public void RegisterTimetables(IEnumerable<Course> courses, IEnumerable<ScheduleTable> tables);
     public void UnregisterTimetable(ScheduleTable table);
     
+    /// <summary>
+    /// If course does not exist, do nothing.
+    /// If course exist, update it
+    /// </summary>
+    /// <param name="course"></param>
     public void UpdateCourse(Course course);
     public void UpdateCourses(IEnumerable<Course> courses);
     public void ClearAll();
@@ -22,7 +27,7 @@ public interface ICourseManager
     public List<Course> GetAllCourses();
     
     /// <summary>
-    /// Get all course code - all groups of this course in Manager via Key
+    /// Get all course code - all groups of these courses in Manager via Key
     /// </summary>
     /// <returns></returns>
     public IEnumerable<(string courseCode, IEnumerable<string> groups)> GetAllCourseSectionGroupKeys();

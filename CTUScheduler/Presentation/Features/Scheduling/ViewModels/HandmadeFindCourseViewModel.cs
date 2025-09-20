@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
@@ -27,12 +28,13 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         private readonly CourseMapper _courseMapper = new();
         private readonly SourceList<CourseUi> _coursesSourceList = new();
         private string _txtInputCourseKey = string.Empty;
-        private bool _isTxtInputCourseKeyFocused;
+        private bool _isTextBoxSearchFocused;
+        private bool _isOpenQuickSelectPopup;
+        private Subject<Unit> _textBoxClickTriggerSubject = new();
         private bool _showOnlyAvailableSections;
         private ObservableAsPropertyHelper<CourseUi> _searchedCourse;
         private ObservableAsPropertyHelper<ObservableCollection<SelectableCourseSectionUi>> _searchedCourseSections;
         private ObservableAsPropertyHelper<ObservableCollection<SelectableCourseSectionUi>> _filtedCourseSections;
-        private ObservableAsPropertyHelper<bool> _isQuickSelectPopupOpened;
         private ObservableAsPropertyHelper<ObservableCollection<QuickSelectCourse>> _quickSelectCourses;
         private QuickSelectCourse _selectedQuickSelectCourse = null!;
         private ReadOnlyObservableCollection<CourseUi> _coursesBindable;
@@ -44,12 +46,17 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             get => _txtInputCourseKey;
             set => this.RaiseAndSetIfChanged(ref _txtInputCourseKey, value);
         }
-        public bool IsTxtInputCourseKeyFocused
+        public bool IsTextBoxSearchFocused
         {
-            get => _isTxtInputCourseKeyFocused;
-            set => this.RaiseAndSetIfChanged(ref _isTxtInputCourseKeyFocused, value);
+            get => _isTextBoxSearchFocused;
+            set => this.RaiseAndSetIfChanged(ref _isTextBoxSearchFocused, value);
         }
-        public bool IsQuickSelectPopupOpened => _isQuickSelectPopupOpened.Value;
+        public bool IsOpenQuickSelectPopup
+        {
+            get => _isOpenQuickSelectPopup;
+            set => this.RaiseAndSetIfChanged(ref _isOpenQuickSelectPopup, value);           
+        }
+        
         public bool ShowOnlyAvailableSections 
         {             
             get => _showOnlyAvailableSections;
@@ -65,6 +72,8 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             set => this.RaiseAndSetIfChanged(ref _selectedQuickSelectCourse, value);
         }
         public ReadOnlyObservableCollection<CourseUi> Courses => _coursesBindable;
+        public ReactiveCommand<Unit,Unit> OpenPopupCommand { get; }
+        public ReactiveCommand<Unit,Unit> ClosePopupCommand { get; }
         public ReactiveCommand<Unit,Unit> SearchCommand { get; }
         public ReactiveCommand<Unit,Unit> AddCoursesCommand { get; }
         public ReactiveCommand<CourseUi,Unit> Tree_RemoveCourseCommand { get; }
@@ -72,7 +81,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         
         public HandmadeFindCourseViewModel()
         {
-            _ctuWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
+            _ctuWebDriverService = App.ServiceProvider.GetRequiredService<ICTUWebDriverService>();
 
             // TreeView SourceList
             _coursesSourceList.Connect()
@@ -83,7 +92,6 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             // quick select course
             this.WhenAnyValue(x => x.TxtInputCourseKey)
                 .Throttle(TimeSpan.FromMilliseconds(300))
-                .Where(x => !string.IsNullOrEmpty(x))
                 .ObserveOn(RxApp.TaskpoolScheduler)
                 .Subscribe( courseData =>
                 {
@@ -93,24 +101,20 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
 
             // quick select course response
             _quickSelectCourses = _ctuWebDriverService.CourseCatalogQuickSelectResponse
-              .ToProperty(this, nameof(QuickSelectCourses))
+              .ToProperty(this, nameof(QuickSelectCourses),scheduler:RxApp.MainThreadScheduler)
               .DisposeWith(_disposables);
-
-            // quick select course popup opened the expression
-            _isQuickSelectPopupOpened =
-               this.WhenAnyValue(x => x.IsTxtInputCourseKeyFocused,
-                                 x => x.QuickSelectCourses,
-                                 (tBoxFocus, qCourses) => qCourses != null? tBoxFocus && qCourses.Any() : false)
-              .ToProperty(this, nameof(IsQuickSelectPopupOpened))
-              .DisposeWith(_disposables);
+            
 
             // Selected QuickSelectCourse do
             this.WhenAnyValue(x => x.SelectedQuickSelectCourse)
                 .WhereNotNull()
+                .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(selectedQuickSelectCourse =>
                 {
                     // set course key
                     TxtInputCourseKey = selectedQuickSelectCourse.CourseCode;
+                    SelectedQuickSelectCourse = null!;
+                    IsOpenQuickSelectPopup = false;
                 }).DisposeWith(_disposables);
 
             // current course response
@@ -135,6 +139,41 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                             : tuple.searchedCourseSections)
                         .ToProperty(this, nameof(FiltedCourseSections))
                         .DisposeWith(_disposables);
+
+            var popupTrigger = _textBoxClickTriggerSubject
+                .CombineLatest(
+                    this.WhenAnyValue(x => x.IsTextBoxSearchFocused),
+                    this.WhenAnyValue(x => x.QuickSelectCourses),
+                    (trigger, focused, courses) => (trigger, focused, courses))
+                .Select(x => (x.focused, x.courses))
+                .Throttle(TimeSpan.FromMilliseconds(50)); // Chống nhiễu
+
+            popupTrigger
+                .Subscribe(x =>
+                {
+                    var (focused, courses) = x;
+                    
+                    if (!focused) IsOpenQuickSelectPopup = false;
+                    
+                    if (focused && courses?.Any() == true)
+                        IsOpenQuickSelectPopup = true;
+                })
+                .DisposeWith(_disposables);
+            
+            
+            OpenPopupCommand = ReactiveCommand.Create(() =>
+            {
+                if (QuickSelectCourses?.Any() == false) return;
+                
+                if (IsTextBoxSearchFocused && !IsOpenQuickSelectPopup)
+                    IsOpenQuickSelectPopup = true;
+            }).DisposeWith(_disposables);
+            
+            ClosePopupCommand = ReactiveCommand.Create(() =>
+                {
+                    IsOpenQuickSelectPopup = false;
+                })
+                .DisposeWith(_disposables);
 
             SearchCommand = ReactiveCommand.CreateFromTask(async () =>
             {
@@ -218,6 +257,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         public void Dispose()
         {
             _coursesSourceList.Dispose();
+            _textBoxClickTriggerSubject.Dispose();
             _disposables.Dispose();
         }
     }

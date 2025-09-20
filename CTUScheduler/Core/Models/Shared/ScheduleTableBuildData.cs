@@ -14,6 +14,10 @@ public record ScheduleTableBuildData(IEnumerable<Course> Courses, ScheduleTable 
                 && ScheduleTable != null;
      }
      
+     /// <summary>
+     /// Check Key data match between Courses and ScheduleTable
+     /// </summary>
+     /// <returns></returns>
      public bool IsValid()
      {
          if (!HasData()) 

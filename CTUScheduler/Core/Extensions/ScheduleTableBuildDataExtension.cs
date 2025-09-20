@@ -11,10 +11,19 @@ namespace CTUScheduler.Core.Extensions;
 
 public static class ScheduleTableBuildDataExtension
 {
-    public static ScheduleTableBuildData Trim(this ScheduleTableBuildData buildData)
+    /// <summary>
+    ///  Remove all course sections that are not in the saved course group keys.
+    /// </summary>
+    /// <param name="buildData"></param>
+    /// <param name="result">ScheduleTableBuildData trimmed when valid</param>
+    /// <returns></returns>
+    public static bool TryTrim(this ScheduleTableBuildData buildData, out ScheduleTableBuildData result)
     {
         if (!buildData.IsValid())
-            return buildData;
+        {
+            result = default!;
+            return false;
+        }
 
         var allowedKeys = buildData.ScheduleTable.SavedCourseGroupKeys
             .Select(key => (key.Key, key.Value))
@@ -36,11 +45,12 @@ public static class ScheduleTableBuildDataExtension
 
             if (validSections.Count > 0)
             {
-                course.Sections = validSections;
-                trimmedCourses.Add(course);
+                var newCourse = course.CloneWithNewCourseSections(validSections);
+                trimmedCourses.Add(newCourse);
             }
         }
-
-        return buildData with { Courses = trimmedCourses };
+        
+        result = buildData with { Courses = trimmedCourses };
+        return true;
     }
 }

@@ -44,12 +44,31 @@ public class CourseManager: ICourseManager, IDisposable
 
     public void RegisterTimetable(IEnumerable<Course> courses, ScheduleTable table)
     {
-        
+        AddOrUpdateCourses(courses);
+        foreach(var (code,group) in table.SavedCourseGroupKeys)
+        {
+            RegisterSection(code, group);
+        }
+    }
+
+    public void RegisterTimetables(IEnumerable<Course> courses, IEnumerable<ScheduleTable> tables)
+    {
+        AddOrUpdateCourses(courses);
+        foreach (var table in tables)
+        {
+            foreach(var (code,group) in table.SavedCourseGroupKeys)
+            {
+                RegisterSection(code, group);
+            }
+        }
     }
 
     public void UnregisterTimetable(ScheduleTable table)
     {
-        
+        foreach(var (code,group) in table.SavedCourseGroupKeys)
+        {
+            UnregisterSection(code, group);
+        }
     }
 
     public void UpdateCourse(Course course)
@@ -156,6 +175,14 @@ public class CourseManager: ICourseManager, IDisposable
         {
             var editableCourse = _courseMapper.ToEditableCourse(course);
             _courses.AddOrUpdate(editableCourse);
+        }
+    }
+
+    private void AddOrUpdateCourses(IEnumerable<Course> courses)
+    {
+        foreach (var course in courses)
+        {
+            AddOrUpdateCourse(course);
         }
     }
 

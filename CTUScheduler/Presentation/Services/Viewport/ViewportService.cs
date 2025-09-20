@@ -5,7 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Microsoft.Extensions.Logging;
 
-namespace CTUScheduler.AppServices.Services.Viewport
+namespace CTUScheduler.Presentation.Services.Viewport
 {
     public class ViewportService : IViewportService, IDisposable
     {

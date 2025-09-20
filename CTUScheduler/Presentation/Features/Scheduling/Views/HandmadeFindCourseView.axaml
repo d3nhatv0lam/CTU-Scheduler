@@ -15,11 +15,12 @@
     xmlns:viewModels1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels"
     xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Views"
     xmlns:courseUiModels="using:CTUScheduler.Presentation.Shared.Models.Academic"
+    Focusable="True"
     xmlns:selectableCourseData="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Models"
     x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.HandmadeFindCourseView">
-    
+
     <rxui:ReactiveUserControl.KeyBindings>
-        <KeyBinding Gesture="Enter" Command="{Binding SearchCommand}"/>
+        <KeyBinding Gesture="Enter" Command="{Binding SearchCommand}" />
     </rxui:ReactiveUserControl.KeyBindings>
 
     <rxui:ReactiveUserControl.Styles>
@@ -30,7 +31,7 @@
             <Setter Property="FontSize" Value="20" />
             <Setter Property="FontWeight" Value="Bold" />
         </Style>
-        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml"/>
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
         <StyleInclude Source="avares://CTUScheduler/Presentation/Features/Scheduling/Shared/Styles/controls.axaml"></StyleInclude>
     </rxui:ReactiveUserControl.Styles>
 
@@ -62,19 +63,59 @@
                             ClipToBounds="True">
                             <!--// search field //-->
                             <TextBox
+                                DockPanel.Dock="Left"
                                 x:Name="tboxCourseKeyInput"
                                 Width="165"
-                                DockPanel.Dock="Left"
                                 UseFloatingWatermark="True"
                                 Text="{Binding TxtInputCourseKey ,Mode=TwoWay}"
-                                Classes="outline"
+                                IsFocused="{Binding IsTextBoxSearchFocused,Mode=OneWayToSource}"
+                                Classes="outline clearButton"
                                 Theme="{StaticResource OutlineTextBox}"
-                                p1:TextFieldAssist.Label="Mã học phần"
-                                IsFocused="{Binding IsTxtInputCourseKeyFocused,Mode=OneWayToSource}">
-                                <!-- <TextBox.IsFocused> -->
-                                <!--     <Binding Path="IsTxtInputCourseKeyFocused" Mode="OneWayToSource" /> -->
-                                <!-- </TextBox.IsFocused> -->
+                                p1:TextFieldAssist.Label="Mã học phần">
+                                <Interaction.Behaviors>
+                                    <EventTriggerBehavior EventName="LostFocus">
+                                       <InvokeCommandAction Command="{Binding ClosePopupCommand}"></InvokeCommandAction>
+                                    </EventTriggerBehavior>
+                                </Interaction.Behaviors>
+                               
                             </TextBox>
+                            <!--// Quick select popup //-->
+                            <Popup
+                                PlacementTarget="{Binding ElementName=tboxCourseKeyInput}"
+                                Placement="BottomEdgeAlignedLeft"
+                                IsOpen="{Binding IsOpenQuickSelectPopup, Mode=OneWay}"
+                                MaxHeight="200" Width="210">
+
+                                <controls:Card
+                                    CornerRadius="5"
+                                    VerticalAlignment="Top"
+                                    Background="White"
+                                    BorderThickness="1"
+                                    BorderBrush="#a3a3a3"
+                                    Padding="1"
+                                    ClipToBounds="True">
+                                    <ScrollViewer HorizontalScrollBarVisibility="Auto" 
+                                                  VerticalScrollBarVisibility="Auto" 
+                                                  Theme="{StaticResource MaterialModernScrollViewer}">
+                                        
+                                        <ListBox x:Name="lboxQuickSelect"
+                                                 SelectedItem="{Binding SelectedQuickSelectCourse,Mode=TwoWay}"
+                                                 ItemsSource="{Binding QuickSelectCourses,Mode=OneWay}">
+
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate x:DataType="{x:Type qSelectCourse:QuickSelectCourse}">
+                                                    <Grid Background="Transparent">
+                                                        <TextBlock Text="{Binding Information,Mode= OneTime}" />
+                                                        <ToolTip.Tip>
+                                                            <TextBlock Text="{Binding Information,Mode= OneTime}" />
+                                                        </ToolTip.Tip>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </ScrollViewer>
+                                </controls:Card>
+                            </Popup>
                             <!--// search button //-->
                             <Button
                                 x:Name="btnSearchCourse"
@@ -109,45 +150,6 @@
                         </DockPanel>
                     </Border>
 
-                    <!--// Quick select popup //-->
-                    <Popup
-                        PlacementTarget="{Binding ElementName=tboxCourseKeyInput}"
-                        Placement="BottomEdgeAlignedLeft"
-                        IsOpen="{Binding IsQuickSelectPopupOpened,Mode=OneWay}"
-                        MaxHeight="200" Width="210">
-
-                        <controls:Card
-                            CornerRadius="5"
-                            Background="White"
-                            BorderThickness="1"
-                            BorderBrush="#a3a3a3"
-                            Padding="1"
-                            ClipToBounds="True">
-
-                            <ListBox x:Name="lboxQuickSelect"
-                                     SelectedItem="{Binding SelectedQuickSelectCourse,Mode=TwoWay}"
-                                     ItemsSource="{Binding QuickSelectCourses,Mode=OneWay}">
-
-                                <ListBox.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel />
-                                    </ItemsPanelTemplate>
-                                </ListBox.ItemsPanel>
-
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate x:DataType="{x:Type qSelectCourse:QuickSelectCourse}">
-                                        <Grid Background="Transparent">
-                                            <TextBlock Text="{Binding Information,Mode= OneTime}" />
-                                            <ToolTip.Tip>
-                                                <TextBlock Text="{Binding Information,Mode= OneTime}" />
-                                            </ToolTip.Tip>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
-                        </controls:Card>
-                    </Popup>
-
 
                     <!--// DataGrid //-->
                     <Border Grid.Row="3" Padding="8">
@@ -180,7 +182,8 @@
                             <DataGrid.Columns>
                                 <DataGridTemplateColumn Header="Chọn" Width="69" CanUserResize="False">
                                     <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="{x:Type selectableCourseData:SelectableCourseSectionUi}">
+                                        <DataTemplate
+                                            x:DataType="{x:Type selectableCourseData:SelectableCourseSectionUi}">
                                             <CheckBox
                                                 VerticalAlignment="Center"
                                                 HorizontalAlignment="Center"
@@ -204,7 +207,8 @@
                                                     Width="80" />
                                 <DataGridTemplateColumn Header="Lịch học" Width="180">
                                     <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="{x:Type selectableCourseData:SelectableCourseSectionUi}">
+                                        <DataTemplate
+                                            x:DataType="{x:Type selectableCourseData:SelectableCourseSectionUi}">
                                             <ItemsRepeater VerticalAlignment="Center"
                                                            ItemsSource="{Binding Item.ClassDays,Mode=OneTime}">
                                                 <ItemsRepeater.ItemTemplate>
@@ -220,10 +224,10 @@
 
                                                             <Grid.ColumnDefinitions>
                                                                 <ColumnDefinition Width="auto" MinWidth="20"
-                                                                    MaxWidth="50" />
+                                                                        MaxWidth="50" />
                                                                 <ColumnDefinition Width="*" />
                                                                 <ColumnDefinition Width="auto" MinWidth="50"
-                                                                    MaxWidth="100" />
+                                                                        MaxWidth="100" />
                                                             </Grid.ColumnDefinitions>
 
                                                             <TextBlock Grid.Column="0"
@@ -248,7 +252,8 @@
                                     Header="Giảng viên"
                                     Width="*">
                                     <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="{x:Type selectableCourseData:SelectableCourseSectionUi}">
+                                        <DataTemplate
+                                            x:DataType="{x:Type selectableCourseData:SelectableCourseSectionUi}">
                                             <Grid>
                                                 <TextBlock Text="{Binding Item.Lecturer, Mode=OneTime}" />
                                             </Grid>
@@ -307,7 +312,7 @@
 
                             <TreeView.DataTemplates>
                                 <DataTemplate x:DataType="{x:Type courseUiModels:CourseSectionUi}">
-                                    <Grid RowDefinitions="auto auto" 
+                                    <Grid RowDefinitions="auto auto"
                                           ColumnDefinitions="auto * auto">
 
                                         <ItemsRepeater

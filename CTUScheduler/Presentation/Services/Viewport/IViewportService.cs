@@ -2,7 +2,7 @@
 using Avalonia;
 using Avalonia.Controls;
 
-namespace CTUScheduler.AppServices.Services.Viewport
+namespace CTUScheduler.Presentation.Services.Viewport
 {
     public interface IViewportService
     {
