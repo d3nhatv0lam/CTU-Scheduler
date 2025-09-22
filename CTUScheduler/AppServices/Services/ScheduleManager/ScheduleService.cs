@@ -33,6 +33,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     
     private readonly SourceList<ScheduleTable> _data = new();
     private readonly Subject<bool> _isReloadingSubject = new();
+    private readonly BehaviorSubject<DateTime> _lastSavedSubject = new(DateTime.MinValue);
 
     public int MaxTimetableCount => MAX_TIMETABLE_COUNT_LIMIT;
     public int CurrentTimetableCount => _data.Count;
@@ -59,8 +60,6 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         _logger = logger;
         
     }
-    
-
     
     public void AddTimetable(ScheduleTableBuildData buildData)
     {
@@ -152,12 +151,18 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     public async Task<bool> TrySaveScheduleAsync()
     {
         var path = "D:/Schedule.json";
+        var currentSavedTime = LastSaved;
         LastSaved = DateTime.Now;
-        BindScheduleSave();
+        
+        var courses = _courseManager.GetAllCourses();
+        var tables = _data.Items.ToList();
+        TrimCoursesAndTables(courses,tables);
+        BindScheduleSave(courses,tables);
         var isSaved =  await _userDataService.TrySaveUserDataAsync(path);
         if (!isSaved)
         {
             _logger.LogError("Failed to save schedule");
+            LastSaved = currentSavedTime;
             return false;
         }
         _logger.LogInformation("Saved schedule");
@@ -166,54 +171,41 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
 
     public async Task<bool> TryLoadScheduleAsync()
     {
-        var path = "";
+        var path = "D:/Schedule.json";
         bool isLoaded =  await _userDataService.TryLoadUserDataAsync(path);
-        if (!isLoaded || !ValidateScheduleTables())
+        if (!isLoaded)
         {
             _logger.LogError("Failed to load schedule");
             return false;
         }
+        var courses = _userDataService.ScheduleSaved.Courses;
+        var tables = _userDataService.ScheduleSaved.ScheduleTables;
+        if (!ValidateSavedTables(courses, tables))
+        {
+            _logger.LogError("Saved are damaged");
+            return false;
+        }
+        
+        TrimCoursesAndTables(courses,tables);
+        
         _logger.LogInformation("Loaded schedule");
-        BindScheduleManager();
+        BindScheduleManager(courses,tables);
         return true;
     }
 
-    private void BindScheduleSave()
+    private void BindScheduleSave(List<Course> courses, List<ScheduleTable> tables)
     {
-        _userDataService.ScheduleSaved.Courses = _courseManager.GetAllCourses();
-        _userDataService.ScheduleSaved.ScheduleTables = _data.Items.ToList();
+        _userDataService.ScheduleSaved.Courses = courses;
+        _userDataService.ScheduleSaved.ScheduleTables = tables;
         _userDataService.ScheduleSaved.LastSaved = LastSaved;
     }
 
-    private void BindScheduleManager()
+    private void BindScheduleManager(List<Course> courses, List<ScheduleTable> tables)
     {
         ClearTimetables();
-        _data.AddRange(_userDataService.ScheduleSaved.ScheduleTables);
+        _courseManager.RegisterTimetables(courses, tables);
+        _data.AddRange(tables);
         LastSaved = _userDataService.ScheduleSaved.LastSaved;
-    }
-
-    private bool ValidateScheduleTables()
-    {
-        _courseManager.UpdateCourses(_userDataService.ScheduleSaved.Courses);
-        var tables = _userDataService.ScheduleSaved.ScheduleTables;
-        foreach (var table in tables)
-        {
-            foreach (var (code,group) in table.SavedCourseGroupKeys)
-            {
-                if (_courseManager.GetCourseSection(code, group) is null)
-                {
-                    OnValidateScheduleTablesFail();
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    protected virtual void OnValidateScheduleTablesFail()
-    {
-        _userDataService.ClearScheduleSaved();
-        _courseManager.ClearAll();
     }
     
     private void ClearTimetables()
@@ -222,28 +214,52 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         _data.Clear();
     }
 
+    private bool ValidateSavedTables(IEnumerable<Course> courses, IEnumerable<ScheduleTable> tables)
+    {
+        if (courses == null || tables == null)
+            return false;
+        // kiểm tra trùng course
+        
+        // kiểm tra trùng table
+        
+        // kiểm tra tham chiếu
+        var timetableCourseKeys = tables
+            .SelectMany(t => t.SavedCourseGroupKeys)
+            .Select(x => (x.Key, x.Value))
+            .ToHashSet();
+
+        var coursesKey = courses
+            .SelectMany(c => c.Sections.Select(s => (c.Code, s.Group)))
+            .ToHashSet();
+        
+        return timetableCourseKeys.IsSubsetOf(coursesKey);
+    }
+
     /// <summary>
-    /// 
+    ///  Trim courses and tables
     /// </summary>
     /// <param name="courses"></param>
     /// <param name="tables"></param>
-    /// <returns>courses with trimmed, fit with tables</returns>
-    /// <exception cref="ArgumentNullException">courses is null</exception>
-    private IEnumerable<Course> TrimCourses(IEnumerable<Course> courses, IEnumerable<ScheduleTable> tables)
+    /// <returns>courses and tables have trimmed, fit with tables</returns>
+    private void TrimCoursesAndTables(List<Course> courses, List<ScheduleTable> tables)
     {
         if (courses == null)
             throw new ArgumentNullException(nameof(courses));
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (tables == null)
-            return courses;
+            return;
+
+        // trim table with none course
+        tables.RemoveAll(table => table.SavedCourseGroupKeys.Count == 0);
+        if (tables.Count == 0)
+            courses.Clear();
         
-        var courseList = courses.ToList();
         var timetableCourseKeys = tables
             .SelectMany(t => t.SavedCourseGroupKeys)
             .GroupBy(kvp => kvp.Key, kvp => kvp.Value)
             .ToDictionary(g => g.Key, g => g.ToHashSet());
         
-        var courseDict = courseList.ToDictionary(c => c.Code, c => c);
+        var courseDict = courses.ToDictionary(c => c.Code, c => c);
 
         foreach (var (code, groups) in timetableCourseKeys)
         {
@@ -253,11 +269,12 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
             existedCourse.Sections = existedCourse.Sections
                 .Where(s => groups.Contains(s.Group))
                 .ToList();
+            
+            if (existedCourse.Sections.Count == 0)
+                courses.Remove(existedCourse);
         }
-        return courseList;
     }
     
-
     public void Dispose()
     {
         _data.Dispose();

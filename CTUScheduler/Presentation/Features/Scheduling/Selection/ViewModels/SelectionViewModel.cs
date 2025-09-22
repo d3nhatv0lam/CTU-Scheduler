@@ -16,7 +16,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels
         {
             Manual,
             Quick
-        };
+        }
 
         public string? UrlPathSegment => "SelectionViewModel";
 

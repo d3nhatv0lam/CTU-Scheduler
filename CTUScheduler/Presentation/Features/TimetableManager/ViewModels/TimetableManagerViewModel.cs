@@ -41,6 +41,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         public bool IsEmptyTimetableLayouts => _isEmptyTimetableLayouts.Value;
 
         public ReactiveCommand<Unit, Unit> ShowAddCourseDialogCommand { get; }
+        public ReactiveCommand<Unit, Unit> LoadScheduleCommand { get; }
         public ReactiveCommand<Unit, Unit> SaveScheduleCommand { get; }
         public ReactiveCommand<Unit, Unit> ReloadAllTimetableCommand { get; }
         public ReactiveCommand<TimetableLayoutViewModel, Unit> ShowTimetableDetailsCommand { get; }
@@ -97,6 +98,12 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             {
                 await _scheduleService.TrySaveScheduleAsync();
             }).DisposeWith(_disposables);
+
+            LoadScheduleCommand = ReactiveCommand.CreateFromTask(async () =>
+                {
+                    await _scheduleService.TryLoadScheduleAsync();
+                })
+                .DisposeWith(_disposables);
         }
 
         private async Task OpenAddCourseDialog()

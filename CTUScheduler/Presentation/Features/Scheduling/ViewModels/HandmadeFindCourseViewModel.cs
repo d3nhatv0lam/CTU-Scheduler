@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
@@ -28,7 +29,6 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         private readonly CourseMapper _courseMapper = new();
         private readonly SourceList<CourseUi> _coursesSourceList = new();
         private string _txtInputCourseKey = string.Empty;
-        private bool _isTextBoxSearchFocused;
         private bool _isOpenQuickSelectPopup;
         private Subject<Unit> _textBoxClickTriggerSubject = new();
         private bool _showOnlyAvailableSections;
@@ -45,11 +45,6 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         {
             get => _txtInputCourseKey;
             set => this.RaiseAndSetIfChanged(ref _txtInputCourseKey, value);
-        }
-        public bool IsTextBoxSearchFocused
-        {
-            get => _isTextBoxSearchFocused;
-            set => this.RaiseAndSetIfChanged(ref _isTextBoxSearchFocused, value);
         }
         public bool IsOpenQuickSelectPopup
         {
@@ -72,7 +67,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             set => this.RaiseAndSetIfChanged(ref _selectedQuickSelectCourse, value);
         }
         public ReadOnlyObservableCollection<CourseUi> Courses => _coursesBindable;
-        public ReactiveCommand<Unit,Unit> OpenPopupCommand { get; }
+        public ReactiveCommand<Unit,Unit> TryOpenPopupCommand { get; }
         public ReactiveCommand<Unit,Unit> ClosePopupCommand { get; }
         public ReactiveCommand<Unit,Unit> SearchCommand { get; }
         public ReactiveCommand<Unit,Unit> AddCoursesCommand { get; }
@@ -101,10 +96,12 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
 
             // quick select course response
             _quickSelectCourses = _ctuWebDriverService.CourseCatalogQuickSelectResponse
-              .ToProperty(this, nameof(QuickSelectCourses),scheduler:RxApp.MainThreadScheduler)
+              .ToProperty(this, 
+                  nameof(QuickSelectCourses),
+                  initialValue: new ObservableCollection<QuickSelectCourse>(),
+                  scheduler:RxApp.MainThreadScheduler)
               .DisposeWith(_disposables);
             
-
             // Selected QuickSelectCourse do
             this.WhenAnyValue(x => x.SelectedQuickSelectCourse)
                 .WhereNotNull()
@@ -139,41 +136,21 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                             : tuple.searchedCourseSections)
                         .ToProperty(this, nameof(FiltedCourseSections))
                         .DisposeWith(_disposables);
-
-            var popupTrigger = _textBoxClickTriggerSubject
-                .CombineLatest(
-                    this.WhenAnyValue(x => x.IsTextBoxSearchFocused),
-                    this.WhenAnyValue(x => x.QuickSelectCourses),
-                    (trigger, focused, courses) => (trigger, focused, courses))
-                .Select(x => (x.focused, x.courses))
-                .Throttle(TimeSpan.FromMilliseconds(50)); // Chống nhiễu
-
-            popupTrigger
-                .Subscribe(x =>
-                {
-                    var (focused, courses) = x;
-                    
-                    if (!focused) IsOpenQuickSelectPopup = false;
-                    
-                    if (focused && courses?.Any() == true)
-                        IsOpenQuickSelectPopup = true;
-                })
+            
+            
+            this.WhenAnyValue(x => x.QuickSelectCourses)
+                .Subscribe(_ => TryOpenQuickSelectPopup())
                 .DisposeWith(_disposables);
             
-            
-            OpenPopupCommand = ReactiveCommand.Create(() =>
-            {
-                if (QuickSelectCourses?.Any() == false) return;
-                
-                if (IsTextBoxSearchFocused && !IsOpenQuickSelectPopup)
-                    IsOpenQuickSelectPopup = true;
-            }).DisposeWith(_disposables);
-            
+            TryOpenPopupCommand = ReactiveCommand.Create(TryOpenQuickSelectPopup)
+                .DisposeWith(_disposables);
+
             ClosePopupCommand = ReactiveCommand.Create(() =>
                 {
                     IsOpenQuickSelectPopup = false;
                 })
                 .DisposeWith(_disposables);
+            
 
             SearchCommand = ReactiveCommand.CreateFromTask(async () =>
             {
@@ -226,7 +203,13 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                                         .DisposeWith(_disposables);
         }
 
-        
+        private void TryOpenQuickSelectPopup()
+        {
+            if ((QuickSelectCourses?.Any()).GetValueOrDefault())
+                IsOpenQuickSelectPopup = true;
+            else
+                IsOpenQuickSelectPopup = false;
+        }
 
         private ObservableCollection<SelectableCourseSectionUi> GetSelectableSectionUi(CourseUi course)
         {
