@@ -8,10 +8,12 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Core.Extensions;
+using CTUScheduler.Core.Helpers;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
@@ -152,7 +154,6 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     {
         var path = "D:/Schedule.json";
         var currentSavedTime = LastSaved;
-        LastSaved = DateTime.Now;
         
         var courses = _courseManager.GetAllCourses();
         var tables = _data.Items.ToList();
@@ -172,32 +173,41 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     public async Task<bool> TryLoadScheduleAsync()
     {
         var path = "D:/Schedule.json";
-        bool isLoaded =  await _userDataService.TryLoadUserDataAsync(path);
-        if (!isLoaded)
+        try
         {
-            _logger.LogError("Failed to load schedule");
+            bool isLoaded = await _userDataService.TryLoadUserDataAsync(path,JsonHelper.JsonPropertyMatchingOptions);
+            if (!isLoaded)
+            {
+                _logger.LogError("Failed to load schedule");
+                return false;
+            }
+
+            var courses = _userDataService.ScheduleSaved.Courses;
+            var tables = _userDataService.ScheduleSaved.ScheduleTables;
+            if (!ValidateSavedTables(courses, tables))
+            {
+                _logger.LogError("Saved are damaged");
+                return false;
+            }
+
+            TrimCoursesAndTables(courses, tables);
+
+            _logger.LogInformation("Loaded schedule");
+            BindScheduleManager(courses, tables);
+            return true;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to load schedule");
             return false;
         }
-        var courses = _userDataService.ScheduleSaved.Courses;
-        var tables = _userDataService.ScheduleSaved.ScheduleTables;
-        if (!ValidateSavedTables(courses, tables))
-        {
-            _logger.LogError("Saved are damaged");
-            return false;
-        }
-        
-        TrimCoursesAndTables(courses,tables);
-        
-        _logger.LogInformation("Loaded schedule");
-        BindScheduleManager(courses,tables);
-        return true;
     }
 
     private void BindScheduleSave(List<Course> courses, List<ScheduleTable> tables)
     {
         _userDataService.ScheduleSaved.Courses = courses;
         _userDataService.ScheduleSaved.ScheduleTables = tables;
-        _userDataService.ScheduleSaved.LastSaved = LastSaved;
+        _userDataService.ScheduleSaved.LastSaved = DateTime.Now;
     }
 
     private void BindScheduleManager(List<Course> courses, List<ScheduleTable> tables)
@@ -218,21 +228,24 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     {
         if (courses == null || tables == null)
             return false;
-        // kiểm tra trùng course
         
-        // kiểm tra trùng table
-        
-        // kiểm tra tham chiếu
-        var timetableCourseKeys = tables
-            .SelectMany(t => t.SavedCourseGroupKeys)
-            .Select(x => (x.Key, x.Value))
-            .ToHashSet();
+        // kiểm tra trùng course section
+        var courseSet = new HashSet<(string, string)>();
+        foreach (var course in courses)
+        {
+            foreach (var section in course.Sections)
+            {
+                if (!courseSet.Add((course.Code, section.Group)))
+                    return false;
+            }
+        }
 
-        var coursesKey = courses
-            .SelectMany(c => c.Sections.Select(s => (c.Code, s.Group)))
+        var timetableCourseKeys = tables
+            .SelectMany(table => table.SavedCourseGroupKeys)
+            .Select(pkv => (pkv.Key, pkv.Value))
             .ToHashSet();
         
-        return timetableCourseKeys.IsSubsetOf(coursesKey);
+        return timetableCourseKeys.IsSubsetOf(courseSet);
     }
 
     /// <summary>

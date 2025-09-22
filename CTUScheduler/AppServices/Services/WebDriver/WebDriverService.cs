@@ -300,9 +300,9 @@ namespace CTUScheduler.AppServices.Services.WebDriver
                 await element.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
                 return await element.ScreenshotAsync();
             }
-            catch
+            catch (Exception e)
             {
-                Debug.WriteLine("Get image fail!");
+                _logger.LogError(e,"Get image fail!");
                 return Array.Empty<byte>();
             }
         }

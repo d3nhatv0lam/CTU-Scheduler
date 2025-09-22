@@ -37,7 +37,7 @@ namespace CTUScheduler;
 
 public partial class App : Application
 {
-    public static string AppVersion { get; } = "0.1";
+    public static string AppVersion = "0.1";
     public static IServiceProvider ServiceProvider { get; private set; } = null!;
     public override void Initialize()
     {
@@ -162,17 +162,25 @@ public partial class App : Application
 
     private async void Desktop_Exit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
     {
-        if (ServiceProvider is IAsyncDisposable asyncDisposable)
-            await asyncDisposable.DisposeAsync();
-        else
-        if (ServiceProvider is IDisposable disposableService)
-            disposableService.Dispose();
-
-        await Log.CloseAndFlushAsync();
-
-        if (sender is IClassicDesktopStyleApplicationLifetime desktop)
+        try
         {
-            desktop.Exit -= Desktop_Exit;
+            if (sender is IClassicDesktopStyleApplicationLifetime desktop)
+                desktop.Exit -= Desktop_Exit;
+            
+            if (ServiceProvider is IAsyncDisposable asyncDisposable)
+                await asyncDisposable.DisposeAsync();
+            else if (ServiceProvider is IDisposable disposableService)
+                disposableService.Dispose();
+            Log.Information("Services disposed");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to dispose services");
+        }
+        finally
+        {
+            Log.Logger.Information("App Exited!");
+            await Log.CloseAndFlushAsync();
         }
     }
 }

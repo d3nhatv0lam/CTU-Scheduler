@@ -71,9 +71,9 @@ namespace CTUScheduler.AppServices.Services.WebDriver
                     {
                         return JsonHelper.Deserialize<RawCourse>((JsonElement)jsonData!);
                     }
-                    catch
+                    catch (Exception e)
                     {
-                        _logger.LogDebug("Exception when Derserialize RawCourse, may by empty SearchBox");
+                        _logger.LogWarning(e,"Exception when Deserialize RawCourse, may by empty SearchBox");
                         return null;
                     }
                 })

@@ -1,11 +1,31 @@
 ﻿using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 
 namespace CTUScheduler.Core.Helpers
 {
     public static class JsonHelper
     {
+        public static JsonSerializerOptions JsonPropertyMatchingOptions { get; } = new JsonSerializerOptions
+        {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver
+            {
+                Modifiers =
+                {
+                    typeInfo =>
+                    {
+                        foreach (var property in typeInfo.Properties)
+                        {
+                            property.IsRequired = true;
+                        }
+                    }
+                }
+            },
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
+        };
+        
         public static JsonElement ChangeRoot(JsonElement json, string propertyName)
         {
             return json.GetProperty(propertyName);
