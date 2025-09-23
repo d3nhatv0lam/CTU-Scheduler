@@ -70,6 +70,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         public ReactiveCommand<Unit,Unit> TryOpenPopupCommand { get; }
         public ReactiveCommand<Unit,Unit> ClosePopupCommand { get; }
         public ReactiveCommand<Unit,Unit> SearchCommand { get; }
+        public ReactiveCommand<SelectableCourseSectionUi,Unit> ChangeSelectStateSectionCommand { get; }
         public ReactiveCommand<Unit,Unit> AddCoursesCommand { get; }
         public ReactiveCommand<CourseUi,Unit> Tree_RemoveCourseCommand { get; }
         public ReactiveCommand<CourseSectionUi,Unit> Tree_RemoveSectionCommand { get; }
@@ -163,6 +164,12 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                     Task.Delay(500),
                     _ctuWebDriverService.SearchCourse(TxtInputCourseKey));
             }).DisposeWith(_disposables);
+
+            ChangeSelectStateSectionCommand = ReactiveCommand.Create<SelectableCourseSectionUi>(selectable =>
+                {
+                    selectable.IsSelected = !selectable.IsSelected;
+                })
+                .DisposeWith(_disposables);
 
             var canAddCourse = this.WhenAnyValue(x => x.SearchedCourseSections, searchedCourseSections => searchedCourseSections != null && searchedCourseSections.Any());
             AddCoursesCommand = ReactiveCommand.Create(() =>

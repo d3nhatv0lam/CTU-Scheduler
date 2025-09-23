@@ -27,6 +27,7 @@ namespace CTUScheduler.Core.Extensions
 
                 Parallel.ForEach(rawCourse.data, (rawCourseGroupData) =>
                 {
+                    var newClassDay = GetClassDayData(rawCourseGroupData);
                     courseDataDir.AddOrUpdate(
                             // is this group already exist?
                             rawCourseGroupData.dkmh_nhom_hoc_phan_ma,
@@ -40,17 +41,19 @@ namespace CTUScheduler.Core.Extensions
                                 LecturerEmail = rawCourseGroupData.dkmh_tu_dien_giang_vien_email,
                                 TotalStudents = rawCourseGroupData.dkmh_tu_dien_lop_hoc_phan_si_so,
                                 RemainingStudents = rawCourseGroupData.si_so_con_lai,
-                                ClassDays = new List<ClassDay>()
-                                {
-                                    GetClassDayData(rawCourseGroupData)
-                                }
+                                ClassDays = newClassDay != null 
+                                    ? new List<ClassDay>()
+                                    {
+                                        newClassDay
+                                    }
+                                    : new List<ClassDay>()
                             },
                             // Has group => Add new ClassDay into an existing group
                             (group, existing) =>
                             {
-                                var newClassDay = GetClassDayData(rawCourseGroupData);
-                                existing.ClassDays.Add(newClassDay);
-                                return existing;
+                               if (newClassDay != null)
+                                    existing.ClassDays.Add(newClassDay);
+                               return existing;
                             }
 
                         );
@@ -64,11 +67,16 @@ namespace CTUScheduler.Core.Extensions
                 return null!;
             }
             // local funtion
-            ClassDay GetClassDayData(RawCourseData rawCourseGroupData)
+            ClassDay? GetClassDayData(RawCourseData rawCourseGroupData)
             {
+                if (rawCourseGroupData.dkmh_thu_trong_tuan_ma == null
+                    || rawCourseGroupData.tiet_hoc == null
+                    || rawCourseGroupData.dkmh_tu_dien_phong_hoc_ten == null)
+                    return null;
+                
                 return new ClassDay()
                 {
-                    AttendingDay = rawCourseGroupData.dkmh_thu_trong_tuan_ma,
+                    AttendingDay = rawCourseGroupData.dkmh_thu_trong_tuan_ma.Value,
                     Period = rawCourseGroupData.tiet_hoc,
                     Room = rawCourseGroupData.dkmh_tu_dien_phong_hoc_ten
                 };
