@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -309,15 +310,20 @@ namespace CTUScheduler.AppServices.Services.WebDriver
 
         public void Dispose()
         {
-            _page.CloseAsync().GetAwaiter().GetResult();
-            _browser.DisposeAsync().GetAwaiter().GetResult();
-            _playwright.Dispose();
-            _disposables.Dispose();
+            DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
 
+        [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract")]
         public async ValueTask DisposeAsync()
         {
+            if (_page is not null)
+                await _page.CloseAsync();
 
+            if (_browser is not null)
+                await _browser.DisposeAsync();
+
+            _playwright?.Dispose();
+            _disposables?.Dispose();
         }
     }
 }

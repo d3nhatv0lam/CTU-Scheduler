@@ -34,7 +34,9 @@
 				<Setter Property="Foreground" Value="Black"/>
 			</Style>
 			
-			<!-- // Red Style // -->
+			<Style Selector="^.archived Border.students-remaining-status">
+				<Setter Property="Background" Value="White"></Setter>
+			</Style>
 			<Style Selector="^.red Border.students-remaining-status">
 				<Setter Property="Background" Value="Red"></Setter>
 			</Style>
@@ -188,6 +190,7 @@
 						<DataTemplate x:DataType="{x:Type models:ScheduleCellUi}">
 							<Border
 								Classes="cell-container"
+								Classes.archived="{Binding Shared.IsArchivedStatus}"
 								Classes.red="{Binding Shared.IsLowStatus}"
 								Classes.yellow="{Binding Shared.IsMediumStatus}"
 								Classes.green="{Binding Shared.IsHighStatus}"

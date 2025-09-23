@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
 using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.AppServices.Services.ScheduleManager;
 using CTUScheduler.AppServices.Services.WebDriver;
@@ -41,11 +44,11 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         public bool IsEmptyTimetableLayouts => _isEmptyTimetableLayouts.Value;
 
         public ReactiveCommand<Unit, Unit> ShowAddCourseDialogCommand { get; }
-        public ReactiveCommand<Unit, Unit> LoadScheduleCommand { get; }
+        public ReactiveCommand<IStorageFile[], Unit> LoadScheduleCommand { get; }
         public ReactiveCommand<Unit, Unit> SaveScheduleCommand { get; }
         public ReactiveCommand<Unit, Unit> ReloadAllTimetableCommand { get; }
         public ReactiveCommand<TimetableLayoutViewModel, Unit> ShowTimetableDetailsCommand { get; }
-
+        
 
         public TimetableManagerViewModel()
         {
@@ -99,11 +102,17 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 await _scheduleService.TrySaveScheduleAsync();
             }).DisposeWith(_disposables);
 
-            LoadScheduleCommand = ReactiveCommand.CreateFromTask(async () =>
+            LoadScheduleCommand = ReactiveCommand.CreateFromTask<IStorageFile[]>(async files =>
                 {
-                    await _scheduleService.TryLoadScheduleAsync();
+                    foreach (var file in files)
+                    {
+                        var filePath = file.Path.LocalPath;
+                        await _scheduleService.TryLoadScheduleAsync(filePath);
+                        break;
+                    }
                 })
                 .DisposeWith(_disposables);
+            
         }
 
         private async Task OpenAddCourseDialog()

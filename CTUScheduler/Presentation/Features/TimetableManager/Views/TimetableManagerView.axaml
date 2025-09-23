@@ -66,7 +66,7 @@
                     <Border Padding="0 3 0 3" DockPanel.Dock="Right">
                         <Button x:Name="btnLoad" DockPanel.Dock="Right"
                                 Margin="10 0 10 0"
-                                Command="{Binding LoadScheduleCommand}">
+                                >
                             <StackPanel Orientation="Horizontal">
                                 <materialIcons:MaterialIcon Kind="MonitorShare" />
                                 <TextBlock VerticalAlignment="Center" Text="Tải lên" Margin="5 0 0 0" />
@@ -74,6 +74,14 @@
                             <ToolTip.Tip>
                                 <TextBlock Text="Nạp dữ liệu của bạn lên ứng dụng!" />
                             </ToolTip.Tip>
+                            <Interaction.Behaviors>
+                                <ButtonOpenFilePickerBehavior 
+                                    Title="Load dữ liệu"
+                                    AllowMultiple="False"
+                                    FileTypeFilter="JSON Files|*.json"
+                                    Command="{Binding LoadScheduleCommand}"
+                                    ></ButtonOpenFilePickerBehavior>
+                            </Interaction.Behaviors>
                         </Button>
                     </Border>
 

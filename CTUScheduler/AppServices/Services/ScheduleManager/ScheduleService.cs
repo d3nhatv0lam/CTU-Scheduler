@@ -96,7 +96,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         _logger.LogInformation("Removed timetable");
     }
 
-    public async Task ReloadCourseDataAsync()
+    public async Task<bool> TryReloadCourseDataAsync()
     {
         try
         {
@@ -119,15 +119,31 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
                     _logger.LogError($"No response received for course code: {code}");
                     continue;
                 }
-                course.Sections = course.Sections.Where(x => groups.Contains(x.Group)).ToList();
+
+                var groupList = groups.ToList();
+                var newCourseSectionGroups = course.Sections.Select(s => s.Group).ToList();
+                
+                var unableReloadSections = groupList.Except(newCourseSectionGroups);
+                foreach (var sectionGroup in unableReloadSections)
+                {
+                    var unActiveSection = GetCourseSection(code, sectionGroup);
+                    if (unActiveSection is null) continue;
+                    unActiveSection.RemainingStudents = 0;
+                    unActiveSection.TotalStudents = 0;
+                }
+                
+                var ableReloadSections = groupList.Intersect(newCourseSectionGroups).ToHashSet();
+                course.Sections = course.Sections.Where(x => ableReloadSections.Contains(x.Group)).ToList();
                 
                 _courseManager.UpdateCourse(course);
                 await Task.Delay(800);
             }
+            return true;
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Failed to reload course data");
+            return false;
         }
         finally
         {
@@ -170,12 +186,11 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         return true;
     }
 
-    public async Task<bool> TryLoadScheduleAsync()
+    public async Task<bool> TryLoadScheduleAsync(string filePath)
     {
-        var path = "D:/Schedule.json";
         try
         {
-            bool isLoaded = await _userDataService.TryLoadUserDataAsync(path,JsonHelper.JsonPropertyMatchingOptions);
+            bool isLoaded = await _userDataService.TryLoadUserDataAsync(filePath,JsonHelper.JsonPropertyMatchingOptions);
             if (!isLoaded)
             {
                 _logger.LogError("Failed to load schedule");
@@ -224,12 +239,12 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         _data.Clear();
     }
 
-    private bool ValidateSavedTables(IEnumerable<Course> courses, IEnumerable<ScheduleTable> tables)
+    private bool ValidateSavedTables(List<Course> courses, List<ScheduleTable> tables)
     {
         if (courses == null || tables == null)
             return false;
         
-        // kiểm tra trùng course section
+        // validate unique (course,section)
         var courseSet = new HashSet<(string, string)>();
         foreach (var course in courses)
         {
@@ -239,6 +254,10 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
                     return false;
             }
         }
+        
+        // validate limit of timetable
+        if (tables.Count > MAX_TIMETABLE_COUNT_LIMIT)
+            return false;
 
         var timetableCourseKeys = tables
             .SelectMany(table => table.SavedCourseGroupKeys)

@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
@@ -81,7 +82,9 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                     Router.NavigateAndReset.Execute(page);
                 }).DisposeWith(_disposables);
 
-
+            
+            
+            
             TryGetUserInfo();
 
             //SelectedItem = NavigationItems.First();

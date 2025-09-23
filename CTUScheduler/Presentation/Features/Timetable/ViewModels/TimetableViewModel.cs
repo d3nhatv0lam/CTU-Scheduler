@@ -27,7 +27,7 @@ public class TimetableViewModel : ViewModelBase, IDisposable
 
     public void UpdateGroupCells(CourseSection section)
     {
-        var key = $"{section.Key}-{section.Group}";
+        var key = $"{section.Code}-{section.Group}";
         if (!GroupCells.TryGetValue(key, out var groupCellShared)) return;
         groupCellShared.RemainingStudents = section.RemainingStudents;
         groupCellShared.TotalStudents = section.TotalStudents;

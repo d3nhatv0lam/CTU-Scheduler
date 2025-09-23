@@ -46,10 +46,20 @@ namespace CTUScheduler.AppServices.Services.WebDriver
                 .SelectMany(async x => 
                 {
                     // get userKey(ID) & userUnit
-                    var user = await TryGetUserKeyAndUnit();
-                    return x.ToRegistrationInformation(user.userKey, user.userUnit);
-                });
+                    try
+                    {
+                        var user = await TryGetUserKeyAndUnit();
+                        return x.ToRegistrationInformation(user.userKey, user.userUnit);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogWarning(e,"Failed to get user key and user unit from CTUWebDriverService");
+                        return null!;
+                    }
+                })
+                .WhereNotNull();
 
+            
             // Course Catalog quick select response
             _courseCatalogQuickSelectResponse =
                 _webDriverService.JsonResponse

@@ -8,7 +8,7 @@ namespace CTUScheduler.AppServices.Services.ScheduleManager;
 
 public interface ICourseScheduleService
 {
-    public Task ReloadCourseDataAsync();
+    public Task<bool> TryReloadCourseDataAsync();
     public Course? GetCourse(string code);
     public CourseSection? GetCourseSection(string code, string group);
     public SectionChoice? GetSectionChoice(string code, string group);

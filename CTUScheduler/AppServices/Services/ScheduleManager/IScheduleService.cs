@@ -36,5 +36,5 @@ public interface IScheduleService
     /// Load TimetableChanges from save to TimetableLayouts
     /// </summary>
     /// <returns></returns>
-    public Task<bool> TryLoadScheduleAsync();
+    public Task<bool> TryLoadScheduleAsync(string filePath);
 }

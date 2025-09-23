@@ -73,7 +73,7 @@ public class TimetableLayoutVmAdapter: ITimetableLayoutAdapter
     
     public async Task UpdateAsync()
     {
-        await _scheduleService.ReloadCourseDataAsync();
+        if (!await _scheduleService.TryReloadCourseDataAsync()) return;
         foreach (var vm in _vmDict.Values)
         {
             vm.Update();
