@@ -51,7 +51,6 @@
                     <!--// download data button //-->
                     <Border Padding="0 3 0 3" DockPanel.Dock="Right">
                         <Button x:Name="btnSave"
-                                Command="{Binding SaveScheduleCommand}"
                                 Margin="0 0 10 0">
                             <StackPanel Orientation="Horizontal">
                                 <materialIcons:MaterialIcon Kind="MonitorArrowDownVariant" />
@@ -60,6 +59,14 @@
                             <ToolTip.Tip>
                                 <TextBlock Text="Tải dữ liệu về máy của bạn!" />
                             </ToolTip.Tip>
+                            <Interaction.Behaviors>
+                                <ButtonSaveFilePickerBehavior 
+                                    Title="Load dữ liệu"
+                                    FileTypeChoices="JSON Files|*.json"
+                                    SuggestedFileName="Thời khóa biểu - CTU Scheduler"
+                                    Command="{Binding SaveScheduleCommand}"
+                                    ></ButtonSaveFilePickerBehavior>
+                            </Interaction.Behaviors>
                         </Button>
                     </Border>
                     <!--// load data button //-->

@@ -31,7 +31,7 @@ public interface IScheduleService
     ///  Save TimetableChanges from runtime to .json file
     /// </summary>
     /// <returns></returns>
-    public Task<bool> TrySaveScheduleAsync();
+    public Task<bool> TrySaveScheduleAsync(string filePath);
     /// <summary>
     /// Load TimetableChanges from save to TimetableLayouts
     /// </summary>

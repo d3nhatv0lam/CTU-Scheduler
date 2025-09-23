@@ -45,7 +45,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 
         public ReactiveCommand<Unit, Unit> ShowAddCourseDialogCommand { get; }
         public ReactiveCommand<IStorageFile[], Unit> LoadScheduleCommand { get; }
-        public ReactiveCommand<Unit, Unit> SaveScheduleCommand { get; }
+        public ReactiveCommand<IStorageFile, Unit> SaveScheduleCommand { get; }
         public ReactiveCommand<Unit, Unit> ReloadAllTimetableCommand { get; }
         public ReactiveCommand<TimetableLayoutViewModel, Unit> ShowTimetableDetailsCommand { get; }
         
@@ -97,9 +97,17 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     await _timetableDialogService.ShowTimetableDetails(timetableLayoutViewModel))
                 .DisposeWith(_disposables);
 
-            SaveScheduleCommand = ReactiveCommand.CreateFromTask(async () =>
+            SaveScheduleCommand = ReactiveCommand.CreateFromTask<IStorageFile>(async file =>
             {
-                await _scheduleService.TrySaveScheduleAsync();
+                var filePath = file.Path.LocalPath;
+                if (await _scheduleService.TrySaveScheduleAsync(filePath))
+                {
+                    
+                }
+                else
+                {
+                    
+                }
             }).DisposeWith(_disposables);
 
             LoadScheduleCommand = ReactiveCommand.CreateFromTask<IStorageFile[]>(async files =>
@@ -107,7 +115,14 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     foreach (var file in files)
                     {
                         var filePath = file.Path.LocalPath;
-                        await _scheduleService.TryLoadScheduleAsync(filePath);
+                        if (await _scheduleService.TryLoadScheduleAsync(filePath))
+                        {
+                            
+                        }
+                        else
+                        {
+                            
+                        }
                         break;
                     }
                 })

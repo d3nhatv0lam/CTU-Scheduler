@@ -166,16 +166,15 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
        return _courseManager.GetSectionChoice(code, group);
     }
 
-    public async Task<bool> TrySaveScheduleAsync()
+    public async Task<bool> TrySaveScheduleAsync(string filePath)
     {
-        var path = "D:/Schedule.json";
         var currentSavedTime = LastSaved;
         
         var courses = _courseManager.GetAllCourses();
         var tables = _data.Items.ToList();
         TrimCoursesAndTables(courses,tables);
         BindScheduleSave(courses,tables);
-        var isSaved =  await _userDataService.TrySaveUserDataAsync(path);
+        var isSaved =  await _userDataService.TrySaveUserDataAsync(filePath);
         if (!isSaved)
         {
             _logger.LogError("Failed to save schedule");
