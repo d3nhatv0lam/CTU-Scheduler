@@ -10,10 +10,10 @@ using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Helpers.Json;
 using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Core.Extensions;
-using CTUScheduler.Core.Helpers;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
@@ -189,7 +189,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     {
         try
         {
-            bool isLoaded = await _userDataService.TryLoadUserDataAsync(filePath,JsonHelper.JsonPropertyMatchingOptions);
+            bool isLoaded = await _userDataService.TryLoadUserDataAsync(filePath,JsonHelper.ScheduleLoadOptions);
             if (!isLoaded)
             {
                 _logger.LogError("Failed to load schedule");

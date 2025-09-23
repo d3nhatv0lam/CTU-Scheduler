@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Text.Json;
 using System.Threading.Tasks;
-using CTUScheduler.Core.Helpers;
+using CTUScheduler.AppServices.Helpers.Json;
 using CTUScheduler.Core.Models.UserSaves;
 using Microsoft.Extensions.Logging;
 

@@ -4,11 +4,11 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 
-namespace CTUScheduler.Core.Helpers
+namespace CTUScheduler.AppServices.Helpers.Json
 {
     public static class JsonHelper
     {
-        public static JsonSerializerOptions JsonPropertyMatchingOptions { get; } = new JsonSerializerOptions
+        public static JsonSerializerOptions ScheduleLoadOptions { get; } = new JsonSerializerOptions
         {
             TypeInfoResolver = new DefaultJsonTypeInfoResolver
             {
@@ -23,6 +23,7 @@ namespace CTUScheduler.Core.Helpers
                     }
                 }
             },
+            Converters = { new StrictDictionaryConverter() },
             UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
         };
         

@@ -115,7 +115,8 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     foreach (var file in files)
                     {
                         var filePath = file.Path.LocalPath;
-                        if (await _scheduleService.TryLoadScheduleAsync(filePath))
+                        var isLoaded = await Task.Run(async () => await _scheduleService.TryLoadScheduleAsync(filePath));
+                        if (isLoaded)
                         {
                             
                         }
