@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
+using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 
@@ -19,6 +21,9 @@ public class ScheduleValidator
     /// </returns>
     public bool IsValidTimeTableFromRaw(List<SectionChoice> timeTableData)
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (timeTableData == null)
+            return false;
         switch (timeTableData.Count)
         {
             case 0:
@@ -31,6 +36,26 @@ public class ScheduleValidator
         {
             if (IsOverlapTimeTable(courseData, timeTableData[i].Section))
                 return false;
+        }
+        return true;
+    }
+
+    public bool IsValidTimetable(ScheduleTable timetable, Dictionary<(string code,string group),CourseSection> courseSectionDictionary)
+    {
+        if (timetable == null || courseSectionDictionary == null)
+            return false;
+        
+        var buildSections = new List<CourseSection>();
+        foreach (var (code, group) in timetable.SavedCourseGroupKeys)
+        {
+            if (!courseSectionDictionary.TryGetValue((code, group), out var section))
+                return false;
+            foreach (var buildSection in buildSections)
+            {
+                if (IsOverlapTimeTable(section, buildSection))
+                    return false;
+            }
+            buildSections.Add(section);
         }
         return true;
     }
@@ -58,12 +83,20 @@ public class ScheduleValidator
             }
         }
         return false;
-        
-        bool IsConflict(ClassDay x, ClassDay y)
-        {
-            // Trùng nhau nếu KHÔNG thỏa điều kiện "một cái hoàn toàn trước hoặc sau cái kia"
-            return !(x.EndPeriod() < y.StartPeriod() || y.EndPeriod() < x.StartPeriod());
-        }
     }
     
+    public bool IsConflict(ClassDay x, ClassDay y)
+    {
+        // Trùng nhau nếu KHÔNG thỏa điều kiện "một cái hoàn toàn trước hoặc sau cái kia"
+        return !(x.EndPeriod() < y.StartPeriod() || y.EndPeriod() < x.StartPeriod());
+    }
+    
+    /// <summary>
+    ///  Check existed timetable in list by comparing saved course group keys
+    /// </summary>
+    /// <param name="table"></param>
+    /// <param name="tables"></param>
+    /// <returns></returns>
+    public bool IsExistedTimetable(ScheduleTable table, IEnumerable<ScheduleTable> tables)
+        => tables.Any(x => table.SavedCourseGroupKeys.DictionaryEquals(x.SavedCourseGroupKeys));
 }

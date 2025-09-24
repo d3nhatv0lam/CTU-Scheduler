@@ -75,7 +75,7 @@ public class ScheduleGroupCellShared: ReactiveObject, IDisposable
     {
         get
         {
-            if (TotalStudents == 0) return RemainingLevel.Archived;
+            if (TotalStudents <= 0  || RemainingStudents < 0) return RemainingLevel.Archived;
             double ratio = (double)RemainingStudents / TotalStudents;
             if (ratio == 0) return RemainingLevel.None;
             if (ratio < 0.1) return RemainingLevel.Low;
@@ -97,6 +97,7 @@ public class ScheduleGroupCellShared: ReactiveObject, IDisposable
 
         // Nếu cần update status khác khi property thay đổi
         this.WhenAnyValue(x => x.RemainingConcatTotalStudents)
+            .Throttle(TimeSpan.FromMilliseconds(200))
             .Subscribe(_ => OnUpdateRemainingStudentsStatus())
             .DisposeWith(_disposables);
     }

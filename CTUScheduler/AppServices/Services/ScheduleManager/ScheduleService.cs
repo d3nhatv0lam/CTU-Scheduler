@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using CTUScheduler.AppServices.Helpers.Json;
 using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Services.WebDriver;
+using CTUScheduler.AppServices.Validators;
 using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
@@ -32,6 +33,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     private readonly IUserDataService _userDataService;
     private readonly ICourseManager _courseManager;
     private readonly ICTUWebDriverService _CTUWebDriverService;
+    private readonly ScheduleValidator _scheduleValidator = new();
     
     private readonly SourceList<ScheduleTable> _data = new();
     private readonly Subject<bool> _isReloadingSubject = new();
@@ -69,10 +71,9 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
 
         var courses = trimmedBuildData.Courses;
         var scheduleTable = trimmedBuildData.ScheduleTable;
-        
-        var isExisted = _data.Items
-            .Any(x => scheduleTable.SavedCourseGroupKeys.DictionaryEquals(x.SavedCourseGroupKeys));
-        if (isExisted) return;
+
+        if (!_scheduleValidator.IsExistedTimetable(scheduleTable, _data.Items))
+            return;
         
         _courseManager.RegisterTimetable(courses, scheduleTable);
         _data.Add(scheduleTable);
@@ -242,10 +243,11 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     {
         if (courses == null || tables == null)
             return false;
-        
+
+        var courseList = courses.ToList();
         // validate unique (course,section)
         var courseSet = new HashSet<(string, string)>();
-        foreach (var course in courses)
+        foreach (var course in courseList)
         {
             foreach (var section in course.Sections)
             {
@@ -257,13 +259,18 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         // validate limit of timetable
         if (tables.Count > MAX_TIMETABLE_COUNT_LIMIT)
             return false;
-
-        var timetableCourseKeys = tables
-            .SelectMany(table => table.SavedCourseGroupKeys)
-            .Select(pkv => (pkv.Key, pkv.Value))
-            .ToHashSet();
         
-        return timetableCourseKeys.IsSubsetOf(courseSet);
+        var courseSectionDictionary = courseList
+            .SelectMany(course => course.Sections.Select(section => (course.Code,section.Group,section)))
+            .ToDictionary(x => (x.Code,x.Group), x => x.section);
+        
+        // validate timetable
+        foreach (var table in tables)
+        {
+            if (!_scheduleValidator.IsValidTimetable(table, courseSectionDictionary))
+                return false;
+        }
+        return true;
     }
 
     /// <summary>
