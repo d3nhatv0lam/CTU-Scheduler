@@ -15,6 +15,7 @@ using CTUScheduler.Presentation.Features.Timetable.Interfaces;
 using CTUScheduler.Presentation.Features.Timetable.Resources;
 using CTUScheduler.Presentation.Shared.Extensions;
 using ReactiveUI;
+using Serilog;
 
 namespace CTUScheduler.Presentation.Features.Timetable.ViewModels;
 
@@ -165,6 +166,8 @@ public class TimetableLayoutViewModel:
 
     public void Dispose()
     {
+        Log.Information("TimetableLayoutViewModel: Disposed");
+        _scheduleCourseData.Clear();
         TimeTableVM.Dispose();
         _disposables.Dispose();
     }

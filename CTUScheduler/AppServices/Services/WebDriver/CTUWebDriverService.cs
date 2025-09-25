@@ -313,7 +313,7 @@ namespace CTUScheduler.AppServices.Services.WebDriver
 
         private JsonElement? ToCourseCatalogQuickSelectJsonData(JsonElement? rawJson)
         {
-            if (rawJson is not JsonElement dataElement) return null;
+            if (rawJson is not { } dataElement) return null;
 
             try
             {
@@ -333,9 +333,9 @@ namespace CTUScheduler.AppServices.Services.WebDriver
                 ILocator courseKeyInput = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_DANHMUCHOCPHAN_SEARCHBOX);
                 await _webDriverService.FillElementAsync(courseKeyInput, courseStr);
             }
-            catch
+            catch (Exception e)
             {
-                _logger.LogError("Exception when FillCourseKey");
+                _logger.LogError(e, "Exception when FillCourseKey");
             }
         }
 
@@ -348,9 +348,9 @@ namespace CTUScheduler.AppServices.Services.WebDriver
                 ILocator searchButton = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_DANHMUCHOCPHAN_SEARCH_BUTTON);
                 await _webDriverService.ClickElementAsync(searchButton);
             }
-            catch
+            catch (Exception e)
             {
-                _logger.LogError("Exception when SearchCourse");
+                _logger.LogError(e,"Exception when Search Course");
             }
         }
 
@@ -372,9 +372,9 @@ namespace CTUScheduler.AppServices.Services.WebDriver
                 }
 
             }
-            catch
+            catch (Exception e)
             {
-                _logger.LogError("Exception when ToCourseCatalogJsonData");
+                _logger.LogError(e,"Exception when ToCourseCatalogJsonData");
                 return null;
             }
         }

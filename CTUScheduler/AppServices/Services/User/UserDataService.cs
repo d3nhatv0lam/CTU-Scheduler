@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -32,7 +31,7 @@ namespace CTUScheduler.AppServices.Services.User
         public async Task<bool> TryLoadUserDataAsync(string filePath, JsonSerializerOptions? options = null)
         {
             try
-            {
+            { 
                 var loadedData = await JsonHelper.DeserializeFromFileAsync<ScheduleSave>(filePath,options);
                 ArgumentNullException.ThrowIfNull(loadedData);
 

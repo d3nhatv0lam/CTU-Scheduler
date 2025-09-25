@@ -62,7 +62,6 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         _courseManager = new CourseManager();
         _CTUWebDriverService = CTUWebDriverService;
         _logger = logger;
-        
     }
     
     public void AddTimetable(ScheduleTableBuildData buildData)
@@ -72,7 +71,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         var courses = trimmedBuildData.Courses;
         var scheduleTable = trimmedBuildData.ScheduleTable;
 
-        if (!_scheduleValidator.IsExistedTimetable(scheduleTable, _data.Items))
+        if (_scheduleValidator.IsExistedTimetable(scheduleTable, _data.Items))
             return;
         
         _courseManager.RegisterTimetable(courses, scheduleTable);
