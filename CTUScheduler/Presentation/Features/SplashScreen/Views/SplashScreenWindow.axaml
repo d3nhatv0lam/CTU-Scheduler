@@ -62,8 +62,7 @@
 						<Setter Property="FontFamily" Value="{StaticResource Ctu-Text-Font}"/>
 					</Style>
 				 </Grid.Styles>
-				 
-				 
+				
 				 <TextBlock Grid.Row="1"
 							Classes="Title"
 							FontSize="20"

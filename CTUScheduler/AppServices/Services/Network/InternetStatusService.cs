@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace CTUScheduler.AppServices.Services.Network;
 public class InternetStatusService : IInternetStatusService, IDisposable
 {
-    protected const string REQUEST_URL = "https://www.google.com";
+    protected const string ENDPOINT_INTERENET_CHECK = "https://www.google.com/generate_204";
     private readonly CompositeDisposable _disposable = new ();
     private readonly Subject<bool> _internetStatusOnRefresh = new();
     private readonly HttpClient _httpClient;
@@ -72,7 +72,8 @@ public class InternetStatusService : IInternetStatusService, IDisposable
         try
         {
             // Endpoint có thể thay đổi tuỳ ứng dụng, ở đây dùng google.com làm ví dụ.
-            var response = await _httpClient.GetAsync(REQUEST_URL);
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Head, ENDPOINT_INTERENET_CHECK);
+            var response = await _httpClient.SendAsync(requestMessage);
             return response.IsSuccessStatusCode;
         }
         catch

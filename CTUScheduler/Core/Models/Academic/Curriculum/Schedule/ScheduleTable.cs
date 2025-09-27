@@ -10,9 +10,5 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Schedule
         public string Description { get; set; } = string.Empty;
         public Dictionary<string,string> SavedCourseGroupKeys { get; set; } = new();
         public DateTime LastUpdated { get; set; } = DateTime.Now;
-
-        public ScheduleTable()
-        {
-        }
     }
 }

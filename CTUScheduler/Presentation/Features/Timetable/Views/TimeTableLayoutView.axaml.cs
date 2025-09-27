@@ -38,7 +38,7 @@ public partial class TimetableLayoutView : ReactiveUserControl<TimetableLayoutVi
             this.OneWayBind(ViewModel,
                 x => x.LastUpdated,
                 v => v.LastUpdateTextBlock.Text,
-                updateTime => $"Last updated: {updateTime}")
+                updateTime => $"Lần cuối cập nhật: {updateTime}")
                 .DisposeWith(disposable);
         });
     }

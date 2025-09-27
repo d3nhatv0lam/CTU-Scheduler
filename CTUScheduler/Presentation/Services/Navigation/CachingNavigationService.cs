@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using ReactiveUI;
 
-namespace CTUScheduler.AppServices.Services.Navigation
+namespace CTUScheduler.Presentation.Services.Navigation
 {
     public class CachingNavigationService : ICachingNavigationService
     {

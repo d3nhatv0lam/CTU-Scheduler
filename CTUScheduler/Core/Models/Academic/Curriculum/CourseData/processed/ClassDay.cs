@@ -17,8 +17,20 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed
         public string Period { get; set; }
         public string Room { get; set; }
 
+        /// <summary>
+        /// Tiết bắt đầu
+        /// </summary>
+        /// <returns></returns>
         public int StartPeriod() => Period.Trim('-').First() - '0';
+        /// <summary>
+        /// Số tiết học
+        /// </summary>
+        /// <returns></returns>
         public int PeriodCount() => Period.Trim('-').Length;
+        /// <summary>
+        /// Tiết kết thúc
+        /// </summary>
+        /// <returns></returns>
         public int EndPeriod() => Period.Trim('-').Last() - '0';
     }
 }

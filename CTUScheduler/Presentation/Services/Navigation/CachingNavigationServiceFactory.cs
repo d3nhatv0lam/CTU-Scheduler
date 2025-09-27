@@ -1,7 +1,7 @@
 ﻿using System;
 using ReactiveUI;
 
-namespace CTUScheduler.AppServices.Services.Navigation
+namespace CTUScheduler.Presentation.Services.Navigation
 {
     public class CachingNavigationServiceFactory : ICachingNavigationServiceFactory
     {

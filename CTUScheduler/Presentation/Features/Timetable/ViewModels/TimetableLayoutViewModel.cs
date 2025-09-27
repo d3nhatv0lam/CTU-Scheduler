@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Runtime.ExceptionServices;
+using Avalonia.Controls;
 using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
@@ -13,6 +15,8 @@ using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Timetable.Interfaces;
 using CTUScheduler.Presentation.Features.Timetable.Resources;
+using CTUScheduler.Presentation.Features.Timetable.Views;
+using CTUScheduler.Presentation.Helpers;
 using CTUScheduler.Presentation.Shared.Extensions;
 using ReactiveUI;
 using Serilog;
@@ -62,6 +66,8 @@ public class TimetableLayoutViewModel:
         get => _lastUpdated;
         private set => this.RaiseAndSetIfChanged(ref _lastUpdated, value);
     }
+    
+    public ReactiveCommand<TimetableLayoutView,Unit> SaveLayoutToImageCommand { get; }
 
     public TimetableLayoutViewModel(ScheduleTable scheduleTable)
     {
@@ -101,6 +107,14 @@ public class TimetableLayoutViewModel:
                 _scheduleTable.LastUpdated = LastUpdated;
             })
             .DisposeWith(_disposables);
+
+        SaveLayoutToImageCommand = ReactiveCommand.CreateFromTask<TimetableLayoutView>(async control =>
+        {
+            var clone = new TimetableLayoutView();
+            clone.DataContext = control.DataContext;
+            
+            await OffscreenRenderHelper.SaveToFile(clone,"D:/test.png",1500,900);
+        }).DisposeWith(_disposables);
     }
 
     protected virtual void OnRequestUpdate()
