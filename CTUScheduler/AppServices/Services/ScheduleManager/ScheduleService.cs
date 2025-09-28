@@ -9,8 +9,10 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Helpers.Json;
+using CTUScheduler.AppServices.Services.RegistrationInfor;
 using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.AppServices.Validators;
@@ -33,15 +35,28 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     private readonly IUserDataService _userDataService;
     private readonly ICourseManager _courseManager;
     private readonly ICTUWebDriverService _CTUWebDriverService;
+    private readonly IRegistrationInformationService _registrationInformationService;
     private readonly ScheduleValidator _scheduleValidator = new();
     
     private readonly SourceList<ScheduleTable> _data = new();
     private readonly Subject<bool> _isReloadingSubject = new();
-    private readonly BehaviorSubject<DateTime> _lastSavedSubject = new(DateTime.MinValue);
+    private readonly BehaviorSubject<bool> _isExpiredSavedSubject = new(false);
+    private readonly BehaviorSubject<DateTime?> _lastSavedSubject = new(null);
 
+    private DateTime _lastSaved = DateTime.Now;
     public int MaxTimetableCount => MAX_TIMETABLE_COUNT_LIMIT;
     public int CurrentTimetableCount => _data.Count;
-    public DateTime LastSaved { get; private set; }
+    public IObservable<DateTime?> LastSaveChanged => _lastSavedSubject;
+
+    private DateTime LastSaved
+    {
+        get => _lastSaved;
+        set 
+        {
+            _lastSaved = value;
+            _lastSavedSubject.OnNext(_lastSaved);
+        } 
+    }
 
     public IObservable<IChangeSet<ScheduleTable>> TimetableChanges => _data
         .Connect()
@@ -52,15 +67,19 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         .StartWith(_data.Count)
         .Replay(1)
         .RefCount();
+    
+    public IObservable<bool> IsExpiredSaved => _isExpiredSavedSubject;
 
     public ScheduleService(
         IUserDataService userDataService,
-        ICTUWebDriverService CTUWebDriverService,
+        ICTUWebDriverService ctuWebDriverService,
+        IRegistrationInformationService registrationInformationService,
         ILogger<ScheduleService> logger)
     {
         _userDataService = userDataService;
         _courseManager = new CourseManager();
-        _CTUWebDriverService = CTUWebDriverService;
+        _CTUWebDriverService = ctuWebDriverService;
+        _registrationInformationService = registrationInformationService;
         _logger = logger;
     }
     
@@ -93,6 +112,8 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     {
         _data.Remove(timetable);
         _courseManager.UnregisterTimetable(timetable);
+        if (_data.Count == 0)
+            _isExpiredSavedSubject.OnNext(false);
         _logger.LogInformation("Removed timetable");
     }
 
@@ -168,19 +189,25 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
 
     public async Task<bool> TrySaveScheduleAsync(string filePath)
     {
-        var currentSavedTime = LastSaved;
-        
+        if (!_registrationInformationService.HasRegistrationInformation())
+        {
+            _logger.LogError("No registration information");
+            return false;
+        }
+
+        var savedTime = DateTime.Now;
+        var registerInformation = _registrationInformationService.GetSemester();
         var courses = _courseManager.GetAllCourses();
         var tables = _data.Items.ToList();
         TrimCoursesAndTables(courses,tables);
-        BindScheduleSave(courses,tables);
+        BindScheduleSave(registerInformation,courses,tables,savedTime);
         var isSaved =  await _userDataService.TrySaveUserDataAsync(filePath);
         if (!isSaved)
         {
             _logger.LogError("Failed to save schedule");
-            LastSaved = currentSavedTime;
             return false;
         }
+        _lastSavedSubject.OnNext(savedTime);
         _logger.LogInformation("Saved schedule");
         return true;
     }
@@ -195,7 +222,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
                 _logger.LogError("Failed to load schedule");
                 return false;
             }
-
+            
             var courses = _userDataService.ScheduleSaved.Courses;
             var tables = _userDataService.ScheduleSaved.ScheduleTables;
             if (!ValidateSavedTables(courses, tables))
@@ -203,6 +230,11 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
                 _logger.LogError("Saved are damaged");
                 return false;
             }
+            
+            var savedSemester = _userDataService.ScheduleSaved.Semester;
+            var savedAcademicYear = _userDataService.ScheduleSaved.AcademicYear;
+            
+            _isExpiredSavedSubject.OnNext(!_registrationInformationService.IsEqualSemester(savedSemester, savedAcademicYear));
 
             TrimCoursesAndTables(courses, tables);
 
@@ -217,11 +249,14 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         }
     }
 
-    private void BindScheduleSave(List<Course> courses, List<ScheduleTable> tables)
+    private void BindScheduleSave((int academicYear,string semester) registerInformation,List<Course> courses, List<ScheduleTable> tables, DateTime savedTime)
     {
+        _userDataService.ScheduleSaved.Semester = registerInformation.semester;
+        _userDataService.ScheduleSaved.AcademicYear = registerInformation.academicYear;
         _userDataService.ScheduleSaved.Courses = courses;
         _userDataService.ScheduleSaved.ScheduleTables = tables;
-        _userDataService.ScheduleSaved.LastSaved = DateTime.Now;
+        _userDataService.ScheduleSaved.LastSaved = savedTime;
+        
     }
 
     private void BindScheduleManager(List<Course> courses, List<ScheduleTable> tables)

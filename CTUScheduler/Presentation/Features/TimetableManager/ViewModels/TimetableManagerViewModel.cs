@@ -37,11 +37,15 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 
         private readonly ObservableAsPropertyHelper<int> _timetableLayoutsCount;
         private readonly ObservableAsPropertyHelper<bool> _isEmptyTimetableLayouts;
+        private readonly ObservableAsPropertyHelper<bool> _isExpiredSaved;
+        private readonly ObservableAsPropertyHelper<DateTime?> _lastSaved;
         public string? UrlPathSegment => "TimetableManagerViewModel";
         public IScreen HostScreen { get; }
         public ReadOnlyObservableCollection<TimetableLayoutViewModel> TimetableLayouts => _bindableTimetableLayouts;
         public int TimetableLayoutsCount => _timetableLayoutsCount.Value;
         public bool IsEmptyTimetableLayouts => _isEmptyTimetableLayouts.Value;
+        public bool IsExpiredSaved => _isExpiredSaved.Value;
+        public DateTime? LastSaved => _lastSaved.Value;
 
         public ReactiveCommand<Unit, Unit> ShowAddCourseDialogCommand { get; }
         public ReactiveCommand<IStorageFile[], Unit> LoadScheduleCommand { get; }
@@ -81,11 +85,25 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 .ToProperty(this, nameof(IsEmptyTimetableLayouts), scheduler: RxApp.MainThreadScheduler)
                 .DisposeWith(_disposables);
 
-            GoToCourseCatalogPage();
-            ShowAddCourseDialogCommand = ReactiveCommand.CreateFromTask(OpenAddCourseDialog)
+            _isExpiredSaved = _scheduleService.IsExpiredSaved
+                .ToProperty(this, nameof(IsExpiredSaved), scheduler: RxApp.MainThreadScheduler)
+                .DisposeWith(_disposables);
+
+            _lastSaved = _scheduleService.LastSaveChanged
+                .ToProperty(this, nameof(LastSaved), scheduler: RxApp.MainThreadScheduler)
                 .DisposeWith(_disposables);
             
-            var canReloadAllTimetable = _internetStatusService.InternetStatusOnRefresh.ObserveOn(RxApp.MainThreadScheduler);
+            GoToCourseCatalogPage();
+
+            var canInteractUi = this.WhenAnyValue(x => x.IsExpiredSaved, expired => !expired);
+            ShowAddCourseDialogCommand = ReactiveCommand.CreateFromTask(OpenAddCourseDialog,canInteractUi)
+                .DisposeWith(_disposables);
+            
+            var canReloadAllTimetable = _internetStatusService.InternetStatusOnRefresh
+                .DistinctUntilChanged()
+                .CombineLatest(canInteractUi, (isOnline, canInteract) => isOnline && canInteract)
+                .ObserveOn(RxApp.MainThreadScheduler);
+            
             ReloadAllTimetableCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 if (IsEmptyTimetableLayouts) return;

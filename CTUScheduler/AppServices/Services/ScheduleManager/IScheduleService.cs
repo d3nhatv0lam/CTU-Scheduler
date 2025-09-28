@@ -14,9 +14,11 @@ public interface IScheduleService
 {
     public int MaxTimetableCount { get; }
     public int CurrentTimetableCount { get; }
-    public DateTime LastSaved { get; }
+    public IObservable<DateTime?> LastSaveChanged { get; }
     public IObservable<IChangeSet<ScheduleTable>> TimetableChanges { get; }
     public IObservable<int> TimetableCountChanges { get; }
+    
+    public IObservable<bool> IsExpiredSaved { get; }
     
     
     /// <summary>

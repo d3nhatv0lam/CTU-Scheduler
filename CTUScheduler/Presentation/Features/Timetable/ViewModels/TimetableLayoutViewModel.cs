@@ -89,18 +89,20 @@ public class TimetableLayoutViewModel:
         
         this.WhenAnyValue(x => x.Name)
             .Throttle(TimeSpan.FromMilliseconds(500))
+            .DistinctUntilChanged()
             .Subscribe(newName => _scheduleTable.Name = newName)
             .DisposeWith(_disposables);
         
         this.WhenAnyValue(x => x.Description)
             .Throttle(TimeSpan.FromMilliseconds(500))
+            .DistinctUntilChanged()
             .Subscribe(newDescription => _scheduleTable.Description = newDescription)
             .DisposeWith(_disposables);
         
-
+       
         this.WhenAnyValue(x => x.Name,
-                x => x.Description,
-                x => x.TotalCredit)
+                x => x.Description)
+            .Where(tuple => tuple.Item1 != _scheduleTable.Name && tuple.Item2 != _scheduleTable.Description)
             .Subscribe(_ =>
             {
                 LastUpdated = DateTime.Now;

@@ -75,15 +75,8 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 
             this.WhenAnyValue(x => x.SelectedItem)
                 .WhereNotNull()
-                .Subscribe(item =>
-                {
-                    Title = item.Title;
-                    var page = (IRoutableViewModel)Activator.CreateInstance(item.ViewModelType,HostScreen)!;
-                    Router.NavigateAndReset.Execute(page);
-                }).DisposeWith(_disposables);
-
-            
-            
+                .Subscribe(item => OnNavigatePage(item))
+                .DisposeWith(_disposables);
             
             TryGetUserInfo();
 
@@ -108,6 +101,17 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                 return;
             UserName = userInfo.userName;
             UserMSSV = userInfo.userMSSV;
+        }
+
+        private void OnNavigatePage(NavigationItem item)
+        {
+            Title = item.Title;
+            var page = (IRoutableViewModel)Activator.CreateInstance(item.ViewModelType,HostScreen)!;
+            var oldPage = Router.GetCurrentViewModel();
+            Router.NavigateAndReset.Execute(page);
+                    
+            if (oldPage is IDisposable disposable)
+                disposable.Dispose();
         }
 
         public void Dispose()

@@ -16,6 +16,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using CTUScheduler.AppServices.Services.Network;
+using CTUScheduler.AppServices.Services.RegistrationInfor;
 using CTUScheduler.AppServices.Services.ScheduleManager;
 using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Services.WebDriver;
@@ -110,6 +111,7 @@ public partial class App : Application
         services.AddSingleton<IInternetStatusService, InternetStatusService>(provider => new InternetStatusService(TimeSpan.FromSeconds(3)));
         services.AddSingleton<IWebDriverService,WebDriverService>();
         services.AddSingleton<ICTUWebDriverService, CTUWebDriverService>();
+        services.AddSingleton<IRegistrationInformationService, RegistrationInformationService>();
         services.AddSingleton<IUserDataService, UserDataService>();
         services.AddSingleton<ScheduleService>()
             .AddSingleton<IScheduleService, ScheduleService>(sp => sp.GetRequiredService<ScheduleService>())

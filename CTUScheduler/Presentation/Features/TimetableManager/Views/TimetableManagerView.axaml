@@ -24,6 +24,9 @@
         <Style Selector="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource Text-Font}" />
         </Style>
+        <Style Selector="TextBlock.expired-save">
+            <Setter Property="Foreground" Value="Red"></Setter>
+        </Style>
         <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml"></StyleInclude>
     </rxui:ReactiveUserControl.Styles>
 
@@ -47,7 +50,7 @@
                         Margin="10 0 0 0" />
                     <TextBlock x:Name="txtLastSaved"
                                Margin="5 0 0 0"
-                               Text="Chưa có" />
+                              />
                     <!--// download data button //-->
                     <Border Padding="0 3 0 3" DockPanel.Dock="Right">
                         <Button x:Name="btnSave"
@@ -91,7 +94,18 @@
                             </Interaction.Behaviors>
                         </Button>
                     </Border>
-
+                    <TextBlock Classes="expired-save"
+                               DockPanel.Dock="Right"
+                               IsVisible="{Binding IsExpiredSaved}"
+                               Text="Lưu trữ không phù hợp với học kỳ">
+                               <ToolTip.Tip>
+                                  <StackPanel  Width="300">
+                                      <TextBlock 
+                                          TextWrapping="WrapWithOverflow"
+                                          Text="Bạn sẽ chỉ có thể xem lại các thời khóa biểu của các học kỳ trước, không thể cập nhật hay thêm thời khóa hiểu nữa!"></TextBlock>
+                                  </StackPanel>
+                               </ToolTip.Tip>
+                        </TextBlock>
                 </DockPanel>
             </Border>
         </Border>

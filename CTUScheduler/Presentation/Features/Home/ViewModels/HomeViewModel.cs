@@ -4,11 +4,14 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices;
 using CTUScheduler.AppServices.Helpers;
+using CTUScheduler.AppServices.Services.RegistrationInfor;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
 using CTUScheduler.Presentation.Base;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using Serilog;
 
 namespace CTUScheduler.Presentation.Features.Home.ViewModels
 {
@@ -17,6 +20,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
         private readonly CompositeDisposable _disposable = new CompositeDisposable();
         public ViewModelActivator Activator { get; } = new ViewModelActivator();
         private readonly ICTUWebDriverService _CTUWebDriverService;
+        private readonly IRegistrationInformationService _registrationInformationService;
         private readonly ObservableAsPropertyHelper<RegistrationInformation> _registrationInfor;
         public string? UrlPathSegment => "HomeViewModel";
         
@@ -34,10 +38,12 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
 
         public HomeViewModel(IScreen hostScreen)
         {
-            _CTUWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
+            _CTUWebDriverService = App.ServiceProvider.GetRequiredService<ICTUWebDriverService>();
+            _registrationInformationService = App.ServiceProvider.GetRequiredService<IRegistrationInformationService>();
+            
             HostScreen = hostScreen;
 
-            _registrationInfor = _CTUWebDriverService.RegistrationInformationResponse
+            _registrationInfor = _registrationInformationService.RegistrationInformationResponse
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .ToProperty(this, nameof(RegistrationInfo));
 
@@ -75,6 +81,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
         public void Dispose()
         {
             _disposable.Dispose();
+            Log.Information("HomeViewModel: Disposed");
         }
     }
 }

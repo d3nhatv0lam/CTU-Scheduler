@@ -89,10 +89,10 @@ namespace CTUScheduler.AppServices.Services.WebDriver
             _page.Response += async (sender, e) =>
             {
                 if (e.Status == 200)
-                {       
+                {
+                    var contentType = e.Headers["content-type"];
                     try
                     {
-                        var contentType = e.Headers["content-type"];
                         if (contentType.Contains("application/json"))
                         {
                             var jsonResponse = await e.JsonAsync();
@@ -100,12 +100,13 @@ namespace CTUScheduler.AppServices.Services.WebDriver
                         }
                         else if (contentType.Contains("image"))
                         {
-                        }
+                        }   
                     }
-                    catch
+                    catch 
                     {
-
+                        // ignore
                     }
+                  
                 }
             };
         }

@@ -5,7 +5,7 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed
     public class RegistrationInformation
     {
         public int AcademicYear { get; set; }
-        public string Semester { get; set; }
+        public string Semester { get; set; } = string.Empty;
         public int MaxCreditPerSemester { get; set; }
         public string Period { get; set; }
         public List<GroupItem> Groups { get; set; } = new ();
