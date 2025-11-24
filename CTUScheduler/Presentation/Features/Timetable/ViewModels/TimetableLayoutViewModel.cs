@@ -14,6 +14,7 @@ using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Timetable.Interfaces;
+using CTUScheduler.Presentation.Features.Timetable.Models;
 using CTUScheduler.Presentation.Features.Timetable.Resources;
 using CTUScheduler.Presentation.Features.Timetable.Views;
 using CTUScheduler.Presentation.Helpers;
@@ -119,6 +120,32 @@ public class TimetableLayoutViewModel:
         }).DisposeWith(_disposables);
     }
 
+    private void AddUnScheduleCourse(ScheduleGroupCellShared groupCellShared)
+    {
+        TimeTableVM.AddUnscheduledSubject(groupCellShared);
+        TotalCredit += groupCellShared.Credit;
+    }
+
+    private void AddScheduleCell(ScheduleGroupCellShared groupCellShared, List<ScheduleCellUi> cells)
+    {
+        _timeTableVM.AddCells(groupCellShared, cells);
+        TotalCredit += groupCellShared.Credit;
+    }
+
+    private void AddSchedule(SectionChoice choice)
+    {
+        var (groupCellShared, cells) = choice.ToScheduleCells();
+        var cellList = cells.ToList();
+        if (cellList.Count == 0)
+        {
+            AddUnScheduleCourse(groupCellShared);
+        }
+        else
+        {
+            AddScheduleCell(groupCellShared, cellList);
+        }
+    }
+
     protected virtual void OnRequestUpdate()
     {
         UpdateRequested?.Invoke(this);
@@ -137,6 +164,14 @@ public class TimetableLayoutViewModel:
     {
         OnRequestUpdate();
     }
+    
+    public void ApplyBuildTimetableData(IEnumerable<SectionChoice> choices)
+    {
+        foreach (var choice in choices)
+        {
+            this.AddSchedule(choice);
+        }
+    }
 
     public void ApplyUpdatedTimetableData(IEnumerable<CourseSection> sections)
     {
@@ -146,29 +181,15 @@ public class TimetableLayoutViewModel:
         }
         LastUpdated = DateTime.Now;
     }
-
-    public void ApplyBuildTimetableData(IEnumerable<SectionChoice> choices)
-    {
-        foreach (var choice in choices)
-        {
-            var (groupCellShared, cells) = choice.ToScheduleCells();
-            TotalCredit += groupCellShared.Credit;
-            _timeTableVM.AddCells(groupCellShared, cells);
-        }
-    }
     
     public void TryAddSectionChoice(SectionChoice choice)
     { 
-        var (groupCellShared, cells) = choice.ToScheduleCells();
-        var cellList = cells.ToList();
-        if (cellList.Count == 0 || !_scheduleTable.TryAddToScheduleData(choice))
+        if (!_scheduleTable.TryAddToScheduleData(choice))
            return;
-        TotalCredit += groupCellShared.Credit;
-        
         var courseWithNewSection = choice.Course.CloneWithNewCourseSections([choice.Section]);
-        
         _scheduleCourseData.Add(courseWithNewSection.Code, courseWithNewSection);
-        _timeTableVM.AddCells(groupCellShared, cellList);
+        
+       AddSchedule(choice);
     }
     
     public IEnumerable<Tuple<string,string>> GetScheduleData() => _scheduleTable.SavedCourseGroupKeys.Select(x => new Tuple<string, string>(x.Key, x.Value));

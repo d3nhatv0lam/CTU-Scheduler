@@ -70,7 +70,7 @@ public class ScheduleGroupCellShared: ReactiveObject, IDisposable
     }
     
     public string RemainingConcatTotalStudents => _remainingConcatTotalStudents.Value;
-    
+    public string NameConcat => $"{CourseCode}-{Group}-{CourseName_VN}";
     private RemainingLevel RemainingStatus
     {
         get

@@ -12,30 +12,41 @@ namespace CTUScheduler.Presentation.Features.Timetable.ViewModels;
 public class TimetableViewModel : ViewModelBase, IDisposable
 {
     // Used to update the group cells in ScheduleCells
-    private Dictionary<string, ScheduleGroupCellShared> GroupCells { get; } = new();
+    private Dictionary<string, ScheduleGroupCellShared> GroupCellsDict { get; } = new();
     public ObservableCollection<ScheduleCellUi> ScheduleCells { get; } = new();
+    public ObservableCollection<ScheduleGroupCellShared> UnscheduledCourse { get; } = new();
 
-    public void AddCells(ScheduleGroupCellShared groupCellShared, IEnumerable<ScheduleCellUi> cells)
+    private void AddGroupCell(ScheduleGroupCellShared groupCellShared)
     {
         var key = $"{groupCellShared.CourseCode}-{groupCellShared.Group}";
-        GroupCells.Add(key, groupCellShared);
-        
-        var cellsColor = ColorPalettes.Colors[GroupCells.Count - 1];
+        GroupCellsDict.Add(key, groupCellShared);
+    }
+    
+    public void AddCells(ScheduleGroupCellShared groupCellShared, IEnumerable<ScheduleCellUi> cells)
+    {
+        AddGroupCell(groupCellShared); // ( Add to GroupCellsDict)
+        var cellsColor = ColorPalettes.Colors[GroupCellsDict.Count - 1];
         groupCellShared.BackgroundColor = cellsColor;
         ScheduleCells.AddRange(cells);
     }
 
+    public void AddUnscheduledSubject(ScheduleGroupCellShared groupCellShared)
+    {
+        AddGroupCell(groupCellShared);
+        UnscheduledCourse.Add(groupCellShared);
+    }
+    
     public void UpdateGroupCells(CourseSection section)
     {
         var key = $"{section.Code}-{section.Group}";
-        if (!GroupCells.TryGetValue(key, out var groupCellShared)) return;
+        if (!GroupCellsDict.TryGetValue(key, out var groupCellShared)) return;
         groupCellShared.RemainingStudents = section.RemainingStudents;
         groupCellShared.TotalStudents = section.TotalStudents;
     }
 
     public void Dispose()
     {
-        foreach (var groupCellShared in GroupCells.Values)
+        foreach (var groupCellShared in GroupCellsDict.Values)
             groupCellShared.Dispose();
     }
 }

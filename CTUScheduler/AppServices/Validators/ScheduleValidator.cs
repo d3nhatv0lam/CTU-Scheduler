@@ -30,7 +30,7 @@ public class ScheduleValidator
             case 1:
                 return true;
         }
-        
+        // Get new courseData from last section choice
         var (_, courseData) = timeTableData[^1];
         for (int i = 0; i < timeTableData.Count - 1; i++)
         {
@@ -62,6 +62,7 @@ public class ScheduleValidator
 
     public bool IsOverlapTimeTable(CourseSection x, CourseSection y)
     {
+        if (x.ClassDays.Count == 0 || y.ClassDays.Count == 0) return false;
         foreach (var xTime in x.ClassDays)
         {
             foreach (var yTime in y.ClassDays)

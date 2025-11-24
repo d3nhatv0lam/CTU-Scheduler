@@ -13,6 +13,7 @@
     xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
     xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
     xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Timetable.ViewModels"
+    xmlns:timetableVm="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Models"
     xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Views"
     xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     x:Class="CTUScheduler.Presentation.Features.Timetable.Views.TimetableLayoutView">
@@ -64,15 +65,50 @@
                 <Grid ColumnDefinitions="0.3* 20 *">
                     <!-- // TimeTable Information // -->
                     <Grid Grid.Column="0" RowDefinitions="* *">
-                        <TextBox
-                            x:Name="DescriptionTextBox"
-                            UseFloatingWatermark="True"
-                            p1:TextFieldAssist.Label="Mô tả"
-                            Classes="filled"
-                            VerticalAlignment="Stretch"
-                            Theme="{StaticResource FilledTextBox}"
-                            AcceptsReturn="True"
-                            TextWrapping="Wrap" />
+                        <Grid Grid.Row="0" RowDefinitions="* *">
+                            <TextBox
+                                x:Name="DescriptionTextBox"
+                                UseFloatingWatermark="True"
+                                p1:TextFieldAssist.Label="Mô tả"
+                                Classes="filled"
+                                VerticalAlignment="Stretch"
+                                Theme="{StaticResource FilledTextBox}"
+                                AcceptsReturn="True"
+                                TextWrapping="Wrap" />
+                            
+                            <Grid Grid.Row="1" 
+                                  Background="Transparent"
+                                  RowDefinitions="auto *"
+                                  ToolTip.Tip="Lịch tự dàn xếp với giảng viên">
+                                <TextBlock Grid.Row="0" 
+                                           Text="Môn lịch tự sắp xếp" FontWeight="Bold"
+                                           VerticalAlignment="Stretch" 
+                                           Padding="10"></TextBlock>
+                                <Border Padding="10" Grid.Row="1">
+                                    <ItemsRepeater ItemsSource="{Binding TimeTableVM.UnscheduledCourse}">
+                                        <ItemsRepeater.ItemTemplate>
+                                            <DataTemplate x:DataType="timetableVm:ScheduleGroupCellShared">
+                                                <TextBlock 
+                                                    Text="{Binding NameConcat, Mode=OneTime}" FontWeight="Bold"
+                                                    TextWrapping="WrapWithOverflow" 
+                                                   >
+                                                    <ToolTip.Tip>
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding RemainingConcatTotalStudents, Mode=OneWay}"></TextBlock>
+                                                            <TextBlock Text="{Binding Credit,StringFormat=Tín chỉ:{0},Mode=OneWay}"></TextBlock>
+                                                            <TextBlock Text="{Binding Lecturer, Mode=OneWay}"></TextBlock>
+                                                        </StackPanel>
+                                                    </ToolTip.Tip>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ItemsRepeater.ItemTemplate>
+                                    </ItemsRepeater>
+                                </Border>
+                                <!-- Ct239e -->
+                            </Grid>
+                        </Grid>
+                        
+                        
 
                         <Grid Grid.Row="1" RowDefinitions="* * * auto" ShowGridLines="True">
                             <TextBlock Grid.Row="0"
