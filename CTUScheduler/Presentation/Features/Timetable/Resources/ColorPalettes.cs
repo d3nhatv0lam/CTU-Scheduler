@@ -13,7 +13,6 @@ public static class ColorPalettes
             new SolidColorBrush(Color.Parse("#add8e6")), // xanh duong nhat
             new SolidColorBrush(Color.Parse("#FFFacd")), // vang nhat chanh
             new SolidColorBrush(Color.Parse("#e29b9a")),
-            new SolidColorBrush(Color.Parse("#f5f5dc")),
             new SolidColorBrush(Color.Parse("#7d66ba")),
             new SolidColorBrush(Color.Parse("#d5fad6")), // xanh la bac ha
             new SolidColorBrush(Color.Parse("#B2f2e9")),

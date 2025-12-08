@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.Network;
@@ -23,21 +25,16 @@ namespace CTUScheduler.AppServices.Services.WebDriver
         private IPage _page = null!;
         private Subject<JsonElement?> _jsonResponseSubject = new ();
         protected bool _isHasInternet;
+        
+        private readonly ReplaySubject<string> _installationStatusSubject = new ReplaySubject<string>(1);
+        private readonly BehaviorSubject<bool> _isInstallingSubject = new (false);
+        private readonly ReplaySubject<string> _installationProgressSubject = new ();
 
+        public IObservable<string> InstallationStatus => _installationStatusSubject.AsObservable();
+        public IObservable<bool> IsInstalling => _isInstallingSubject.AsObservable();
+        public IObservable<string> InstallationProgress => _installationProgressSubject.AsObservable();
+        
         public IObservable<JsonElement?> JsonResponse => _jsonResponseSubject.AsObservable();
-
-        public event EventHandler? AlertBoxOpened;
-        public event EventHandler? ConfirmBoxOpened;
-
-        protected virtual void OnAlertBoxOpened()
-        {
-            AlertBoxOpened?.Invoke(this, EventArgs.Empty);
-        }
-
-        protected virtual void OnConfimBoxOpened()
-        {
-            ConfirmBoxOpened?.Invoke(this, EventArgs.Empty);
-        }
 
         public WebDriverService(IInternetStatusService internetStatusService, ILogger<WebDriverService> logger)
         { 
@@ -48,9 +45,174 @@ namespace CTUScheduler.AppServices.Services.WebDriver
 
         public async Task InitWebDriverService()
         {
+            await EnsureBrowserInstalledAsync();
             await CreatePlayWrightChromiumAsync();
             await ConfigPageAsync();
         }
+
+        public async Task EnsureBrowserInstalledAsync()
+        {
+            var (scriptPath, browserDir) = GetInstallationPaths();
+    
+            // Cấu hình Environment ngay từ đầu để CheckIntegrity hoạt động đúng
+            Environment.SetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH", browserDir);
+
+            try
+            {
+                // Kiểm tra nhanh 
+                _installationStatusSubject.OnNext("Đang kiểm tra trạng thái trình duyệt...");
+                if (await CheckBrowserIntegrity())
+                {
+                    _installationStatusSubject.OnNext("Trình duyệt đã sẵn sàng!");
+                    return;
+                }
+
+                // cài đặt
+                _isInstallingSubject.OnNext(true); // Khóa UI
+                _installationStatusSubject.OnNext("Đang tải tài nguyên...");
+
+                // Dọn dẹp rác cũ trước khi cài
+                CleanupOldInstallation(browserDir);
+
+                // Gọi hàm chuyên dụng để chạy Process
+                await RunInstallerProcessAsync(scriptPath, browserDir);
+
+                // 4. Kiểm tra lại lần cuối (Verify)
+                _installationStatusSubject.OnNext("Đang xác thực lại...");
+                if (!await CheckBrowserIntegrity())
+                {
+                    throw new Exception("Quá trình cài đặt báo thành công nhưng không khởi động được trình duyệt.");
+                }
+
+                _installationStatusSubject.OnNext("Cài đặt hoàn tất! Sẵn sàng sử dụng.");
+            }
+            catch (Exception ex)
+            {
+                _installationStatusSubject.OnNext($"Lỗi: {ex.Message}");
+                _logger.LogError(ex, "Playwright installation failed");
+                throw;
+            }
+            finally
+            {
+                _isInstallingSubject.OnNext(false); // Mở lại UI
+            }
+        }
+
+        private async Task RunInstallerProcessAsync(string scriptPath, string browserDir)
+        {
+            _logger.LogInformation("Launching PowerShell installer...");
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "powershell.exe", // Hoặc "pwsh"
+                Arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" install chromium",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                WorkingDirectory = Path.GetDirectoryName(scriptPath)
+            };
+
+            // Truyền biến môi trường trực tiếp cho Process con
+            startInfo.EnvironmentVariables["PLAYWRIGHT_BROWSERS_PATH"] = browserDir;
+
+            using var process = new Process { StartInfo = startInfo };
+
+            // Đăng ký nhận Log
+            process.OutputDataReceived += (s, e) => ForwardLogToSubject(e.Data);
+            process.ErrorDataReceived += (s, e) => ForwardLogToSubject(e.Data, isError: true);
+
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            await process.WaitForExitAsync();
+
+            if (process.ExitCode != 0)
+            {
+                throw new Exception($"Installer exited with code {process.ExitCode}");
+            }
+            _isInstallingSubject.OnNext(false);
+        }
+        
+        /// <summary>
+        /// Lấy và kiểm tra đường dẫn file script/folder
+        /// </summary>
+        private (string ScriptPath, string BrowserDir) GetInstallationPaths()
+        {
+            string rootPath = AppDomain.CurrentDomain.BaseDirectory;
+            string browserDir = Path.Combine(rootPath, "browser_bin");
+            string scriptPath = Path.Combine(rootPath, "playwright.ps1");
+
+            if (!File.Exists(scriptPath))
+            {
+                throw new FileNotFoundException($"Không tìm thấy file cài đặt tại: {scriptPath}");
+            }
+
+            return (scriptPath, browserDir);
+        }
+        
+        /// <summary>
+        /// Xóa folder cũ an toàn
+        /// </summary>
+        private void CleanupOldInstallation(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                try 
+                { 
+                    _installationProgressSubject.OnNext("> Đang dọn dẹp dữ liệu cũ...\n");
+                    Directory.Delete(path, true); 
+                } 
+                catch (Exception ex)
+                { 
+                    // Warning nhẹ, không chặn quy trình
+                    _logger.LogWarning($"Không thể xóa folder cũ: {ex.Message}");
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Helper đẩy log vào Subject (tránh code lặp lại)
+        /// </summary>
+        private void ForwardLogToSubject(string? message, bool isError = false)
+        {
+            if (string.IsNullOrWhiteSpace(message)) return;
+
+            string prefix = isError ? "[SYSTEM ERROR] " : "";
+            _installationProgressSubject.OnNext($"{prefix}{message}{Environment.NewLine}");
+        }
+        
+        /// <summary>
+        /// Thử khởi động trình duyệt ẩn danh nhanh để xem file có hỏng không
+        /// </summary>
+        private async Task<bool> CheckBrowserIntegrity()
+        {
+            try
+            {
+                // Tạo instance Playwright nhẹ
+                using var playwright = await Playwright.CreateAsync();
+                
+                // Thử launch trình duyệt (Headless = true để không hiện UI)
+                // Nếu file lỗi, dòng này sẽ throw exception ngay
+                await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions 
+                { 
+                    Headless = true 
+                });
+                
+                // Nếu code chạy đến đây nghĩa là browser ngon
+                await browser.CloseAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                // Bất cứ lỗi gì (thiếu file, lỗi version, permission) đều trả về false
+                return false;
+            }
+        }
+
+       
 
         protected async Task CreatePlayWrightChromiumAsync()
         {
@@ -76,13 +238,11 @@ namespace CTUScheduler.AppServices.Services.WebDriver
                 if (e.Type == DialogType.Alert)
                 {
                     _logger.LogInformation(e.Message);
-                    OnAlertBoxOpened();
                     await e.DismissAsync();
                 }
                 else if (e.Type == DialogType.Confirm)
                 {
                     _logger.LogInformation(e.Message);
-                    OnConfimBoxOpened();
                     await e.AcceptAsync();
                 }
             };
@@ -133,7 +293,7 @@ namespace CTUScheduler.AppServices.Services.WebDriver
 
         public string GetPageUrl()
         {
-            return _page.Url;
+            return _page.Url ?? string.Empty;
         }
 
         public async Task<bool> TryWaitForUrlAsync(string url,int timeout = 10000)

@@ -2,9 +2,11 @@
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using CTUScheduler.Presentation.Shells.AppShell.Views;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Presentation.Services.AppToplevel;
@@ -21,7 +23,15 @@ public class ToplevelService: IToplevelService, IDisposable
     {
         _logger = logger;
     }
-    
+
+    public void ShowWindow(Window window)
+    {
+        var mainWindow = _toplevelSubject.Value;
+        if (mainWindow is not Window owner) return;
+        
+        window.Show(owner);
+    }
+
     public void Initialize(Control root)
     {
         ArgumentNullException.ThrowIfNull(root);

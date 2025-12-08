@@ -11,6 +11,7 @@ using Serilog;
 using Splat;
 using System;
 using System.Diagnostics;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -43,6 +44,21 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+        
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.File(
+                path: "logs/log-.log",
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 7,
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}"
+            )
+            .WriteTo.Debug()
+            .CreateLogger();
+
+        // 2. Kích hoạt bắt lỗi toàn cục ngay lập tức
+        SetupGlobalExceptionHandling();
+        
 
         // đăng ký ServiceCollection
         var services = new ServiceCollection();
@@ -54,24 +70,6 @@ public partial class App : Application
     {
         // load view
         Locator.CurrentMutable.RegisterLazySingleton(() => new ConventionalViewLocator(), typeof(IViewLocator));
-
-        // Load Web
-        Task.Run(async () =>
-        {
-            try
-            {
-                var webService = ServiceProvider!.GetRequiredService<IWebDriverService>();
-                await webService.InitWebDriverService();
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Failed to initialize WebDriverService");
-                if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop1)
-                {
-                    desktop1.Shutdown(1); // Shutdown the application with an error code
-                }
-            }
-        });
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -92,23 +90,13 @@ public partial class App : Application
 
     private void ConfigureServices(IServiceCollection services)
     {
-        Log.Logger = new LoggerConfiguration()
-        .MinimumLevel.Debug()
-        .WriteTo.File(
-            path: "logs/log-.txt",             // File log tự động xoay theo ngày
-            rollingInterval: RollingInterval.Day,
-            retainedFileCountLimit: 7,
-            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}"
-        )
-        .WriteTo.Debug() 
-        .CreateLogger();
-
         services.AddLogging(logging =>
         {
             logging.ClearProviders();  // Xóa các provider mặc định (nếu có)
-            logging.AddSerilog();      // Thêm Serilog
+            logging.AddSerilog(dispose: true);      // Thêm Serilog
         });
-        services.AddSingleton<IInternetStatusService, InternetStatusService>(provider => new InternetStatusService(TimeSpan.FromSeconds(3)));
+        
+        services.AddSingleton<IInternetStatusService, InternetStatusService>(sp => new InternetStatusService(TimeSpan.FromSeconds(3)));
         services.AddSingleton<IWebDriverService,WebDriverService>();
         services.AddSingleton<ICTUWebDriverService, CTUWebDriverService>();
         services.AddSingleton<IRegistrationInformationService, RegistrationInformationService>();
@@ -128,10 +116,16 @@ public partial class App : Application
         services.AddSingleton<IDialogHostService, DialogHostService>();
         services.AddSingleton<ITimetableDialogService, TimetableDialogService>();
         services.AddSingleton<ITimetableLayoutAdapter, TimetableLayoutVmAdapter>();
+        services.AddTransient<SplashScreenWindow>(provider =>
+        {
+            SplashScreenWindow window = new();
+            provider.GetRequiredService<IToplevelService>().Initialize(window);
+            return window;
+        });
         services.AddTransient<MainWindow>(provider =>
         {
             MainWindow window = new();
-            provider.GetRequiredService<IToplevelService>().Initialize(window);
+            // provider.GetRequiredService<IToplevelService>().Initialize(window);
             provider.GetRequiredService<IViewportService>().Initialize(window);
             return window;
         });
@@ -140,17 +134,16 @@ public partial class App : Application
     private Window InitSplashScreenWindow(IClassicDesktopStyleApplicationLifetime desktop)
     {
         var splashScreenViewModel = new SplashScreenViewModel();
-        var splashScreen = new SplashScreenWindow()
-        {
-            DataContext = splashScreenViewModel
-        };
+        var splashScreen = ServiceProvider.GetRequiredService<SplashScreenWindow>();
+        splashScreen.DataContext = splashScreenViewModel;
+        
         if (splashScreenViewModel is IRequestClose requestClose)
         {
             Action<object?>? handler = null;
             handler = (_) =>
             {
                 requestClose.RequestClose -= handler;
-                MainWindow mainWindow = App.ServiceProvider!.GetRequiredService<MainWindow>();
+                MainWindow mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
                 mainWindow.DataContext = new MainViewModel();
 
                 desktop.MainWindow = mainWindow;
@@ -173,16 +166,41 @@ public partial class App : Application
                 await asyncDisposable.DisposeAsync();
             else if (ServiceProvider is IDisposable disposableService)
                 disposableService.Dispose();
-            Log.Information("Services disposed");
+            
+            Log.Information("Application exiting normally.");
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Failed to dispose services");
+            Log.Error(ex, "Error during application shutdown");
         }
         finally
         {
             Log.Logger.Information("App Exited!");
             await Log.CloseAndFlushAsync();
         }
+    }
+    
+    private void SetupGlobalExceptionHandling()
+    {
+        // Bắt lỗi ở các Thread phụ (Background threads)
+        AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+        {
+            var ex = args.ExceptionObject as Exception;
+            Log.Fatal(ex, "APP CRASH: Unhandled Exception on Non-UI Thread");
+        };
+
+        // 2. Bắt lỗi ở Task (Task bị lỗi mà không có await hoặc try-catch)
+        TaskScheduler.UnobservedTaskException += (sender, args) =>
+        {
+            Log.Error(args.Exception, "Background Task Error (Unobserved)");
+            args.SetObserved(); // Ngăn app bị crash nếu muốn
+        };
+
+        // 3. Bắt lỗi của ReactiveUI (Rất quan trọng vì bạn đang dùng ReactiveUI)
+        RxApp.DefaultExceptionHandler = Observer.Create<Exception>(ex => 
+        {
+            Log.Error(ex, "ReactiveUI Exception");
+            // Tại đây bạn có thể hiển thị Dialog báo lỗi cho User nếu muốn
+        });
     }
 }

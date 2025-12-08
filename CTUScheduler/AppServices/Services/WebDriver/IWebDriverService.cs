@@ -8,17 +8,13 @@ namespace CTUScheduler.AppServices.Services.WebDriver
 {
     public interface IWebDriverService
     {
+        IObservable<string> InstallationStatus { get; }
+        IObservable<bool> IsInstalling { get; }
+        IObservable<string> InstallationProgress { get; }
+        
         Task InitWebDriverService();
         IObservable<JsonElement?> JsonResponse { get; }
-
-        event EventHandler AlertBoxOpened;
-        event EventHandler ConfirmBoxOpened;
-        ///<summary>
-        /// Throw NoInternetException Exeption when no Internet 
-        /// </summary>
-        /// <exception cref="NoInternetException">
-        /// </exception>
-        void EnsureInternetConnection();
+        
         string GetPageUrl();
         Task<bool> TryWaitForUrlAsync(string url, int timeout = 10000);
         Task GoToPageAsync(string url);
