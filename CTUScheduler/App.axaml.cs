@@ -96,7 +96,7 @@ public partial class App : Application
             logging.AddSerilog(dispose: true);      // Thêm Serilog
         });
         
-        services.AddSingleton<IInternetStatusService, InternetStatusService>(sp => new InternetStatusService(TimeSpan.FromSeconds(3)));
+        services.AddSingleton<IConnectivityService, ConnectivityService>();
         services.AddSingleton<IWebDriverService,WebDriverService>();
         services.AddSingleton<ICTUWebDriverService, CTUWebDriverService>();
         services.AddSingleton<IRegistrationInformationService, RegistrationInformationService>();
@@ -125,7 +125,7 @@ public partial class App : Application
         services.AddTransient<MainWindow>(provider =>
         {
             MainWindow window = new();
-            // provider.GetRequiredService<IToplevelService>().Initialize(window);
+            provider.GetRequiredService<IToplevelService>().Initialize(window);
             provider.GetRequiredService<IViewportService>().Initialize(window);
             return window;
         });

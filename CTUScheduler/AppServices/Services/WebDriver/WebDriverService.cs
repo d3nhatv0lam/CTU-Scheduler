@@ -19,7 +19,7 @@ namespace CTUScheduler.AppServices.Services.WebDriver
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly ILogger<WebDriverService> _logger;
-        private readonly IInternetStatusService _internetStatusService;
+        private readonly IConnectivityService _connectivityService;
         private IPlaywright _playwright = null!;
         private IBrowser _browser = null!;
         private IPage _page = null!;
@@ -36,9 +36,9 @@ namespace CTUScheduler.AppServices.Services.WebDriver
         
         public IObservable<JsonElement?> JsonResponse => _jsonResponseSubject.AsObservable();
 
-        public WebDriverService(IInternetStatusService internetStatusService, ILogger<WebDriverService> logger)
+        public WebDriverService(IConnectivityService connectivityService, ILogger<WebDriverService> logger)
         { 
-            _internetStatusService = internetStatusService;
+            _connectivityService = connectivityService;
             _logger = logger;
             InitObservable();
         }
@@ -68,7 +68,7 @@ namespace CTUScheduler.AppServices.Services.WebDriver
                 }
 
                 // cài đặt
-                _isInstallingSubject.OnNext(true); // Khóa UI
+                _isInstallingSubject.OnNext(true);
                 _installationStatusSubject.OnNext("Đang tải tài nguyên...");
 
                 // Dọn dẹp rác cũ trước khi cài
@@ -76,8 +76,9 @@ namespace CTUScheduler.AppServices.Services.WebDriver
 
                 // Gọi hàm chuyên dụng để chạy Process
                 await RunInstallerProcessAsync(scriptPath, browserDir);
-
-                // 4. Kiểm tra lại lần cuối (Verify)
+                _installationStatusSubject.OnNext("Tải tài nguyên thành công!");
+                
+                // 4. Kiểm tra lại
                 _installationStatusSubject.OnNext("Đang xác thực lại...");
                 if (!await CheckBrowserIntegrity())
                 {
@@ -94,7 +95,7 @@ namespace CTUScheduler.AppServices.Services.WebDriver
             }
             finally
             {
-                _isInstallingSubject.OnNext(false); // Mở lại UI
+                _isInstallingSubject.OnNext(false);
             }
         }
 
@@ -217,7 +218,7 @@ namespace CTUScheduler.AppServices.Services.WebDriver
         protected async Task CreatePlayWrightChromiumAsync()
         {
             _playwright = await Playwright.CreateAsync();
-            _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions() { Headless = false });
+            _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true });
             _page = await _browser.NewPageAsync();
         }
 
@@ -273,7 +274,7 @@ namespace CTUScheduler.AppServices.Services.WebDriver
 
         private void InitObservable()
         {
-            _internetStatusService.InternetStatusOnRefresh
+            _connectivityService.IsInternetAvailable
             .DistinctUntilChanged()
             .Subscribe(status =>
             {
@@ -408,7 +409,7 @@ namespace CTUScheduler.AppServices.Services.WebDriver
             try
             {
                 await element.WaitForAsync(new LocatorWaitForOptions { Timeout = 10000 });
-                if (!await _internetStatusService.GetInternetStatus())
+                if (!await _connectivityService.CheckInternetAccessAsync())
                     throw new Exception("Can't Navigate because no internet!");
 
                 await Task.WhenAll(

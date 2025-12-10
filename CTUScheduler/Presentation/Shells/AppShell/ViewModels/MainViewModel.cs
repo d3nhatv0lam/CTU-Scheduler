@@ -11,7 +11,7 @@ namespace CTUScheduler.Presentation.Shells.AppShell.ViewModels;
 
 public class MainViewModel : ViewModelBase , IScreen , IActivatableViewModel
 {
-    private readonly IInternetStatusService _internetStatusService;
+    private readonly IConnectivityService _connectivityService;
     private string _windowTitle = "CTU Scheduler";
     public RoutingState Router { get; }
     public string WindowTitle
@@ -26,7 +26,7 @@ public class MainViewModel : ViewModelBase , IScreen , IActivatableViewModel
     {
         Activator = new ViewModelActivator();
         
-        _internetStatusService = App.ServiceProvider!.GetRequiredService<IInternetStatusService>();
+        _connectivityService = App.ServiceProvider!.GetRequiredService<IConnectivityService>();
         Router = new RoutingState();
         //Router.Navigate.Execute(new LoginViewModel(this));
         Router.Navigate.Execute(new MainShellViewModel(this));
@@ -34,7 +34,7 @@ public class MainViewModel : ViewModelBase , IScreen , IActivatableViewModel
         this.WhenActivated(disposables =>
         {
             // Check internet status and update window title accordingly
-            _internetStatusService.InternetStatusOnRefresh
+            _connectivityService.IsInternetAvailable
                 .DistinctUntilChanged()
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(isAvailable =>

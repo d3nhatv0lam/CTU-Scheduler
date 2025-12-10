@@ -30,7 +30,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly ITimetableLayoutAdapter _timetableLayoutVmAdapter;
         private readonly IDialogHostService _dialogHostService;
         private readonly ITimetableDialogService _timetableDialogService;
-        private readonly IInternetStatusService  _internetStatusService;
+        private readonly IConnectivityService  _connectivityService;
 
         private readonly ReadOnlyObservableCollection<TimetableLayoutViewModel> _bindableTimetableLayouts =
             ReadOnlyObservableCollection<TimetableLayoutViewModel>.Empty;
@@ -66,7 +66,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             _timetableLayoutVmAdapter = App.ServiceProvider.GetRequiredService<ITimetableLayoutAdapter>();
             _CTUWebDriverService = App.ServiceProvider.GetRequiredService<ICTUWebDriverService>();
             _scheduleService = App.ServiceProvider.GetRequiredService<IScheduleService>();
-            _internetStatusService = App.ServiceProvider.GetRequiredService<IInternetStatusService>();
+            _connectivityService = App.ServiceProvider.GetRequiredService<IConnectivityService>();
 
             _scheduleService.TimetableChanges
                 .Transform(x => _timetableLayoutVmAdapter.GetOrCreateLayout(x))
@@ -99,7 +99,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             ShowAddCourseDialogCommand = ReactiveCommand.CreateFromTask(OpenAddCourseDialog,canInteractUi)
                 .DisposeWith(_disposables);
             
-            var canReloadAllTimetable = _internetStatusService.InternetStatusOnRefresh
+            var canReloadAllTimetable = _connectivityService.IsInternetAvailable
                 .DistinctUntilChanged()
                 .CombineLatest(canInteractUi, (isOnline, canInteract) => isOnline && canInteract)
                 .ObserveOn(RxApp.MainThreadScheduler);
