@@ -6,9 +6,9 @@ using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
-using DialogHostAvalonia.Utilities;
 using Microsoft.Extensions.Logging;
 
 
@@ -117,8 +117,9 @@ public class ConnectivityService: IConnectivityService, IDisposable
     
     public void Dispose()
     {
-        _disposables.Dispose();
         _internetSubject.Dispose();
         _httpClient.Dispose();
+        _disposables.Dispose();
+        _logger.LogInformation("Connectivity service disposed!");
     }
 }

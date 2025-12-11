@@ -17,25 +17,22 @@ using ReactiveUI;
 
 namespace CTUScheduler.AppServices.Services.WebDriver
 {
-    public class CTUWebDriverService: ICTUWebDriverService, IDisposable
+    public class CtuWebDriverService: ICTUWebDriverService, IDisposable
     {
         private readonly IWebDriverService _webDriverService;
-        private readonly ILogger<CTUWebDriverService> _logger;
-        private readonly IObservable<RegistrationInformation> _registrationInformationResponse;
-        private readonly IObservable<ObservableCollection<QuickSelectCourse>> _courseCatalogQuickSelectResponse;
-        private readonly IObservable<Course> _courseCatalogResponse;
+        private readonly ILogger<CtuWebDriverService> _logger;
 
-        public IObservable<RegistrationInformation> RegistrationInformationResponse => _registrationInformationResponse;
-        public IObservable<ObservableCollection<QuickSelectCourse>> CourseCatalogQuickSelectResponse => _courseCatalogQuickSelectResponse;
-        public IObservable<Course> CourseCatalogResponse => _courseCatalogResponse;
+        public IObservable<RegistrationInformation> RegistrationInformationResponse { get; }
+        public IObservable<ObservableCollection<QuickSelectCourse>> CourseCatalogQuickSelectResponse { get; }
+        public IObservable<Course> CourseCatalogResponse { get; }
 
-        public CTUWebDriverService(IWebDriverService webDriverService,ILogger<CTUWebDriverService> logger)
+        public CtuWebDriverService(IWebDriverService webDriverService,ILogger<CtuWebDriverService> logger)
         {
             _webDriverService = webDriverService;
             _logger = logger;
 
             //Registration Rules Page Response
-            _registrationInformationResponse =
+            RegistrationInformationResponse =
                 _webDriverService.JsonResponse
                 .Select(rawJsonData => ToRegistrationRulesPageJsonData(rawJsonData))
                 .WhereNotNull()
@@ -60,7 +57,7 @@ namespace CTUScheduler.AppServices.Services.WebDriver
 
             
             // Course Catalog quick select response
-            _courseCatalogQuickSelectResponse =
+            CourseCatalogQuickSelectResponse =
                 _webDriverService.JsonResponse
                 .Select(rawJasonData => ToCourseCatalogQuickSelectJsonData(rawJasonData))
                 .WhereNotNull()
@@ -70,7 +67,7 @@ namespace CTUScheduler.AppServices.Services.WebDriver
                 .RefCount();
 
             // Course Catalog response
-            _courseCatalogResponse =
+            CourseCatalogResponse =
                  _webDriverService.JsonResponse
                 .Select(rawJsonData => ToCourseCatalogJsonData(rawJsonData))
                 .WhereNotNull()
@@ -106,22 +103,23 @@ namespace CTUScheduler.AppServices.Services.WebDriver
 
         public async Task<bool> TrySignInAsync(string userName, string password)
         {
-            if (_webDriverService.GetPageUrl() == AppConstants.CTU_HOME_URL) 
+            if (_webDriverService.PageUrl == AppConstants.CTU_HOME_URL) 
                 return true;
             try
             {
-                ILocator userNameInput = _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_USERNAME);
-                ILocator passwordInput = _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_PASSWORD);
-                ILocator loginButton = _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_BUTTON);
+                ILocator userNameInput = _webDriverService.GetLocator(AppConstants.CTU_SIGN_IN_USERNAME);
+                ILocator passwordInput = _webDriverService.GetLocator(AppConstants.CTU_SIGN_IN_PASSWORD);
+                ILocator loginButton = _webDriverService.GetLocator(AppConstants.CTU_SIGN_IN_BUTTON);
 
-                await _webDriverService.FillElementAsync(userNameInput, userName);
-                await _webDriverService.FillElementAsync(passwordInput, password);
+                // await _webDriverService.FillElementAsync(userNameInput, userName);
+                // await _webDriverService.FillElementAsync(passwordInput, password);
+                await userNameInput.FillAsync(userName);
+                await passwordInput.FillAsync(password);
                 await _webDriverService.ClickNavigateElementAsync(loginButton);
 
                 var waitUrl = _webDriverService.TryWaitForUrlAsync(AppConstants.CTU_HOME_URL_PATTERN);
                 var validInput = IsSignInSuccess();
-
-                //return await WaitUrl.Amb(validInput).FirstAsync().ToTask();
+                
                 var completed = await Task.WhenAny(waitUrl, validInput);
                 return await completed;
             }
@@ -137,9 +135,9 @@ namespace CTUScheduler.AppServices.Services.WebDriver
             
             var iLocators = new[]
             {
-                _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_USERNAME_ERROR),
-                _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_PASSWORD_ERROR),
-                _webDriverService.LocatorElement(AppConstants.CTU_SIGN_IN_FAIL)
+                _webDriverService.GetLocator(AppConstants.CTU_SIGN_IN_USERNAME_ERROR),
+                _webDriverService.GetLocator(AppConstants.CTU_SIGN_IN_PASSWORD_ERROR),
+                _webDriverService.GetLocator(AppConstants.CTU_SIGN_IN_FAIL)
             };
             
             // kiểm tra element có display none không
@@ -159,9 +157,9 @@ namespace CTUScheduler.AppServices.Services.WebDriver
         {
             try 
             {
-                string userName = string.Empty;
-                string MSSV = string.Empty;
-                ILocator userInformationElement = _webDriverService.LocatorElement(AppConstants.CTU_HOME_USER_INFO);
+                string userName;
+                string MSSV;
+                ILocator userInformationElement = _webDriverService.GetLocator(AppConstants.CTU_HOME_USER_INFO);
                 string[] userInfoArray = (await userInformationElement.InnerTextAsync()).Split(" ");
                 userName = string.Join(' ', userInfoArray[0..^1]);
                 MSSV = userInfoArray[^1];
@@ -182,13 +180,13 @@ namespace CTUScheduler.AppServices.Services.WebDriver
         /// <exception cref="Exception"></exception>
         public async Task GoToRegistrationRulesPage() 
         {
-            string currentUrl = _webDriverService.GetPageUrl();
+            string currentUrl = _webDriverService.PageUrl;
             try
             {
                 // first Navigate to DKMH page
                 if (currentUrl.Contains(AppConstants.CTU_HOME_URL))
                 {
-                    ILocator navigateElement = _webDriverService.LocatorElement(AppConstants.CTU_HOME_DKMH_BUTTON);
+                    ILocator navigateElement = _webDriverService.GetLocator(AppConstants.CTU_HOME_DKMH_BUTTON);
                     LocatorClickOptions options = new LocatorClickOptions()
                     {
                         Delay = 200
@@ -199,7 +197,7 @@ namespace CTUScheduler.AppServices.Services.WebDriver
                  // Current url is DKMH page
                 if (currentUrl.Contains(AppConstants.CTU_DKMH_URL_KEY))
                 {
-                    ILocator DKMH_RegistrationRulenavigateElement = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_QUYDINHDANGKY_BUTTON);
+                    ILocator DKMH_RegistrationRulenavigateElement = _webDriverService.GetLocator(AppConstants.CTU_DKMH_QUYDINHDANGKY_BUTTON);
                     await _webDriverService.ClickNavigateElementAsync(DKMH_RegistrationRulenavigateElement);
                 }
                 else
@@ -240,30 +238,30 @@ namespace CTUScheduler.AppServices.Services.WebDriver
         {
             try
             {
-                if (!_webDriverService.GetPageUrl().Contains(AppConstants.CTU_DKMH_URL_KEY)) 
+                if (!_webDriverService.PageUrl.Contains(AppConstants.CTU_DKMH_URL_KEY)) 
                     throw new Exception("Not in DKMH page");
 
-                ILocator userInfoTab = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_INFO_TAB);
+                ILocator userInfoTab = _webDriverService.GetLocator(AppConstants.CTU_DKMH_INFO_TAB);
                 await userInfoTab.ClickAsync();
 
-                ILocator userInfoButton = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_INFO_BUTTON);
+                ILocator userInfoButton = _webDriverService.GetLocator(AppConstants.CTU_DKMH_INFO_BUTTON);
                 await userInfoButton.WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Visible });
                 await userInfoButton.ClickAsync();
 
-                await _webDriverService.LocatorElement(".ant-modal-content").WaitForAsync(new() { State = WaitForSelectorState.Visible });
-                await _webDriverService.LocatorElement(".ant-modal-mask").WaitForAsync(new() { State = WaitForSelectorState.Visible });
+                await _webDriverService.GetLocator(".ant-modal-content").WaitForAsync(new() { State = WaitForSelectorState.Visible });
+                await _webDriverService.GetLocator(".ant-modal-mask").WaitForAsync(new() { State = WaitForSelectorState.Visible });
 
-                ILocator userKeyElement = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_INFO_KEY);
-                ILocator userUnitElement = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_INFO_UNIT);
+                ILocator userKeyElement = _webDriverService.GetLocator(AppConstants.CTU_DKMH_INFO_KEY);
+                ILocator userUnitElement = _webDriverService.GetLocator(AppConstants.CTU_DKMH_INFO_UNIT);
 
                 var result = await Task.WhenAll(userKeyElement.InnerTextAsync(), userUnitElement.InnerTextAsync());
                 string userKey = result[0]!;
                 string userUnit = result[1]!;
 
                 // close dialog
-                await _webDriverService.LocatorElement(".ant-modal-close")
+                await _webDriverService.GetLocator(".ant-modal-close")
                     .WaitForAsync(new() { State = WaitForSelectorState.Visible });
-                ILocator userInfoCloseButton = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_INFO_CLOSE_BUTTON);
+                ILocator userInfoCloseButton = _webDriverService.GetLocator(AppConstants.CTU_DKMH_INFO_CLOSE_BUTTON);
                 await userInfoCloseButton.ClickAsync();
                 
                 return (userKey, userUnit);
@@ -282,20 +280,20 @@ namespace CTUScheduler.AppServices.Services.WebDriver
 
         private bool IsCourseCatalogPage(string? url = null)
         {
-            string currentUrl = url ?? _webDriverService.GetPageUrl();
+            string currentUrl = url ?? _webDriverService.PageUrl;
             return currentUrl.Contains(AppConstants.CTU_DKMH_URL_KEY) && currentUrl.EndsWith(AppConstants.CTU_DKMH_DANHMUCHOCPHAN_URL_KEY);;
         }
         
         public async Task GoToCourseCatalogPage()
         {
-            string currentUrl = _webDriverService.GetPageUrl();
+            string currentUrl = _webDriverService.PageUrl;
             if (IsCourseCatalogPage(currentUrl)) return;
             try
             {
                 // Current url is DKMH page
                 if (currentUrl.Contains(AppConstants.CTU_DKMH_URL_KEY))
                 {
-                    ILocator navigateElement = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_DANHMUCHOCPHAN_BUTTON);
+                    ILocator navigateElement = _webDriverService.GetLocator(AppConstants.CTU_DKMH_DANHMUCHOCPHAN_BUTTON);
                     await _webDriverService.ClickNavigateElementAsync(navigateElement);
                 }
                 else
@@ -329,8 +327,9 @@ namespace CTUScheduler.AppServices.Services.WebDriver
         {
             try
             {
-                ILocator courseKeyInput = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_DANHMUCHOCPHAN_SEARCHBOX);
-                await _webDriverService.FillElementAsync(courseKeyInput, courseStr);
+                ILocator courseKeyInput = _webDriverService.GetLocator(AppConstants.CTU_DKMH_DANHMUCHOCPHAN_SEARCHBOX);
+                // await _webDriverService.FillElementAsync(courseKeyInput, courseStr);
+                await courseKeyInput.FillAsync(courseStr);
             }
             catch (Exception e)
             {
@@ -344,8 +343,9 @@ namespace CTUScheduler.AppServices.Services.WebDriver
             {
                 await FillCourseKey(courseKey);
 
-                ILocator searchButton = _webDriverService.LocatorElement(AppConstants.CTU_DKMH_DANHMUCHOCPHAN_SEARCH_BUTTON);
-                await _webDriverService.ClickElementAsync(searchButton);
+                ILocator searchButton = _webDriverService.GetLocator(AppConstants.CTU_DKMH_DANHMUCHOCPHAN_SEARCH_BUTTON);
+                // await _webDriverService.ClickElementAsync(searchButton);
+                await searchButton.ClickAsync();
             }
             catch (Exception e)
             {

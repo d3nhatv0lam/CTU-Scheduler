@@ -11,7 +11,7 @@ namespace CTUScheduler.Presentation.Features.Installation.ViewModels;
 public class InstallationViewModel : ViewModelBase, IDisposable
 {
     private readonly CompositeDisposable _disposables = new();
-    private string _consoleLog = "> Khởi tạo môi trường...\n> Bạn có thể tắt cửa sổ này, quá trình tải vẫn thực hiện trong nền\n";
+    private string _consoleLog = "> Khởi tạo môi trường...\n> Bạn có thể tắt cửa sổ này, quá trình tải vẫn được thực hiện trong nền\n";
 
     // 1. Regex xóa mã màu rác (ANSI)
     private readonly Regex _ansiRegex = new Regex(@"\x1B\[[0-9;?]*[a-zA-Z]", RegexOptions.Compiled);
@@ -36,6 +36,7 @@ public class InstallationViewModel : ViewModelBase, IDisposable
             .Buffer(TimeSpan.FromMilliseconds(50))
             .Where(x => x.Count > 0)
             .Select(x => string.Concat(x))
+            .Do(x => Console.WriteLine(x + "\n"))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(ProcessLogChunk)
             .DisposeWith(_disposables);
@@ -61,7 +62,6 @@ public class InstallationViewModel : ViewModelBase, IDisposable
 
                     if (isProgress)
                     {
-                        // QUAN TRỌNG: Kiểm tra xem dòng cuối hiện tại là gì trước khi ghi đè
                         SafeReplaceLastLine(prettyBar);
                     }
                     else
@@ -73,7 +73,6 @@ public class InstallationViewModel : ViewModelBase, IDisposable
             }
             else
             {
-                // Log thường -> Cộng dồn
                 AppendLog(text);
             }
         }

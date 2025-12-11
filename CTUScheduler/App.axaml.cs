@@ -2,30 +2,22 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Avalonia.Platform.Storage;
-using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Serilog;
 using Splat;
 using System;
-using System.Diagnostics;
 using System.Reactive;
-using System.Reactive.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Avalonia.Input;
 using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.AppServices.Services.RegistrationInfor;
 using CTUScheduler.AppServices.Services.ScheduleManager;
 using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Core.Interfaces;
-using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
-using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 using CTUScheduler.Presentation.Services.Adapter;
 using CTUScheduler.Presentation.Services.AppToplevel;
 using CTUScheduler.Presentation.Services.Dialogs;
@@ -37,9 +29,9 @@ using MainWindow = CTUScheduler.Presentation.Shells.AppShell.Views.MainWindow;
 
 namespace CTUScheduler;
 
-public partial class App : Application
+public class App : Application
 {
-    public static string AppVersion = "0.1";
+    public static readonly string AppVersion = "0.1";
     public static IServiceProvider ServiceProvider { get; private set; } = null!;
     public override void Initialize()
     {
@@ -55,7 +47,9 @@ public partial class App : Application
             )
             .WriteTo.Debug()
             .CreateLogger();
-
+        
+        LogSessionHeader();
+        
         // 2. Kích hoạt bắt lỗi toàn cục ngay lập tức
         SetupGlobalExceptionHandling();
         
@@ -65,7 +59,7 @@ public partial class App : Application
         ConfigureServices(services);
         ServiceProvider = services.BuildServiceProvider();
     }
-    
+
     public override void OnFrameworkInitializationCompleted()
     {
         // load view
@@ -87,18 +81,25 @@ public partial class App : Application
         }
         base.OnFrameworkInitializationCompleted();
     }
-
+    private void LogSessionHeader()
+    {
+        string separator = new string('=', 60);
+        Log.Information($"{separator}");
+        Log.Information("    CTU-SCHEDULER LOGGER");
+        Log.Information($"    Time: {DateTime.Now}");
+        Log.Information($"{separator}");
+    }
     private void ConfigureServices(IServiceCollection services)
     {
         services.AddLogging(logging =>
         {
             logging.ClearProviders();  // Xóa các provider mặc định (nếu có)
-            logging.AddSerilog(dispose: true);      // Thêm Serilog
+            logging.AddSerilog(dispose: false);      // Thêm Serilog
         });
         
         services.AddSingleton<IConnectivityService, ConnectivityService>();
         services.AddSingleton<IWebDriverService,WebDriverService>();
-        services.AddSingleton<ICTUWebDriverService, CTUWebDriverService>();
+        services.AddSingleton<ICTUWebDriverService, CtuWebDriverService>();
         services.AddSingleton<IRegistrationInformationService, RegistrationInformationService>();
         services.AddSingleton<IUserDataService, UserDataService>();
         services.AddSingleton<ScheduleService>()
@@ -155,48 +156,48 @@ public partial class App : Application
         return splashScreen;
     }
 
-    private async void Desktop_Exit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
+    private void Desktop_Exit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
     {
         try
         {
             if (sender is IClassicDesktopStyleApplicationLifetime desktop)
                 desktop.Exit -= Desktop_Exit;
             
-            if (ServiceProvider is IAsyncDisposable asyncDisposable)
-                await asyncDisposable.DisposeAsync();
+            if (ServiceProvider is IAsyncDisposable asyncDisposable) 
+                Task.Run(async () => await asyncDisposable.DisposeAsync()).Wait();
             else if (ServiceProvider is IDisposable disposableService)
                 disposableService.Dispose();
             
-            Log.Information("Application exiting normally.");
+            Log.Logger.Information("Application exiting normally.");
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Error during application shutdown");
+            Log.Logger.Error(ex, "Error during application shutdown");
         }
         finally
         {
             Log.Logger.Information("App Exited!");
-            await Log.CloseAndFlushAsync();
+            Log.CloseAndFlush();
         }
     }
     
     private void SetupGlobalExceptionHandling()
     {
         // Bắt lỗi ở các Thread phụ (Background threads)
-        AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
         {
             var ex = args.ExceptionObject as Exception;
             Log.Fatal(ex, "APP CRASH: Unhandled Exception on Non-UI Thread");
         };
 
         // 2. Bắt lỗi ở Task (Task bị lỗi mà không có await hoặc try-catch)
-        TaskScheduler.UnobservedTaskException += (sender, args) =>
+        TaskScheduler.UnobservedTaskException += (_, args) =>
         {
             Log.Error(args.Exception, "Background Task Error (Unobserved)");
             args.SetObserved(); // Ngăn app bị crash nếu muốn
         };
 
-        // 3. Bắt lỗi của ReactiveUI (Rất quan trọng vì bạn đang dùng ReactiveUI)
+        // 3. Bắt lỗi của ReactiveUI
         RxApp.DefaultExceptionHandler = Observer.Create<Exception>(ex => 
         {
             Log.Error(ex, "ReactiveUI Exception");

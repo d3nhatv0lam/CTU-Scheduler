@@ -5,6 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        Icon="avares://CTUScheduler/Assets/Logo/icon.ico"
       Height="450"
       Width="800"
       Title="Cài đặt môi trường"
@@ -19,8 +20,8 @@
     </Design.DataContext>
     
     <Border Background="#1E1E1E" CornerRadius="8" Padding="15">
-        <Grid RowDefinitions="*, Auto">
-            <TextBox Grid.Row="0"
+        <Grid>
+            <TextBox 
                      Text="{Binding ConsoleLog}"
                      IsReadOnly="True"
                      Background="Black"

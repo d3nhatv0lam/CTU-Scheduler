@@ -74,5 +74,7 @@ public class ToplevelService: IToplevelService, IDisposable
     {
         _toplevelSubject.Dispose();
         _disposables.Dispose();
+        
+        _logger.LogInformation("ToplevelService disposed");
     }
 }
