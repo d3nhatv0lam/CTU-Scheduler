@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices;
 using CTUScheduler.AppServices.Services.WebDriver;
+using CTUScheduler.AppServices.Services.WebDriver.Sites.CTU.Adapters;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,32 +49,45 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         {
             HostScreen = hostScreen;
             _CTUWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
-            
+
+            var adapter = App.ServiceProvider.GetRequiredService<ICtuDriverAdapter>();
             LoadSignInData();
 
-            // auto try Goto Signin until success
-            Observable.Defer(() => Observable.StartAsync(GoToSignPage))
-                .Catch<Unit, Exception>(ex =>
+            Observable.StartAsync(() => adapter.CtuLoginPage.NavigateToAsync());
+            
+            SignInCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var result = await adapter.CtuLoginPage.TryLoginAsync(UserName, Password);
+                Console.WriteLine($"{result.IsSuccess} {result.ErrorMessage}");
+                if (result.IsSuccess)
                 {
-                    return Observable.Timer(TimeSpan.FromSeconds(3)).SelectMany(_ => Observable.Throw<Unit>(ex));
-                })
-                .Retry() // retry vô hạn
-                .Subscribe(_ =>
+                    OnLoggedIn();
+                }
+                else
                 {
-                    //await FillCapchaImage();
-                })
-                .DisposeWith(_disposables);
+                    await Task.Delay(1000);
+                }
+            })
+            .DisposeWith(_disposables);
 
-            InitObservable();
-            InitCommand();
+            // auto try Goto Signin until success
+            // Observable.Defer(() => Observable.StartAsync(GoToSignPage))
+            //     .Catch<Unit, Exception>(ex =>
+            //     {
+            //         return Observable.Timer(TimeSpan.FromSeconds(3)).SelectMany(_ => Observable.Throw<Unit>(ex));
+            //     })
+            //     .Retry() // retry vô hạn
+            //     .Subscribe(_ =>
+            //     {
+            //         //await FillCapchaImage();
+            //     })
+            //     .DisposeWith(_disposables);
+            
+            // InitCommand();
         }
 #pragma warning restore CS8618
 
-
-        private void InitObservable()
-        {
-            
-        }
+        
 
         private void InitCommand()
         {
@@ -112,7 +126,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
 
         private void SaveSignInData()
         {
-            string path = string.Concat(AppConstants.PWD, "/", AppConstants.USERCONFG_FILENAME);
+            string path = string.Concat(AppConstants.Pwd, "/", AppConstants.USERCONFIG_FILENAME);
             using (FileStream fs = new FileStream(path, FileMode.Create))
             using (BinaryWriter writer = new BinaryWriter(fs))
             {
@@ -122,7 +136,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         }
         private void LoadSignInData()
         {
-            string path = string.Concat(AppConstants.PWD,"/", AppConstants.USERCONFG_FILENAME);
+            string path = string.Concat(AppConstants.Pwd,"/", AppConstants.USERCONFIG_FILENAME);
             if (!File.Exists(path))
                 return;
             using (FileStream fs = new FileStream(path, FileMode.Open))

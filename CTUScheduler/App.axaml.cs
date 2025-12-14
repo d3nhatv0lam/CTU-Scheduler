@@ -10,11 +10,16 @@ using Splat;
 using System;
 using System.Reactive;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Models;
 using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.AppServices.Services.RegistrationInfor;
 using CTUScheduler.AppServices.Services.ScheduleManager;
 using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Services.WebDriver;
+using CTUScheduler.AppServices.Services.WebDriver.Core;
+using CTUScheduler.AppServices.Services.WebDriver.Interfaces;
+using CTUScheduler.AppServices.Services.WebDriver.Sites.CTU.Adapters;
+using CTUScheduler.AppServices.Services.WebDriver.Sites.CTU.Pages.Login;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
@@ -97,9 +102,15 @@ public class App : Application
             logging.AddSerilog(dispose: false);      // Thêm Serilog
         });
         
+        services.AddTransient(typeof(Lazy<>), typeof(LazyService<>));
+        
         services.AddSingleton<IConnectivityService, ConnectivityService>();
         services.AddSingleton<IWebDriverService,WebDriverService>();
         services.AddSingleton<ICTUWebDriverService, CtuWebDriverService>();
+        
+        services.AddScoped<ICtuDriverAdapter, CtuDriverAdapter>()
+            .AddTransient<ICtuLoginPage, CtuLoginPage>();
+        
         services.AddSingleton<IRegistrationInformationService, RegistrationInformationService>();
         services.AddSingleton<IUserDataService, UserDataService>();
         services.AddSingleton<ScheduleService>()

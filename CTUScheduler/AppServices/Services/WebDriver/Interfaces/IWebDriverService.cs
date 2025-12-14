@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Services.WebDriver.Core;
 using Microsoft.Playwright;
 
-namespace CTUScheduler.AppServices.Services.WebDriver;
+namespace CTUScheduler.AppServices.Services.WebDriver.Interfaces;
 
 public interface IWebDriverService
 {
@@ -12,6 +13,7 @@ public interface IWebDriverService
     IObservable<string> InstallationStatus { get; }
     IObservable<bool> IsInstalling { get; }
     IObservable<string> InstallationProgress { get; }
+    IObservable<string> MainFrameUrlChanges { get; } 
     IObservable<DialogInfo> AlertReceived { get; }
     IObservable<DialogInfo> ConfirmReceived { get; }
     IObservable<DialogInfo> PromptReceived { get; }

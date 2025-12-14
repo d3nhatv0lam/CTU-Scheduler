@@ -11,11 +11,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.Network;
+using CTUScheduler.AppServices.Services.WebDriver.Interfaces;
+using CTUScheduler.Core.Exceptions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using ReactiveUI;
 
-namespace CTUScheduler.AppServices.Services.WebDriver;
+namespace CTUScheduler.AppServices.Services.WebDriver.Core;
 
 public record DialogInfo(string Message, string DefaultValue = "");
 
@@ -29,18 +30,23 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
     private readonly Subject<DialogInfo> _alertSubject = new();
     private readonly Subject<DialogInfo> _confirmSubject = new();
     private readonly Subject<DialogInfo> _promptSubject = new();
-    private readonly ReplaySubject<string> _installationStatusSubject = new (1);
+    private readonly ReplaySubject<string> _installationStatusSubject = new(1);
     private readonly BehaviorSubject<bool> _isInstallingSubject = new(false);
     private readonly ReplaySubject<string> _installationProgressSubject = new();
     private readonly Subject<JsonElement> _jsonResponseSubject = new();
-    
+    private readonly BehaviorSubject<string> _navigationSubject = new("");
+
     private IPlaywright? _playwright;
     private IBrowser? _browser;
     private IPage? _page;
-    
-    private IPage Page => _page ?? throw new InvalidOperationException("Browser chưa khởi tạo. Vui lòng gọi InitWebDriverService() trước.");
+
+    private IPage Page => _page ??
+                          throw new InvalidOperationException(
+                              "Browser chưa khởi tạo. Vui lòng gọi InitWebDriverService() trước.");
+
     public IPage? CurrentPage => _page;
     public string PageUrl => _page?.Url ?? string.Empty;
+    public IObservable<string> MainFrameUrlChanges => _navigationSubject.AsObservable();
     public IObservable<string> InstallationStatus => _installationStatusSubject.AsObservable();
     public IObservable<bool> IsInstalling => _isInstallingSubject.AsObservable();
     public IObservable<string> InstallationProgress => _installationProgressSubject.AsObservable();
@@ -53,7 +59,7 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
     {
         _connectivityService = connectivityService;
         _logger = logger;
-        
+
         _alertSubject.DisposeWith(_disposables);
         _confirmSubject.DisposeWith(_disposables);
         _promptSubject.DisposeWith(_disposables);
@@ -70,8 +76,6 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
         await ConfigPageAsync();
     }
 
-
-
     protected virtual async Task ConfigPageAsync()
     {
         //await _page.RouteAsync("**/*.css", async route => await route.AbortAsync());
@@ -82,6 +86,16 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
             else
                 await route.ContinueAsync();
         });
+
+        // Navigate
+        Observable.FromEventPattern<EventHandler<IFrame>, IFrame>(
+                h => Page.FrameNavigated += h,
+                h => Page.FrameNavigated -= h)
+            .Select(e => e.EventArgs)
+            .Where(frame => frame == Page.MainFrame)
+            .Select(frame => frame.Url)
+            .Subscribe(url => _navigationSubject.OnNext(url))
+            .DisposeWith(_disposables);
 
         Observable.FromEventPattern<EventHandler<IDialog>, IDialog>(
                 h => Page.Dialog += h,
@@ -107,7 +121,7 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
             })
             .Subscribe()
             .DisposeWith(_disposables);
-        
+
         Observable.FromEventPattern<EventHandler<IResponse>, IResponse>(
                 h => Page.Response += h,
                 h => Page.Response -= h)
@@ -131,7 +145,7 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
             .Subscribe(json => _jsonResponseSubject.OnNext(json))
             .DisposeWith(_disposables);
     }
-    
+
     public async Task<bool> TryWaitForUrlAsync(string url, int timeout = 10000)
     {
         try
@@ -152,19 +166,13 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
 
     public async Task GoToPageAsync(string url)
     {
-        if( url is null)
+        if (string.IsNullOrWhiteSpace(url))
             throw new ArgumentNullException(nameof(url));
-        try
-        {
-            
-            await Page.GotoAsync(url, new PageGotoOptions { Timeout = 10000, WaitUntil = WaitUntilState.NetworkIdle });
-            await Page.WaitForLoadStateAsync(LoadState.Load);
-        }
-        catch
-        {
-            Debug.WriteLine("Go to page fail! " + url);
-            throw;
-        }
+
+        await EnsureInternetConnection();
+        
+        await Page.GotoAsync(url, new PageGotoOptions { Timeout = 10000, WaitUntil = WaitUntilState.NetworkIdle });
+        await Page.WaitForLoadStateAsync(LoadState.Load);
     }
 
     public async Task RefreshPageAsync()
@@ -174,17 +182,8 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
 
     public ILocator GetLocator(string selector)
     {
-        if (Page == null) throw new InvalidOperationException("Browser not initialized");
         return Page.Locator(selector);
     }
-
-
-    private async Task EnsureInternetConnection()
-    {
-        if (!await _connectivityService.CheckInternetAccessAsync())
-            throw new Exception("Can't Navigate because no internet!");
-    }
-    
 
     public async Task ClickNavigateElementAsync(ILocator element, LocatorClickOptions? options = null,
         LoadState loadState = LoadState.NetworkIdle)
@@ -192,16 +191,13 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
         try
         {
             await EnsureInternetConnection();
-            await element.WaitForAsync(new LocatorWaitForOptions { Timeout = 10000 });
-
-            await Task.WhenAll(
-                Page.WaitForLoadStateAsync(loadState),
-                element.ClickAsync(options)
-            );
+            var waitForLoadTask = Page.WaitForLoadStateAsync(loadState);
+            await element.ClickAsync(options);
+            await waitForLoadTask;
         }
         catch
         {
-            _logger.LogError("Click navigate element fail!");
+            _logger.LogWarning("Click navigate element fail!");
             throw;
         }
     }
@@ -213,7 +209,12 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
         ILocator element = GetLocator(selector);
         await ClickNavigateElementAsync(element, options, loadState);
     }
-    
+
+    private async Task EnsureInternetConnection()
+    {
+        if (!await _connectivityService.CheckInternetAccessAsync())
+            throw new NoInternetException("Can't access because no internet!");
+    }
 
     private async Task HandleAlert(IDialog dialog, DialogInfo info)
     {
@@ -234,8 +235,8 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
         _promptSubject.OnNext(info);
         await dialog.AcceptAsync("Giá trị mặc định từ AutoTool");
     }
-    
-        private async Task EnsureBrowserInstalledAsync()
+
+    private async Task EnsureBrowserInstalledAsync()
     {
         var (scriptPath, browserDir) = GetInstallationPaths();
 
@@ -295,13 +296,13 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
     private async Task RunInstallerProcessAsync(string scriptPath, string browserDir)
     {
         _logger.LogInformation("Launching playwright installer...");
-        
-        string[] installArgs = new[] { "install", "chromium" };
-        
+
+        string[] installArgs = ["install", "chromium"];
+
         var command = ProcessHelper.PrepareShellCommand(scriptPath, installArgs);
-        
+
         string workingDir = Path.GetDirectoryName(scriptPath) ?? AppDomain.CurrentDomain.BaseDirectory;
-        
+
         var envVars = new Dictionary<string, string>
         {
             { "PLAYWRIGHT_BROWSERS_PATH", browserDir }
@@ -350,7 +351,7 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
     }
 
     /// <summary>
-    /// Xóa folder cũ an toàn
+    /// Xóa folder cũ
     /// </summary>
     private void CleanupOldInstallation(string path)
     {
@@ -399,11 +400,11 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
         }
         catch (Exception)
         {
-            // Bất cứ lỗi gì (thiếu file, lỗi version, permission) đều trả về false
+            // Bất cứ lỗi gì (thiếu file, lỗi version, permission) trả về false
             return false;
         }
     }
-    
+
     public async ValueTask DisposeAsync()
     {
         if (_page is not null)
@@ -420,8 +421,9 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
         {
             // ignored
         }
+
         _shutdownCts.Dispose();
-        
+
         _disposables.Dispose();
         _logger.LogInformation("WebDriverService Disposed!");
     }

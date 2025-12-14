@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Helpers.Json;
+using CTUScheduler.AppServices.Services.WebDriver.Core;
+using CTUScheduler.AppServices.Services.WebDriver.Interfaces;
 using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
@@ -255,8 +256,8 @@ namespace CTUScheduler.AppServices.Services.WebDriver
                 ILocator userUnitElement = _webDriverService.GetLocator(AppConstants.CTU_DKMH_INFO_UNIT);
 
                 var result = await Task.WhenAll(userKeyElement.InnerTextAsync(), userUnitElement.InnerTextAsync());
-                string userKey = result[0]!;
-                string userUnit = result[1]!;
+                string userKey = result[0];
+                string userUnit = result[1];
 
                 // close dialog
                 await _webDriverService.GetLocator(".ant-modal-close")
