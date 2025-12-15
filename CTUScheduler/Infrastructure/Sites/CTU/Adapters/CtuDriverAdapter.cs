@@ -1,29 +1,32 @@
 ﻿using System;
-using CTUScheduler.AppServices.Services.WebDriver.Core;
-using CTUScheduler.AppServices.Services.WebDriver.Interfaces;
-using CTUScheduler.AppServices.Services.WebDriver.Sites.CTU.Pages.Login;
-using Microsoft.Extensions.DependencyInjection;
+using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
+using CTUScheduler.Infrastructure.DriverCore;
+using CTUScheduler.Infrastructure.Sites.CTU.Pages.Login;
 using Microsoft.Extensions.Logging;
 
-namespace CTUScheduler.AppServices.Services.WebDriver.Sites.CTU.Adapters;
+namespace CTUScheduler.Infrastructure.Sites.CTU.Adapters;
 
 public class CtuDriverAdapter: ICtuDriverAdapter
 {
     private readonly ILogger<CtuDriverAdapter> _logger;
     private readonly IWebDriverService _webDriverService;
-    private readonly Lazy<ICtuLoginPage> _lazyLoginPage;
+    private readonly Lazy<ILoginPage> _lazyLoginPage;
+    private readonly Lazy<IMainPage> _lazyMainPage;
     
     public string SiteName { get; } = "CTU";
-    public ICtuLoginPage CtuLoginPage => _lazyLoginPage.Value;
+    public ILoginPage LoginPage => _lazyLoginPage.Value;
+    public IMainPage MainPage => _lazyMainPage.Value;
 
     public CtuDriverAdapter(IWebDriverService webDriverService, 
         ILogger<CtuDriverAdapter> logger, 
-        Lazy<ICtuLoginPage> lazyLoginPage)
+        Lazy<ILoginPage> lazyLoginPage,
+        Lazy<IMainPage> lazyMainPage)
     {
         _webDriverService = webDriverService;
         _logger = logger;
 
         _lazyLoginPage = lazyLoginPage;
+        _lazyMainPage = lazyMainPage;
     }
     
     // public T GetPage<T>() where T : ISitePage 

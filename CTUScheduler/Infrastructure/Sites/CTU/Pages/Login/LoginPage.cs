@@ -1,37 +1,33 @@
 ﻿using System;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
-using CTUScheduler.AppServices.Services.WebDriver.Core;
-using CTUScheduler.AppServices.Services.WebDriver.Interfaces;
-using CTUScheduler.AppServices.Services.WebDriver.Models;
 using CTUScheduler.Core.Exceptions;
+using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
+using CTUScheduler.Core.Models.WebResponse;
+using CTUScheduler.Infrastructure.DriverCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 
-namespace CTUScheduler.AppServices.Services.WebDriver.Sites.CTU.Pages.Login;
+namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Login;
 
-public class CtuLoginPage : BasePage<CtuLoginPage>, ICtuLoginPage
+public class LoginPage : CtuBasePage<LoginPage>, ILoginPage
 {
-    private const string LoginUrl = "https://htql.ctu.edu.vn/";
-    private const string CtuLoginHost = "accounts.ctu.edu.vn";
     private const string UsernameInputSelector = "#usernameUserInput";
     private const string PasswordInputSelector = "#password";
     private const string LoginButtonSelector = "#sign-in-button";
     private const string UsernameErrorSelector = "#usernameError";
     private const string PasswordErrorSelector = "#passwordError";
     private const string LoginFailSelector = "#error-msg";
-
-
-    public CtuLoginPage(IWebDriverService webDriverService, ILogger<CtuLoginPage> logger) :
+    protected override string PageUrl => "https://htql.ctu.edu.vn/";
+    protected override string UriHost => "accounts.ctu.edu.vn";
+    protected override string PathRegexPattern => LOGIN_URL_PATTERN;
+    
+    public LoginPage(IWebDriverService webDriverService, ILogger<LoginPage> logger) :
         base(webDriverService, logger)
     {
     }
-
-    protected override string PageUrlPattern { get; } = "/authenticationendpoint/login.do";
-
+    
     public override async Task NavigateToAsync(int maxRetries = 3, CancellationToken cancellationToken = default)
     {
         if (await IsActive.FirstAsync())
@@ -43,9 +39,9 @@ public class CtuLoginPage : BasePage<CtuLoginPage>, ICtuLoginPage
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                await _webDriverService.GoToPageAsync(LoginUrl);
+                await WebDriverService.GoToPageAsync(PageUrl);
                 // Đợi input username xuất hiện
-                await _webDriverService.CurrentPage!
+                await WebDriverService.CurrentPage!
                     .WaitForSelectorAsync(UsernameInputSelector, new() { Timeout = 10000 });
                 return;
             }
@@ -55,12 +51,12 @@ public class CtuLoginPage : BasePage<CtuLoginPage>, ICtuLoginPage
 
                 if (maxRetries != -1 && currentRetry >= maxRetries)
                 {
-                    _logger.LogError($"Đã thất bại sau {currentRetry} lần thử. Lỗi cuối cùng: {ex.Message}");
+                    Logger.LogError($"Đã thất bại sau {currentRetry} lần thử. Lỗi cuối cùng: {ex.Message}");
                     throw;
                 }
 
                 string limitLog = maxRetries == -1 ? "Infinite" : maxRetries.ToString();
-                _logger.LogWarning($"Fail to Navigate ({currentRetry}/{limitLog}): {ex.Message}. Retrying...");
+                Logger.LogWarning($"Fail to Navigate ({currentRetry}/{limitLog}): {ex.Message}. Retrying...");
 
                 await Task.Delay(5000, cancellationToken);
             }
@@ -76,26 +72,26 @@ public class CtuLoginPage : BasePage<CtuLoginPage>, ICtuLoginPage
             // clean page trước khi thực hiện lại
             await CleanUpPage();
 
-            var userLocator = _webDriverService.GetLocator(UsernameInputSelector);
-            var passwordLocator = _webDriverService.GetLocator(PasswordInputSelector);
-            var loginButtonLocator = _webDriverService.GetLocator(LoginButtonSelector);
+            var userLocator = WebDriverService.GetLocator(UsernameInputSelector);
+            var passwordLocator = WebDriverService.GetLocator(PasswordInputSelector);
+            var loginButtonLocator = WebDriverService.GetLocator(LoginButtonSelector);
 
             await userLocator.FillAsync(username);
             await passwordLocator.FillAsync(password);
-            await _webDriverService.ClickNavigateElementAsync(loginButtonLocator);
+            await WebDriverService.ClickNavigateElementAsync(loginButtonLocator);
 
-            var successTask = _webDriverService.CurrentPage!.WaitForFunctionAsync(
-                $"() => location.hostname !== '{CtuLoginHost}' || !location.pathname.includes('{PageUrlPattern}')",
+            var successTask = WebDriverService.CurrentPage!.WaitForFunctionAsync(
+                $"() => location.hostname !== '{UriHost}' || !location.pathname.includes('{PathRegexPattern}')",
                 null,
                 new() { Timeout = 60000 }
             ).WaitAsync(internalCts.Token);
 
             var errorTask = Task.WhenAny(
-                _webDriverService.CurrentPage.WaitForSelectorAsync(UsernameErrorSelector,
+                WebDriverService.CurrentPage.WaitForSelectorAsync(UsernameErrorSelector,
                     new() { State = WaitForSelectorState.Visible }).WaitAsync(internalCts.Token),
-                _webDriverService.CurrentPage.WaitForSelectorAsync(PasswordErrorSelector,
+                WebDriverService.CurrentPage.WaitForSelectorAsync(PasswordErrorSelector,
                     new() { State = WaitForSelectorState.Visible }).WaitAsync(internalCts.Token),
-                _webDriverService.CurrentPage.WaitForSelectorAsync(LoginFailSelector,
+                WebDriverService.CurrentPage.WaitForSelectorAsync(LoginFailSelector,
                     new() { State = WaitForSelectorState.Visible }).WaitAsync(internalCts.Token)
             );
 
@@ -140,27 +136,12 @@ public class CtuLoginPage : BasePage<CtuLoginPage>, ICtuLoginPage
     /// </summary>
     private async Task CleanUpPage()
     {
-        await _webDriverService.CurrentPage!.EvaluateAsync(@"(selectors) => {
+        await WebDriverService.CurrentPage!.EvaluateAsync(@"(selectors) => {
         selectors.forEach(sel => {
             const el = document.querySelector(sel);
             if (el) el.style.display = 'none';
         });
         }",
             new[] { UsernameErrorSelector, PasswordErrorSelector, LoginFailSelector });
-    }
-
-    protected override bool IsMatchUrl(string url)
-    {
-        if (string.IsNullOrEmpty(url)) return false;
-        try
-        {
-            var uri = new Uri(url);
-            return uri.Host == CtuLoginHost &&
-                   uri.AbsolutePath.Contains(PageUrlPattern);
-        }
-        catch
-        {
-            return false;
-        }
     }
 }

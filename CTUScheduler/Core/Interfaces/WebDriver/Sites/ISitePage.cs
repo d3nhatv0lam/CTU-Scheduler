@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CTUScheduler.AppServices.Services.WebDriver.Interfaces;
+namespace CTUScheduler.Core.Interfaces.WebDriver.Sites;
 
 public interface ISitePage
 {

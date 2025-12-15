@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Text.Json;
 using System.Threading.Tasks;
-using CTUScheduler.AppServices.Services.WebDriver.Core;
 using Microsoft.Playwright;
 
-namespace CTUScheduler.AppServices.Services.WebDriver.Interfaces;
+namespace CTUScheduler.Infrastructure.DriverCore;
 
 public interface IWebDriverService
 {

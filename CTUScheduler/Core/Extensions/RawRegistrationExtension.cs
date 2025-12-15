@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Serilog;
 
 namespace CTUScheduler.Core.Extensions
 {
@@ -73,11 +72,6 @@ namespace CTUScheduler.Core.Extensions
                 {
                     return quyDinh.leftData.Last().value;
                 }
-                //foreach (var leftData in quyDinh.leftData)
-                //{
-                //    if (leftData.value.Contains("Thời gian đăng ký"))
-                //        return quyDinh.leftData.Last().value;
-                //}
             }
             return string.Empty;
         }
@@ -117,7 +111,7 @@ namespace CTUScheduler.Core.Extensions
                     }
                     catch
                     {
-
+                        // ignore
                     }
                 }
             }

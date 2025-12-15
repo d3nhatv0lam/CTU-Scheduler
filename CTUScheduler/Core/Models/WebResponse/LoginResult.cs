@@ -1,4 +1,4 @@
-﻿namespace CTUScheduler.AppServices.Services.WebDriver.Models;
+﻿namespace CTUScheduler.Core.Models.WebResponse;
 
 public record LoginResult(bool IsSuccess, string? ErrorMessage = null)
 {

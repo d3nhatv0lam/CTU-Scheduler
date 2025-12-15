@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Reactive;
 using System.Reactive.Disposables;
@@ -11,12 +10,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.Network;
-using CTUScheduler.AppServices.Services.WebDriver.Interfaces;
 using CTUScheduler.Core.Exceptions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 
-namespace CTUScheduler.AppServices.Services.WebDriver.Core;
+namespace CTUScheduler.Infrastructure.DriverCore;
 
 public record DialogInfo(string Message, string DefaultValue = "");
 

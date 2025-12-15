@@ -32,7 +32,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
         public event Action<object?>? RequestClose;
         public void Close(object? result = null)
         {
-            RequestClose?.Invoke(null);
+            RequestClose?.Invoke(result);
         }
 
         public RoutingState Router { get; } = new ();

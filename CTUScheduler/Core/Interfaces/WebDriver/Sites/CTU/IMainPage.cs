@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
-using CTUScheduler.AppServices.Services.WebDriver.Interfaces;
 
-namespace CTUScheduler.AppServices.Services.WebDriver.Sites.CTU.Pages.Main;
+namespace CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
 
 public interface IMainPage: ISitePage
 {

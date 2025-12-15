@@ -7,7 +7,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices;
 using CTUScheduler.AppServices.Services.WebDriver;
-using CTUScheduler.AppServices.Services.WebDriver.Sites.CTU.Adapters;
+using CTUScheduler.Infrastructure.Sites.CTU.Adapters;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,11 +53,11 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
             var adapter = App.ServiceProvider.GetRequiredService<ICtuDriverAdapter>();
             LoadSignInData();
 
-            Observable.StartAsync(() => adapter.CtuLoginPage.NavigateToAsync());
+            Observable.StartAsync(() => adapter.LoginPage.NavigateToAsync());
             
             SignInCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                var result = await adapter.CtuLoginPage.TryLoginAsync(UserName, Password);
+                var result = await adapter.LoginPage.TryLoginAsync(UserName, Password);
                 Console.WriteLine($"{result.IsSuccess} {result.ErrorMessage}");
                 if (result.IsSuccess)
                 {

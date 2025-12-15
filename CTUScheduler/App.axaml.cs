@@ -16,11 +16,13 @@ using CTUScheduler.AppServices.Services.RegistrationInfor;
 using CTUScheduler.AppServices.Services.ScheduleManager;
 using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Services.WebDriver;
-using CTUScheduler.AppServices.Services.WebDriver.Core;
-using CTUScheduler.AppServices.Services.WebDriver.Interfaces;
-using CTUScheduler.AppServices.Services.WebDriver.Sites.CTU.Adapters;
-using CTUScheduler.AppServices.Services.WebDriver.Sites.CTU.Pages.Login;
 using CTUScheduler.Core.Interfaces;
+using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
+using CTUScheduler.Infrastructure.DriverCore;
+using CTUScheduler.Infrastructure.Sites.CTU.Adapters;
+using CTUScheduler.Infrastructure.Sites.CTU.Pages.Login;
+using CTUScheduler.Infrastructure.Sites.CTU.Pages.Main;
+using CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
 using CTUScheduler.Presentation.Services.Adapter;
@@ -108,8 +110,10 @@ public class App : Application
         services.AddSingleton<IWebDriverService,WebDriverService>();
         services.AddSingleton<ICTUWebDriverService, CtuWebDriverService>();
         
-        services.AddScoped<ICtuDriverAdapter, CtuDriverAdapter>()
-            .AddTransient<ICtuLoginPage, CtuLoginPage>();
+        services.AddSingleton<ICtuDriverAdapter, CtuDriverAdapter>()
+            .AddTransient<ILoginPage, LoginPage>()
+            .AddTransient<IMainPage, MainPage>()
+            .AddTransient<IRegistrationRulesPage, RegistrationRulesPage>();
         
         services.AddSingleton<IRegistrationInformationService, RegistrationInformationService>();
         services.AddSingleton<IUserDataService, UserDataService>();
