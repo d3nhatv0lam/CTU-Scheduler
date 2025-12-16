@@ -19,7 +19,7 @@ using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
 using CTUScheduler.Infrastructure.DriverCore;
-using CTUScheduler.Infrastructure.Sites.CTU.Adapters;
+using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Login;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Main;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
@@ -110,7 +110,7 @@ public class App : Application
         services.AddSingleton<IWebDriverService,WebDriverService>();
         services.AddSingleton<ICTUWebDriverService, CtuWebDriverService>();
         
-        services.AddSingleton<ICtuDriverAdapter, CtuDriverAdapter>()
+        services.AddSingleton<ICtuSitePageFactory, CtuSitePageFactory>()
             .AddTransient<ILoginPage, LoginPage>()
             .AddTransient<IMainPage, MainPage>()
             .AddTransient<IRegistrationRulesPage, RegistrationRulesPage>();

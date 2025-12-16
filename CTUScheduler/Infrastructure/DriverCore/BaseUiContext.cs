@@ -2,14 +2,14 @@
 
 namespace CTUScheduler.Infrastructure.DriverCore;
 
-public abstract class BaseUiContext<T> where T: class
+public abstract class BaseUiContext
 {
     protected readonly IWebDriverService WebDriverService;
-    protected readonly ILogger<T> Logger;
+    protected readonly ILogger Logger;
     
-    protected BaseUiContext(IWebDriverService webDriverService, ILogger<T> logger)
+    protected BaseUiContext(IWebDriverService webDriverService, ILoggerFactory loggerFactory)
     {
         WebDriverService = webDriverService;
-        Logger = logger;
+        Logger = loggerFactory.CreateLogger(this.GetType());
     }
 }

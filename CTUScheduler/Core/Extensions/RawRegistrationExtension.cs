@@ -33,6 +33,9 @@ namespace CTUScheduler.Core.Extensions
                 info.Period = period;
                 info.Groups = groups;
 
+                if (string.IsNullOrEmpty(userKey) || string.IsNullOrEmpty(userUnit))
+                    return info;
+                
                 string userGroup = FindGroupByUnit(info.Groups, userUnit);
                 info.UserPeriod = GetUserPeriod(rawRegistrationInformation, userKey,userGroup);
                 return info;

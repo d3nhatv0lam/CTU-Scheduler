@@ -193,9 +193,9 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
             await element.ClickAsync(options);
             await waitForLoadTask;
         }
-        catch
+        catch (Exception e)
         {
-            _logger.LogWarning("Click navigate element fail!");
+            _logger.LogWarning("Click navigate element fail! Reason: {Message}", e.Message);
             throw;
         }
     }
@@ -364,7 +364,7 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
             catch (Exception ex)
             {
                 // Warning nhẹ, không chặn quy trình
-                _logger.LogWarning($"Không thể xóa folder cũ: {ex.Message}");
+                _logger.LogWarning(ex,$"Fail to delete old folder!");
             }
         }
     }

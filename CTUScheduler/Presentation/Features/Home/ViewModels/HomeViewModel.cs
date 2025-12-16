@@ -7,9 +7,9 @@ using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.RegistrationInfor;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
+using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using CTUScheduler.Presentation.Base;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Serilog;
 
@@ -22,6 +22,8 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
         private readonly ICTUWebDriverService _CTUWebDriverService;
         private readonly IRegistrationInformationService _registrationInformationService;
         private readonly ObservableAsPropertyHelper<RegistrationInformation> _registrationInfor;
+        
+        private readonly ICtuSitePageFactory _ctuSitePageFactory;
         public string? UrlPathSegment => "HomeViewModel";
         
         public RegistrationInformation RegistrationInfo => _registrationInfor.Value;
@@ -40,8 +42,10 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
         {
             _CTUWebDriverService = App.ServiceProvider.GetRequiredService<ICTUWebDriverService>();
             _registrationInformationService = App.ServiceProvider.GetRequiredService<IRegistrationInformationService>();
-            
+            _ctuSitePageFactory = App.ServiceProvider.GetRequiredService<ICtuSitePageFactory>();
             HostScreen = hostScreen;
+
+            
 
             _registrationInfor = _registrationInformationService.RegistrationInformationResponse
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -70,11 +74,11 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
         {
             try
             {
-                await _CTUWebDriverService.GoToRegistrationRulesPage();
+                await _ctuSitePageFactory.RegistrationRulesPage.NavigateToAsync();
             }
-            catch
+            catch (Exception e)
             {
-
+                Console.WriteLine(e.Message);    
             }
         }
 

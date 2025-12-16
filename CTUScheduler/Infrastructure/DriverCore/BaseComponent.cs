@@ -7,15 +7,14 @@ namespace CTUScheduler.Infrastructure.DriverCore;
 /// <summary>
 /// WebElement witout PageUrl
 /// </summary>
-/// <typeparam name="T">Class</typeparam>
-public abstract class BaseComponent<T>: BaseUiContext<T> where T: class
+public abstract class BaseComponent: BaseUiContext
 {
     protected abstract string ComponentSelector { get; }
     
-    public BaseComponent(IWebDriverService webDriverService, ILogger<T> logger) : base(webDriverService, logger)
+    public BaseComponent(IWebDriverService webDriverService, ILoggerFactory loggerFactory) : base(webDriverService, loggerFactory)
     {
     }
-    public virtual async Task IsComponentVisibleAsync()
+    protected virtual async Task IsComponentVisibleAsync()
     {
          await Expect(WebDriverService.GetLocator(ComponentSelector)).ToBeVisibleAsync();
     } 

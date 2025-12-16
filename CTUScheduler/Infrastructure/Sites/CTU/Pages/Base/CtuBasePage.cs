@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Infrastructure.DriverCore;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Login;
 using Microsoft.Extensions.Logging;
 
-namespace CTUScheduler.Infrastructure.Sites.CTU;
+namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Base;
 
-public abstract class CtuBasePage<T> : BaseWebPage<T> where T : class
+public abstract class CtuBasePage : BaseWebPage
 {
     protected override string UriHost => "ctu.edu.vn";
     protected const string LOGIN_URL_PATTERN = @"/authenticationendpoint/login\.do";
-    protected CtuBasePage(IWebDriverService webDriverService, ILogger<T> logger) : base(webDriverService, logger)
+    protected CtuBasePage(IWebDriverService webDriverService, ILoggerFactory loggerFactory) : base(webDriverService, loggerFactory)
     {
     }
     
@@ -19,12 +20,13 @@ public abstract class CtuBasePage<T> : BaseWebPage<T> where T : class
     /// Check if the session is still valid.
     /// </summary>
     /// <exception cref="SessionExpiredException"></exception>
-    protected void EnsureSessionValid()
+    protected virtual Task EnsureSessionValid()
     {
         if (IsLoginPage() && this is not LoginPage) 
         {
             throw new SessionExpiredException();
         }
+        return Task.CompletedTask;
     }
 
     private bool IsLoginPage()

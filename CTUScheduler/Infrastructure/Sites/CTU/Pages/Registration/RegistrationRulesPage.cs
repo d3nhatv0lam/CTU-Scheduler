@@ -16,12 +16,13 @@ using Serilog;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 
-public class RegistrationRulesPage: RegistrationSpa<RegistrationRulesPage>, IRegistrationRulesPage
+public class RegistrationRulesPage: RegistrationSpa, IRegistrationRulesPage
 {
     private const string UserInfoButtonLable= "user";
     private const string UserSettingButtonLable= "user";
     private const string CtuDkmhInfoKeySelector = "li:has-text('Khóa học') p:nth-of-type(2)";
     private const string CtuDkmhInfoUnitSelector = "li:has-text('Đơn vị') p:nth-of-type(2)";
+
     public IObservable<RegistrationInformation> RegistrationInformationResponse => WebDriverService.JsonResponse
         .Where(IsValidResponse)
         .Select(rawJson => JsonHelper.Deserialize<RawRegistrationInformation>(rawJson))
@@ -32,20 +33,21 @@ public class RegistrationRulesPage: RegistrationSpa<RegistrationRulesPage>, IReg
             try
             {
                 var user = await TryGetUserKeyAndUnitAsync();
-                return x!.ToRegistrationInformation(user.userKey, user.userUnit);
+                var result = x!.ToRegistrationInformation(user.userKey, user.userUnit);
+                return Observable.Return(result);
             }
             catch (Exception e)
             {
-                return null!;
+                Logger.LogWarning(e, "Fail to Convert RegistrationInformation");
+                return Observable.Empty<RegistrationInformation>();
             }
         })
-        .Where(x => x is not null);
+        .Merge();
+
     
-    public RegistrationRulesPage(IWebDriverService webDriverService, ILogger<RegistrationRulesPage> logger) : base(webDriverService, logger)
+    public RegistrationRulesPage(IWebDriverService webDriverService, ILoggerFactory logger) : base(webDriverService, logger)
     {
     }
-    
-
     
     protected override async Task NavigateToViaSidebarAsync(CancellationToken cancellationToken = default)
     {
@@ -91,9 +93,9 @@ public class RegistrationRulesPage: RegistrationSpa<RegistrationRulesPage>, IReg
             
             return (userKey, userUnit);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Logger.LogError($"Fail to get student key and unit: {e.Message}");
+            Logger.LogWarning(ex,"Fail to get student key and unit");
             return default;
         }
     }

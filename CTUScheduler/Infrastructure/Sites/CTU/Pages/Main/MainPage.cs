@@ -4,19 +4,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
 using CTUScheduler.Infrastructure.DriverCore;
+using CTUScheduler.Infrastructure.Sites.CTU.Pages.Base;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Main;
 
-public class MainPage: CtuBasePage<MainPage>, IMainPage
+public class MainPage: CtuBasePage, IMainPage
 {
     protected override string PageUrl => "https://dkmh.ctu.edu.vn/htql/sinhvien/hindex.php";
     protected override string PathRegexPattern => "/hindex";
     private const string UserInfoSelector = "#user-login";
-    private const string DkmhButtonSelector = "img[src*='hetinchi.gif']";
-    
-    public MainPage(IWebDriverService webDriverService, ILogger<MainPage> logger) : base(webDriverService, logger)
+    private const string DkmhButtonSelector = "img[src*=\"hetinchi.gif\"][onclick*=\"gotoDKindex\"]";
+    public MainPage(IWebDriverService webDriverService, ILoggerFactory logger) : base(webDriverService, logger)
     {
     }
     
@@ -37,7 +37,7 @@ public class MainPage: CtuBasePage<MainPage>, IMainPage
     public override async Task NavigateToAsync(int maxRetries = 3, CancellationToken cancellationToken = default)
     {
         await WebDriverService.GoToPageAsync(PageUrl);
-        EnsureSessionValid();
+        await EnsureSessionValid();
     }
 
     public async Task NavigateToDkmhAsync()
@@ -47,7 +47,7 @@ public class MainPage: CtuBasePage<MainPage>, IMainPage
         var dkmhButton = WebDriverService.GetLocator(DkmhButtonSelector);
         await WebDriverService.ClickNavigateElementAsync(dkmhButton,null, LoadState.NetworkIdle);
         
-        EnsureSessionValid();
+        await EnsureSessionValid();
     }
     
 

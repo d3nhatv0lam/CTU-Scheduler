@@ -6,12 +6,13 @@ using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
 using CTUScheduler.Core.Models.WebResponse;
 using CTUScheduler.Infrastructure.DriverCore;
+using CTUScheduler.Infrastructure.Sites.CTU.Pages.Base;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Login;
 
-public class LoginPage : CtuBasePage<LoginPage>, ILoginPage
+public class LoginPage : CtuBasePage, ILoginPage
 {
     private const string UsernameInputSelector = "#usernameUserInput";
     private const string PasswordInputSelector = "#password";
@@ -23,7 +24,7 @@ public class LoginPage : CtuBasePage<LoginPage>, ILoginPage
     protected override string UriHost => "accounts.ctu.edu.vn";
     protected override string PathRegexPattern => LOGIN_URL_PATTERN;
     
-    public LoginPage(IWebDriverService webDriverService, ILogger<LoginPage> logger) :
+    public LoginPage(IWebDriverService webDriverService, ILoggerFactory logger) :
         base(webDriverService, logger)
     {
     }
@@ -51,7 +52,7 @@ public class LoginPage : CtuBasePage<LoginPage>, ILoginPage
 
                 if (maxRetries != -1 && currentRetry >= maxRetries)
                 {
-                    Logger.LogError($"Đã thất bại sau {currentRetry} lần thử. Lỗi cuối cùng: {ex.Message}");
+                    Logger.LogError(ex,$"Đã thất bại sau {currentRetry} lần thử.");
                     throw;
                 }
 

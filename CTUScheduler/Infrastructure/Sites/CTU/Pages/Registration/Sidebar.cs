@@ -6,7 +6,7 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 
 public class Sidebar
 {
-    private const string RulesButtonSelector = "li[data-menu-id*='/dangkyhocphan/sinhvien/danhmuchocphan']";
+    private const string RulesButtonSelector = "li[data-menu-id*='/dangkyhocphan/sinhvien/quydinhdangky']";
     private const string CatalogButtonSelector = "li[data-menu-id*='/dangkyhocphan/sinhvien/danhmuchocphan']";
     public async Task NavigateToRulesPageAsync(IWebDriverService webDriverService)
     {

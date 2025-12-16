@@ -58,8 +58,7 @@ public class ConnectivityService: IConnectivityService, IDisposable
             .Select(_ => Observable.FromAsync(ct => CheckInternetAccessAsync(ct))
                 .Catch((Exception ex) => 
                 {
-                    // Bắt lỗi ngay tại luồng con để luồng chính KHÔNG CHẾT
-                    _logger.LogWarning(ex, "Lỗi khi check mạng (Inner Stream)"); 
+                    _logger.LogWarning(ex, "Exception when checking internet status"); 
                     return Observable.Return(false); 
                 }))
             .Switch()
@@ -75,6 +74,9 @@ public class ConnectivityService: IConnectivityService, IDisposable
                 _internetSubject.OnNext(false);
             })
             .DisposeWith(_disposables);
+        
+        _internetSubject.DisposeWith(_disposables);
+        _httpClient.DisposeWith(_disposables);
     }
 
     public Task<bool> CheckInternetAccessAsync()
@@ -117,8 +119,6 @@ public class ConnectivityService: IConnectivityService, IDisposable
     
     public void Dispose()
     {
-        _internetSubject.Dispose();
-        _httpClient.Dispose();
         _disposables.Dispose();
         _logger.LogInformation("Connectivity service disposed!");
     }

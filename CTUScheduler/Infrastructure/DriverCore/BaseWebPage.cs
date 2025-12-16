@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.DriverCore;
 
-public abstract class BaseWebPage<T>: BaseUiContext<T>, ISitePage where T: class
+public abstract class BaseWebPage: BaseUiContext, ISitePage
 {
     protected abstract string PageUrl { get; }
     protected virtual string UriHost
@@ -46,7 +46,7 @@ public abstract class BaseWebPage<T>: BaseUiContext<T>, ISitePage where T: class
         .Select(IsMatchUrl)
         .DistinctUntilChanged();
     
-    protected BaseWebPage(IWebDriverService webDriverService, ILogger<T> logger) : base(webDriverService, logger)
+    protected BaseWebPage(IWebDriverService webDriverService,ILoggerFactory loggerFactory) : base(webDriverService, loggerFactory)
     {
     }
 
