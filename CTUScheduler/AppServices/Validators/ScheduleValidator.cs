@@ -19,7 +19,7 @@ public class ScheduleValidator
     /// <returns>
     /// True if valid, false if invalid
     /// </returns>
-    public bool IsValidTimeTableFromRaw(List<SectionChoice> timeTableData)
+    public bool IsValidTimeTableFromRaw(IReadOnlyList<SectionChoice> timeTableData)
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (timeTableData == null)

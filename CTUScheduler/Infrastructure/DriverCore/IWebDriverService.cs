@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+using CTUScheduler.Core.Models.WebResponse;
 using Microsoft.Playwright;
 
 namespace CTUScheduler.Infrastructure.DriverCore;
@@ -16,7 +17,7 @@ public interface IWebDriverService
     IObservable<DialogInfo> AlertReceived { get; }
     IObservable<DialogInfo> ConfirmReceived { get; }
     IObservable<DialogInfo> PromptReceived { get; }
-    IObservable<JsonElement> JsonResponse { get; }
+    IObservable<NetworkPacket> JsonResponse { get; }
     
     Task InitWebDriverService();
     Task<bool> TryWaitForUrlAsync(string url, int timeout = 10000);

@@ -11,9 +11,9 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 
 public abstract class RegistrationSpa: CtuBasePage
 {
+    protected readonly Sidebar Sidebar = new();
     protected override string PageUrl => "https://dkmhfe.ctu.edu.vn/dangkyhocphan/sinhvien/quydinhdangky";
-    protected override string PathRegexPattern { get; } = "/dangkyhocphan/sinhvien";
-    protected Sidebar Sidebar = new();
+    protected override string PathRegexPattern => "/dangkyhocphan/sinhvien";
     private const string InvalidSessionSelector = ".ant-modal-confirm-error";
     
     protected RegistrationSpa(IWebDriverService webDriverService, ILoggerFactory logger) : base(webDriverService, logger) { }

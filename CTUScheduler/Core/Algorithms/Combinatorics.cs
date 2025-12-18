@@ -10,8 +10,8 @@ public static class Combinatorics
     // O(∏(sets[i].size)) 
     public static IEnumerable<List<T>> CartesianProduct<T>(
         IEnumerable<List<T>> sets,
-        Func<List<T>, bool>? isValidPrefix = null,
-        Func<List<T>, bool>? isValidFull = null,
+        Func<IReadOnlyList<T>, bool>? isValidPrefix = null,
+        Func<IReadOnlyList<T>, bool>? isValidFull = null,
         CancellationToken? token = null)
     {
         var setList = sets.ToList();

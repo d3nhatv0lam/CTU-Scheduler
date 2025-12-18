@@ -5,12 +5,14 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Reactive.Threading.Tasks;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.Core.Exceptions;
+using CTUScheduler.Core.Models.WebResponse;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 
@@ -31,7 +33,7 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
     private readonly ReplaySubject<string> _installationStatusSubject = new(1);
     private readonly BehaviorSubject<bool> _isInstallingSubject = new(false);
     private readonly ReplaySubject<string> _installationProgressSubject = new();
-    private readonly Subject<JsonElement> _jsonResponseSubject = new();
+    private readonly Subject<NetworkPacket> _jsonResponseSubject = new();
     private readonly BehaviorSubject<string> _navigationSubject = new("");
 
     private IPlaywright? _playwright;
@@ -51,7 +53,7 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
     public IObservable<DialogInfo> AlertReceived => _alertSubject.AsObservable();
     public IObservable<DialogInfo> ConfirmReceived => _confirmSubject.AsObservable();
     public IObservable<DialogInfo> PromptReceived => _promptSubject.AsObservable();
-    public IObservable<JsonElement> JsonResponse => _jsonResponseSubject.AsObservable();
+    public IObservable<NetworkPacket> JsonResponse => _jsonResponseSubject.AsObservable();
 
     public WebDriverService(IConnectivityService connectivityService, ILogger<WebDriverService> logger)
     {
@@ -124,23 +126,32 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
                 h => Page.Response += h,
                 h => Page.Response -= h)
             .Select(x => x.EventArgs)
-            .Where(e => e.Status == 200)
-            .Where(e => e.Headers.TryGetValue("content-type", out var ct) &&
-                        ct.Contains("application/json"))
-            .SelectMany(async e =>
+            .Where(e => e.Request.ResourceType == "fetch" || e.Request.ResourceType == "xhr")
+            .Where(e =>
             {
-                try
-                {
-                    return await e.JsonAsync();
-                }
-                catch
-                {
-                    return null;
-                }
+                try {
+                    return e.Headers.TryGetValue("content-type", out var ct) && 
+                           ct.Contains("json", StringComparison.OrdinalIgnoreCase);
+                } catch { return false; }
             })
-            .Where(json => json.HasValue)
-            .Select(x => x!.Value)
-            .Subscribe(json => _jsonResponseSubject.OnNext(json))
+            .SelectMany(e => Observable.FromAsync(async () =>
+                {
+                    try
+                    {
+                        var jsonString = await e.TextAsync();
+                        if (string.IsNullOrWhiteSpace(jsonString)) return null;
+                        return new NetworkPacket
+                        {
+                            Url = e.Request.Url,
+                            Method = e.Request.Method,
+                            RawBody = jsonString
+                        };
+                    }
+                    catch { return null; }
+                }).Catch(Observable.Return<NetworkPacket?>(null))
+            )
+            .Where(packet => packet != null)
+            .Subscribe(packet => _jsonResponseSubject.OnNext(packet!))
             .DisposeWith(_disposables);
     }
 

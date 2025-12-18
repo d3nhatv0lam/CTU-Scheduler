@@ -1,20 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
-namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw
+namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
+
+public class QuickSelectCourse
 {
-    public class QuickSelectCourse
-    {
-        [JsonPropertyName("value")]
-        public string CourseCode { get; set; }
-        [JsonPropertyName("label")]
-        public string CourseName_VN { get; set; }
+    [JsonPropertyName("value")] public string CourseCode { get; set; }
+    [JsonPropertyName("label")] public string CourseName_VN { get; set; }
 
-        [JsonIgnore]
-        public string Information => $"{CourseCode} - {CourseName_VN}";
-    }
+    [JsonIgnore] public string Information => $"{CourseCode} - {CourseName_VN}";
 }
