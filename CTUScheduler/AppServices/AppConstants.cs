@@ -7,7 +7,7 @@ namespace CTUScheduler.AppServices
         public static readonly string Pwd = AppDomain.CurrentDomain.BaseDirectory;
         public const string USERCONFIG_FILENAME = "UserConfig.bin";
       
-        // TryLoginAsync Page
+        // LoginAsync Page
         public const string CTU_SIGN_IN_URL = "https://htql.ctu.edu.vn/";
         public const string CTU_SIGN_IN_USERNAME = "#usernameUserInput";
         public const string CTU_SIGN_IN_PASSWORD = "#password";

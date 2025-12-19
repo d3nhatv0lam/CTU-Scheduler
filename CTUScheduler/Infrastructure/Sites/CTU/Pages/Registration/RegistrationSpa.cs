@@ -29,13 +29,10 @@ public abstract class RegistrationSpa: CtuBasePage
         await EnsureSessionValid();
     }
 
-    protected override async Task EnsureSessionValid()
+    protected override async Task<bool> IsSessionInvalidOnPage()
     {
-        await base.EnsureSessionValid();
-        if (await WebDriverService.GetLocator(InvalidSessionSelector).IsVisibleAsync())
-        {
-            throw new SessionExpiredException();
-        }
+        // nhìn thấy InvalidSessionSelector -> Invalid session
+        return await WebDriverService.GetLocator(InvalidSessionSelector).IsVisibleAsync();
     }
 
     protected abstract Task NavigateToViaSidebarAsync(CancellationToken cancellationToken = default);

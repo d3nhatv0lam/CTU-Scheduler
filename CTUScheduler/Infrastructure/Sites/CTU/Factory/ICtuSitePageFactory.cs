@@ -1,12 +1,8 @@
 ﻿using CTUScheduler.Core.Interfaces.WebDriver;
-using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
-using CTUScheduler.Infrastructure.Sites.CTU.Pages.Base;
+using CTUScheduler.Core.Interfaces.WebDriver.Sites;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Factory;
 
-public interface ICtuSitePageFactory: ISitePageFactory<CtuBasePage>
+public interface ICtuSitePageFactory: ISitePageFactory<ISitePage>
 {
-    ILoginPage LoginPage { get; }
-    IMainPage MainPage { get; }
-    IRegistrationRulesPage RegistrationRulesPage { get; }
 }

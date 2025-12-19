@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
+using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.WebResponse;
 using CTUScheduler.Infrastructure.DriverCore;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Base;
@@ -20,7 +21,7 @@ public class LoginPage : CtuBasePage, ILoginPage
     private const string UsernameErrorSelector = "#usernameError";
     private const string PasswordErrorSelector = "#passwordError";
     private const string LoginFailSelector = "#error-msg";
-    protected override string PageUrl => "https://htql.ctu.edu.vn/";
+    protected override string PageUrl => LOGIN_PAGE_URL;
     protected override string UriHost => "accounts.ctu.edu.vn";
     protected override string PathRegexPattern => LOGIN_URL_PATTERN;
     
@@ -64,13 +65,15 @@ public class LoginPage : CtuBasePage, ILoginPage
         }
     }
 
-    public async Task<LoginResult> TryLoginAsync(string username, string password,
+    public async Task<OperationResult> LoginAsync(string username, string password,
         CancellationToken cancelLoginToken = default)
     {
         using var internalCts = CancellationTokenSource.CreateLinkedTokenSource(cancelLoginToken);
         try
         {
-            // clean page trước khi thực hiện lại
+            if (!await IsActive.FirstAsync())
+                throw new InvalidOperationException("Page is not active");
+
             await CleanUpPage();
 
             var userLocator = WebDriverService.GetLocator(UsernameInputSelector);
@@ -101,30 +104,34 @@ public class LoginPage : CtuBasePage, ILoginPage
             if (completed == successTask)
             {
                 await successTask;
-                return LoginResult.Success();
+                return OperationResult.Success();
             }
 
             var doneTask = await errorTask;
             var element = await doneTask;
             var errorMessage = element != null ? await element.InnerTextAsync() : "Lỗi không xác định";
 
-            return LoginResult.Failed(errorMessage);
+            return OperationResult.Failed(errorMessage);
         }
         catch (OperationCanceledException)
         {
-            return LoginResult.Failed("Hủy đăng nhập");
+            return OperationResult.Failed("Hủy đăng nhập");
         }
         catch (TimeoutException)
         {
-            return LoginResult.Failed("Quá thời gian phản hồi từ hệ thống!");
+            return OperationResult.Failed("Quá thời gian phản hồi từ hệ thống!");
         }
         catch (NoInternetException)
         {
-            return LoginResult.Failed("Không có kết nối mạng!");
+            return OperationResult.Failed("Không có kết nối mạng!");
+        }
+        catch (InvalidOperationException)
+        {
+            return OperationResult.Failed("Trang đăng nhập chưa sẵn sàng");
         }
         catch (Exception)
         {
-            return LoginResult.Failed("Vấn đề chưa xác định, Bạn hãy liên hệ với nhà phát triển để tìm cách khắc phục");
+            return OperationResult.Failed("Vấn đề chưa xác định, Bạn hãy liên hệ với nhà phát triển để tìm cách khắc phục");
         }
         finally
         {

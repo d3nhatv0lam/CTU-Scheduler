@@ -17,6 +17,9 @@ public class CourseCatalogPage: RegistrationSpa, ICourseCatalogPage
     protected override string PageUrl => "https://dkmhfe.ctu.edu.vn/dangkyhocphan/sinhvien/danhmuchocphan";
     protected override string PathRegexPattern => "/danhmuchocphan";
     private const string AutoCompleteKey = "dkmh_tu_dien_hoc_phan_ma_auto_complete";
+    private const string SearchBoxLabel = "Mã học phần";
+    private const string SearchBoxSelector = $"//p[normalize-space()='{SearchBoxLabel}']/..//input";
+    private const string SearchButtonSelector = "span[aria-label='search']";
     
     private IObservable<NetworkPacket> FilteredPacket => WebDriverService.JsonResponse
         .Where(packet => packet.Url.Contains(PathRegexPattern))
@@ -50,12 +53,17 @@ public class CourseCatalogPage: RegistrationSpa, ICourseCatalogPage
 
     public async Task FillQueryAsync(string query)
     {
-        ArgumentNullException.ThrowIfNull(query);
-        
+        if (string.IsNullOrEmpty(query) || !await IsActive.FirstAsync())
+            return;
+        var searchBox = WebDriverService.GetLocator(SearchBoxSelector);
+        await searchBox.FillAsync(query);
     }
 
     public async Task SearchAsync()
     {
-        throw new System.NotImplementedException();
+        if (!await IsActive.FirstAsync())
+            return;
+        var searchButton = WebDriverService.GetLocator(SearchButtonSelector);
+        await searchButton.ClickAsync();
     }
 }

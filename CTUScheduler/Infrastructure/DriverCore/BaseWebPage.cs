@@ -52,12 +52,12 @@ public abstract class BaseWebPage: BaseUiContext, ISitePage
 
     public abstract Task NavigateToAsync(int maxRetries = 3, CancellationToken cancellationToken = default);
 
-    protected virtual bool IsMatchUrl(string url)
+    protected virtual bool IsMatchUrl(string currentUrl)
     {
-        if (string.IsNullOrEmpty(url)) return false;
+        if (string.IsNullOrEmpty(currentUrl)) return false;
         try
         {
-            var uri = new Uri(url);
+            var uri = new Uri(currentUrl);
             var isHostMatch = uri.Host.Contains(UriHost, StringComparison.OrdinalIgnoreCase);
             var isPathMatch = Regex.IsMatch(uri.AbsolutePath, PathRegexPattern, RegexOptions.IgnoreCase);
             return isHostMatch && isPathMatch;

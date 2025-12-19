@@ -20,7 +20,6 @@ public static class WebApiExtension
     public static IObservable<NetworkPacket> FilterPacketJson(this IObservable<NetworkPacket> source
         , Func<JsonNode, bool>? predicate = null)
     {
-        ArgumentNullException.ThrowIfNull(source);
         if (predicate == null) return source;
         return source.Where(packet =>
         {
@@ -49,7 +48,6 @@ public static class WebApiExtension
     public static IObservable<IApiBody<T>> ParseResponse<T>(this IObservable<NetworkPacket> source,
         Func<JsonNode, JsonNode?>? nodeSelector = null)
     {
-        ArgumentNullException.ThrowIfNull(source);
         return source.Select(packet =>
         {
             if (packet is null || string.IsNullOrWhiteSpace(packet.RawBody))
@@ -92,7 +90,6 @@ public static class WebApiExtension
     public static IObservable<CtuApiBody<T>> ParseCtuResponse<T>(this IObservable<NetworkPacket> source,
         Func<JsonNode, JsonNode?>? nodeSelector = null)
     {
-        ArgumentNullException.ThrowIfNull(source);
         return source.Select(packet =>
         {
             var failResult = new CtuApiBody<T>

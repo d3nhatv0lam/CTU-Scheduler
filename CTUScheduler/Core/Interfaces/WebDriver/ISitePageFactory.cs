@@ -1,6 +1,8 @@
-﻿namespace CTUScheduler.Core.Interfaces.WebDriver;
+﻿using CTUScheduler.Core.Interfaces.WebDriver.Sites;
 
-public interface ISitePageFactory<in TRootPage> where TRootPage: class
+namespace CTUScheduler.Core.Interfaces.WebDriver;
+
+public interface ISitePageFactory<in TRootPage> where TRootPage: ISitePage
 {
     string SiteName { get; }
 
