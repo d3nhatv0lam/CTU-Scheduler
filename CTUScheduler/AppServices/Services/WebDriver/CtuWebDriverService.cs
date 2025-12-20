@@ -31,62 +31,62 @@ namespace CTUScheduler.AppServices.Services.WebDriver
             _webDriverService = webDriverService;
             _logger = logger;
 
-            //Registration Rules Page Response
-            RegistrationInformationResponse =
-                _webDriverService.JsonResponse
-                .Select(rawJsonData => ToRegistrationRulesPageJsonData(rawJsonData))
-                .WhereNotNull()
-                // convert to class
-                .Select(jsonData => JsonHelper.Deserialize<RawRegistrationInformation>((JsonElement)jsonData!))
-                .WhereNotNull()
-                .SelectMany(async x => 
-                {
-                    // get userKey(ID) & userUnit
-                    try
-                    {
-                        var user = await TryGetUserKeyAndUnit();
-                        return x.ToRegistrationInformation(user.userKey, user.userUnit);
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogWarning(e,"Failed to get user key and user unit from CTUWebDriverService");
-                        return null!;
-                    }
-                })
-                .WhereNotNull();
-
-            
+            // //Registration Rules Page Response
+            // RegistrationInformationResponse =
+            //     _webDriverService.JsonResponse
+            //     .Select(rawJsonData => ToRegistrationRulesPageJsonData(rawJsonData))
+            //     .WhereNotNull()
+            //     // convert to class
+            //     .Select(jsonData => JsonHelper.Deserialize<RawRegistrationInformation>((JsonElement)jsonData!))
+            //     .WhereNotNull()
+            //     .SelectMany(async x => 
+            //     {
+            //         // get userKey(ID) & userUnit
+            //         try
+            //         {
+            //             var user = await TryGetUserKeyAndUnit();
+            //             return x.ToRegistrationInformation(user.userKey, user.userUnit);
+            //         }
+            //         catch (Exception e)
+            //         {
+            //             _logger.LogWarning(e,"Failed to get user key and user unit from CTUWebDriverService");
+            //             return null!;
+            //         }
+            //     })
+            //     .WhereNotNull();
+            //
+            //
             // Course Catalog quick select response
-            CourseCatalogQuickSelectResponse =
-                _webDriverService.JsonResponse
-                .Select(rawJasonData => ToCourseCatalogQuickSelectJsonData(rawJasonData))
-                .WhereNotNull()
-                .Select(jsonData => JsonHelper.Deserialize<ObservableCollection<QuickSelectCourse>>((JsonElement)jsonData!))
-                .WhereNotNull()
-                .Publish()
-                .RefCount();
-
-            // Course Catalog response
-            CourseCatalogResponse =
-                 _webDriverService.JsonResponse
-                .Select(rawJsonData => ToCourseCatalogJsonData(rawJsonData))
-                .WhereNotNull()
-                .Select(jsonData =>
-                {
-                    try
-                    {
-                        return JsonHelper.Deserialize<RawCourse>((JsonElement)jsonData!);
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogWarning(e,"Exception when Deserialize RawCourse, may by empty SearchBox");
-                        return null;
-                    }
-                })
-                .WhereNotNull()
-                .Select(rawCourse => rawCourse.ToCourse())
-                .Publish()
-                .RefCount();
+            // CourseCatalogQuickSelectResponse =
+            //     _webDriverService.JsonResponse
+            //     .Select(rawJasonData => ToCourseCatalogQuickSelectJsonData(rawJasonData))
+            //     .WhereNotNull()
+            //     .Select(jsonData => JsonHelper.Deserialize<ObservableCollection<QuickSelectCourse>>((JsonElement)jsonData!))
+            //     .WhereNotNull()
+            //     .Publish()
+            //     .RefCount();
+            //
+            // // Course Catalog response
+            // CourseCatalogResponse =
+            //      _webDriverService.JsonResponse
+            //     .Select(rawJsonData => ToCourseCatalogJsonData(rawJsonData))
+            //     .WhereNotNull()
+            //     .Select(jsonData =>
+            //     {
+            //         try
+            //         {
+            //             return JsonHelper.Deserialize<RawCourse>((JsonElement)jsonData!);
+            //         }
+            //         catch (Exception e)
+            //         {
+            //             _logger.LogWarning(e,"Exception when Deserialize RawCourse, may by empty SearchBox");
+            //             return null;
+            //         }
+            //     })
+            //     .WhereNotNull()
+            //     .Select(rawCourse => rawCourse.ToCourse())
+            //     .Publish()
+            //     .RefCount();
 
         }
 

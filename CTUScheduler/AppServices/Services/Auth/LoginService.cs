@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.WebResponse;
@@ -30,19 +31,43 @@ public class LoginService: ILoginService
         catch (Exception e)
         {
             _logger.LogError(e, "Failed to navigate to login page");
-            return OperationResult.Failed("Trang đăng nhập không phản hồi!",);
+            return OperationResult.Failed("Trang đăng nhập không phản hồi!", OperationFailureReason.System);
         }
     }
     
     public async Task<OperationResult> LoginAsync(string username, string password)
     {
         var loginPage = _ctuSitePageFactory.GetPage<ILoginPage>();
-        var res = await loginPage.LoginAsync(username, password);
-        if (!res.IsSuccess)
+        try
         {
-            _logger.LogWarning("User '{User}' failed to login. Reason: {Error}", username, res.ErrorMessage);
+            await loginPage.LoginAsync(username, password);
+            return OperationResult.Success();
         }
-        return res;
+        catch (OperationCanceledException)
+        {
+            return OperationResult.Failed("Hủy đăng nhập", OperationFailureReason.System);
+        }
+        catch (NoInternetException)
+        {
+            return OperationResult.Failed("Không có kết nối mạng!", OperationFailureReason.Network);
+        }
+        catch (InvalidOperationException)
+        {
+            return OperationResult.Failed("Trang đăng nhập chưa sẵn sàng", OperationFailureReason.System);
+        }
+        catch (TimeoutException)
+        {
+            return OperationResult.Failed("Quá thời gian phản hồi từ hệ thống!", OperationFailureReason.System);
+        }
+        catch (InvalidCredentialsException ex)
+        {
+            return OperationResult.Failed(ex.Message, OperationFailureReason.Unauthorized);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to login");
+            return OperationResult.Failed("Vấn đề chưa xác định, Bạn hãy liên hệ với nhà phát triển để tìm cách khắc phục", OperationFailureReason.System);
+        }
     }
     
 }

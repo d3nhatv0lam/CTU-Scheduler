@@ -3,6 +3,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.Presentation.Base;
+using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
@@ -28,8 +29,8 @@ public class MainViewModel : ViewModelBase , IScreen , IActivatableViewModel
         
         _connectivityService = App.ServiceProvider!.GetRequiredService<IConnectivityService>();
         Router = new RoutingState();
-        //Router.Navigate.Execute(new LoginViewModel(this));
-        Router.Navigate.Execute(new MainShellViewModel(this));
+        Router.Navigate.Execute(new LoginViewModel(this));
+        // Router.Navigate.Execute(new MainShellViewModel(this));
 
         this.WhenActivated(disposables =>
         {

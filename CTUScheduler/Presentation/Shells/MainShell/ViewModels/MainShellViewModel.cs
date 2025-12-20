@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -64,13 +65,14 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
         {
             Router = new RoutingState();
             HostScreen = hostScreen;
-            _CTUWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
+            // _CTUWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
             _dialogHostService = App.ServiceProvider!.GetRequiredService<IDialogHostService>();
+            
             NavigationItems = new ObservableCollection<NavigationItem>
             {
                 new NavigationItem("Trang chủ",MaterialIconKind.HomeOutline,typeof(HomeViewModel)),
-                new NavigationItem("Học phần", MaterialIconKind.TableCog,typeof(TimetableManagerViewModel)),
-                new NavigationItem("Cài đặt", MaterialIconKind.CogOutline,typeof(SettingViewModel))
+                // new NavigationItem("Học phần", MaterialIconKind.TableCog,typeof(TimetableManagerViewModel)),
+                // new NavigationItem("Cài đặt", MaterialIconKind.CogOutline,typeof(SettingViewModel))
             };
 
             this.WhenAnyValue(x => x.SelectedItem)
@@ -78,10 +80,10 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                 .Subscribe(item => OnNavigatePage(item))
                 .DisposeWith(_disposables);
             
-            TryGetUserInfo();
+            // TryGetUserInfo();
 
-            //SelectedItem = NavigationItems.First();
-            SelectedItem = NavigationItems[1];
+            SelectedItem = NavigationItems[0];
+            // SelectedItem = NavigationItems[1];
 
             LogoutCommand = ReactiveCommand.CreateFromTask(async () =>
             {

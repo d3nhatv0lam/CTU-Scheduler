@@ -43,7 +43,7 @@ public class RegistrationRulesPage: RegistrationSpa, IRegistrationRulesPage
         await Sidebar.NavigateToRulesPageAsync(WebDriverService);
     }
     
-    private async Task<(string userKey, string userUnit)> TryGetUserKeyAndUnitAsync()
+    public async Task<(string userKey, string userUnit)> TryGetUserKeyAndUnitAsync()
     {
         try
         {

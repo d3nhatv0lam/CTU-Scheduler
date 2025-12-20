@@ -1,6 +1,6 @@
 ﻿namespace CTUScheduler.Core.Models.Shared;
 
-public enum OperationErrorKind
+public enum OperationFailureReason
 {
     None,
     Network,   

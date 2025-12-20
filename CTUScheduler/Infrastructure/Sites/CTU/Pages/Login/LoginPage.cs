@@ -65,7 +65,7 @@ public class LoginPage : CtuBasePage, ILoginPage
         }
     }
 
-    public async Task<OperationResult> LoginAsync(string username, string password,
+    public async Task LoginAsync(string username, string password,
         CancellationToken cancelLoginToken = default)
     {
         using var internalCts = CancellationTokenSource.CreateLinkedTokenSource(cancelLoginToken);
@@ -79,7 +79,7 @@ public class LoginPage : CtuBasePage, ILoginPage
             var userLocator = WebDriverService.GetLocator(UsernameInputSelector);
             var passwordLocator = WebDriverService.GetLocator(PasswordInputSelector);
             var loginButtonLocator = WebDriverService.GetLocator(LoginButtonSelector);
-
+            
             await userLocator.FillAsync(username);
             await passwordLocator.FillAsync(password);
             await WebDriverService.ClickNavigateElementAsync(loginButtonLocator);
@@ -104,34 +104,16 @@ public class LoginPage : CtuBasePage, ILoginPage
             if (completed == successTask)
             {
                 await successTask;
-                return OperationResult.Success();
+                return;
             }
 
             var doneTask = await errorTask;
             var element = await doneTask;
-            var errorMessage = element != null ? await element.InnerTextAsync() : "Lỗi không xác định";
+            var errorMessage = element != null 
+                ? await element.InnerTextAsync() 
+                : throw new Exception("element.InnerTextAsync() fail");
 
-            return OperationResult.Failed(errorMessage);
-        }
-        catch (OperationCanceledException)
-        {
-            return OperationResult.Failed("Hủy đăng nhập");
-        }
-        catch (TimeoutException)
-        {
-            return OperationResult.Failed("Quá thời gian phản hồi từ hệ thống!");
-        }
-        catch (NoInternetException)
-        {
-            return OperationResult.Failed("Không có kết nối mạng!");
-        }
-        catch (InvalidOperationException)
-        {
-            return OperationResult.Failed("Trang đăng nhập chưa sẵn sàng");
-        }
-        catch (Exception)
-        {
-            return OperationResult.Failed("Vấn đề chưa xác định, Bạn hãy liên hệ với nhà phát triển để tìm cách khắc phục");
+            throw new InvalidCredentialsException(errorMessage);
         }
         finally
         {

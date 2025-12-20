@@ -7,5 +7,5 @@ namespace CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
 
 public interface ILoginPage: ISitePage
 {
-    public Task<OperationResult> LoginAsync(string username, string password, CancellationToken cancellationToken = default);
+    public Task LoginAsync(string username, string password, CancellationToken cancellationToken = default);
 }

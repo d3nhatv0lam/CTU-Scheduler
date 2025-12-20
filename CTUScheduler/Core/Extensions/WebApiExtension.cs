@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Data;
 using System.Reactive.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Transactions;
 using CTUScheduler.AppServices.Helpers.Json;
 using CTUScheduler.Core.Interfaces.WebDriver.Api;
 using CTUScheduler.Core.Models.WebResponse;
+using Microsoft.Playwright;
 
 namespace CTUScheduler.Core.Extensions;
 
@@ -87,7 +90,7 @@ public static class WebApiExtension
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException">source is null</exception>
-    public static IObservable<CtuApiBody<T>> ParseCtuResponse<T>(this IObservable<NetworkPacket> source,
+    public static IObservable<IApiBody<T>> ParseCtuResponse<T>(this IObservable<NetworkPacket> source,
         Func<JsonNode, JsonNode?>? nodeSelector = null)
     {
         return source.Select(packet =>

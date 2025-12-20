@@ -4,6 +4,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices;
 using CTUScheduler.AppServices.Helpers;
+using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.AppServices.Services.RegistrationInfor;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
@@ -19,8 +20,8 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
     {
         private readonly CompositeDisposable _disposable = new CompositeDisposable();
         public ViewModelActivator Activator { get; } = new ViewModelActivator();
-        private readonly ICTUWebDriverService _CTUWebDriverService;
-        private readonly IRegistrationInformationService _registrationInformationService;
+        // private readonly IRegistrationInformationService _registrationInformationService;
+        private readonly IRegistrationRulesService _registrationRulesService;
         private readonly ObservableAsPropertyHelper<RegistrationInformation> _registrationInfor;
         
         private readonly ICtuSitePageFactory _ctuSitePageFactory;
@@ -40,16 +41,16 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
 
         public HomeViewModel(IScreen hostScreen)
         {
-            _CTUWebDriverService = App.ServiceProvider.GetRequiredService<ICTUWebDriverService>();
-            _registrationInformationService = App.ServiceProvider.GetRequiredService<IRegistrationInformationService>();
+            _registrationRulesService = App.ServiceProvider.GetRequiredService<IRegistrationRulesService>();
+            // _registrationInformationService = App.ServiceProvider.GetRequiredService<IRegistrationInformationService>();
             _ctuSitePageFactory = App.ServiceProvider.GetRequiredService<ICtuSitePageFactory>();
             HostScreen = hostScreen;
 
             
 
-            _registrationInfor = _registrationInformationService.RegistrationInformationResponse
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .ToProperty(this, nameof(RegistrationInfo));
+            // _registrationInfor = _registrationInformationService.RegistrationInformationResponse
+            //     .ObserveOn(RxApp.MainThreadScheduler)
+            //     .ToProperty(this, nameof(RegistrationInfo));
 
             OpenFacebookCommand = ReactiveCommand.Create(() => OpenUrl(AppConstants.FACEBOOK_URL)).DisposeWith(_disposable);
             OpenYoutubeCommand = ReactiveCommand.Create(() => OpenUrl(AppConstants.YOUTUBE_URL)).DisposeWith(_disposable);
@@ -58,7 +59,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
 
             this.WhenActivated((CompositeDisposable disposable) =>
             {
-                disposable.Add(_registrationInfor);
+                // disposable.Add(_registrationInfor);
                 disposable.Add(_disposable);
             });
 
@@ -74,7 +75,8 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
         {
             try
             {
-                await _ctuSitePageFactory.RegistrationRulesPage.NavigateToAsync();
+                await _registrationRulesService.NavigateToAsync();
+                // await _ctuSitePageFactory.RegistrationRulesPage.NavigateToAsync();
             }
             catch (Exception e)
             {

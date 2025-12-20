@@ -6,6 +6,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices;
+using CTUScheduler.AppServices.Services.Auth;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using CTUScheduler.Presentation.Base;
@@ -18,7 +19,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
     public class LoginViewModel : ViewModelBase, IDisposable, IRoutableViewModel
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
-        private readonly ICTUWebDriverService _CTUWebDriverService;
+       
         private string _userName = string.Empty;
         private string _password = string.Empty;
         private bool _isSaveUsername;
@@ -48,18 +49,19 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         public LoginViewModel(IScreen hostScreen)
         {
             HostScreen = hostScreen;
-            _CTUWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
 
-            var adapter = App.ServiceProvider.GetRequiredService<ICtuSitePageFactory>();
+            var loginService = App.ServiceProvider.GetRequiredService<ILoginService>();
             LoadSignInData();
 
-            Observable.StartAsync(() => adapter.LoginPage.NavigateToAsync());
+            Observable.StartAsync(() => loginService.NavigateToAsync());
             
             SignInCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                var result = await adapter.LoginPage.LoginAsync(UserName, Password);
+                var result = await loginService.LoginAsync(UserName, Password);
+                Console.WriteLine(result.ErrorMessage);
                 if (result.IsSuccess)
                 {
+                    Console.WriteLine("pass");
                     OnLoggedIn();
                 }
                 else
@@ -85,30 +87,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
             // InitCommand();
         }
 #pragma warning restore CS8618
-
         
-
-        private void InitCommand()
-        {
-            SignInCommand = ReactiveCommand.CreateFromTask(async () =>
-            {
-                var isLogged = await _CTUWebDriverService.TrySignInAsync(UserName, Password);
-                if (isLogged)
-                {
-                    OnLoggedIn();
-                }
-                else
-                {
-                    // wait 1sec => reduce CPU usage & Lag
-                    await Task.Delay(1000);
-                }
-            }).DisposeWith(_disposables);
-        }
-
-        private async Task GoToSignPage()
-        {
-            await _CTUWebDriverService.GoToSignInPageAsync();
-        }
 
         private void OnLoggedIn()
         {
