@@ -16,7 +16,6 @@ public class RegistrationRulesService: IRegistrationRulesService
     private readonly ICtuSitePageFactory _factory;
     private readonly IRegistrationRulesPage _rulesPage;
     
-
     public IObservable<RegistrationInformation> RegistrationInfoChanges => 
         _rulesPage.RawRegistrationInformationResponse
         .Where(x => x.IsSuccess)
@@ -49,15 +48,24 @@ public class RegistrationRulesService: IRegistrationRulesService
     {
         try
         {
+            if (await _rulesPage.IsActive.FirstAsync())
+                return OperationResult.Success();
+            
             var homePage = _factory.GetPage<IMainPage>();
-            // chờ trang home xuất hiện
-            throw new NotImplementedException();
-            if (await homePage.IsActive.FirstAsync())
-            {
-                await homePage.NavigateToDkmhAsync();
-            }
-            await _rulesPage.NavigateToAsync();
+
+            if (!await homePage.TryWaitForActiveAsync())
+                throw new InvalidOperationException("Trang chưa được load xong");
+
+            await homePage.NavigateToDkmhAsync();
+
+            if (!await _rulesPage.TryWaitForActiveAsync()) 
+                throw new InvalidOperationException("Trang dkmh chưa được load xong");
+            
             return OperationResult.Success();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return OperationResult.Failed(ex.Message, OperationFailureReason.Network);
         }
         catch (Exception ex)
         {

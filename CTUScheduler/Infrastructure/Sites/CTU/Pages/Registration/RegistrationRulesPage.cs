@@ -15,7 +15,7 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 public class RegistrationRulesPage: RegistrationSpa, IRegistrationRulesPage
 {
     private const string UserInfoButtonLable= "user";
-    private const string UserSettingButtonLable= "user";
+    private const string UserSettingButtonLable= "setting";
     private const string CtuDkmhInfoKeySelector = "li:has-text('Khóa học') p:nth-of-type(2)";
     private const string CtuDkmhInfoUnitSelector = "li:has-text('Đơn vị') p:nth-of-type(2)";
     protected override string PathRegexPattern => "/quydinhdangky";
@@ -28,7 +28,7 @@ public class RegistrationRulesPage: RegistrationSpa, IRegistrationRulesPage
                 x => x.quyDinh,
                 x => x.namhoc,
                 x => x.thoiGianDangKy))
-            .ParseResponse<RawRegistrationInformation>()
+            .ParseCtuResponse<RawRegistrationInformation>()
             .Where(res => res.IsSuccess)
             .OfType<CtuApiBody<RawRegistrationInformation>>();
         
@@ -47,12 +47,21 @@ public class RegistrationRulesPage: RegistrationSpa, IRegistrationRulesPage
     {
         try
         {
-            await WebDriverService.CurrentPage!.GetByRole(AriaRole.Img,new () {Name = UserInfoButtonLable}).ClickAsync();
-            await WebDriverService.CurrentPage!.GetByRole(AriaRole.Img,new () {Name = UserSettingButtonLable}).ClickAsync();
+            await WebDriverService.CurrentPage!
+                .GetByRole(AriaRole.Img,new () {Name = UserInfoButtonLable})
+                .ClickAsync();
+            
+            await WebDriverService.CurrentPage!
+                .GetByRole(AriaRole.Img,new () {Name = UserSettingButtonLable})
+                .ClickAsync();
+            
+            // await WebDriverService.GetLocator(UserInfoButtonLable).ClickAsync();
+            // await WebDriverService.GetLocator(UserSettingButtonLable).ClickAsync();
 
             var result = await Task.WhenAll(
                 WebDriverService.GetLocator(CtuDkmhInfoKeySelector).InnerTextAsync()
-                , WebDriverService.GetLocator(CtuDkmhInfoUnitSelector).InnerTextAsync());
+                , WebDriverService.GetLocator(CtuDkmhInfoUnitSelector).InnerTextAsync()
+                );
             
             string userKey = result[0];
             string userUnit = result[1];

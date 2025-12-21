@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,6 +49,23 @@ public abstract class BaseWebPage: BaseUiContext, ISitePage
     
     protected BaseWebPage(IWebDriverService webDriverService,ILoggerFactory loggerFactory) : base(webDriverService, loggerFactory)
     {
+    }
+
+    public async Task<bool> TryWaitForActiveAsync(int stabilityMs = 2000, int timeout = 10000)
+    {
+        using var cts = new CancellationTokenSource(timeout);
+        try
+        {
+            return await IsActive
+                .Throttle(TimeSpan.FromMilliseconds(stabilityMs))
+                .Where(x => x)
+                .FirstAsync()
+                .ToTask(cts.Token);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public abstract Task NavigateToAsync(int maxRetries = 3, CancellationToken cancellationToken = default);

@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Exceptions;
+using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.WebResponse;
@@ -74,7 +75,7 @@ public class LoginPage : CtuBasePage, ILoginPage
             if (!await IsActive.FirstAsync())
                 throw new InvalidOperationException("Page is not active");
 
-            await CleanUpPage();
+            await CleanUpPage().ConfigureAwait(false);
 
             var userLocator = WebDriverService.GetLocator(UsernameInputSelector);
             var passwordLocator = WebDriverService.GetLocator(PasswordInputSelector);
@@ -90,27 +91,34 @@ public class LoginPage : CtuBasePage, ILoginPage
                 new() { Timeout = 60000 }
             ).WaitAsync(internalCts.Token);
 
-            var errorTask = Task.WhenAny(
-                WebDriverService.CurrentPage.WaitForSelectorAsync(UsernameErrorSelector,
-                    new() { State = WaitForSelectorState.Visible }).WaitAsync(internalCts.Token),
-                WebDriverService.CurrentPage.WaitForSelectorAsync(PasswordErrorSelector,
-                    new() { State = WaitForSelectorState.Visible }).WaitAsync(internalCts.Token),
-                WebDriverService.CurrentPage.WaitForSelectorAsync(LoginFailSelector,
-                    new() { State = WaitForSelectorState.Visible }).WaitAsync(internalCts.Token)
-            );
-
-            var completed = await Task.WhenAny(successTask, errorTask);
-
-            if (completed == successTask)
+            var errorOption = new PageWaitForSelectorOptions()
             {
+                Timeout = 0,
+                State = WaitForSelectorState.Visible,
+            };
+
+            var errorTask = Task.WhenAny(
+                WebDriverService.CurrentPage.WaitForSelectorAsync(UsernameErrorSelector, errorOption),
+                WebDriverService.CurrentPage.WaitForSelectorAsync(PasswordErrorSelector, errorOption),
+                WebDriverService.CurrentPage.WaitForSelectorAsync(LoginFailSelector, errorOption)
+            ).WaitAsync(internalCts.Token);
+
+            var winnerTask = await Task.WhenAny(successTask, errorTask).ConfigureAwait(false);
+
+            if (winnerTask == successTask)
+            {
+                errorTask.FireAndForgetSafe();
+                
                 await successTask;
                 return;
             }
 
-            var doneTask = await errorTask;
-            var element = await doneTask;
+            successTask.FireAndForgetSafe();
+            
+            var completedErrorTask = await errorTask.ConfigureAwait(false);
+            var element = await completedErrorTask.ConfigureAwait(false);
             var errorMessage = element != null 
-                ? await element.InnerTextAsync() 
+                ? await element.InnerTextAsync().ConfigureAwait(false) 
                 : throw new Exception("element.InnerTextAsync() fail");
 
             throw new InvalidCredentialsException(errorMessage);
