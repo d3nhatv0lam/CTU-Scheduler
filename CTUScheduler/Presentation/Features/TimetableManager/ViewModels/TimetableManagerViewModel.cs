@@ -8,6 +8,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using CTUScheduler.AppServices.Services.Network;
+using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.AppServices.Services.ScheduleManager;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Presentation.Base;
@@ -31,6 +32,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly IDialogHostService _dialogHostService;
         private readonly ITimetableDialogService _timetableDialogService;
         private readonly IConnectivityService  _connectivityService;
+        private readonly ICourseCatalogService _courseCatalogService;
 
         private readonly ReadOnlyObservableCollection<TimetableLayoutViewModel> _bindableTimetableLayouts =
             ReadOnlyObservableCollection<TimetableLayoutViewModel>.Empty;
@@ -64,9 +66,10 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             _dialogHostService = App.ServiceProvider.GetRequiredService<IDialogHostService>();
             _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
             _timetableLayoutVmAdapter = App.ServiceProvider.GetRequiredService<ITimetableLayoutAdapter>();
-            _CTUWebDriverService = App.ServiceProvider.GetRequiredService<ICTUWebDriverService>();
+            // _CTUWebDriverService = App.ServiceProvider.GetRequiredService<ICTUWebDriverService>();
             _scheduleService = App.ServiceProvider.GetRequiredService<IScheduleService>();
             _connectivityService = App.ServiceProvider.GetRequiredService<IConnectivityService>();
+            _courseCatalogService = App.ServiceProvider.GetRequiredService<ICourseCatalogService>();
 
             _scheduleService.TimetableChanges
                 .Transform(x => _timetableLayoutVmAdapter.GetOrCreateLayout(x))
@@ -146,7 +149,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     }
                 })
                 .DisposeWith(_disposables);
-            
         }
 
         private async Task OpenAddCourseDialog()
@@ -156,11 +158,12 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 DialogIdentifier.MainLayout);
         }
 
-        private void GoToCourseCatalogPage()
+        private async void GoToCourseCatalogPage()
         {
             try
             {
-                _CTUWebDriverService.GoToCourseCatalogPage();
+                 await _courseCatalogService.NavigateToAsync();
+                // _CTUWebDriverService.GoToCourseCatalogPage();
             }
             catch
             {

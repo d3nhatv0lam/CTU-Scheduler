@@ -12,6 +12,7 @@ using System.Reactive;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Models;
 using CTUScheduler.AppServices.Services.Auth;
+using CTUScheduler.AppServices.Services.MainHomeService;
 using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.AppServices.Services.RegistrationInfor;
@@ -116,8 +117,11 @@ public class App : Application
             .AddTransient<ILoginPage, LoginPage>()
             .AddTransient<ILoginService,LoginService>()
             .AddTransient<IMainPage, MainPage>()
+            .AddTransient<IMainHomeService,MainHomeService>()
             .AddTransient<IRegistrationRulesPage, RegistrationRulesPage>()
-            .AddTransient<IRegistrationRulesService,RegistrationRulesService>();
+            .AddTransient<IRegistrationRulesService,RegistrationRulesService>()
+            .AddTransient<ICourseCatalogPage,CourseCatalogPage>()
+            .AddTransient<ICourseCatalogService,CourseCatalogService>();
         
         services.AddSingleton<IRegistrationInformationService, RegistrationInformationService>();
         services.AddSingleton<IUserDataService, UserDataService>();

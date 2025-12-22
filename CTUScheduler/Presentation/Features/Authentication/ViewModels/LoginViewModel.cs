@@ -61,7 +61,6 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                 Console.WriteLine(result.ErrorMessage);
                 if (result.IsSuccess)
                 {
-                    Console.WriteLine("pass");
                     OnLoggedIn();
                 }
                 else

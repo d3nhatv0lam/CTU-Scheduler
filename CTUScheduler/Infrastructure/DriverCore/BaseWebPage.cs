@@ -44,14 +44,14 @@ public abstract class BaseWebPage: BaseUiContext, ISitePage
     
     public IObservable<bool> IsActive => WebDriverService.MainFrameUrlChanges
         .StartWith(WebDriverService.PageUrl)
-        .Select(IsMatchUrl)
+        .Select(url => IsMatchUrl(url, UriHost, PathRegexPattern))
         .DistinctUntilChanged();
     
     protected BaseWebPage(IWebDriverService webDriverService,ILoggerFactory loggerFactory) : base(webDriverService, loggerFactory)
     {
     }
 
-    public async Task<bool> TryWaitForActiveAsync(int stabilityMs = 2000, int timeout = 10000)
+    public async Task<bool> TryWaitForActiveAsync(int stabilityMs = 1000, int timeout = 10000)
     {
         using var cts = new CancellationTokenSource(timeout);
         try
@@ -68,16 +68,21 @@ public abstract class BaseWebPage: BaseUiContext, ISitePage
         }
     }
 
-    public abstract Task NavigateToAsync(int maxRetries = 3, CancellationToken cancellationToken = default);
+    public abstract Task NavigateToAsync(bool allowRedirection = true,
+        CancellationToken cancellationToken = default);
 
-    protected virtual bool IsMatchUrl(string currentUrl)
+
+
+    protected virtual bool IsMatchUrl(string currentUrl, string uriHost, string pathRegexPattern)
     {
-        if (string.IsNullOrEmpty(currentUrl)) return false;
+        if (string.IsNullOrWhiteSpace(currentUrl) 
+            || string.IsNullOrWhiteSpace(uriHost)
+            || string.IsNullOrWhiteSpace(pathRegexPattern)) return false;
         try
         {
             var uri = new Uri(currentUrl);
-            var isHostMatch = uri.Host.Contains(UriHost, StringComparison.OrdinalIgnoreCase);
-            var isPathMatch = Regex.IsMatch(uri.AbsolutePath, PathRegexPattern, RegexOptions.IgnoreCase);
+            var isHostMatch = uri.Host.Contains(uriHost, StringComparison.OrdinalIgnoreCase);
+            var isPathMatch = Regex.IsMatch(uri.AbsolutePath, pathRegexPattern, RegexOptions.IgnoreCase);
             return isHostMatch && isPathMatch;
         }
         catch

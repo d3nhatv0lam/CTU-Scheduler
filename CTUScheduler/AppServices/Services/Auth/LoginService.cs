@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
@@ -21,12 +22,13 @@ public class LoginService: ILoginService
         _logger = logger;
     }
 
-    public async Task<OperationResult> NavigateToAsync(int tries = -1)
+    public async Task<OperationResult> NavigateToAsync()
     {
         try
         {
-            await _ctuSitePageFactory.GetPage<ILoginPage>().NavigateToAsync(tries);
+            await _ctuSitePageFactory.GetPage<ILoginPage>().NavigateToAsync();
             return OperationResult.Success();
+            throw new NotImplementedException();
         }
         catch (Exception e)
         {

@@ -17,8 +17,8 @@ public class RegistrationInformationService: IRegistrationInformationService
         ILogger<RegistrationInformationService> logger)
     {
         _logger = logger;
-        RegistrationInformationResponse = ctuWebDriver.RegistrationInformationResponse
-            .Do(registrationInformation => CurrentRegistrationInformation = registrationInformation);
+        // RegistrationInformationResponse = ctuWebDriver.RegistrationInformationResponse
+        //     .Do(registrationInformation => CurrentRegistrationInformation = registrationInformation);
     }
     
     public bool IsEqualSemester(string semester, int academicYear)

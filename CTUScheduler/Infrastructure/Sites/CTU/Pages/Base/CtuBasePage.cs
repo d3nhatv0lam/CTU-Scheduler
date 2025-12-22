@@ -56,24 +56,12 @@ public abstract class CtuBasePage : BaseWebPage
 
     protected virtual Task OnSessionExpired()
     {
-        WebDriverService.GoToPageAsync(PageUrl);
+        WebDriverService.GoToPageAsync(LOGIN_PAGE_URL);
         return Task.CompletedTask;
     }
 
     private bool IsLoginPage()
     {
-        var url = WebDriverService.PageUrl;
-        if (string.IsNullOrEmpty(url)) return false;
-        try
-        {
-            var uri = new Uri(url);
-            if (!uri.Host.Contains(UriHost, StringComparison.OrdinalIgnoreCase))
-                return false;
-            return Regex.IsMatch(uri.AbsolutePath, LOGIN_URL_PATTERN, RegexOptions.IgnoreCase);
-        }
-        catch
-        {
-            return false;
-        }
+        return IsMatchUrl(WebDriverService.PageUrl, UriHost, LOGIN_URL_PATTERN);
     }
 }

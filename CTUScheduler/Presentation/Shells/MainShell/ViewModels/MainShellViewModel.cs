@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using CTUScheduler.AppServices.Services.MainHomeService;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
@@ -20,10 +21,11 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 {
     public class MainShellViewModel: ViewModelBase, IScreen , IRoutableViewModel, IDisposable
     {
-        private CompositeDisposable _disposables = new CompositeDisposable();
-        private ICTUWebDriverService _CTUWebDriverService;
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        // private ICTUWebDriverService _CTUWebDriverService;
         private IDialogHostService _dialogHostService;
         private NavigationItem _selectedItem;
+        private readonly IMainHomeService _mainHomeService;
         private string _userName = "họ tên";
         private string _userMSSV = "MSSV";
         private string _title;
@@ -67,20 +69,28 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             HostScreen = hostScreen;
             // _CTUWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
             _dialogHostService = App.ServiceProvider!.GetRequiredService<IDialogHostService>();
+            _mainHomeService = App.ServiceProvider.GetRequiredService<IMainHomeService>();
+
+            _mainHomeService.StudentIdChanges
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(userText =>
+                {
+                    string[] userInfoArray = userText.Split(" ");
+                    UserName = string.Join(' ', userInfoArray[0..^1]);
+                    UserMSSV = userInfoArray[^1];
+                }).DisposeWith(_disposables);
             
             NavigationItems = new ObservableCollection<NavigationItem>
             {
                 new NavigationItem("Trang chủ",MaterialIconKind.HomeOutline,typeof(HomeViewModel)),
-                // new NavigationItem("Học phần", MaterialIconKind.TableCog,typeof(TimetableManagerViewModel)),
-                // new NavigationItem("Cài đặt", MaterialIconKind.CogOutline,typeof(SettingViewModel))
+                new NavigationItem("Học phần", MaterialIconKind.TableCog,typeof(TimetableManagerViewModel)),
+                new NavigationItem("Cài đặt", MaterialIconKind.CogOutline,typeof(SettingViewModel))
             };
 
             this.WhenAnyValue(x => x.SelectedItem)
                 .WhereNotNull()
                 .Subscribe(item => OnNavigatePage(item))
                 .DisposeWith(_disposables);
-            
-            // TryGetUserInfo();
 
             SelectedItem = NavigationItems[0];
             // SelectedItem = NavigationItems[1];
@@ -95,16 +105,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                 }
             }).DisposeWith(_disposables);
         }
-
-        private async void TryGetUserInfo()
-        {
-            var userInfo = await _CTUWebDriverService.TryGetUserInfomation();
-            if (string.IsNullOrEmpty(userInfo.userName) || string.IsNullOrEmpty(userInfo.userMSSV))
-                return;
-            UserName = userInfo.userName;
-            UserMSSV = userInfo.userMSSV;
-        }
-
+        
         private void OnNavigatePage(NavigationItem item)
         {
             Title = item.Title;

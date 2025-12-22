@@ -12,10 +12,10 @@ using Microsoft.Playwright;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 
-public class RegistrationRulesPage: RegistrationSpa, IRegistrationRulesPage
+public class RegistrationRulesPage : RegistrationSpa, IRegistrationRulesPage
 {
-    private const string UserInfoButtonLable= "user";
-    private const string UserSettingButtonLable= "setting";
+    private const string UserInfoButtonLable = ".anticon-user";
+    private const string UserSettingButtonLable = ".anticon-setting";
     private const string CtuDkmhInfoKeySelector = "li:has-text('Khóa học') p:nth-of-type(2)";
     private const string CtuDkmhInfoUnitSelector = "li:has-text('Đơn vị') p:nth-of-type(2)";
     protected override string PathRegexPattern => "/quydinhdangky";
@@ -31,48 +31,75 @@ public class RegistrationRulesPage: RegistrationSpa, IRegistrationRulesPage
             .ParseCtuResponse<RawRegistrationInformation>()
             .Where(res => res.IsSuccess)
             .OfType<CtuApiBody<RawRegistrationInformation>>();
-        
 
-    
-    public RegistrationRulesPage(IWebDriverService webDriverService, ILoggerFactory logger) : base(webDriverService, logger)
+    public RegistrationRulesPage(IWebDriverService webDriverService, ILoggerFactory logger) : base(webDriverService,
+        logger)
     {
     }
-    
+
     protected override async Task NavigateToViaSidebarAsync(CancellationToken cancellationToken = default)
     {
         await Sidebar.NavigateToRulesPageAsync(WebDriverService);
     }
-    
+
     public async Task<(string userKey, string userUnit)> TryGetUserKeyAndUnitAsync()
     {
         try
         {
-            await WebDriverService.CurrentPage!
-                .GetByRole(AriaRole.Img,new () {Name = UserInfoButtonLable})
-                .ClickAsync();
-            
-            await WebDriverService.CurrentPage!
-                .GetByRole(AriaRole.Img,new () {Name = UserSettingButtonLable})
-                .ClickAsync();
-            
-            // await WebDriverService.GetLocator(UserInfoButtonLable).ClickAsync();
-            // await WebDriverService.GetLocator(UserSettingButtonLable).ClickAsync();
+            await WebDriverService
+                .GetLocator(UserInfoButtonLable)
+                .ClickAsync()
+                .ConfigureAwait(false);
 
-            var result = await Task.WhenAll(
-                WebDriverService.GetLocator(CtuDkmhInfoKeySelector).InnerTextAsync()
-                , WebDriverService.GetLocator(CtuDkmhInfoUnitSelector).InnerTextAsync()
-                );
+            await WebDriverService
+                .GetLocator(UserSettingButtonLable)
+                .ClickAsync()
+                .ConfigureAwait(false);
             
-            string userKey = result[0];
-            string userUnit = result[1];
+            await WebDriverService.GetLocator(CtuDkmhInfoKeySelector)
+                .WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Attached })
+                .ConfigureAwait(false);
             
-            await WebDriverService.GetLocator(".ant-modal-close").ClickAsync();
+            var result = await WebDriverService.CurrentPage!.EvaluateAsync<dynamic>(@"(args) => {
+                const getVal = (label) => {
+                    const li = Array.from(document.querySelectorAll('li')).find(el => el.textContent.includes(label));
+                    return li ? li.querySelector('p:nth-of-type(2)')?.textContent.trim() : '';
+                };
+
+                const k = getVal(args.keyLabel);
+                const u = getVal(args.unitLabel);
+
+                const closeBtn = document.querySelector(args.closeSel);
+                if (closeBtn) {
+                    closeBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+                }
+
+                return { k, u };
+            }", new { 
+                keyLabel = "Khóa học", 
+                unitLabel = "Đơn vị", 
+                closeSel = ".ant-modal-close" 
+            }).ConfigureAwait(false);
+
+            return (result.k.ToString(), result.u.ToString());
             
-            return (userKey, userUnit);
+            // var result = await Task.WhenAll(
+            //     WebDriverService.GetLocator(CtuDkmhInfoKeySelector).InnerTextAsync()
+            //     , WebDriverService.GetLocator(CtuDkmhInfoUnitSelector).InnerTextAsync()
+            // ).ConfigureAwait(false);
+            //
+            // string userKey = result[0];
+            // string userUnit = result[1];
+            //
+            // await WebDriverService.GetLocator(".ant-modal-close")
+            //     .ClickAsync()
+            //     .ConfigureAwait(false);
+            //
+            // return (userKey, userUnit);
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex,"Fail to get student key and unit");
+            Logger.LogWarning(ex, "Fail to get student key and unit");
             return default;
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
@@ -14,13 +15,33 @@ public class MainPage: CtuBasePage, IMainPage
 {
     protected override string PageUrl => "https://dkmh.ctu.edu.vn/htql/sinhvien/hindex.php";
     protected override string PathRegexPattern => "/hindex";
+
+
     private const string UserInfoSelector = "#user-login";
     private const string DkmhButtonSelector = "img[src*=\"hetinchi.gif\"][onclick*=\"gotoDKindex\"]";
     public MainPage(IWebDriverService webDriverService, ILoggerFactory logger) : base(webDriverService, logger)
     {
     }
+
+    public IObservable<string> UserInfoChanges => IsActive
+        .Select(isActive =>
+        {
+            if (!isActive)
+                return Observable.Return(string.Empty);
+
+            return Observable.FromAsync(ct => GetUserInfoAsync(ct))
+                .Retry(1)
+                .Catch((Exception ex) =>
+                {
+                    Logger.LogWarning(ex, "fail when GetUserInfoAsync");
+                    return Observable.Return(string.Empty);
+                });
+        })
+        .Switch()
+        .DistinctUntilChanged();
     
-    public async Task<string> GetUserInfoAsync()
+    
+    public async Task<string> GetUserInfoAsync(CancellationToken cancellationToken = default)
     {
         await EnsurePageActivated();
         
@@ -28,15 +49,17 @@ public class MainPage: CtuBasePage, IMainPage
 
         var info = await userInfo.InnerTextAsync(new()
         {
-            Timeout = 5000
-        });
+            Timeout = 3000
+        }).WaitAsync(cancellationToken)
+        .ConfigureAwait(false);
         
         return info;
     }
     
-    public override async Task NavigateToAsync(int maxRetries = 3, CancellationToken cancellationToken = default)
+    public override async Task NavigateToAsync(bool allowRedirection = true, CancellationToken cancellationToken = default)
     {
-        await WebDriverService.GoToPageAsync(PageUrl);
+        if (allowRedirection)
+            await WebDriverService.GoToPageAsync(PageUrl);
         await EnsureSessionValid();
     }
 

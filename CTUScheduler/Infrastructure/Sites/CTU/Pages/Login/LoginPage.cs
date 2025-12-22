@@ -31,39 +31,12 @@ public class LoginPage : CtuBasePage, ILoginPage
     {
     }
     
-    public override async Task NavigateToAsync(int maxRetries = 3, CancellationToken cancellationToken = default)
+    public override async Task NavigateToAsync(bool allowRedirection = true, CancellationToken cancellationToken = default)
     {
         if (await IsActive.FirstAsync())
             return;
-
-        var currentRetry = 1;
-        while (true)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                await WebDriverService.GoToPageAsync(PageUrl);
-                // Đợi input username xuất hiện
-                await WebDriverService.CurrentPage!
-                    .WaitForSelectorAsync(UsernameInputSelector, new() { Timeout = 10000 });
-                return;
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                currentRetry++;
-
-                if (maxRetries != -1 && currentRetry >= maxRetries)
-                {
-                    Logger.LogError(ex,$"Đã thất bại sau {currentRetry} lần thử.");
-                    throw;
-                }
-
-                string limitLog = maxRetries == -1 ? "Infinite" : maxRetries.ToString();
-                Logger.LogWarning($"Fail to Navigate ({currentRetry}/{limitLog}): {ex.Message}. Retrying...");
-
-                await Task.Delay(5000, cancellationToken);
-            }
-        }
+        
+        await WebDriverService.GoToPageAsync(PageUrl);
     }
 
     public async Task LoginAsync(string username, string password,

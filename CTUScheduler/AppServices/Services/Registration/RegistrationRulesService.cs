@@ -51,16 +51,15 @@ public class RegistrationRulesService: IRegistrationRulesService
             if (await _rulesPage.IsActive.FirstAsync())
                 return OperationResult.Success();
             
-            var homePage = _factory.GetPage<IMainPage>();
-
-            if (!await homePage.TryWaitForActiveAsync())
-                throw new InvalidOperationException("Trang chưa được load xong");
-
-            await homePage.NavigateToDkmhAsync();
-
-            if (!await _rulesPage.TryWaitForActiveAsync()) 
-                throw new InvalidOperationException("Trang dkmh chưa được load xong");
+            await _rulesPage.NavigateToAsync(allowRedirection:false);
             
+            var homePage = _factory.GetPage<IMainPage>();
+            if (await homePage.TryWaitForActiveAsync(1000,5000))
+            {
+                await homePage.NavigateToDkmhAsync();
+                if (!await _rulesPage.TryWaitForActiveAsync()) 
+                    throw new InvalidOperationException("Trang dkmh chưa được load xong");
+            }
             return OperationResult.Success();
         }
         catch (InvalidOperationException ex)
