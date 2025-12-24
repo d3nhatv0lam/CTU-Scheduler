@@ -85,6 +85,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
 
         public void Dispose()
         {
+            (_registrationRulesService as IDisposable)?.Dispose();
             _disposable.Dispose();
             Log.Information("HomeViewModel: Disposed");
         }

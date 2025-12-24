@@ -136,7 +136,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
                          _ => true,
                          _cts.Token))
             {
-                var layout = new TimetableLayoutViewModel(new ScheduleTable());
+                var layout = new TimetableLayoutViewModel(new Core.Models.Academic.Curriculum.Schedule.ScheduleProfile());
                 foreach (var data in tableData)
                     layout.TryAddSectionChoice(data);
 
@@ -175,7 +175,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
     {
         foreach (var selectableTimetableLayout in await PaginationTimeTableViewModel.GetSelectedTimetables())
         {
-            ScheduleTableBuildData buildData = selectableTimetableLayout.Item.GetScheduleSaveData();
+            ScheduleBlueprint buildData = selectableTimetableLayout.Item.GetScheduleBlueprint();
             _scheduleService.AddTimetable(buildData);
         }
         PaginationTimeTableViewModel.Clear();

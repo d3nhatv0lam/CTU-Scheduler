@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
-using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Helpers.Json;
 using CTUScheduler.AppServices.Services.RegistrationInfor;
@@ -17,7 +12,7 @@ using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.AppServices.Validators;
 using CTUScheduler.Core.Extensions;
-using CTUScheduler.Core.Interfaces;
+using CTUScheduler.Core.Helpers;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
@@ -38,7 +33,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     private readonly IRegistrationInformationService _registrationInformationService;
     private readonly ScheduleValidator _scheduleValidator = new();
     
-    private readonly SourceList<ScheduleTable> _data = new();
+    private readonly SourceList<ScheduleProfile> _data = new();
     private readonly Subject<bool> _isReloadingSubject = new();
     private readonly BehaviorSubject<bool> _isExpiredSavedSubject = new(false);
     private readonly BehaviorSubject<DateTime?> _lastSavedSubject = new(null);
@@ -58,7 +53,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         } 
     }
 
-    public IObservable<IChangeSet<ScheduleTable>> TimetableChanges => _data
+    public IObservable<IChangeSet<ScheduleProfile>> TimetableChanges => _data
         .Connect()
         .Publish()
         .RefCount();
@@ -83,12 +78,12 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         _logger = logger;
     }
     
-    public void AddTimetable(ScheduleTableBuildData buildData)
+    public void AddTimetable(ScheduleBlueprint buildData)
     {
         if (!buildData.TryTrim(out var trimmedBuildData)) return;
 
         var courses = trimmedBuildData.Courses;
-        var scheduleTable = trimmedBuildData.ScheduleTable;
+        var scheduleTable = trimmedBuildData.Metadata;
 
         if (_scheduleValidator.IsExistedTimetable(scheduleTable, _data.Items))
             return;
@@ -99,7 +94,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         _logger.LogInformation("Added timetable");
     }
 
-    public void AddRangeTimetable(IEnumerable<ScheduleTableBuildData> data)
+    public void AddRangeTimetable(IEnumerable<ScheduleBlueprint> data)
     {
         foreach (var scheduleTableData in data)
         {
@@ -108,13 +103,13 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         _logger.LogInformation("Added timetables");
     }
 
-    public void RemoveTimetable(ScheduleTable timetable)
+    public void RemoveTimetable(ScheduleProfile scheduleProfile)
     {
-        _data.Remove(timetable);
-        _courseManager.UnregisterTimetable(timetable);
+        _data.Remove(scheduleProfile);
+        _courseManager.UnregisterTimetable(scheduleProfile);
         if (_data.Count == 0)
             _isExpiredSavedSubject.OnNext(false);
-        _logger.LogInformation("Removed timetable");
+        _logger.LogInformation("Removed scheduleProfile");
     }
 
     public async Task<bool> TryReloadCourseDataAsync()
@@ -199,7 +194,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         var registerInformation = _registrationInformationService.GetSemester();
         var courses = _courseManager.GetAllCourses();
         var tables = _data.Items.ToList();
-        TrimCoursesAndTables(courses,tables);
+        ScheduleOptimizer.Trim(courses,tables);
         BindScheduleSave(registerInformation,courses,tables,savedTime);
         var isSaved =  await _userDataService.TrySaveUserDataAsync(filePath);
         if (!isSaved)
@@ -236,7 +231,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
             
             _isExpiredSavedSubject.OnNext(!_registrationInformationService.IsEqualSemester(savedSemester, savedAcademicYear));
 
-            TrimCoursesAndTables(courses, tables);
+            ScheduleOptimizer.Trim(courses,tables);
 
             _logger.LogInformation("Loaded schedule");
             BindScheduleManager(courses, tables);
@@ -249,7 +244,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         }
     }
 
-    private void BindScheduleSave((int academicYear,string semester) registerInformation,List<Course> courses, List<ScheduleTable> tables, DateTime savedTime)
+    private void BindScheduleSave((int academicYear,string semester) registerInformation,List<Course> courses, List<ScheduleProfile> tables, DateTime savedTime)
     {
         _userDataService.ScheduleSaved.Semester = registerInformation.semester;
         _userDataService.ScheduleSaved.AcademicYear = registerInformation.academicYear;
@@ -259,7 +254,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         
     }
 
-    private void BindScheduleManager(List<Course> courses, List<ScheduleTable> tables)
+    private void BindScheduleManager(List<Course> courses, List<ScheduleProfile> tables)
     {
         ClearTimetables();
         _courseManager.RegisterTimetables(courses, tables);
@@ -273,7 +268,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         _data.Clear();
     }
 
-    private bool ValidateSavedTables(List<Course> courses, List<ScheduleTable> tables)
+    private bool ValidateSavedTables(List<Course> courses, List<ScheduleProfile> tables)
     {
         if (courses == null || tables == null)
             return false;
@@ -313,7 +308,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     /// <param name="courses"></param>
     /// <param name="tables"></param>
     /// <returns>courses and tables have trimmed, fit with tables</returns>
-    private void TrimCoursesAndTables(List<Course> courses, List<ScheduleTable> tables)
+    private void TrimCoursesAndTables(List<Course> courses, List<ScheduleProfile> tables)
     {
         if (courses == null)
             throw new ArgumentNullException(nameof(courses));

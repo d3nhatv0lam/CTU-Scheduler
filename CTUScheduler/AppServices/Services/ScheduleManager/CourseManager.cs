@@ -42,7 +42,7 @@ public class CourseManager: ICourseManager, IDisposable
         return disposables;
     }
 
-    public void RegisterTimetable(IEnumerable<Course> courses, ScheduleTable table)
+    public void RegisterTimetable(IEnumerable<Course> courses, ScheduleProfile table)
     {
         AddOrUpdateCourses(courses);
         foreach(var (code,group) in table.SavedCourseGroupKeys)
@@ -51,7 +51,7 @@ public class CourseManager: ICourseManager, IDisposable
         }
     }
 
-    public void RegisterTimetables(IEnumerable<Course> courses, IEnumerable<ScheduleTable> tables)
+    public void RegisterTimetables(IEnumerable<Course> courses, IEnumerable<ScheduleProfile> tables)
     {
         AddOrUpdateCourses(courses);
         foreach (var table in tables)
@@ -63,7 +63,7 @@ public class CourseManager: ICourseManager, IDisposable
         }
     }
 
-    public void UnregisterTimetable(ScheduleTable table)
+    public void UnregisterTimetable(ScheduleProfile table)
     {
         foreach(var (code,group) in table.SavedCourseGroupKeys)
         {

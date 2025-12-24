@@ -12,4 +12,7 @@ public interface ICourseCatalogService
     IObservable<List<QuickSelectCourse>> QuickSelectCourseChanges { get; }
     IObservable<Course> CourseChanges { get; }
     Task<OperationResult> NavigateToAsync();
+    
+    Task FillQueryAsync(string query);
+    Task SearchAsync();
 }

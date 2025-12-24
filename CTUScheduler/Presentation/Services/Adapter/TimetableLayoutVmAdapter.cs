@@ -19,7 +19,7 @@ public class TimetableLayoutVmAdapter: ITimetableLayoutAdapter
 {
     private readonly ICourseScheduleService _scheduleService;
     private readonly ILogger<TimetableLayoutVmAdapter> _logger;
-    private readonly Dictionary<ScheduleTable,TimetableLayoutViewModel> _vmDict = new();
+    private readonly Dictionary<ScheduleProfile,TimetableLayoutViewModel> _vmDict = new();
 
     private readonly Action<TimetableLayoutViewModel> _requestUpdateHandler;
     private readonly Action<TimetableLayoutViewModel> _requestBuildTimetableHandler;
@@ -56,7 +56,7 @@ public class TimetableLayoutVmAdapter: ITimetableLayoutAdapter
         };
     }
     
-    public TimetableLayoutViewModel GetOrCreateLayout(ScheduleTable table)
+    public TimetableLayoutViewModel GetOrCreateLayout(ScheduleProfile table)
     {
         if (_vmDict.TryGetValue(table, out var value))
             return value;

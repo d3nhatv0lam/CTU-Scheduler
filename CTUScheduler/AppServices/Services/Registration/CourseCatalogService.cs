@@ -17,8 +17,7 @@ public class CourseCatalogService: ICourseCatalogService
    private readonly ILogger<CourseCatalogService> _logger;
    private readonly ICtuSitePageFactory _factory;
    private readonly ICourseCatalogPage _catalogPage;
-
-
+   
    public IObservable<List<QuickSelectCourse>> QuickSelectCourseChanges =>
         _catalogPage.AutoCompleteQueryResponse
            .Where(x => x.IsSuccess)
@@ -30,9 +29,8 @@ public class CourseCatalogService: ICourseCatalogService
            .Where(x => x.IsSuccess)
            .Select(x => x.Content)
            .Where(content => content is not null)
-           .Select(raw => raw!.ToCourse());
+           .Select(raw => raw!.ToCourse())!;
    
-
    public CourseCatalogService(ILogger<CourseCatalogService> logger, ICtuSitePageFactory factory)
    {
       _logger = logger;
@@ -55,6 +53,30 @@ public class CourseCatalogService: ICourseCatalogService
        {
            _logger.LogWarning(ex,"fail to navigate to course catalog");
            return OperationResult.Failed("trang chưa sẵn sàng",OperationFailureReason.Network);
+       }
+   }
+
+   public async Task FillQueryAsync(string query)
+   {
+       try
+       {
+           await _catalogPage.FillQueryAsync(query);
+       }
+       catch (Exception ex)
+       {
+           _logger.LogWarning(ex,"fail to fill query");
+       }
+   }
+
+   public async Task SearchAsync()
+   {
+       try
+       {
+           await _catalogPage.SearchAsync();
+       }
+       catch (Exception ex)
+       {
+           _logger.LogWarning(ex,"fail to search");
        }
    }
 }

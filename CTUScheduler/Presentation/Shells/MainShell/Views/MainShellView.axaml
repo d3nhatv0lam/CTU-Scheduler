@@ -238,7 +238,7 @@
         <dialogHostAvalonia:DialogHost
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
-            Identifier="Timetable"
+            Identifier="ScheduleProfile"
             CloseOnClickAway="True"
             DisableOpeningAnimation="True"
             >

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace CTUScheduler.Core.Extensions;
 
-public static class JsonExtension
+public static class JsonNodeExtension
 {
     public static bool HasFields<T>(this JsonNode? node, params Expression<Func<T, object?>>[] propertySelectors)
     {

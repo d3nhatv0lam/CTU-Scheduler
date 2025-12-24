@@ -5,8 +5,6 @@ using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Runtime.ExceptionServices;
-using Avalonia.Controls;
 using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
@@ -32,7 +30,7 @@ public class TimetableLayoutViewModel:
     IDisposable
 {
     private readonly CompositeDisposable _disposables = new();
-    private readonly ScheduleTable _scheduleTable;
+    private readonly ScheduleProfile _scheduleProfile;
     private readonly TimetableViewModel _timeTableVM;
     private readonly Dictionary<string, Course> _scheduleCourseData = new();
     private string _name;
@@ -55,7 +53,7 @@ public class TimetableLayoutViewModel:
         set => this.RaiseAndSetIfChanged(ref _description, value);
     }
 
-    public int SubjectsCount => _scheduleTable.SavedCourseGroupKeys.Count;
+    public int SubjectsCount => _scheduleProfile.SavedCourseGroupKeys.Count;
     public int TotalCredit
     {
         get => _totalCredit;
@@ -70,12 +68,12 @@ public class TimetableLayoutViewModel:
     
     public ReactiveCommand<TimetableLayoutView,Unit> SaveLayoutToImageCommand { get; }
 
-    public TimetableLayoutViewModel(ScheduleTable scheduleTable)
+    public TimetableLayoutViewModel(Core.Models.Academic.Curriculum.Schedule.ScheduleProfile scheduleProfile)
     {
-        _scheduleTable = scheduleTable;
-        _name = scheduleTable.Name;
-        _description = scheduleTable.Description;
-        _lastUpdated = scheduleTable.LastUpdated;
+        _scheduleProfile = scheduleProfile;
+        _name = scheduleProfile.Name;
+        _description = scheduleProfile.Description;
+        _lastUpdated = scheduleProfile.LastUpdated;
         _timeTableVM = new TimetableViewModel();
         
         // init color palette for schedule table
@@ -88,26 +86,18 @@ public class TimetableLayoutViewModel:
             ColorPalettes.IsInitialized = true;
         }
         
-        this.WhenAnyValue(x => x.Name)
+        this.WhenAnyValue(x => x.Name, x => x.Description)
             .Throttle(TimeSpan.FromMilliseconds(500))
             .DistinctUntilChanged()
-            .Subscribe(newName => _scheduleTable.Name = newName)
-            .DisposeWith(_disposables);
-        
-        this.WhenAnyValue(x => x.Description)
-            .Throttle(TimeSpan.FromMilliseconds(500))
-            .DistinctUntilChanged()
-            .Subscribe(newDescription => _scheduleTable.Description = newDescription)
-            .DisposeWith(_disposables);
-        
-       
-        this.WhenAnyValue(x => x.Name,
-                x => x.Description)
-            .Where(tuple => tuple.Item1 != _scheduleTable.Name && tuple.Item2 != _scheduleTable.Description)
-            .Subscribe(_ =>
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(tuple => 
             {
-                LastUpdated = DateTime.Now;
-                _scheduleTable.LastUpdated = LastUpdated;
+                var (newName, newDesc) = tuple;
+                _scheduleProfile.Name = newName;
+                _scheduleProfile.Description = newDesc;
+                
+                _scheduleProfile.LastUpdated = DateTime.Now;
+                LastUpdated = _scheduleProfile.LastUpdated;
             })
             .DisposeWith(_disposables);
 
@@ -184,7 +174,7 @@ public class TimetableLayoutViewModel:
     
     public void TryAddSectionChoice(SectionChoice choice)
     { 
-        if (!_scheduleTable.TryAddToScheduleData(choice))
+        if (!_scheduleProfile.TryAddToScheduleData(choice))
            return;
         var courseWithNewSection = choice.Course.CloneWithNewCourseSections([choice.Section]);
         _scheduleCourseData.Add(courseWithNewSection.Code, courseWithNewSection);
@@ -192,9 +182,9 @@ public class TimetableLayoutViewModel:
        AddSchedule(choice);
     }
     
-    public IEnumerable<Tuple<string,string>> GetScheduleData() => _scheduleTable.SavedCourseGroupKeys.Select(x => new Tuple<string, string>(x.Key, x.Value));
-    public ScheduleTableBuildData GetScheduleSaveData() => new (_scheduleCourseData.Values.ToList(), _scheduleTable);
-    public ScheduleTable ToModel() => _scheduleTable;
+    public IEnumerable<Tuple<string,string>> GetScheduleData() => _scheduleProfile.SavedCourseGroupKeys.Select(x => new Tuple<string, string>(x.Key, x.Value));
+    public ScheduleBlueprint GetScheduleBlueprint() => new (_scheduleCourseData.Values.ToList(), _scheduleProfile);
+    public ScheduleProfile ToModel() => _scheduleProfile;
 
     public void AddDisposable(IDisposable disposable)
     {

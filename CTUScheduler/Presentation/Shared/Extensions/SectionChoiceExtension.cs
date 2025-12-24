@@ -17,7 +17,7 @@ public static class SectionChoiceExtension
             TotalStudents = sectionChoice.Section.TotalStudents,
             RemainingStudents = sectionChoice.Section.RemainingStudents,
             Lecturer = sectionChoice.Section.Lecturer,
-            Credit = sectionChoice.Course.Credit,
+            Credit = sectionChoice.Course.Credits,
         };
     }
     public static (ScheduleGroupCellShared, IEnumerable<ScheduleCellUi>) ToScheduleCells(this SectionChoice sectionChoice)

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
@@ -10,11 +12,12 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.AppServices.Services.Registration;
 
-public class RegistrationRulesService: IRegistrationRulesService
+public class RegistrationRulesService: IRegistrationRulesService, IDisposable
 {
     private readonly ILogger<RegistrationRulesService> _logger;
     private readonly ICtuSitePageFactory _factory;
     private readonly IRegistrationRulesPage _rulesPage;
+    private readonly CompositeDisposable _disposables = new();
     
     public IObservable<RegistrationInformation> RegistrationInfoChanges => 
         _rulesPage.RawRegistrationInformationResponse
@@ -36,12 +39,18 @@ public class RegistrationRulesService: IRegistrationRulesService
         .Where(reg => reg is not null)!;
     
     
-    public RegistrationRulesService(ICtuSitePageFactory factory, ILogger<RegistrationRulesService> logger)
+    public RegistrationRulesService(
+        AppState appState,
+        ICtuSitePageFactory factory,
+        ILogger<RegistrationRulesService> logger)
     {
         _factory = factory;
         _logger = logger;
 
         _rulesPage = factory.GetPage<IRegistrationRulesPage>();
+        RegistrationInfoChanges
+            .Subscribe(appState.UpdateRegistrationInfo)
+            .DisposeWith(_disposables);
     }
 
     public async Task<OperationResult> NavigateToAsync()
@@ -71,5 +80,10 @@ public class RegistrationRulesService: IRegistrationRulesService
             _logger.LogWarning(ex, "Failed to navigate to registration rules page");
             return OperationResult.Failed("Hệ thống truy cập trang dkmh không thành công!", OperationFailureReason.System);
         }
+    }
+
+    public void Dispose()
+    {
+        _disposables.Dispose();
     }
 }

@@ -15,7 +15,7 @@ public interface IScheduleService
     public int MaxTimetableCount { get; }
     public int CurrentTimetableCount { get; }
     public IObservable<DateTime?> LastSaveChanged { get; }
-    public IObservable<IChangeSet<ScheduleTable>> TimetableChanges { get; }
+    public IObservable<IChangeSet<ScheduleProfile>> TimetableChanges { get; }
     public IObservable<int> TimetableCountChanges { get; }
     
     public IObservable<bool> IsExpiredSaved { get; }
@@ -25,9 +25,9 @@ public interface IScheduleService
     /// Add schedule table to manager, do nothing if existed or invalid data
     /// </summary>
     /// <param name="buildData"></param>
-    public void AddTimetable(ScheduleTableBuildData buildData);
-    public void AddRangeTimetable(IEnumerable<ScheduleTableBuildData> data);
-    public void RemoveTimetable(ScheduleTable timetable);
+    public void AddTimetable(ScheduleBlueprint buildData);
+    public void AddRangeTimetable(IEnumerable<ScheduleBlueprint> data);
+    public void RemoveTimetable(ScheduleProfile scheduleProfile);
 
     /// <summary>
     ///  Save TimetableChanges from runtime to .json file

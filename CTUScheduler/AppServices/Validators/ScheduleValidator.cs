@@ -40,13 +40,13 @@ public class ScheduleValidator
         return true;
     }
 
-    public bool IsValidTimetable(ScheduleTable timetable, Dictionary<(string code,string group),CourseSection> courseSectionDictionary)
+    public bool IsValidTimetable(ScheduleProfile scheduleProfile, Dictionary<(string code,string group),CourseSection> courseSectionDictionary)
     {
-        if (timetable == null || courseSectionDictionary == null)
+        if (scheduleProfile == null || courseSectionDictionary == null)
             return false;
         
         var buildSections = new List<CourseSection>();
-        foreach (var (code, group) in timetable.SavedCourseGroupKeys)
+        foreach (var (code, group) in scheduleProfile.SavedCourseGroupKeys)
         {
             if (!courseSectionDictionary.TryGetValue((code, group), out var section))
                 return false;
@@ -98,6 +98,6 @@ public class ScheduleValidator
     /// <param name="table"></param>
     /// <param name="tables"></param>
     /// <returns></returns>
-    public bool IsExistedTimetable(ScheduleTable table, IEnumerable<ScheduleTable> tables)
+    public bool IsExistedTimetable(ScheduleProfile table, IEnumerable<ScheduleProfile> tables)
         => tables.Any(x => table.SavedCourseGroupKeys.DictionaryEquals(x.SavedCourseGroupKeys));
 }

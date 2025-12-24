@@ -40,6 +40,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
         }
 
+        
         public string UserName
         {
             get => _userName;

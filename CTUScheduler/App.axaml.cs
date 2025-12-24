@@ -19,6 +19,7 @@ using CTUScheduler.AppServices.Services.RegistrationInfor;
 using CTUScheduler.AppServices.Services.ScheduleManager;
 using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Services.WebDriver;
+using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
 using CTUScheduler.Infrastructure.DriverCore;
@@ -108,6 +109,8 @@ public class App : Application
         });
         
         services.AddTransient(typeof(Lazy<>), typeof(LazyService<>));
+        
+        services.AddSingleton<AppState>();
         
         services.AddSingleton<IConnectivityService, ConnectivityService>();
         services.AddSingleton<IWebDriverService,WebDriverService>();

@@ -7,11 +7,11 @@ namespace CTUScheduler.Core.Extensions;
 
 public static class ScheduleTableExtension
 {
-    public static bool TryAddToScheduleData(this ScheduleTable scheduleTable, SectionChoice sectionChoice)
+    public static bool TryAddToScheduleData(this ScheduleProfile timetable, SectionChoice sectionChoice)
     {
         var courseCode = sectionChoice.Course.Code;
         var group = sectionChoice.Section.Group;
         
-        return scheduleTable.SavedCourseGroupKeys.TryAdd(courseCode, group);
+        return timetable.SavedCourseGroupKeys.TryAdd(courseCode, group);
     }
 }

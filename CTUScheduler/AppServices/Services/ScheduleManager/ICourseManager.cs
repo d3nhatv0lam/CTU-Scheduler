@@ -8,9 +8,9 @@ namespace CTUScheduler.AppServices.Services.ScheduleManager;
 
 public interface ICourseManager
 {
-    public void RegisterTimetable(IEnumerable<Course> courses, ScheduleTable table);
-    public void RegisterTimetables(IEnumerable<Course> courses, IEnumerable<ScheduleTable> tables);
-    public void UnregisterTimetable(ScheduleTable table);
+    public void RegisterTimetable(IEnumerable<Course> courses, ScheduleProfile table);
+    public void RegisterTimetables(IEnumerable<Course> courses, IEnumerable<ScheduleProfile> tables);
+    public void UnregisterTimetable(ScheduleProfile table);
     
     /// <summary>
     /// If course does not exist, do nothing.

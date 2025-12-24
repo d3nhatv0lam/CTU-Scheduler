@@ -69,21 +69,6 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                 }
             })
             .DisposeWith(_disposables);
-
-            // auto try Goto Signin until success
-            // Observable.Defer(() => Observable.StartAsync(GoToSignPage))
-            //     .Catch<Unit, Exception>(ex =>
-            //     {
-            //         return Observable.Timer(TimeSpan.FromSeconds(3)).SelectMany(_ => Observable.Throw<Unit>(ex));
-            //     })
-            //     .Retry() // retry vô hạn
-            //     .Subscribe(_ =>
-            //     {
-            //         //await FillCapchaImage();
-            //     })
-            //     .DisposeWith(_disposables);
-            
-            // InitCommand();
         }
 #pragma warning restore CS8618
         
