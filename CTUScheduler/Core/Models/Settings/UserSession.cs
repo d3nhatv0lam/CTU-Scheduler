@@ -10,6 +10,6 @@ public record UserSession
 {
     public RegistrationContext Context { get; set; }
     public List<Course> Courses { get; set; } = new ();
-    public List<ScheduleProfile> ScheduleTables { get; set; } = new();
+    public List<ScheduleProfile> ScheduleProfiles { get; set; } = new();
     public DateTimeOffset LastSaved { get; set; } = DateTimeOffset.Now;
 }

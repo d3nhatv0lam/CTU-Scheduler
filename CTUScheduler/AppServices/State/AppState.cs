@@ -9,12 +9,16 @@ using DynamicData;
 
 namespace CTUScheduler.AppServices.State;
 
-public class AppState : IDisposable
+public class AppState : IAppState, IDisposable
 {
     // System Config
     internal readonly SystemConfig SystemConfig = new();
-    // User Settings
     private readonly BehaviorSubject<UserSettings> _userSettingsSubject = new(new UserSettings());
+    private readonly BehaviorSubject<RegistrationInformation?> _registrationInfo = new(null);
+    private readonly SourceCache<RuntimeCourse, string> _runtimeCoursesSource = new(x => x.Code);
+    private readonly SourceList<ScheduleProfile> _scheduleProfilesSource  = new();
+    
+    
     public IObservable<UserSettings> UserSettingChanged => _userSettingsSubject.AsObservable();
     public UserSettings CurrentSettings 
     {
@@ -25,18 +29,19 @@ public class AppState : IDisposable
     /// <summary>
     /// Session Registration Information, live update from CTU Web
     /// </summary>
-    private readonly BehaviorSubject<RegistrationInformation?> _registrationInfo = new(null);
     public IObservable<RegistrationInformation?> RegistrationInfo => _registrationInfo
         .AsObservable()
         .Publish()
         .RefCount();
     
-    // Schedule Data
-    private readonly SourceCache<RuntimeCourse, string> _runtimeCoursesSource = new(x => x.Code);
-    public IObservableCache<RuntimeCourse, string> RuntimeCourses => _runtimeCoursesSource.AsObservableCache();
-    internal SourceCache<RuntimeCourse, string> RuntimeCoursesSource => _runtimeCoursesSource;
 
-    public SourceList<ScheduleProfile> Tables { get; } = new();
+    internal SourceCache<RuntimeCourse, string> RuntimeCoursesSource => _runtimeCoursesSource;
+    public IObservableCache<RuntimeCourse, string> RuntimeCourses => _runtimeCoursesSource.AsObservableCache();
+    
+
+ 
+    internal SourceList<ScheduleProfile> ScheduleProfilesSource => _scheduleProfilesSource;
+    public IObservableList<ScheduleProfile> ScheduleProfiles => _scheduleProfilesSource.AsObservableList();
 
     public AppState()
     {
@@ -53,6 +58,6 @@ public class AppState : IDisposable
         _userSettingsSubject.Dispose();
         _registrationInfo.Dispose();
         _runtimeCoursesSource.Dispose();
-        Tables.Dispose();
+        _scheduleProfilesSource.Dispose();
     }
 }

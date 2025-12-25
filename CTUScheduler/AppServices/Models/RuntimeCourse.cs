@@ -17,9 +17,7 @@ public class RuntimeCourse : IDisposable
     public int Credits { get; }
     public int TheorySessions { get;}
     public int PracticalSessions { get; }
-
     public IObservableCache<CourseSection, string> Sections => _sectionsCache.AsObservableCache();
-    
     public IEnumerable<string> ActiveGroups => _sectionsCache.Keys;
     
     public RuntimeCourse(Course dto)
@@ -31,13 +29,11 @@ public class RuntimeCourse : IDisposable
         PracticalSessions = dto.PracticalSessions;
         _sectionsCache = new SourceCache<CourseSection, string>(x => x.Group);
     }
-    
     public void RegisterSection(CourseSection section)
     {
         _groupRefCounts.AddOrUpdate(section.Group, 1, (_, currentCount) => currentCount + 1);
         _sectionsCache.AddOrUpdate(section);
     }
-
     public bool UnregisterSection(string groupCode)
     {
         if (!_groupRefCounts.ContainsKey(groupCode))
@@ -57,7 +53,6 @@ public class RuntimeCourse : IDisposable
 
         return _sectionsCache.Count == 0;
     }
-
     public void UpdateSection(CourseSection section)
     {
         if (_groupRefCounts.ContainsKey(section.Group))
@@ -65,7 +60,6 @@ public class RuntimeCourse : IDisposable
             _sectionsCache.AddOrUpdate(section);
         }
     }
-    
     public void UpdateSections(IEnumerable<CourseSection> sections)
     {
         var validSections = sections
@@ -77,7 +71,6 @@ public class RuntimeCourse : IDisposable
             _sectionsCache.AddOrUpdate(validSections);
         }
     }
-    
     /// <summary>
     /// Cập nhật data và phát hiện các nhóm đã bị xóa trên server.
     /// </summary>
@@ -102,10 +95,8 @@ public class RuntimeCourse : IDisposable
         {
             _sectionsCache.AddOrUpdate(validSectionsToUpdate);
         }
-        
         return vanishedGroups;
     }
-
     public Course ToCourse() => new Course()
     {
         Code = this.Code,
@@ -115,6 +106,5 @@ public class RuntimeCourse : IDisposable
         PracticalSessions = this.PracticalSessions,
         Sections = this._sectionsCache.Items.ToList()
     };
-
     public void Dispose() => _sectionsCache.Dispose();
 }

@@ -55,7 +55,7 @@ public record ScheduleBlueprint(IReadOnlyList<Course> Courses, ScheduleProfile M
              }
              if (validSections.Count > 0)
              {
-                 var newCourse = course.CloneWithNewCourseSections(validSections);
+                 var newCourse = course.WithSections(validSections);
                  trimmedCourses.Add(newCourse);
              }
          }

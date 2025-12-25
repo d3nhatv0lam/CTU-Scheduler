@@ -93,7 +93,7 @@ public class ScheduleValidator
     }
     
     /// <summary>
-    ///  Check existed timetable in list by comparing saved course group keys
+    ///  Check existed timetable in a list by comparing saved course group keys
     /// </summary>
     /// <param name="table"></param>
     /// <param name="tables"></param>

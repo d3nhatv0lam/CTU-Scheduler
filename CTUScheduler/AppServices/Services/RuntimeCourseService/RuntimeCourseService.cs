@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using CTUScheduler.AppServices.Models;
 using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.AppServices.State;
@@ -8,14 +9,15 @@ using DynamicData;
 
 namespace CTUScheduler.AppServices.Services.RuntimeCourseService;
 
-public class RuntimeCourseService: IRuntimeCourseService
+public class RuntimeCourseService : IRuntimeCourseService
 {
     private readonly SourceCache<RuntimeCourse, string> _coursesSource;
     private readonly ICourseCatalogService _catalogService;
 
-    public RuntimeCourseService(AppState appState)
+    public RuntimeCourseService(AppState appState, ICourseCatalogService catalogService)
     {
         _coursesSource = appState.RuntimeCoursesSource;
+        _catalogService = catalogService;
     }
 
     /// <summary>
@@ -26,39 +28,38 @@ public class RuntimeCourseService: IRuntimeCourseService
     {
         var catalog = blueprint.Courses;
         var table = blueprint.Metadata;
-        
+
         var catalogDict = catalog.ToDictionary(c => c.Code);
-
-        foreach (var (courseCode, groupCode) in table.SavedCourseGroupKeys)
+        _coursesSource.Edit(innerList =>
         {
-            // kiểm tra có course này chưa
-            var lookup = _coursesSource.Lookup(courseCode);
-            RuntimeCourse runtimeCourse;
-
-            if (lookup.HasValue)
+            foreach (var (courseCode, groupCode) in table.SavedCourseGroupKeys)
             {
-                runtimeCourse = lookup.Value;
-            }
-            else
-            {
-                if (!catalogDict.TryGetValue(courseCode, out var courseDto))
+                var lookup = innerList.Lookup(courseCode);
+                var runtimeCourse = lookup.HasValue 
+                    ? lookup.Value 
+                    : null;
+                
+                if (runtimeCourse is null)
                 {
-                    // TKB lưu môn mà Catalog không có 
-                    continue; 
+                    if (!catalogDict.TryGetValue(courseCode, out var courseDto))
+                    {
+                        continue; //(TKB lưu môn không có trong Catalog)
+                    }
+                    
+                    runtimeCourse = new RuntimeCourse(courseDto);
+                    innerList.AddOrUpdate(runtimeCourse);
                 }
-                runtimeCourse = new RuntimeCourse(courseDto);
-                _coursesSource.AddOrUpdate(runtimeCourse);
-            }
-            // tìm course trong tham số catalog 
-            if (catalogDict.TryGetValue(courseCode, out var dto))
-            {
-                var sectionToRegister = dto.Sections?.FirstOrDefault(s => s.Group == groupCode);
-                if (sectionToRegister != null)
+                
+                if (catalogDict.TryGetValue(courseCode, out var dto))
                 {
-                    runtimeCourse.RegisterSection(sectionToRegister);
+                    var sectionToRegister = dto.Sections.FirstOrDefault(s => s.Group == groupCode);
+                    if (sectionToRegister is not null)
+                    {
+                        runtimeCourse.RegisterSection(sectionToRegister);
+                    }
                 }
             }
-        }
+        });
     }
 
     /// <summary>
@@ -66,22 +67,32 @@ public class RuntimeCourseService: IRuntimeCourseService
     /// </summary>
     public void UnregisterTimetable(ScheduleProfile table)
     {
-        foreach (var (code, group) in table.SavedCourseGroupKeys)
+        _coursesSource.Edit(innerList =>
         {
-            var lookup = _coursesSource.Lookup(code);
-            if (!lookup.HasValue) continue;
+            var keysToRemove = new List<string>();
 
-            var runtimeCourse = lookup.Value;
-            
-            bool isEmpty = runtimeCourse.UnregisterSection(group);
-            if (isEmpty)
+            foreach (var (code, group) in table.SavedCourseGroupKeys)
             {
-                runtimeCourse.Dispose(); 
-                _coursesSource.Remove(code);
-            }
-        }
-    }
+                var lookup = innerList.Lookup(code);
+                if (!lookup.HasValue) continue;
 
+                var runtimeCourse = lookup.Value;
+
+                // Gọi hàm giảm Ref (trả về true nếu hết sạch section)
+                bool isEmpty = runtimeCourse.UnregisterSection(group);
+                if (isEmpty)
+                {
+                    runtimeCourse.Dispose();
+                    keysToRemove.Add(code);
+                }
+            }
+
+            if (keysToRemove.Count > 0)
+            {
+                innerList.RemoveKeys(keysToRemove);
+            }
+        });
+    }
     public void ClearAll()
     {
         foreach (var course in _coursesSource.Items)

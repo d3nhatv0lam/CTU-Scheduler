@@ -8,7 +8,6 @@ namespace CTUScheduler.Core.Models.UserSaves
     public class ScheduleSave
     {
         public RegistrationContext Context { get; set; }
-
         public string Semester { get; set; } = string.Empty;
         public int AcademicYear { get; set; }
         public List<Course> Courses { get; set; } = new ();

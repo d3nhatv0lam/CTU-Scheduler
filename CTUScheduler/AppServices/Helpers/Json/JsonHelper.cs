@@ -8,23 +8,11 @@ namespace CTUScheduler.AppServices.Helpers.Json
 {
     public static class JsonHelper
     {
-        public static JsonSerializerOptions ScheduleLoadOptions { get; } = new JsonSerializerOptions
+        public static JsonSerializerOptions ScheduleLoadOptions { get; } = new ()
         {
-            TypeInfoResolver = new DefaultJsonTypeInfoResolver
-            {
-                Modifiers =
-                {
-                    typeInfo =>
-                    {
-                        foreach (var property in typeInfo.Properties)
-                        {
-                            property.IsRequired = true;
-                        }
-                    }
-                }
-            },
-            Converters = { new StrictDictionaryConverter() },
-            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
+            PropertyNameCaseInsensitive = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip
         };
         
         public static JsonElement ChangeRoot(JsonElement json, string propertyName)

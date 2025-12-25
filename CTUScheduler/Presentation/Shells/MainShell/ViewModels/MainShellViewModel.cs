@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Services.MainHomeService;
-using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Features.Home.ViewModels;
@@ -22,15 +20,14 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
     public class MainShellViewModel: ViewModelBase, IScreen , IRoutableViewModel, IDisposable
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
-        // private ICTUWebDriverService _CTUWebDriverService;
-        private IDialogHostService _dialogHostService;
-        private NavigationItem _selectedItem;
+        private readonly IDialogHostService _dialogHostService;
         private readonly IMainHomeService _mainHomeService;
+        private NavigationItem _selectedItem;
         private string _userName = "họ tên";
         private string _userMSSV = "MSSV";
         private string _title;
 
-        public string? UrlPathSegment => "MainLayout view";
+        public string? UrlPathSegment => "MainLayout";
         public RoutingState Router { get; }
         public IScreen HostScreen { get; }
         public ObservableCollection<NavigationItem> NavigationItems { get; }
@@ -39,8 +36,6 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             get => _selectedItem;
             set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
         }
-
-        
         public string UserName
         {
             get => _userName;
@@ -51,7 +46,6 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             get => _userMSSV;
             set => this.RaiseAndSetIfChanged(ref _userMSSV, value);
         }
-
         public string Title
         {
             get => _title;
@@ -68,8 +62,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
         {
             Router = new RoutingState();
             HostScreen = hostScreen;
-            // _CTUWebDriverService = App.ServiceProvider!.GetRequiredService<ICTUWebDriverService>();
-            _dialogHostService = App.ServiceProvider!.GetRequiredService<IDialogHostService>();
+            _dialogHostService = App.ServiceProvider.GetRequiredService<IDialogHostService>();
             _mainHomeService = App.ServiceProvider.GetRequiredService<IMainHomeService>();
 
             _mainHomeService.StudentIdChanges
@@ -77,7 +70,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                 .Subscribe(userText =>
                 {
                     string[] userInfoArray = userText.Split(" ");
-                    UserName = string.Join(' ', userInfoArray[0..^1]);
+                    UserName = string.Join(' ', userInfoArray[..^1]);
                     UserMSSV = userInfoArray[^1];
                 }).DisposeWith(_disposables);
             
@@ -98,7 +91,8 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 
             LogoutCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                bool isAcceptLogout = await _dialogHostService.ShowDialogAsync<LogoutDialogViewModel,bool>(new LogoutDialogViewModel(), DialogIdentifier.MainLayout);
+                bool isAcceptLogout = await _dialogHostService
+                    .ShowDialogAsync<LogoutDialogViewModel,bool>(new LogoutDialogViewModel(), DialogIdentifier.MainLayout);
                 if (isAcceptLogout)
                 {
                     HostScreen.Router.NavigateAndReset.Execute(new LoginViewModel(HostScreen));

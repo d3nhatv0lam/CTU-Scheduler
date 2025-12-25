@@ -174,9 +174,9 @@ public class TimetableLayoutViewModel:
     
     public void TryAddSectionChoice(SectionChoice choice)
     { 
-        if (!_scheduleProfile.TryAddToScheduleData(choice))
+        if (!_scheduleProfile.TryAddToScheduleProfile(choice))
            return;
-        var courseWithNewSection = choice.Course.CloneWithNewCourseSections([choice.Section]);
+        var courseWithNewSection = choice.Course.WithSections([choice.Section]);
         _scheduleCourseData.Add(courseWithNewSection.Code, courseWithNewSection);
         
        AddSchedule(choice);

@@ -110,7 +110,8 @@ public class App : Application
         
         services.AddTransient(typeof(Lazy<>), typeof(LazyService<>));
         
-        services.AddSingleton<AppState>();
+        services.AddSingleton<AppState>()
+            .AddSingleton<IAppState>(sp => sp.GetRequiredService<AppState>());
         
         services.AddSingleton<IConnectivityService, ConnectivityService>();
         services.AddSingleton<IWebDriverService,WebDriverService>();
