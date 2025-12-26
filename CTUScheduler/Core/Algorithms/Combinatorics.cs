@@ -9,13 +9,14 @@ public static class Combinatorics
 {
     // O(∏(sets[i].size)) 
     public static IEnumerable<List<T>> CartesianProduct<T>(
-        IEnumerable<List<T>> sets,
+        IEnumerable<IReadOnlyList<T>> sets,
         Func<IReadOnlyList<T>, bool>? isValidPrefix = null,
         Func<IReadOnlyList<T>, bool>? isValidFull = null,
         CancellationToken? token = null)
     {
-        var setList = sets.ToList();
-        if (setList.Count == 0) yield break;
+        var setList = sets as IReadOnlyList<IReadOnlyList<T>> ?? sets.ToList();
+        if (setList.Count == 0 || setList.Any(s => s.Count == 0)) 
+            yield break;
         
         var indices = new int[setList.Count];
         var current = new List<T>(setList.Count);
@@ -34,7 +35,8 @@ public static class Combinatorics
             {
                 indices[depth] = -1;
                 depth--;
-                if (current.Count > depth) current.RemoveAt(current.Count - 1);
+                
+                if (depth >= 0 && current.Count > depth) current.RemoveAt(current.Count - 1);
                 continue;
             }
 
@@ -45,7 +47,7 @@ public static class Combinatorics
                 current.Add(setList[depth][indices[depth]]);
 
             // kiểm tra prefix
-            if (isValidPrefix != null && !isValidPrefix(current))
+            if (isValidPrefix is not null && !isValidPrefix(current))
                 continue;
 
             if (depth == setList.Count - 1)

@@ -22,7 +22,7 @@ public class ScheduleValidator
     public bool IsValidTimeTableFromRaw(IReadOnlyList<SectionChoice> timeTableData)
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-        if (timeTableData == null)
+        if (timeTableData is null)
             return false;
         switch (timeTableData.Count)
         {
@@ -42,7 +42,7 @@ public class ScheduleValidator
 
     public bool IsValidTimetable(ScheduleProfile scheduleProfile, Dictionary<(string code,string group),CourseSection> courseSectionDictionary)
     {
-        if (scheduleProfile == null || courseSectionDictionary == null)
+        if (scheduleProfile is null || courseSectionDictionary is null)
             return false;
         
         var buildSections = new List<CourseSection>();

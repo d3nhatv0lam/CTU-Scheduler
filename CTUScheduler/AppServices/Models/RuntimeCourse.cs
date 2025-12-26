@@ -1,22 +1,48 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using DynamicData;
 
 namespace CTUScheduler.AppServices.Models;
 
-public class RuntimeCourse : IDisposable
+public class RuntimeCourse : IDisposable, INotifyPropertyChanged
 {
-    // Ref count
-    private readonly ConcurrentDictionary<string, int> _groupRefCounts = new();
     private readonly SourceCache<CourseSection, string> _sectionsCache;
+    private readonly ConcurrentDictionary<string, int> _groupRefCounts = new();
+    private string _name_VN = string.Empty;
+    private int _credits = 0;
+    private int _theorySessions = 0;
+    private int _practicalSessions = 0;
+    
     public string Code { get; }
-    public string Name_VN { get; }
-    public int Credits { get; }
-    public int TheorySessions { get;}
-    public int PracticalSessions { get; }
+
+    public string Name_VN
+    {
+        get => _name_VN;
+        private set => SetProperty(ref _name_VN, value);
+    }
+
+    public int Credits
+    {
+        get => _credits;
+        private set => SetProperty(ref _credits, value);
+    }
+
+    public int TheorySessions
+    {
+        get => _theorySessions;
+        private set => SetProperty(ref _theorySessions, value);
+    }
+
+    public int PracticalSessions
+    {
+        get => _practicalSessions; 
+        private set => SetProperty(ref _practicalSessions, value);
+    }
     public IObservableCache<CourseSection, string> Sections => _sectionsCache.AsObservableCache();
     public IEnumerable<string> ActiveGroups => _sectionsCache.Keys;
     
@@ -34,6 +60,11 @@ public class RuntimeCourse : IDisposable
         _groupRefCounts.AddOrUpdate(section.Group, 1, (_, currentCount) => currentCount + 1);
         _sectionsCache.AddOrUpdate(section);
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="groupCode"></param>
+    /// <returns>Return true if the RuntimeCourse has no sections.</returns>
     public bool UnregisterSection(string groupCode)
     {
         if (!_groupRefCounts.ContainsKey(groupCode))
@@ -53,23 +84,43 @@ public class RuntimeCourse : IDisposable
 
         return _sectionsCache.Count == 0;
     }
-    public void UpdateSection(CourseSection section)
+
+    /// <summary>
+    /// Synchronously merge data from Api into local data.
+    /// </summary>
+    /// <param name="course"></param>
+    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="ArgumentNullException"></exception>
+    public void Merge(Course course)
     {
-        if (_groupRefCounts.ContainsKey(section.Group))
-        {
-            _sectionsCache.AddOrUpdate(section);
-        }
-    }
-    public void UpdateSections(IEnumerable<CourseSection> sections)
-    {
-        var validSections = sections
-            .Where(s => _groupRefCounts.ContainsKey(s.Group))
-            .ToList();
+        ArgumentNullException.ThrowIfNull(course);
+        if (!string.Equals(course.Code, this.Code, StringComparison.OrdinalIgnoreCase)) 
+            throw new ArgumentException("Course code mismatch", nameof(course));
         
-        if (validSections.Count > 0)
+        this.Credits = course.Credits;
+        this.Name_VN = course.Name_VN;
+        this.TheorySessions = course.TheorySessions;
+        this.PracticalSessions = course.PracticalSessions;
+        
+        var serverSectionDict = course.Sections
+            .ToDictionary(s => s.Group);
+        
+        _sectionsCache.Edit(innerList =>
         {
-            _sectionsCache.AddOrUpdate(validSections);
-        }
+            var allLocalSections = innerList.Items.ToList();
+            foreach (var localSection in allLocalSections)
+            {
+                if (serverSectionDict.TryGetValue(localSection.Group, out var serverSection))
+                {
+                   innerList.AddOrUpdate(serverSection);
+                }
+                else if (!localSection.IsCancelled)
+                {
+                    localSection.IsCancelled = true;
+                    innerList.AddOrUpdate(localSection);
+                }
+            }
+        });
     }
     /// <summary>
     /// Cập nhật data và phát hiện các nhóm đã bị xóa trên server.
@@ -106,5 +157,18 @@ public class RuntimeCourse : IDisposable
         PracticalSessions = this.PracticalSessions,
         Sections = this._sectionsCache.Items.ToList()
     };
+    
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+    protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+        field = value;
+        OnPropertyChanged(propertyName);
+        return true;
+    }
     public void Dispose() => _sectionsCache.Dispose();
 }

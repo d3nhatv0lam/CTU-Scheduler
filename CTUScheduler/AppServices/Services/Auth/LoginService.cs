@@ -14,7 +14,6 @@ public class LoginService: ILoginService
 {
     private readonly ICtuSitePageFactory _ctuSitePageFactory;
     private readonly ILogger<LoginService> _logger;
-    private const int MaxTimetableCountLimit = -1;
     
     public LoginService(ICtuSitePageFactory ctuSitePageFactory, ILogger<LoginService> logger)
     {
@@ -28,7 +27,6 @@ public class LoginService: ILoginService
         {
             await _ctuSitePageFactory.GetPage<ILoginPage>().NavigateToAsync();
             return OperationResult.Success();
-            throw new NotImplementedException();
         }
         catch (Exception e)
         {

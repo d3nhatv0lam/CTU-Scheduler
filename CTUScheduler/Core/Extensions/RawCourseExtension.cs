@@ -1,9 +1,6 @@
 ﻿using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace CTUScheduler.Core.Extensions
 {
@@ -11,13 +8,10 @@ namespace CTUScheduler.Core.Extensions
     {
         public static Course? ToCourse(this RawCourse rawCourse)
         {
-            // 1. Nếu dữ liệu đầu vào rỗng hoặc thiếu info quan trọng -> Trả về null luôn
-            if (rawCourse?.hoc_phan_info is null || rawCourse.data is null) return null;
-
-            // Biến tạm cho ngắn gọn
+            if (rawCourse?.hoc_phan_info is null || rawCourse?.data is null) return null;
+            
             var info = rawCourse.hoc_phan_info;
-
-            // 2. Tạo khung object Course
+            
             var course = new Course()
             {
                 Code = info.dkmh_tu_dien_hoc_phan_ma,
@@ -57,7 +51,6 @@ namespace CTUScheduler.Core.Extensions
             
             static ClassDay? GetClassDayData(RawCourseData item)
             {
-                // Kiểm tra kỹ dữ liệu đầu vào
                 if (item.dkmh_thu_trong_tuan_ma is null
                     || item.tiet_hoc is null
                     || item.dkmh_tu_dien_phong_hoc_ten is null)

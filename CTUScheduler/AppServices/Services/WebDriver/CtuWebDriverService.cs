@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Helpers.Json;
-using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
-using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Raw;
 using CTUScheduler.Infrastructure.DriverCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
-using ReactiveUI;
 
 namespace CTUScheduler.AppServices.Services.WebDriver
 {

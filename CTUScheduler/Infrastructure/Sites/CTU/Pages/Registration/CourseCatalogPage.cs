@@ -20,29 +20,33 @@ public class CourseCatalogPage: RegistrationSpa, ICourseCatalogPage
     private const string SearchBoxLabel = "Mã học phần";
     private const string SearchBoxSelector = $"//p[normalize-space()='{SearchBoxLabel}']/..//input";
     private const string SearchButtonSelector = "span[aria-label='search']";
-    
-    private IObservable<NetworkPacket> FilteredPacket => WebDriverService.JsonResponse
-        .Where(packet => packet.Url.Contains(PathRegexPattern))
-        .Publish()
-        .RefCount();
-    public IObservable<CtuApiBody<List<QuickSelectCourse>>> AutoCompleteQueryResponse => FilteredPacket
-        .FilterPacketJson(node => node["data"]?[AutoCompleteKey] is not null)
-        .ParseCtuResponse<List<QuickSelectCourse>>(node => node["data"]?[AutoCompleteKey])
-        .Where(res => res.IsSuccess)
-        .OfType<CtuApiBody<List<QuickSelectCourse>>>();
-    public IObservable<CtuApiBody<RawCourse>> CourseCatalogResponse => FilteredPacket
-        .FilterPacketJson(node => node["data"].HasFields<RawCourse>(
-           x => x.hoc_phan_info,
-           x => x.data,
-           x => x.tuan_max))
-        .ParseCtuResponse<RawCourse>()
-        .Where(res => res.IsSuccess)
-        .OfType<CtuApiBody<RawCourse>>();
+    private IObservable<NetworkPacket> FilteredPacket { get; } 
+    public IObservable<CtuApiBody<List<QuickSelectCourse>>> AutoCompleteQueryResponse { get; } 
+    public IObservable<CtuApiBody<RawCourse>> CourseCatalogResponse { get; }
     
     public CourseCatalogPage(IWebDriverService webDriverService,
         ILoggerFactory loggerFactory)
         :base(webDriverService, loggerFactory)
     {
+        FilteredPacket = WebDriverService.JsonResponse
+            .Where(packet => packet.Url.Contains(PathRegexPattern))
+            .Publish()
+            .RefCount();
+        
+        AutoCompleteQueryResponse = FilteredPacket
+            .FilterPacketJson(node => node["data"]?[AutoCompleteKey] is not null)
+            .ParseCtuResponse<List<QuickSelectCourse>>(node => node["data"]?[AutoCompleteKey])
+            .Where(res => res.IsSuccess)
+            .OfType<CtuApiBody<List<QuickSelectCourse>>>();
+        
+        CourseCatalogResponse = FilteredPacket
+            .FilterPacketJson(node => node["data"].HasFields<RawCourse>(
+                x => x.hoc_phan_info,
+                x => x.data,
+                x => x.tuan_max))
+            .ParseCtuResponse<RawCourse>()
+            .Where(res => res.IsSuccess)
+            .OfType<CtuApiBody<RawCourse>>();
     }
     
 

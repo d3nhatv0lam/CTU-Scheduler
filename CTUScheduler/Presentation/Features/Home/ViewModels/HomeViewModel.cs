@@ -5,8 +5,7 @@ using System.Reactive.Linq;
 using CTUScheduler.AppServices;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.Registration;
-using CTUScheduler.AppServices.Services.RegistrationInfor;
-using CTUScheduler.AppServices.Services.WebDriver;
+using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using CTUScheduler.Presentation.Base;
@@ -21,6 +20,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
         private readonly CompositeDisposable _disposable = new CompositeDisposable();
         public ViewModelActivator Activator { get; } = new ViewModelActivator();
         // private readonly IRegistrationInformationService _registrationInformationService;
+        private readonly IAppState _appState;
         private readonly IRegistrationRulesService _registrationRulesService;
         private readonly ObservableAsPropertyHelper<RegistrationInformation> _registrationInfor;
         
@@ -41,15 +41,19 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
 
         public HomeViewModel(IScreen hostScreen)
         {
+            _appState = App.ServiceProvider.GetRequiredService<IAppState>();
             _registrationRulesService = App.ServiceProvider.GetRequiredService<IRegistrationRulesService>();
             // _registrationInformationService = App.ServiceProvider.GetRequiredService<IRegistrationInformationService>();
             HostScreen = hostScreen;
 
             
-
-            _registrationInfor = _registrationRulesService.RegistrationInfoChanges
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .ToProperty(this, nameof(RegistrationInfo));
+            // _registrationInfor = _registrationRulesService.RegistrationInfoChanges
+            //     .ObserveOn(RxApp.MainThreadScheduler)
+            //     .ToProperty(this, nameof(RegistrationInfo));
+            _registrationInfor = _appState.RegistrationInfo
+                .Where(x => x is not null)
+                .Select(x => x!)
+                .ToProperty(this, nameof(RegistrationInfo), scheduler: RxApp.MainThreadScheduler);
 
             OpenFacebookCommand = ReactiveCommand.Create(() => OpenUrl(AppConstants.FACEBOOK_URL)).DisposeWith(_disposable);
             OpenYoutubeCommand = ReactiveCommand.Create(() => OpenUrl(AppConstants.YOUTUBE_URL)).DisposeWith(_disposable);

@@ -21,8 +21,7 @@ public class ConnectivityService: IConnectivityService, IDisposable
     
     private readonly CompositeDisposable _disposables = new();
     private readonly ILogger<ConnectivityService> _logger;
-    private readonly IScheduler _scheduler;
-    
+
     private readonly BehaviorSubject<bool> _internetSubject;
     private readonly HttpClient _httpClient;
     private readonly TimeSpan _checkInterval = TimeSpan.FromSeconds(5);
@@ -32,7 +31,7 @@ public class ConnectivityService: IConnectivityService, IDisposable
     public ConnectivityService(ILogger<ConnectivityService> logger, IScheduler? scheduler = null)
     {
         _logger = logger;
-        _scheduler = scheduler ?? TaskPoolScheduler.Default;
+        var schedulerUsed = scheduler ?? TaskPoolScheduler.Default;
         
         _httpClient = new HttpClient
         {
@@ -46,15 +45,15 @@ public class ConnectivityService: IConnectivityService, IDisposable
                 h => NetworkChange.NetworkAvailabilityChanged += h,
                 h => NetworkChange.NetworkAvailabilityChanged -= h
             )
-            .Throttle(TimeSpan.FromMilliseconds(500), _scheduler)
+            .Throttle(TimeSpan.FromMilliseconds(500), schedulerUsed)
             .Select(_ => Unit.Default);
         
-        var timerStream = Observable.Interval(_checkInterval, _scheduler)
+        var timerStream = Observable.Interval(_checkInterval, schedulerUsed)
             .Select(_ => Unit.Default);
 
         networkChangeStream.Merge(timerStream)
             .StartWith(Unit.Default)
-            .ObserveOn(_scheduler)
+            .ObserveOn(schedulerUsed)
             .Select(_ => Observable.FromAsync(ct => CheckInternetAccessAsync(ct))
                 .Catch((Exception ex) => 
                 {

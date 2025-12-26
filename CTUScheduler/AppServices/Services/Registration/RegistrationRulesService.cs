@@ -19,25 +19,7 @@ public class RegistrationRulesService: IRegistrationRulesService, IDisposable
     private readonly IRegistrationRulesPage _rulesPage;
     private readonly CompositeDisposable _disposables = new();
     
-    public IObservable<RegistrationInformation> RegistrationInfoChanges => 
-        _rulesPage.RawRegistrationInformationResponse
-        .Where(x => x.IsSuccess)
-        .Select(x => x.Content)
-        .SelectMany(async raw =>
-        {
-            try
-            {
-                var userInfo = await _rulesPage.TryGetUserKeyAndUnitAsync();
-                return raw?.ToRegistrationInformation(userInfo.userKey, userInfo.userUnit);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning("Failed to get user key and unit");
-                return null;
-            }
-        })
-        .Where(reg => reg is not null)!;
-    
+    public IObservable<RegistrationInformation> RegistrationInfoChanges { get; }
     
     public RegistrationRulesService(
         AppState appState,
@@ -48,6 +30,27 @@ public class RegistrationRulesService: IRegistrationRulesService, IDisposable
         _logger = logger;
 
         _rulesPage = factory.GetPage<IRegistrationRulesPage>();
+        
+        RegistrationInfoChanges = _rulesPage.RawRegistrationInformationResponse
+            .Where(x => x.IsSuccess)
+            .Select(x => x.Content)
+            .SelectMany(async raw =>
+            {
+                try
+                {
+                    var userInfo = await _rulesPage.TryGetUserKeyAndUnitAsync();
+                    return raw?.ToRegistrationInformation(userInfo.userKey, userInfo.userUnit);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("Failed to get user key and unit");
+                    return null;
+                }
+            })
+            .Where(reg => reg is not null)
+            .Publish()
+            .RefCount()!;
+        
         RegistrationInfoChanges
             .Subscribe(appState.UpdateRegistrationInfo)
             .DisposeWith(_disposables);

@@ -15,4 +15,5 @@ public interface ICourseCatalogService
     
     Task FillQueryAsync(string query);
     Task SearchAsync();
+    Task<Course> FetchCourseAsync(string courseCode);
 }

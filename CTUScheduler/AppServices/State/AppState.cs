@@ -17,9 +17,10 @@ public class AppState : IAppState, IDisposable
     private readonly BehaviorSubject<RegistrationInformation?> _registrationInfo = new(null);
     private readonly SourceCache<RuntimeCourse, string> _runtimeCoursesSource = new(x => x.Code);
     private readonly SourceList<ScheduleProfile> _scheduleProfilesSource  = new();
+    internal SourceCache<RuntimeCourse, string> RuntimeCoursesSource => _runtimeCoursesSource;
+    internal SourceList<ScheduleProfile> ScheduleProfilesSource => _scheduleProfilesSource;
     
-    
-    public IObservable<UserSettings> UserSettingChanged => _userSettingsSubject.AsObservable();
+    public IObservable<UserSettings> UserSettingChanged { get; }
     public UserSettings CurrentSettings 
     {
         get => _userSettingsSubject.Value;
@@ -29,23 +30,16 @@ public class AppState : IAppState, IDisposable
     /// <summary>
     /// Session Registration Information, live update from CTU Web
     /// </summary>
-    public IObservable<RegistrationInformation?> RegistrationInfo => _registrationInfo
-        .AsObservable()
-        .Publish()
-        .RefCount();
-    
-
-    internal SourceCache<RuntimeCourse, string> RuntimeCoursesSource => _runtimeCoursesSource;
-    public IObservableCache<RuntimeCourse, string> RuntimeCourses => _runtimeCoursesSource.AsObservableCache();
-    
-
- 
-    internal SourceList<ScheduleProfile> ScheduleProfilesSource => _scheduleProfilesSource;
-    public IObservableList<ScheduleProfile> ScheduleProfiles => _scheduleProfilesSource.AsObservableList();
+    public IObservable<RegistrationInformation?> RegistrationInfo { get; }
+    public IObservableCache<RuntimeCourse, string> RuntimeCourses { get; } 
+    public IObservableList<ScheduleProfile> ScheduleProfiles { get; }
 
     public AppState()
     {
-
+        UserSettingChanged = _userSettingsSubject.AsObservable();
+        RegistrationInfo =_registrationInfo.AsObservable();
+        RuntimeCourses = _runtimeCoursesSource.AsObservableCache();
+        ScheduleProfiles = _scheduleProfilesSource.AsObservableList();
     }
 
     public void UpdateRegistrationInfo(RegistrationInformation? info)

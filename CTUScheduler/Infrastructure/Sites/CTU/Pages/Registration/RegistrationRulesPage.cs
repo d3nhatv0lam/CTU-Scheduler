@@ -20,8 +20,13 @@ public class RegistrationRulesPage : RegistrationSpa, IRegistrationRulesPage
     private const string CtuDkmhInfoUnitSelector = "li:has-text('Đơn vị') p:nth-of-type(2)";
     protected override string PathRegexPattern => "/quydinhdangky";
 
-    public IObservable<CtuApiBody<RawRegistrationInformation>> RawRegistrationInformationResponse =>
-        WebDriverService.JsonResponse
+    public IObservable<CtuApiBody<RawRegistrationInformation>> RawRegistrationInformationResponse { get; }
+        
+
+    public RegistrationRulesPage(IWebDriverService webDriverService, ILoggerFactory logger) : base(webDriverService,
+        logger)
+    {
+        RawRegistrationInformationResponse = WebDriverService.JsonResponse
             .Where(packet => packet.Url.Contains(PathRegexPattern))
             .FilterPacketJson(node => node["data"].HasFields<RawRegistrationInformation>(
                 x => x.hocky,
@@ -31,10 +36,6 @@ public class RegistrationRulesPage : RegistrationSpa, IRegistrationRulesPage
             .ParseCtuResponse<RawRegistrationInformation>()
             .Where(res => res.IsSuccess)
             .OfType<CtuApiBody<RawRegistrationInformation>>();
-
-    public RegistrationRulesPage(IWebDriverService webDriverService, ILoggerFactory logger) : base(webDriverService,
-        logger)
-    {
     }
 
     protected override async Task NavigateToViaSidebarAsync(CancellationToken cancellationToken = default)
@@ -50,7 +51,7 @@ public class RegistrationRulesPage : RegistrationSpa, IRegistrationRulesPage
                 .GetLocator(UserInfoButtonLable)
                 .ClickAsync()
                 .ConfigureAwait(false);
-
+            
             await WebDriverService
                 .GetLocator(UserSettingButtonLable)
                 .ClickAsync()
