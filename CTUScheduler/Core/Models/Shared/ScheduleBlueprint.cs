@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
@@ -8,7 +9,9 @@ namespace CTUScheduler.Core.Models.Shared;
 
 public record ScheduleBlueprint(IReadOnlyList<Course> Courses, ScheduleProfile Metadata)
 {
-     public bool IsEmpty => Courses is null || !Courses.Any() || Metadata is null;
+    public IReadOnlyList<Course> Courses { get; init; } = Courses ?? throw new ArgumentNullException(nameof(Courses));
+    public ScheduleProfile Metadata { get; init; } = Metadata ?? throw new ArgumentNullException(nameof(Metadata));
+    public bool IsEmpty => !Courses.Any();
 
      public bool IsConsistent
      {

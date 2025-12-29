@@ -19,7 +19,6 @@ public class AppState : IAppState, IDisposable
     private readonly SourceList<ScheduleProfile> _scheduleProfilesSource  = new();
     internal SourceCache<RuntimeCourse, string> RuntimeCoursesSource => _runtimeCoursesSource;
     internal SourceList<ScheduleProfile> ScheduleProfilesSource => _scheduleProfilesSource;
-    
     public IObservable<UserSettings> UserSettingChanged { get; }
     public UserSettings CurrentSettings 
     {

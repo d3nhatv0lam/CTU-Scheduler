@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw
 {
@@ -17,39 +18,7 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw
         public int si_so_con_lai { get; set; }
         public string? tiet_hoc { get; set; }
 
-        [JsonPropertyName("tuanhoc-1")]
-        public string tuanhoc_1 { get; set; }
-        [JsonPropertyName("tuanhoc-2")]
-        public string tuanhoc_2 { get; set; }
-        [JsonPropertyName("tuanhoc-3")]
-        public string tuanhoc_3 { get; set; }
-        [JsonPropertyName("tuanhoc-4")]
-        public string tuanhoc_4 { get; set; }
-        [JsonPropertyName("tuanhoc-5")]
-        public string tuanhoc_5 { get; set; }
-        [JsonPropertyName("tuanhoc-6")]
-        public string tuanhoc_6 { get; set; }
-        [JsonPropertyName("tuanhoc-7")]
-        public string tuanhoc_7 { get; set; }
-        [JsonPropertyName("tuanhoc-8")]
-        public string tuanhoc_8 { get; set; }
-        [JsonPropertyName("tuanhoc-9")]
-        public string tuanhoc_9 { get; set; }
-        [JsonPropertyName("tuanhoc-10")]
-        public string tuanhoc_10 { get; set; }
-        [JsonPropertyName("tuanhoc-11")]
-        public string tuanhoc_11 { get; set; }
-        [JsonPropertyName("tuanhoc-12")]
-        public string tuanhoc_12 { get; set; }
-        [JsonPropertyName("tuanhoc-13")]
-        public string tuanhoc_13 { get; set; }
-        [JsonPropertyName("tuanhoc-14")]
-        public string tuanhoc_14 { get; set; }
-        [JsonPropertyName("tuanhoc-15")]
-        public string tuanhoc_15 { get; set; }
-        [JsonPropertyName("tuanhoc-16")]
-        public string tuanhoc_16 { get; set; }
-        [JsonPropertyName("tuanhoc-17")]
-        public string tuanhoc_17 { get; set; }
+        [JsonExtensionData]
+        public Dictionary<string, object>? ExtraData { get; set; }
     }
 }

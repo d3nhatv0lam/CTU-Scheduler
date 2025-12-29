@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
@@ -15,5 +16,5 @@ public interface ICourseCatalogService
     
     Task FillQueryAsync(string query);
     Task SearchAsync();
-    Task<Course> FetchCourseAsync(string courseCode);
+    Task<Course> FetchCourseAsync(string courseCode, CancellationToken cancellationToken = default);
 }

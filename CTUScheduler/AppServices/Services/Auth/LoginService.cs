@@ -45,6 +45,7 @@ public class LoginService: ILoginService
         }
         catch (OperationCanceledException)
         {
+            // throw;
             return OperationResult.Failed("Hủy đăng nhập", OperationFailureReason.System);
         }
         catch (NoInternetException)

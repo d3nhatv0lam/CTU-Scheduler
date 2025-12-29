@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
+using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
@@ -80,7 +81,7 @@ public class CourseCatalogService: ICourseCatalogService
        }
    }
 
-   public async Task<Course> FetchCourseAsync(string courseCode)
+   public async Task<Course> FetchCourseAsync(string courseCode, CancellationToken cancellationToken = default)
    {
        if (!await _catalogPage.IsActive.FirstAsync())
            throw new InvalidOperationException("Course catalog page is not active");
@@ -90,7 +91,7 @@ public class CourseCatalogService: ICourseCatalogService
                .Where(c => string.Equals(c.Code, courseCode, StringComparison.OrdinalIgnoreCase))
                .Timeout(TimeSpan.FromSeconds(5))
                .FirstAsync()
-               .ToTask()
+               .ToTask(cancellationToken)
                .ConfigureAwait(false);
 
            await FillQueryAsync(courseCode)

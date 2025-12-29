@@ -31,7 +31,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
     private readonly ICourseManager _courseManager;
     private readonly ICTUWebDriverService _CTUWebDriverService;
     private readonly IRegistrationInformationService _registrationInformationService;
-    private readonly ScheduleValidator _scheduleValidator = new();
+  
     
     private readonly SourceList<ScheduleProfile> _data = new();
     private readonly Subject<bool> _isReloadingSubject = new();
@@ -85,7 +85,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         var courses = trimmedBuildData.Courses;
         var scheduleTable = trimmedBuildData.Metadata;
 
-        if (_scheduleValidator.IsExistedTimetable(scheduleTable, _data.Items))
+        if (ScheduleValidator.IsExistedTimetable(scheduleTable, _data.Items))
             return;
         
         _courseManager.RegisterTimetable(courses, scheduleTable);
@@ -296,7 +296,7 @@ public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposa
         // validate timetable
         foreach (var table in tables)
         {
-            if (!_scheduleValidator.IsValidTimetable(table, courseSectionDictionary))
+            if (!ScheduleValidator.IsValidTimetable(table, courseSectionDictionary))
                 return false;
         }
         return true;

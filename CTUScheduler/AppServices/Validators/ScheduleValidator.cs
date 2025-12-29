@@ -8,7 +8,7 @@ using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 
 namespace CTUScheduler.AppServices.Validators;
 
-public class ScheduleValidator
+public static class ScheduleValidator
 {
     /// <summary>
     /// Check valid timetable from raw data
@@ -19,7 +19,7 @@ public class ScheduleValidator
     /// <returns>
     /// True if valid, false if invalid
     /// </returns>
-    public bool IsValidTimeTableFromRaw(IReadOnlyList<SectionChoice> timeTableData)
+    public static bool IsValidTimeTableFromRaw(IReadOnlyList<SectionChoice> timeTableData)
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (timeTableData is null)
@@ -40,7 +40,7 @@ public class ScheduleValidator
         return true;
     }
 
-    public bool IsValidTimetable(ScheduleProfile scheduleProfile, Dictionary<(string code,string group),CourseSection> courseSectionDictionary)
+    public static bool IsValidTimetable(ScheduleProfile scheduleProfile, Dictionary<(string code,string group),CourseSection> courseSectionDictionary)
     {
         if (scheduleProfile is null || courseSectionDictionary is null)
             return false;
@@ -60,7 +60,7 @@ public class ScheduleValidator
         return true;
     }
 
-    public bool IsOverlapTimeTable(CourseSection x, CourseSection y)
+    public static bool IsOverlapTimeTable(CourseSection x, CourseSection y)
     {
         if (x.ClassDays.Count == 0 || y.ClassDays.Count == 0) return false;
         foreach (var xTime in x.ClassDays)
@@ -72,21 +72,12 @@ public class ScheduleValidator
 
                 if (IsConflict(xTime, yTime))
                     return true;
-                // old condition
-                // if (xTime.StartPeriod() < yTime.StartPeriod() 
-                //     && xTime.EndPeriod() < yTime.StartPeriod())
-                //     continue;
-                //
-                // if (xTime.StartPeriod() > yTime.StartPeriod() 
-                //     && xTime.StartPeriod() > yTime.EndPeriod()) 
-                //     continue;  
-                // return true;
             }
         }
         return false;
     }
     
-    public bool IsConflict(ClassDay x, ClassDay y)
+    public static bool IsConflict(ClassDay x, ClassDay y)
     {
         // Trùng nhau nếu KHÔNG thỏa điều kiện "một cái hoàn toàn trước hoặc sau cái kia"
         return !(x.EndPeriod() < y.StartPeriod() || y.EndPeriod() < x.StartPeriod());
@@ -98,6 +89,6 @@ public class ScheduleValidator
     /// <param name="table"></param>
     /// <param name="tables"></param>
     /// <returns></returns>
-    public bool IsExistedTimetable(ScheduleProfile table, IEnumerable<ScheduleProfile> tables)
+    public static bool IsExistedTimetable(ScheduleProfile table, IEnumerable<ScheduleProfile> tables)
         => tables.Any(x => table.SavedCourseGroupKeys.DictionaryEquals(x.SavedCourseGroupKeys));
 }

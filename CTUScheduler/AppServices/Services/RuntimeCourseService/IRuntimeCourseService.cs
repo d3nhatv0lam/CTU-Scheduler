@@ -1,12 +1,13 @@
-﻿using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
+﻿using System.Collections.Generic;
+using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 
 namespace CTUScheduler.AppServices.Services.RuntimeCourseService;
 
-public interface IRuntimeCourseService
+internal interface IRuntimeCourseService: ICourseStateService
 {
-    void RegisterTimetable(ScheduleBlueprint blueprint);
-    void UnregisterTimetable(ScheduleProfile profile);
+    internal bool RegisterTimetable(ScheduleBlueprint blueprint);
+    void RegisterTimetables(IEnumerable<ScheduleBlueprint> blueprints);
+    bool UnregisterTimetable(ScheduleProfile profile);
     void ClearAll();
-    
 }

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
+using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Raw;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using Microsoft.Extensions.Logging;
@@ -32,24 +34,13 @@ public class RegistrationRulesService: IRegistrationRulesService, IDisposable
         _rulesPage = factory.GetPage<IRegistrationRulesPage>();
         
         RegistrationInfoChanges = _rulesPage.RawRegistrationInformationResponse
-            .Where(x => x.IsSuccess)
-            .Select(x => x.Content)
-            .SelectMany(async raw =>
-            {
-                try
-                {
-                    var userInfo = await _rulesPage.TryGetUserKeyAndUnitAsync();
-                    return raw?.ToRegistrationInformation(userInfo.userKey, userInfo.userUnit);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning("Failed to get user key and unit");
-                    return null;
-                }
-            })
-            .Where(reg => reg is not null)
+            .Where(x => x is {IsSuccess:true, Content: not null})
+            .Select(x => x.Content!)
+            .SelectMany(ProcessRegistrationInfoAsync)
+            .Where(x => x is not null)
+            .Select(x => x!)
             .Publish()
-            .RefCount()!;
+            .RefCount();
         
         RegistrationInfoChanges
             .Subscribe(appState.UpdateRegistrationInfo)
@@ -82,6 +73,20 @@ public class RegistrationRulesService: IRegistrationRulesService, IDisposable
         {
             _logger.LogWarning(ex, "Failed to navigate to registration rules page");
             return OperationResult.Failed("Hệ thống truy cập trang dkmh không thành công!", OperationFailureReason.System);
+        }
+    }
+    
+    private async Task<RegistrationInformation?> ProcessRegistrationInfoAsync(RawRegistrationInformation rawContent, CancellationToken token)
+    {
+        try 
+        {
+            var userInfo = await _rulesPage.TryGetUserKeyAndUnitAsync();
+            return rawContent.ToRegistrationInformation(userInfo.userKey, userInfo.userUnit);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to parse registration info or get user key.");
+            return null; 
         }
     }
 

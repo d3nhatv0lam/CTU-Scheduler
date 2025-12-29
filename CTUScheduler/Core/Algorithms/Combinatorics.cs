@@ -61,4 +61,69 @@ public static class Combinatorics
             }
         }
     }
+    
+    public static IEnumerable<T[]> CartesianProductArray<T>(
+    T[][] sets,
+    Func<T[], int, bool>? isValidPrefix = null, // int = T[].size
+    Func<T[], bool>? isValidFull = null, // T[].size = sets.size
+    CancellationToken token = default)
+{
+    if (sets is null || sets.Length == 0) yield break;
+
+    int count = sets.Length;
+
+    for (int i = 0; i < count; i++)
+    {
+        if (sets[i] is null || sets[i].Length == 0) yield break;
+    }
+    
+    var indices = new int[count];
+    Array.Fill(indices, -1);
+
+    var currentBuffer = new T[count]; 
+    int depth = 0;
+
+    while (depth >= 0)
+    {
+        if (token.IsCancellationRequested) yield break;
+        
+        // đỡ viết sets[depth][..]
+        T[] currentSet = sets[depth];
+        
+        indices[depth]++;
+        
+        if (indices[depth] >= currentSet.Length)
+        {
+            indices[depth] = -1;
+            depth--;
+            continue;
+        }
+
+        // currentSet[indices[depth]] <=> sets[depth][indices[depth]]
+        currentBuffer[depth] = currentSet[indices[depth]];
+
+        // --- VALIDATE PREFIX ---
+        if (isValidPrefix != null)
+        {
+            if (!isValidPrefix(currentBuffer, depth + 1)) 
+                continue;
+        }
+
+        if (depth == count - 1)
+        {
+            // --- VALIDATE FULL ---
+            if (isValidFull is null || isValidFull(currentBuffer))
+            {
+                // Copy ra mảng kết quả mới
+                var result = new T[count];
+                Array.Copy(currentBuffer, result, count);
+                yield return result;
+            }
+        }
+        else
+        {
+            depth++;
+        }
+    }
+}
 }

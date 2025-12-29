@@ -36,7 +36,6 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
     private readonly IScheduleService _scheduleService;
     private readonly ITimetableDialogService _timetableDialogService;
     private readonly SchedulingCourseOptionViewModel _schedulingCourseOptionVM;
-    private readonly ScheduleValidator _scheduleValidator = new ScheduleValidator();
     private readonly SelectableTimeTablesPaginationUi _paginationTimeTableViewModel;
     private readonly CourseMapper _courseMapper = new();
     private readonly ObservableAsPropertyHelper<string> _limitTimetableSelectedDisplayedHelper;
@@ -132,7 +131,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
             var batch = new List<SelectableTimetableLayout>();
             foreach (var tableData in Combinatorics.CartesianProduct(
                          sets,
-                         prefix => _scheduleValidator.IsValidTimeTableFromRaw(prefix),
+                         prefix => ScheduleValidator.IsValidTimeTableFromRaw(prefix),
                          _ => true,
                          _cts.Token))
             {

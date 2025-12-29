@@ -66,7 +66,7 @@ public class LoginPage : CtuBasePage, ILoginPage
 
             var errorOption = new PageWaitForSelectorOptions()
             {
-                Timeout = 0,
+                Timeout = 60000,
                 State = WaitForSelectorState.Visible,
             };
 

@@ -58,7 +58,6 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
             SignInCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 var result = await loginService.LoginAsync(UserName, Password);
-                Console.WriteLine(result.ErrorMessage);
                 if (result.IsSuccess)
                 {
                     OnLoggedIn();

@@ -16,7 +16,9 @@ using CTUScheduler.AppServices.Services.MainHomeService;
 using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.AppServices.Services.RegistrationInfor;
+using CTUScheduler.AppServices.Services.RuntimeCourseService;
 using CTUScheduler.AppServices.Services.ScheduleManager;
+using CTUScheduler.AppServices.Services.ScheduleProfileService;
 using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.AppServices.State;
@@ -126,6 +128,11 @@ public class App : Application
             .AddTransient<IRegistrationRulesService,RegistrationRulesService>()
             .AddTransient<ICourseCatalogPage,CourseCatalogPage>()
             .AddTransient<ICourseCatalogService,CourseCatalogService>();
+
+        services.AddSingleton<IScheduleProfileService, ScheduleProfileService>();
+        services.AddSingleton<RuntimeCourseService>()
+            .AddSingleton<IRuntimeCourseService>(sp => sp.GetRequiredService<RuntimeCourseService>())
+            .AddSingleton<ICourseStateService>(sp => sp.GetRequiredService<RuntimeCourseService>());
         
         services.AddSingleton<IRegistrationInformationService, RegistrationInformationService>();
         services.AddSingleton<IUserDataService, UserDataService>();
@@ -217,14 +224,14 @@ public class App : Application
             Log.Fatal(ex, "APP CRASH: Unhandled Exception on Non-UI Thread");
         };
 
-        // 2. Bắt lỗi ở Task (Task bị lỗi mà không có await hoặc try-catch)
+        // Bắt lỗi ở Task (Task bị lỗi mà không có await hoặc try-catch)
         TaskScheduler.UnobservedTaskException += (_, args) =>
         {
             Log.Error(args.Exception, "Background Task Error (Unobserved)");
             args.SetObserved(); // Ngăn app bị crash nếu muốn
         };
 
-        // 3. Bắt lỗi của ReactiveUI
+        // Bắt lỗi của ReactiveUI
         RxApp.DefaultExceptionHandler = Observer.Create<Exception>(ex => 
         {
             Log.Error(ex, "ReactiveUI Exception");
