@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using CTUScheduler.AppServices;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.Registration;
+using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
@@ -19,15 +20,14 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
     {
         private readonly CompositeDisposable _disposable = new CompositeDisposable();
         public ViewModelActivator Activator { get; } = new ViewModelActivator();
-        // private readonly IRegistrationInformationService _registrationInformationService;
-        private readonly IAppState _appState;
+        private readonly IUserSessionService _userSessionService;
         private readonly IRegistrationRulesService _registrationRulesService;
-        private readonly ObservableAsPropertyHelper<RegistrationInformation> _registrationInfor;
+        private readonly ObservableAsPropertyHelper<RegistrationInformation> _registrationInfo;
         
         private readonly ICtuSitePageFactory _ctuSitePageFactory;
         public string? UrlPathSegment => "HomeViewModel";
         
-        public RegistrationInformation RegistrationInfo => _registrationInfor.Value;
+        public RegistrationInformation RegistrationInfo => _registrationInfo.Value;
         public IScreen HostScreen { get; }
 
         public ReactiveCommand<Unit,Unit> OpenFacebookCommand { get; }
@@ -41,16 +41,17 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
 
         public HomeViewModel(IScreen hostScreen)
         {
-            _appState = App.ServiceProvider.GetRequiredService<IAppState>();
+            
+            _userSessionService = App.ServiceProvider.GetRequiredService<IUserSessionService>();
             _registrationRulesService = App.ServiceProvider.GetRequiredService<IRegistrationRulesService>();
             // _registrationInformationService = App.ServiceProvider.GetRequiredService<IRegistrationInformationService>();
             HostScreen = hostScreen;
 
             
-            // _registrationInfor = _registrationRulesService.RegistrationInfoChanges
+            // _registrationInfo = _registrationRulesService.RegistrationInfoChanges
             //     .ObserveOn(RxApp.MainThreadScheduler)
             //     .ToProperty(this, nameof(RegistrationInfo));
-            _registrationInfor = _appState.RegistrationInfo
+            _registrationInfo = _userSessionService.RegistrationInfo
                 .Where(x => x is not null)
                 .Select(x => x!)
                 .ToProperty(this, nameof(RegistrationInfo), scheduler: RxApp.MainThreadScheduler);
@@ -62,7 +63,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
 
             this.WhenActivated((CompositeDisposable disposable) =>
             {
-                disposable.Add(_registrationInfor);
+                disposable.Add(_registrationInfo);
                 disposable.Add(_disposable);
             });
 

@@ -15,11 +15,10 @@ using CTUScheduler.AppServices.Services.Auth;
 using CTUScheduler.AppServices.Services.MainHomeService;
 using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.AppServices.Services.Registration;
-using CTUScheduler.AppServices.Services.RegistrationInfor;
-using CTUScheduler.AppServices.Services.RuntimeCourseService;
-using CTUScheduler.AppServices.Services.ScheduleManager;
-using CTUScheduler.AppServices.Services.ScheduleProfileService;
+using CTUScheduler.AppServices.Services.ScheduleService;
+using CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
 using CTUScheduler.AppServices.Services.User;
+using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Interfaces;
@@ -29,6 +28,10 @@ using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Login;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Main;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
+using CTUScheduler.Legacy.RegistrationInfor;
+using CTUScheduler.Legacy.RuntimeCourseService;
+using CTUScheduler.Legacy.ScheduleManager;
+using CTUScheduler.Legacy.ScheduleProfileService;
 using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
 using CTUScheduler.Presentation.Services.Adapter;
@@ -117,7 +120,6 @@ public class App : Application
         
         services.AddSingleton<IConnectivityService, ConnectivityService>();
         services.AddSingleton<IWebDriverService,WebDriverService>();
-        services.AddSingleton<ICTUWebDriverService, CtuWebDriverService>();
         
         services.AddSingleton<ICtuSitePageFactory, CtuSitePageFactory>()
             .AddTransient<ILoginPage, LoginPage>()
@@ -128,18 +130,29 @@ public class App : Application
             .AddTransient<IRegistrationRulesService,RegistrationRulesService>()
             .AddTransient<ICourseCatalogPage,CourseCatalogPage>()
             .AddTransient<ICourseCatalogService,CourseCatalogService>();
-
+        
+        services.AddSingleton<IUserSessionService, UserSessionService>();
+        services.AddSingleton<ScheduleManager>()
+            .AddSingleton<IScheduleManager>(sp => sp.GetRequiredService<ScheduleManager>())
+            .AddSingleton<IScheduleRegistrationService>(sp => sp.GetRequiredService<ScheduleManager>())
+            .AddSingleton<ICourseQueryService>(sp => sp.GetRequiredService<ScheduleManager>())
+            .AddSingleton<IProfileQueryService>(sp => sp.GetRequiredService<ScheduleManager>());
+        
+        // cũ
+        services.AddSingleton<ICTUWebDriverService, CtuWebDriverService>();
+        // cũ
         services.AddSingleton<IScheduleProfileService, ScheduleProfileService>();
         services.AddSingleton<RuntimeCourseService>()
             .AddSingleton<IRuntimeCourseService>(sp => sp.GetRequiredService<RuntimeCourseService>())
             .AddSingleton<ICourseStateService>(sp => sp.GetRequiredService<RuntimeCourseService>());
-        
+        // cũ
         services.AddSingleton<IRegistrationInformationService, RegistrationInformationService>();
         services.AddSingleton<IUserDataService, UserDataService>();
         services.AddSingleton<ScheduleService>()
             .AddSingleton<IScheduleService, ScheduleService>(sp => sp.GetRequiredService<ScheduleService>())
             .AddSingleton<ICourseScheduleService, ScheduleService>(sp => sp.GetRequiredService<ScheduleService>());
 
+        
         ConfigurePresentationServices(services);
         //services.AddSingleton<ICachingNavigationServiceFactory, CachingNavigationServiceFactory>();
     }

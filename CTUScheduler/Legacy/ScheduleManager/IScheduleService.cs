@@ -5,7 +5,7 @@ using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using DynamicData;
 
-namespace CTUScheduler.AppServices.Services.ScheduleManager;
+namespace CTUScheduler.Legacy.ScheduleManager;
 
 /// <summary>
 /// Coordinator between TimetableChanges in runtime and UserService's data

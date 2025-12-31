@@ -2,11 +2,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Models;
-using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using DynamicData;
 
-namespace CTUScheduler.AppServices.Services.RuntimeCourseService;
+namespace CTUScheduler.Legacy.RuntimeCourseService;
 
+/// <summary>
+/// Expose to UI
+/// </summary>
 public interface ICourseStateService
 {
     Task RefreshCourseAsync(CancellationToken token = default);

@@ -15,9 +15,9 @@ public static class Combinatorics
         CancellationToken? token = null)
     {
         var setList = sets as IReadOnlyList<IReadOnlyList<T>> ?? sets.ToList();
-        if (setList.Count == 0 || setList.Any(s => s.Count == 0)) 
+        if (setList.Count == 0 || setList.Any(s => s.Count == 0))
             yield break;
-        
+
         var indices = new int[setList.Count];
         var current = new List<T>(setList.Count);
 
@@ -35,7 +35,7 @@ public static class Combinatorics
             {
                 indices[depth] = -1;
                 depth--;
-                
+
                 if (depth >= 0 && current.Count > depth) current.RemoveAt(current.Count - 1);
                 continue;
             }
@@ -61,69 +61,67 @@ public static class Combinatorics
             }
         }
     }
-    
+
     public static IEnumerable<T[]> CartesianProductArray<T>(
-    T[][] sets,
-    Func<T[], int, bool>? isValidPrefix = null, // int = T[].size
-    Func<T[], bool>? isValidFull = null, // T[].size = sets.size
-    CancellationToken token = default)
-{
-    if (sets is null || sets.Length == 0) yield break;
-
-    int count = sets.Length;
-
-    for (int i = 0; i < count; i++)
+        T[][] sets,
+        Func<T[], int, bool>? isValidPrefix = null, // int = T[].size
+        Func<T[], bool>? isValidFull = null, // T[].size = sets.size
+        CancellationToken token = default)
     {
-        if (sets[i] is null || sets[i].Length == 0) yield break;
-    }
-    
-    var indices = new int[count];
-    Array.Fill(indices, -1);
+        if (sets is null || sets.Length == 0) yield break;
 
-    var currentBuffer = new T[count]; 
-    int depth = 0;
+        int count = sets.Length;
 
-    while (depth >= 0)
-    {
-        if (token.IsCancellationRequested) yield break;
-        
-        // đỡ viết sets[depth][..]
-        T[] currentSet = sets[depth];
-        
-        indices[depth]++;
-        
-        if (indices[depth] >= currentSet.Length)
+        for (int i = 0; i < count; i++)
         {
-            indices[depth] = -1;
-            depth--;
-            continue;
+            if (sets[i] is null || sets[i].Length == 0) yield break;
         }
 
-        // currentSet[indices[depth]] <=> sets[depth][indices[depth]]
-        currentBuffer[depth] = currentSet[indices[depth]];
+        var indices = new int[count];
+        Array.Fill(indices, -1);
 
-        // --- VALIDATE PREFIX ---
-        if (isValidPrefix != null)
-        {
-            if (!isValidPrefix(currentBuffer, depth + 1)) 
-                continue;
-        }
+        var currentBuffer = new T[count];
+        int depth = 0;
 
-        if (depth == count - 1)
+        while (depth >= 0)
         {
-            // --- VALIDATE FULL ---
-            if (isValidFull is null || isValidFull(currentBuffer))
+            if (token.IsCancellationRequested) yield break;
+
+            // đỡ viết sets[depth][..]
+            T[] currentSet = sets[depth];
+
+            indices[depth]++;
+
+            if (indices[depth] >= currentSet.Length)
             {
-                // Copy ra mảng kết quả mới
-                var result = new T[count];
-                Array.Copy(currentBuffer, result, count);
-                yield return result;
+                indices[depth] = -1;
+                depth--;
+                continue;
+            }
+
+            // currentSet[indices[depth]] <=> sets[depth][indices[depth]]
+            currentBuffer[depth] = currentSet[indices[depth]];
+
+            // --- VALIDATE PREFIX ---
+            if (isValidPrefix != null)
+            {
+                if (!isValidPrefix(currentBuffer, depth + 1))
+                    continue;
+            }
+
+            if (depth == count - 1)
+            {
+                if (isValidFull is null || isValidFull(currentBuffer))
+                {
+                    var result = new T[count];
+                    Array.Copy(currentBuffer, result, count);
+                    yield return result;
+                }
+            }
+            else
+            {
+                depth++;
             }
         }
-        else
-        {
-            depth++;
-        }
     }
-}
 }

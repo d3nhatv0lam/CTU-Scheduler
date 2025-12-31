@@ -1,10 +1,8 @@
-﻿using System;
-using System.Reactive;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Shared;
 
-namespace CTUScheduler.AppServices.Services.ScheduleManager;
+namespace CTUScheduler.Legacy.ScheduleManager;
 
 public interface ICourseScheduleService
 {

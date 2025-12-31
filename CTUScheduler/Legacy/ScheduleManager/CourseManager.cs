@@ -5,13 +5,12 @@ using System.Linq;
 using System.Reactive.Disposables;
 using CTUScheduler.AppServices.Mappers;
 using CTUScheduler.AppServices.Models;
-using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using DynamicData;
 
-namespace CTUScheduler.AppServices.Services.ScheduleManager;
+namespace CTUScheduler.Legacy.ScheduleManager;
 
 public class CourseManager: ICourseManager, IDisposable
 {

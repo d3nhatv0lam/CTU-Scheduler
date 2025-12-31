@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
@@ -10,13 +9,10 @@ using DynamicData;
 
 namespace CTUScheduler.AppServices.Models;
 
-/// <summary>
-/// sắp update thành id refcount thay cho int refcount
-/// </summary>
 public class RuntimeCourse : IDisposable, INotifyPropertyChanged
 {
     private readonly SourceCache<CourseSection, string> _sectionsCache;
-    private readonly ConcurrentDictionary<string, int> _groupRefCounts = new();
+    // groupCode -> hashset<GUID as string>
     private readonly ConcurrentDictionary<string, HashSet<string>> _sectionOwners = new();
     private string _name_VN = string.Empty;
     private int _credits = 0;
@@ -24,7 +20,6 @@ public class RuntimeCourse : IDisposable, INotifyPropertyChanged
     private int _practicalSessions = 0;
     
     public string Code { get; }
-
     public string Name_VN
     {
         get => _name_VN;
@@ -92,6 +87,9 @@ public class RuntimeCourse : IDisposable, INotifyPropertyChanged
     /// <returns>Return true if the RuntimeCourse has no sections.</returns>
     public bool UnregisterSection(string groupCode, string ownerId)
     {
+        if (string.IsNullOrEmpty(groupCode)) throw new ArgumentNullException(nameof(groupCode));
+        if (string.IsNullOrEmpty(ownerId)) throw new ArgumentNullException(nameof(ownerId));
+        
         if (!_sectionOwners.TryGetValue(groupCode, out var owners))
         {
             if (_sectionsCache.Lookup(groupCode).HasValue)
@@ -99,7 +97,7 @@ public class RuntimeCourse : IDisposable, INotifyPropertyChanged
             return _sectionsCache.Count == 0;
         }
 
-        var isGroupEmpty = false;
+        bool isGroupEmpty;
         lock (owners)
         {
             owners.Remove(ownerId);
@@ -114,7 +112,7 @@ public class RuntimeCourse : IDisposable, INotifyPropertyChanged
         return _sectionsCache.Count == 0;
     }
     
-    public bool IsSectionRegistered(string groupCode) => _groupRefCounts.ContainsKey(groupCode);
+    public bool IsSectionRegistered(string groupCode) => _sectionOwners.ContainsKey(groupCode);
 
     /// <summary>
     /// Synchronously merge data from Api into local data.
@@ -151,32 +149,6 @@ public class RuntimeCourse : IDisposable, INotifyPropertyChanged
             }
         });
     }
-    // /// <summary>
-    // /// Cập nhật data và phát hiện các nhóm đã bị xóa trên server.
-    // /// </summary>
-    // /// <returns>Danh sách các mã nhóm (Group Code) có trong Local nhưng không tìm thấy trong data mới.</returns>
-    // public List<string> UpdateSectionsAndDetectMissing(IEnumerable<CourseSection> newSectionsFromApi)
-    // {
-    //     var newSections = newSectionsFromApi.ToList();
-    //     // bảng tra cứu
-    //     var serverGroups = newSections.Select(s => s.Group).ToHashSet();
-    //     
-    //     var userActiveGroups = _groupRefCounts.Keys.ToList();
-    //     
-    //     var vanishedGroups = userActiveGroups
-    //         .Where(localGroup => !serverGroups.Contains(localGroup))
-    //         .ToList();
-    //     
-    //     var validSectionsToUpdate = newSections
-    //         .Where(s => _groupRefCounts.ContainsKey(s.Group))
-    //         .ToList();
-    //
-    //     if (validSectionsToUpdate.Count > 0)
-    //     {
-    //         _sectionsCache.AddOrUpdate(validSectionsToUpdate);
-    //     }
-    //     return vanishedGroups;
-    // }
     public Course ToCourse() => new Course()
     {
         Code = this.Code,

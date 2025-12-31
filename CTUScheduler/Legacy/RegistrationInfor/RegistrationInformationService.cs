@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
 using Microsoft.Extensions.Logging;
 
-namespace CTUScheduler.AppServices.Services.RegistrationInfor;
+namespace CTUScheduler.Legacy.RegistrationInfor;
 
 public class RegistrationInformationService: IRegistrationInformationService
 {

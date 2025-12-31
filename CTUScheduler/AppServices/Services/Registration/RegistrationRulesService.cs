@@ -3,6 +3,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
@@ -24,7 +25,7 @@ public class RegistrationRulesService: IRegistrationRulesService, IDisposable
     public IObservable<RegistrationInformation> RegistrationInfoChanges { get; }
     
     public RegistrationRulesService(
-        AppState appState,
+        IUserSessionService userSessionService,
         ICtuSitePageFactory factory,
         ILogger<RegistrationRulesService> logger)
     {
@@ -43,7 +44,7 @@ public class RegistrationRulesService: IRegistrationRulesService, IDisposable
             .RefCount();
         
         RegistrationInfoChanges
-            .Subscribe(appState.UpdateRegistrationInfo)
+            .Subscribe(userSessionService.UpdateLiveInfo)
             .DisposeWith(_disposables);
     }
 

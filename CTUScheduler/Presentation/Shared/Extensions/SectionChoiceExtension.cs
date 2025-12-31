@@ -6,7 +6,6 @@ namespace CTUScheduler.Presentation.Shared.Extensions;
 
 public static class SectionChoiceExtension
 {
-
     private static ScheduleGroupCellShared ToScheduleGroupCell(this SectionChoice sectionChoice)
     {
         return new ScheduleGroupCellShared()

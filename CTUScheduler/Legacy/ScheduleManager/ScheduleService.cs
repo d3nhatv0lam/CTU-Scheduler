@@ -7,20 +7,19 @@ using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Helpers.Json;
-using CTUScheduler.AppServices.Services.RegistrationInfor;
 using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.AppServices.Validators;
-using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Helpers;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Legacy.RegistrationInfor;
 using DynamicData;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 
-namespace CTUScheduler.AppServices.Services.ScheduleManager;
+namespace CTUScheduler.Legacy.ScheduleManager;
 
 public class ScheduleService: IScheduleService, ICourseScheduleService, IDisposable
 {

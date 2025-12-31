@@ -1,7 +1,7 @@
 ﻿using System;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
 
-namespace CTUScheduler.AppServices.Services.RegistrationInfor;
+namespace CTUScheduler.Legacy.RegistrationInfor;
 
 public interface IRegistrationInformationService
 {

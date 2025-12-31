@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 
-namespace CTUScheduler.AppServices.Services.ScheduleManager;
+namespace CTUScheduler.Legacy.ScheduleManager;
 
 public interface ICourseManager
 {

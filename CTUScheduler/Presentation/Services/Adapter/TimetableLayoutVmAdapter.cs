@@ -5,11 +5,11 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using CTUScheduler.AppServices.Services.ScheduleManager;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Legacy.ScheduleManager;
 using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 using Microsoft.Extensions.Logging;
 

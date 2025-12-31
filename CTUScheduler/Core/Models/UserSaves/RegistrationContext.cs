@@ -6,6 +6,6 @@ public record RegistrationContext
     public string Semester { get; init; } = string.Empty;
     public int MaxCreditPerSemester { get; init; }
     
-    public string ContextId => $"{Semester}_{AcademicYear}";
+    public string GetContextId() => $"{Semester}_{AcademicYear}";
     public override string ToString() => $"HK {Semester}/{AcademicYear} (max: {MaxCreditPerSemester})";
 }

@@ -7,14 +7,12 @@ using System.Threading.Tasks;
 using CTUScheduler.AppServices.Models;
 using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.AppServices.State;
-using CTUScheduler.Core.Extensions;
-using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using DynamicData;
 using Microsoft.Extensions.Logging;
 
-namespace CTUScheduler.AppServices.Services.RuntimeCourseService;
+namespace CTUScheduler.Legacy.RuntimeCourseService;
 
 internal class RuntimeCourseService : IRuntimeCourseService
 {
@@ -22,13 +20,12 @@ internal class RuntimeCourseService : IRuntimeCourseService
     private readonly ICourseCatalogService _catalogService;
     private readonly ILogger<RuntimeCourseService> _logger;
 
-    public RuntimeCourseService(
+    internal RuntimeCourseService(
         AppState appState,
         ICourseCatalogService catalogService,
         ILogger<RuntimeCourseService> logger)
     {
         _coursesSource = appState.RuntimeCoursesSource;
-        
         _catalogService = catalogService;
         _logger = logger;
     }
@@ -36,26 +33,20 @@ internal class RuntimeCourseService : IRuntimeCourseService
     /// <summary>
     /// Đăng ký các môn học từ một Thời khóa biểu vào hệ thống Runtime
     /// </summary>
-    /// <param name="blueprint"> Data lập thời khóa biểu</param>
-    public bool RegisterTimetable(ScheduleBlueprint blueprint)
+    /// <param name="blueprint">Data lập thời khóa biểu</param>
+    public void RegisterTimetable(ScheduleBlueprint blueprint)
     {
         ArgumentNullException.ThrowIfNull(blueprint);
-        var isRegistered = false;
         _coursesSource.Edit(innerList =>
         {
-            isRegistered = ProcessSingleBlueprint(innerList, blueprint);
-            if (!isRegistered)
-            {
-                _logger.LogWarning("RegisterTimetable failed. Blueprint inconsistent. Profile: {Metadata}", blueprint.Metadata);
-            } 
+            ProcessSingleBlueprint(innerList, blueprint);
         });
-        return isRegistered;
     }
 
     /// <summary>
     /// Đăng ký nhiều tkb 1 lần
     /// </summary>
-    public void RegisterTimetables(IEnumerable<ScheduleBlueprint> blueprints)
+    public void RegisterTimetable(IEnumerable<ScheduleBlueprint> blueprints)
     {
         ArgumentNullException.ThrowIfNull(blueprints);
         _coursesSource.Edit(innerList =>
@@ -67,10 +58,7 @@ internal class RuntimeCourseService : IRuntimeCourseService
                     _logger.LogWarning("Batch Register: Found a null blueprint in the list.");
                     continue;
                 }
-                if (!ProcessSingleBlueprint(innerList, blueprint))
-                {
-                    _logger.LogWarning("RegisterTimetable failed. Blueprint inconsistent. Profile: {Metadata}", blueprint.Metadata);
-                }
+                ProcessSingleBlueprint(innerList, blueprint);
             }
         });
     }
@@ -78,25 +66,11 @@ internal class RuntimeCourseService : IRuntimeCourseService
     /// <summary>
     /// Hủy đăng ký TKB
     /// </summary>
-    public bool UnregisterTimetable(ScheduleProfile profile)
+    public void UnregisterTimetable(ScheduleProfile profile)
     {
         ArgumentNullException.ThrowIfNull(profile);
-        List<string> errorEntry = new();
         _coursesSource.Edit(innerList =>
         {
-            // validate
-            var (isValid, invalidEntries) = profile.ValidateRuntimeState(code => 
-            {
-                var lookup = innerList.Lookup(code);
-                return lookup.HasValue ? lookup.Value : null;
-            });
-            
-            if (!isValid)
-            {
-                errorEntry.AddRange(invalidEntries.Select(x => string.Concat(x.Code,"-",x.Group)));
-                return;
-            }
-            
             // remove
             var keysToRemove = new List<string>();
             foreach (var (code, group) in profile.SavedCourseGroupKeys)
@@ -119,13 +93,6 @@ internal class RuntimeCourseService : IRuntimeCourseService
                 innerList.RemoveKeys(keysToRemove);
             }
         });
-        
-        if (errorEntry.Count > 0)
-        {
-            _logger.LogWarning("UnregisterTimetable failed. Profile contains invalid entries: {InvalidEntries}", errorEntry);
-            return false;
-        }
-        return true;
     }
 
     public async Task RefreshCourseAsync(CancellationToken token = default)
@@ -166,23 +133,19 @@ internal class RuntimeCourseService : IRuntimeCourseService
     public IObservable<IChangeSet<RuntimeCourse, string>> Connect() => _coursesSource.Connect();
 
     /// <summary>
-    /// Logic xử lý cốt lõi cho 1 blueprint bên trong transaction Edit
+    /// Logic xử lý cho 1 blueprint bên trong transaction Edit
     /// </summary>
-    private static bool ProcessSingleBlueprint(
+    private static void ProcessSingleBlueprint(
         ISourceUpdater<RuntimeCourse, string> innerList, 
         ScheduleBlueprint blueprint)
     {
         Debug.Assert(innerList is not null);
         Debug.Assert(blueprint is not null);
-
-        if (!blueprint.IsConsistent)
-            return false;
         
         var catalogDict = blueprint.Courses.ToDictionary(c => c.Code);
 
         foreach (var (courseCode, groupCode) in blueprint.Metadata.SavedCourseGroupKeys)
         {
-            // có trong Profile nhưng không có trong catalog -> mất ref
             if (!catalogDict.TryGetValue(courseCode, out var courseDto))
             {
                 continue; 
@@ -207,6 +170,5 @@ internal class RuntimeCourseService : IRuntimeCourseService
                 runtimeCourse.RegisterSection(sectionToRegister, blueprint.Metadata.Id.ToString());
             }
         }
-        return true;
     }
 }

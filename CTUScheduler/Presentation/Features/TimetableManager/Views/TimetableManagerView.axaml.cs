@@ -14,14 +14,10 @@ public partial class TimetableManagerView : ReactiveUserControl<TimetableManager
         InitializeComponent();
         this.WhenActivated(disposable =>
         {
-            this.OneWayBind(ViewModel, vm => vm.LastSaved, v => v.txtLastSaved.Text
-                , lastSaved =>
-                {
-                    if (lastSaved == null)
-                        return "Chưa có sao lưu!";
-                    return ((DateTime)lastSaved).ToString("MM/dd/yyyy:HH:mm:ss", CultureInfo.InvariantCulture);
-                    
-                }).DisposeWith(disposable);
+            this.OneWayBind(ViewModel,
+                vm => vm.LastSaved,
+                v => v.txtLastSaved.Text)
+                .DisposeWith(disposable);
         });
     }
 }
