@@ -6,7 +6,7 @@ using CTUScheduler.AppServices.Helpers.Json;
 using CTUScheduler.Core.Models.UserSaves;
 using Microsoft.Extensions.Logging;
 
-namespace CTUScheduler.AppServices.Services.User
+namespace CTUScheduler.Legacy.User
 {
     public class UserDataService : IUserDataService , IDisposable
     {

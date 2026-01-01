@@ -1,6 +1,6 @@
 ﻿using System;
-using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
+using CTUScheduler.Legacy.WebDriver;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Legacy.RegistrationInfor;

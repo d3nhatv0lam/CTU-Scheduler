@@ -13,38 +13,55 @@ namespace CTUScheduler.AppServices.Services.UserSessionService;
 public class UserSessionService: IUserSessionService, IDisposable
 {
     private readonly CompositeDisposable _disposable = new();
-    private readonly BehaviorSubject<RegistrationInformation?> _liveInfoSubject = new(null);
+    private readonly BehaviorSubject<RegistrationInformation?> _serverInfoSubject = new(null);
     private readonly BehaviorSubject<RegistrationContext?> _localContextSubject = new(null);
     private readonly BehaviorSubject<DateTimeOffset?> _lastSavedSubject = new(null);
-
     public IObservable<RegistrationContext?> LocalContext => _localContextSubject.AsObservable();
-    public IObservable<RegistrationInformation?> RegistrationInfo => _liveInfoSubject.AsObservable();
+    public RegistrationContext? CurrentContext => _localContextSubject.Value ?? _serverInfoSubject.Value?.ToContext();
+    public IObservable<RegistrationInformation?> RegistrationInfo => _serverInfoSubject.AsObservable();
+    public RegistrationInformation? CurrentRegistrationInfo => _serverInfoSubject.Value;
     public IObservable<bool> IsReadonly { get; }
     public IObservable<DateTimeOffset?> LastSaved { get; }
 
     public UserSessionService(IProfileQueryService profileQueryService)
     {
-        _liveInfoSubject.DisposeWith(_disposable);
+        _serverInfoSubject.DisposeWith(_disposable);
         _localContextSubject.DisposeWith(_disposable);
         _lastSavedSubject.DisposeWith(_disposable);
-        
-        var isContextMismatch = _localContextSubject
-            .CombineLatest(_liveInfoSubject, (local, live) =>
-            {
-                if (local is null) return false;
-                if (live is null) return true; 
-                return local.GetContextId() != live.ToContext().GetContextId();
-            });
         
         var isProfileEmpty = profileQueryService.ConnectProfiles()
             .Count()
             .Select(x => x == 0);
         
-        IsReadonly = isContextMismatch
-            .CombineLatest(isProfileEmpty, (mismatch, empty) => mismatch || empty)
+        IsReadonly = _localContextSubject
+            .CombineLatest(_serverInfoSubject, isProfileEmpty, 
+                (local, serverInfo, empty) =>
+            {
+                if (empty) return false; 
+                
+                if (local is null || serverInfo is null) return false;
+                
+                return local.GetContextId() != serverInfo.ToContext().GetContextId();
+            })
             .DistinctUntilChanged()
             .Replay(1)
             .RefCount();
+        
+        isProfileEmpty
+            .Where(empty => empty)
+            .WithLatestFrom(_serverInfoSubject, (_, serverInfo) => serverInfo)
+            .WithLatestFrom(_localContextSubject, (serverInfo, localCtx) => (serverInfo, localCtx))
+            .Subscribe(state => 
+            {
+                if (state.serverInfo == null) return;
+                var serverCtx = state.serverInfo.ToContext();
+                // không có local   // server và local chưa đồng bộ
+                if (state.localCtx is null || state.localCtx.GetContextId() != serverCtx.GetContextId())
+                {
+                    _localContextSubject.OnNext(serverCtx);
+                }
+            })
+            .DisposeWith(_disposable);
         
         LastSaved = _lastSavedSubject.AsObservable();
     }
@@ -54,15 +71,15 @@ public class UserSessionService: IUserSessionService, IDisposable
         _localContextSubject.OnNext(context);
     }
 
-    public void UpdateLiveInfo(RegistrationInformation info)
+    public void UpdateServerInfo(RegistrationInformation info)
     {
-        _liveInfoSubject.OnNext(info);
+        _serverInfoSubject.OnNext(info);
     }
     public void NotifySaved()
     {
         _lastSavedSubject.OnNext(DateTimeOffset.Now);
     }
-    public void SetLastSaved(DateTimeOffset time)
+    public void SetLastModified(DateTimeOffset time)
     {
         _lastSavedSubject.OnNext(time);
     }

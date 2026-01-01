@@ -17,9 +17,7 @@ using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
-using CTUScheduler.AppServices.Services.User;
 using CTUScheduler.AppServices.Services.UserSessionService;
-using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
@@ -32,6 +30,8 @@ using CTUScheduler.Legacy.RegistrationInfor;
 using CTUScheduler.Legacy.RuntimeCourseService;
 using CTUScheduler.Legacy.ScheduleManager;
 using CTUScheduler.Legacy.ScheduleProfileService;
+using CTUScheduler.Legacy.User;
+using CTUScheduler.Legacy.WebDriver;
 using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
 using CTUScheduler.Presentation.Services.Adapter;
@@ -114,7 +114,6 @@ public class App : Application
         });
         
         services.AddTransient(typeof(Lazy<>), typeof(LazyService<>));
-        
         services.AddSingleton<AppState>()
             .AddSingleton<IAppState>(sp => sp.GetRequiredService<AppState>());
         
@@ -131,7 +130,9 @@ public class App : Application
             .AddTransient<ICourseCatalogPage,CourseCatalogPage>()
             .AddTransient<ICourseCatalogService,CourseCatalogService>();
         
-        services.AddSingleton<IUserSessionService, UserSessionService>();
+        services.AddSingleton<IUserSessionService, UserSessionService>()
+            .AddSingleton<IWorkspaceStore, WorkspaceStore>();
+        
         services.AddSingleton<ScheduleManager>()
             .AddSingleton<IScheduleManager>(sp => sp.GetRequiredService<ScheduleManager>())
             .AddSingleton<IScheduleRegistrationService>(sp => sp.GetRequiredService<ScheduleManager>())
@@ -151,7 +152,6 @@ public class App : Application
         services.AddSingleton<ScheduleService>()
             .AddSingleton<IScheduleService, ScheduleService>(sp => sp.GetRequiredService<ScheduleService>())
             .AddSingleton<ICourseScheduleService, ScheduleService>(sp => sp.GetRequiredService<ScheduleService>());
-
         
         ConfigurePresentationServices(services);
         //services.AddSingleton<ICachingNavigationServiceFactory, CachingNavigationServiceFactory>();

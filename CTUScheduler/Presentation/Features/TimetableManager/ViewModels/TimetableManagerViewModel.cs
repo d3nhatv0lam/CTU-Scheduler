@@ -10,7 +10,6 @@ using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.AppServices.Services.UserSessionService;
-using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Legacy.ScheduleManager;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels;
@@ -126,7 +125,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 .DisposeWith(_disposables);
 
             // _lastSaved = _scheduleService.LastSaveChanged
-            //     .ToProperty(this, nameof(LastSaved), scheduler: RxApp.MainThreadScheduler)
+            //     .ToProperty(this, nameof(LastModified), scheduler: RxApp.MainThreadScheduler)
             //     .DisposeWith(_disposables);
             
             GoToCourseCatalogPage();

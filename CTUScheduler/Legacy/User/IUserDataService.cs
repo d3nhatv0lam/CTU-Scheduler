@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using CTUScheduler.Core.Models.UserSaves;
 
-namespace CTUScheduler.AppServices.Services.User
+namespace CTUScheduler.Legacy.User
 {
     public interface IUserDataService
     {

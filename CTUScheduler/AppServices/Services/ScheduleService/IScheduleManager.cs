@@ -1,9 +1,7 @@
-﻿using System;
-using CTUScheduler.AppServices.Models;
+﻿using System.Collections.Generic;
 using CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
+using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
-using CTUScheduler.Core.Models.Shared;
-using DynamicData;
 
 namespace CTUScheduler.AppServices.Services.ScheduleService;
 
@@ -12,5 +10,5 @@ public interface IScheduleManager :
     ICourseQueryService,
     IProfileQueryService
 {
-    
+    void ImportSchedule(IEnumerable<Course> courses, IEnumerable<ScheduleProfile> profiles);
 }

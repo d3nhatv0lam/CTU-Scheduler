@@ -8,7 +8,6 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Metadata;
 using CTUScheduler.AppServices.Services.Network;
-using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Infrastructure.DriverCore;
 using CTUScheduler.Presentation.Base;

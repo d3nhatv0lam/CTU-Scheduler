@@ -7,7 +7,6 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices;
 using CTUScheduler.AppServices.Services.Auth;
-using CTUScheduler.AppServices.Services.WebDriver;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;

@@ -12,20 +12,20 @@ public static class ScheduleOptimizer
     /// 
     /// </summary>
     /// <param name="courses"></param>
-    /// <param name="tables"></param>
-    public static void Trim(List<Course> courses, List<ScheduleProfile> tables)
+    /// <param name="profiles"></param>
+    public static void Trim(List<Course> courses, List<ScheduleProfile> profiles)
     {
-        if (courses is null || tables is null) return;
+        if (courses is null || profiles is null) return;
         
-        tables.RemoveAll(t => t.SavedCourseGroupKeys.Count == 0);
+        profiles.RemoveAll(t => t.SavedCourseGroupKeys.Count == 0);
 
-        if (tables.Count == 0)
+        if (profiles.Count == 0)
         {
             courses.Clear();
             return;
         }
         
-        var requiredKeys = tables
+        var requiredKeys = profiles
             .SelectMany(t => t.SavedCourseGroupKeys)
             .Select(kvp => (Code: kvp.Key, Group: kvp.Value))
             .ToHashSet();

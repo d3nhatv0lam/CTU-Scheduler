@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CTUScheduler.AppServices.Models;
 using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.AppServices.State;
+using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using DynamicData;
@@ -31,7 +32,22 @@ public class ScheduleManager: IScheduleManager
 
     public IObservable<IChangeSet<RuntimeCourse, string>> ConnectCourses() => _coursesSource.Connect();
     public IObservable<IChangeSet<ScheduleProfile, Guid>> ConnectProfiles() => _profileSource.Connect();
+    public IEnumerable<Course> GetCourseSnapshot() => _coursesSource
+        .Items
+        .Select(x => x.ToCourse());
+    public IEnumerable<ScheduleProfile> GetProfileSnapshot() => _profileSource.Items;
     
+    public void ImportSchedule(IEnumerable<Course> courses, IEnumerable<ScheduleProfile> profiles)
+    {
+        if (courses is null || profiles is null) return;
+        ClearAll();
+        _coursesSource.Edit(innerCache =>
+        {
+            ApplySnapshotToCourses(innerCache, courses, profiles);
+        });
+        _profileSource.AddOrUpdate(profiles);
+    }
+
     public bool RegisterBlueprint(ScheduleBlueprint blueprint)
     {
         if (blueprint is null || !blueprint.IsConsistent)
@@ -156,6 +172,44 @@ public class ScheduleManager: IScheduleManager
             if (sectionToRegister is not null)
             {
                 runtimeCourse.RegisterSection(sectionToRegister, blueprint.Metadata.Id.ToString());
+            }
+        }
+    }
+    
+    private static void ApplySnapshotToCourses(
+        ISourceUpdater<RuntimeCourse, string> innerCache, 
+        IEnumerable<Course> courses,
+        IEnumerable<ScheduleProfile> profiles)
+    {
+        Debug.Assert(innerCache is not null);
+        Debug.Assert(courses is not null);
+        Debug.Assert(profiles is not null);
+        
+        var catalogDict = courses.ToDictionary(c => c.Code);
+        foreach (var profile in profiles)
+        {
+            foreach (var (courseCode, groupCode) in profile.SavedCourseGroupKeys)
+            {
+                if (!catalogDict.TryGetValue(courseCode, out var courseDto)) continue;
+            
+                var lookup = innerCache.Lookup(courseCode);
+                RuntimeCourse runtimeCourse;
+
+                if (lookup.HasValue)
+                {
+                    runtimeCourse = lookup.Value;
+                }
+                else
+                {
+                    runtimeCourse = new RuntimeCourse(courseDto);
+                    innerCache.AddOrUpdate(runtimeCourse);
+                }
+            
+                var sectionToRegister = courseDto.Sections.FirstOrDefault(s => s.Group == groupCode);
+                if (sectionToRegister is not null)
+                {
+                    runtimeCourse.RegisterSection(sectionToRegister, profile.Id.ToString());
+                }
             }
         }
     }

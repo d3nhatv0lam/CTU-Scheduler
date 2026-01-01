@@ -44,7 +44,7 @@ public class RegistrationRulesService: IRegistrationRulesService, IDisposable
             .RefCount();
         
         RegistrationInfoChanges
-            .Subscribe(userSessionService.UpdateLiveInfo)
+            .Subscribe(userSessionService.UpdateServerInfo)
             .DisposeWith(_disposables);
     }
 

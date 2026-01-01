@@ -5,7 +5,7 @@ using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
 
-namespace CTUScheduler.AppServices.Services.WebDriver
+namespace CTUScheduler.Legacy.WebDriver
 {
     public interface ICTUWebDriverService
     {

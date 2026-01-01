@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices;
 using CTUScheduler.AppServices.Helpers.Json;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
@@ -11,7 +12,7 @@ using CTUScheduler.Infrastructure.DriverCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 
-namespace CTUScheduler.AppServices.Services.WebDriver
+namespace CTUScheduler.Legacy.WebDriver
 {
     public class CtuWebDriverService: ICTUWebDriverService, IDisposable
     {
