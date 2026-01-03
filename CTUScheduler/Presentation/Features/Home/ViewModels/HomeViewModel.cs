@@ -19,14 +19,12 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
     public class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivatableViewModel, IDisposable
     {
         private readonly CompositeDisposable _disposable = new CompositeDisposable();
-        public ViewModelActivator Activator { get; } = new ViewModelActivator();
         private readonly IUserSessionService _userSessionService;
         private readonly IRegistrationRulesService _registrationRulesService;
         private readonly ObservableAsPropertyHelper<RegistrationInformation> _registrationInfo;
-        
-        private readonly ICtuSitePageFactory _ctuSitePageFactory;
         public string? UrlPathSegment => "HomeViewModel";
         
+        public ViewModelActivator Activator { get; } = new ViewModelActivator();
         public RegistrationInformation RegistrationInfo => _registrationInfo.Value;
         public IScreen HostScreen { get; }
 
@@ -48,9 +46,6 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
             HostScreen = hostScreen;
 
             
-            // _registrationInfo = _registrationRulesService.RegistrationInfoChanges
-            //     .ObserveOn(RxApp.MainThreadScheduler)
-            //     .ToProperty(this, nameof(RegistrationInfo));
             _registrationInfo = _userSessionService.RegistrationInfo
                 .Where(x => x is not null)
                 .Select(x => x!)
@@ -80,7 +75,6 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
             try
             {
                 await _registrationRulesService.NavigateToAsync();
-                // await _ctuSitePageFactory.RegistrationRulesPage.NavigateToAsync();
             }
             catch (Exception e)
             {

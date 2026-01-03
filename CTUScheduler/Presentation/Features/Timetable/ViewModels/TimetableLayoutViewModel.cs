@@ -5,6 +5,7 @@ using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices.JavaScript;
 using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
@@ -12,6 +13,7 @@ using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Timetable.Interfaces;
+using CTUScheduler.Presentation.Features.Timetable.Mappers;
 using CTUScheduler.Presentation.Features.Timetable.Models;
 using CTUScheduler.Presentation.Features.Timetable.Resources;
 using CTUScheduler.Presentation.Features.Timetable.Views;
@@ -35,7 +37,7 @@ public class TimetableLayoutViewModel:
     private readonly Dictionary<string, Course> _scheduleCourseData = new();
     private string _name;
     private string _description;
-    private DateTime _lastUpdated;
+    private DateTimeOffset _lastUpdated;
     private int _totalCredit;
     
     public event Action<TimetableLayoutViewModel>? BuildTimetableRequested;
@@ -60,7 +62,7 @@ public class TimetableLayoutViewModel:
         private set => this.RaiseAndSetIfChanged(ref _totalCredit, value);
     }
 
-    public DateTime LastUpdated
+    public DateTimeOffset LastUpdated
     {
         get => _lastUpdated;
         private set => this.RaiseAndSetIfChanged(ref _lastUpdated, value);
@@ -68,7 +70,7 @@ public class TimetableLayoutViewModel:
     
     public ReactiveCommand<TimetableLayoutView,Unit> SaveLayoutToImageCommand { get; }
 
-    public TimetableLayoutViewModel(Core.Models.Academic.Curriculum.Schedule.ScheduleProfile scheduleProfile)
+    public TimetableLayoutViewModel(ScheduleProfile scheduleProfile)
     {
         _scheduleProfile = scheduleProfile;
         _name = scheduleProfile.Name;

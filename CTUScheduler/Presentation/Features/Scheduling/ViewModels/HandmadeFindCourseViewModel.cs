@@ -8,6 +8,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
 using CTUScheduler.Legacy.WebDriver;
 using CTUScheduler.Presentation.Base;
@@ -25,12 +26,13 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
     public class HandmadeFindCourseViewModel : ViewModelBase, IDisposable, IStepViewModel
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
-        private readonly ICTUWebDriverService _ctuWebDriverService;
+        // private readonly ICTUWebDriverService _ctuWebDriverService;
+        private readonly ICourseCatalogService _courseCatalogService;
         private readonly CourseMapper _courseMapper = new();
         private readonly SourceList<CourseUi> _coursesSourceList = new();
         private string _txtInputCourseKey = string.Empty;
         private bool _isOpenQuickSelectPopup;
-        private Subject<Unit> _textBoxClickTriggerSubject = new();
+        private readonly Subject<Unit> _textBoxClickTriggerSubject = new();
         private bool _showOnlyAvailableSections;
         private ObservableAsPropertyHelper<CourseUi> _searchedCourse;
         private ObservableAsPropertyHelper<ObservableCollection<SelectableCourseSectionUi>> _searchedCourseSections;
@@ -77,8 +79,8 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         
         public HandmadeFindCourseViewModel()
         {
-            _ctuWebDriverService = App.ServiceProvider.GetRequiredService<ICTUWebDriverService>();
-
+            // _ctuWebDriverService = App.ServiceProvider.GetRequiredService<ICTUWebDriverService>();
+            _courseCatalogService = App.ServiceProvider.GetRequiredService<ICourseCatalogService>();
             // TreeView SourceList
             _coursesSourceList.Connect()
                 .Bind(out _coursesBindable)
@@ -91,17 +93,26 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                 .ObserveOn(RxApp.TaskpoolScheduler)
                 .Subscribe( courseData =>
                 {
-                    _ctuWebDriverService.FillCourseKey(courseData);
+                    _courseCatalogService.FillQueryAsync(courseData);
+                    // _ctuWebDriverService.FillCourseKey(courseData);
                 })
                 .DisposeWith(_disposables);
 
             // quick select course response
-            _quickSelectCourses = _ctuWebDriverService.CourseCatalogQuickSelectResponse
-              .ToProperty(this, 
-                  nameof(QuickSelectCourses),
-                  initialValue: new ObservableCollection<QuickSelectCourse>(),
-                  scheduler:RxApp.MainThreadScheduler)
-              .DisposeWith(_disposables);
+            _quickSelectCourses = _courseCatalogService.QuickSelectCourseChanges
+                .Select(x => new ObservableCollection<QuickSelectCourse>(x))
+                .ToProperty(this, 
+                    nameof(QuickSelectCourses),
+                    initialValue: new ObservableCollection<QuickSelectCourse>(),
+                    scheduler:RxApp.MainThreadScheduler)
+                .DisposeWith(_disposables);
+            
+            // _quickSelectCourses = _ctuWebDriverService.CourseCatalogQuickSelectResponse
+            //   .ToProperty(this, 
+            //       nameof(QuickSelectCourses),
+            //       initialValue: new ObservableCollection<QuickSelectCourse>(),
+            //       scheduler:RxApp.MainThreadScheduler)
+            //   .DisposeWith(_disposables);
             
             // Selected QuickSelectCourse do
             this.WhenAnyValue(x => x.SelectedQuickSelectCourse)
@@ -116,12 +127,20 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                 }).DisposeWith(_disposables);
 
             // current course response
-            _searchedCourse = _ctuWebDriverService.CourseCatalogResponse
+            _searchedCourse = _courseCatalogService.CourseChanges
                 .WhereNotNull()
                 .Select(course => _courseMapper.ToCourseUi(course))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .ToProperty(this, nameof(SearchedCourse))
                 .DisposeWith(_disposables);
+            
+            // current course response
+            // _searchedCourse = _ctuWebDriverService.CourseCatalogResponse
+            //     .WhereNotNull()
+            //     .Select(course => _courseMapper.ToCourseUi(course))
+            //     .ObserveOn(RxApp.MainThreadScheduler)
+            //     .ToProperty(this, nameof(SearchedCourse))
+            //     .DisposeWith(_disposables);
 
             // Course -> UI items
             _searchedCourseSections = this.WhenAnyValue(x => x.SearchedCourse)
@@ -160,9 +179,12 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                     SearchedCourseSections.Clear();
                     return;
                 }
+
                 await Task.WhenAll(
                     Task.Delay(500),
-                    _ctuWebDriverService.SearchCourse(TxtInputCourseKey));
+                    // _ctuWebDriverService.SearchCourse(TxtInputCourseKey));
+                    _courseCatalogService.SearchAsync()
+                    );
             }).DisposeWith(_disposables);
 
             ChangeSelectStateSectionCommand = ReactiveCommand.Create<SelectableCourseSectionUi>(selectable =>

@@ -73,13 +73,11 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             _courseCatalogService = App.ServiceProvider.GetRequiredService<ICourseCatalogService>();
             
             var userSessionService = App.ServiceProvider.GetRequiredService<IUserSessionService>();
+            var workspaceStore = App.ServiceProvider.GetRequiredService<IWorkspaceStore>();
             _scheduleManager =  App.ServiceProvider.GetRequiredService<IScheduleManager>();
-
-            var sharedConnectProfile = _scheduleManager.ConnectProfiles()
-                .Publish()
-                .RefCount();
             
-            sharedConnectProfile
+            
+            _scheduleManager.ConnectProfiles()
                 .Transform(x => _timetableLayoutVmAdapter.GetOrCreateLayout(x))
                 .DisposeMany()
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -87,7 +85,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 .Subscribe()
                 .DisposeWith(_disposables);
             
-            _timetableLayoutsCount = sharedConnectProfile
+            _timetableLayoutsCount = _scheduleManager.ConnectProfiles()
                 .Count()
                 .ToProperty(this, nameof(TimetableLayoutsCount), scheduler: RxApp.MainThreadScheduler)
                 .DisposeWith(_disposables);
@@ -101,32 +99,15 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 })
                 .ToProperty(this, nameof(LastSaved), scheduler: RxApp.MainThreadScheduler)
                 .DisposeWith(_disposables);
-
             
-            // _scheduleService.TimetableChanges
-            //     .Transform(x => _timetableLayoutVmAdapter.GetOrCreateLayout(x))
-            //     .DisposeMany()
-            //     .ObserveOn(RxApp.MainThreadScheduler)
-            //     .Bind(out _bindableTimetableLayouts)
-            //     .Subscribe()
-            //     .DisposeWith(_disposables);
-
-            // _timetableLayoutsCount = _scheduleService.TimetableCountChanges
-            //     .ToProperty(this, nameof(TimetableLayoutsCount), scheduler: RxApp.MainThreadScheduler)
-            //     .DisposeWith(_disposables);
-
             _isEmptyTimetableLayouts = this.WhenAnyValue(x => x.TimetableLayoutsCount)
                 .Select(count => count == 0)
                 .ToProperty(this, nameof(IsEmptyTimetableLayouts), scheduler: RxApp.MainThreadScheduler)
                 .DisposeWith(_disposables);
-
-            _isExpiredSaved = _scheduleService.IsExpiredSaved
+            
+            _isExpiredSaved = userSessionService.IsReadonly
                 .ToProperty(this, nameof(IsExpiredSaved), scheduler: RxApp.MainThreadScheduler)
                 .DisposeWith(_disposables);
-
-            // _lastSaved = _scheduleService.LastSaveChanged
-            //     .ToProperty(this, nameof(LastModified), scheduler: RxApp.MainThreadScheduler)
-            //     .DisposeWith(_disposables);
             
             GoToCourseCatalogPage();
 
@@ -153,7 +134,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             SaveScheduleCommand = ReactiveCommand.CreateFromTask<IStorageFile>(async file =>
             {
                 var filePath = file.Path.LocalPath;
-                if (await _scheduleService.TrySaveScheduleAsync(filePath))
+                if (await workspaceStore.SaveAsync(filePath))
                 {
                     
                 }
@@ -168,7 +149,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     foreach (var file in files)
                     {
                         var filePath = file.Path.LocalPath;
-                        var isLoaded = await Task.Run(async () => await _scheduleService.TryLoadScheduleAsync(filePath));
+                        var isLoaded = await Task.Run(async () => await workspaceStore.LoadAsync(filePath));
                         if (isLoaded)
                         {
                             

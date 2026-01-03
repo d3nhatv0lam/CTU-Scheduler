@@ -432,7 +432,6 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
         }
 
         _shutdownCts.Dispose();
-
         _disposables.Dispose();
         _logger.LogInformation("WebDriverService Disposed!");
     }

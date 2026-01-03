@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed
 {
@@ -21,16 +17,33 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed
         /// Tiết bắt đầu
         /// </summary>
         /// <returns></returns>
-        public int StartPeriod() => Period.Trim('-').First() - '0';
+        public int StartPeriod()
+        {
+            if (string.IsNullOrEmpty(Period)) return 0;
+            var span = Period.AsSpan().TrimStart('-');
+            return span.Length > 0 ? span[0] - '0' : 0;
+        }
+
         /// <summary>
         /// Số tiết học
         /// </summary>
         /// <returns></returns>
-        public int PeriodCount() => Period.Trim('-').Length;
+        public int PeriodCount()
+        {
+            if (string.IsNullOrEmpty(Period)) return 0;
+            var span = Period.AsSpan().TrimEnd('-');
+            return span.Length > 0 ? span[^1] - '0' : 0;
+        }
+
         /// <summary>
         /// Tiết kết thúc
         /// </summary>
         /// <returns></returns>
-        public int EndPeriod() => Period.Trim('-').Last() - '0';
+        public int EndPeriod()
+        {
+            if (string.IsNullOrEmpty(Period)) return 0;
+            var span = Period.AsSpan().Trim('-');
+            return span.Length;
+        }
     }
 }

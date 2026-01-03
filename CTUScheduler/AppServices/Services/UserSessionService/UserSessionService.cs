@@ -29,25 +29,26 @@ public class UserSessionService: IUserSessionService, IDisposable
         _localContextSubject.DisposeWith(_disposable);
         _lastSavedSubject.DisposeWith(_disposable);
         
-        var isProfileEmpty = profileQueryService.ConnectProfiles()
+        var isEmptyProfiles = profileQueryService.ConnectProfiles()
             .Count()
-            .Select(x => x == 0);
+            .Select(x => x == 0)
+            .DistinctUntilChanged()
+            .Replay(1)
+            .RefCount();
         
         IsReadonly = _localContextSubject
-            .CombineLatest(_serverInfoSubject, isProfileEmpty, 
+            .CombineLatest(_serverInfoSubject, isEmptyProfiles, 
                 (local, serverInfo, empty) =>
             {
                 if (empty) return false; 
-                
                 if (local is null || serverInfo is null) return false;
-                
                 return local.GetContextId() != serverInfo.ToContext().GetContextId();
             })
             .DistinctUntilChanged()
             .Replay(1)
             .RefCount();
         
-        isProfileEmpty
+        isEmptyProfiles
             .Where(empty => empty)
             .WithLatestFrom(_serverInfoSubject, (_, serverInfo) => serverInfo)
             .WithLatestFrom(_localContextSubject, (serverInfo, localCtx) => (serverInfo, localCtx))

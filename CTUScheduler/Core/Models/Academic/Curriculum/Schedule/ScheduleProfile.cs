@@ -9,6 +9,6 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Schedule
         public string Name { get; set; } = "Unnamed";
         public string Description { get; set; } = string.Empty;
         public Dictionary<string,string> SavedCourseGroupKeys { get; init; } = new();
-        public DateTime LastUpdated { get; set; } = DateTime.Now;
+        public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.Now;
     }
 }

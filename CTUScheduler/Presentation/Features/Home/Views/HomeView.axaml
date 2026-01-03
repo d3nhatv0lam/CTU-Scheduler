@@ -119,7 +119,6 @@
 		
 		<!--// bottom - Content//-->
 		<Grid Grid.Row="1" 
-
 				>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="*" MinWidth="300"/>

@@ -16,11 +16,11 @@ public class CourseCatalogPage: RegistrationSpa, ICourseCatalogPage
 {
     protected override string PageUrl => "https://dkmhfe.ctu.edu.vn/dangkyhocphan/sinhvien/danhmuchocphan";
     protected override string PathRegexPattern => "/danhmuchocphan";
+    private const string AutoCompleteQueryPattern = "/getdatafilter";
     private const string AutoCompleteKey = "dkmh_tu_dien_hoc_phan_ma_auto_complete";
     private const string SearchBoxLabel = "Mã học phần";
     private const string SearchBoxSelector = $"//p[normalize-space()='{SearchBoxLabel}']/..//input";
     private const string SearchButtonSelector = "span[aria-label='search']";
-    private IObservable<NetworkPacket> FilteredPacket { get; } 
     public IObservable<CtuApiBody<List<QuickSelectCourse>>> AutoCompleteQueryResponse { get; } 
     public IObservable<CtuApiBody<RawCourse>> CourseCatalogResponse { get; }
     
@@ -28,18 +28,15 @@ public class CourseCatalogPage: RegistrationSpa, ICourseCatalogPage
         ILoggerFactory loggerFactory)
         :base(webDriverService, loggerFactory)
     {
-        FilteredPacket = WebDriverService.JsonResponse
-            .Where(packet => packet.Url.Contains(PathRegexPattern))
-            .Publish()
-            .RefCount();
-        
-        AutoCompleteQueryResponse = FilteredPacket
+        AutoCompleteQueryResponse = WebDriverService.JsonResponse
+            .Where(packet => packet.Url.Contains(AutoCompleteQueryPattern))
             .FilterPacketJson(node => node["data"]?[AutoCompleteKey] is not null)
             .ParseCtuResponse<List<QuickSelectCourse>>(node => node["data"]?[AutoCompleteKey])
             .Where(res => res.IsSuccess)
             .OfType<CtuApiBody<List<QuickSelectCourse>>>();
         
-        CourseCatalogResponse = FilteredPacket
+        CourseCatalogResponse = WebDriverService.JsonResponse
+            .Where(packet => packet.Url.Contains(PathRegexPattern))
             .FilterPacketJson(node => node["data"].HasFields<RawCourse>(
                 x => x.hoc_phan_info,
                 x => x.data,
@@ -49,7 +46,6 @@ public class CourseCatalogPage: RegistrationSpa, ICourseCatalogPage
             .OfType<CtuApiBody<RawCourse>>();
     }
     
-
     protected override async Task NavigateToViaSidebarAsync(CancellationToken cancellationToken = default)
     {
         await Sidebar.NavigateToCatalogPageAsync(WebDriverService);
