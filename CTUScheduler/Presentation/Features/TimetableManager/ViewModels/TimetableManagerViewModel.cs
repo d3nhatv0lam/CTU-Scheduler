@@ -28,7 +28,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
     public class TimetableManagerViewModel : ViewModelBase, IRoutableViewModel, IDisposable
     {
         private readonly CompositeDisposable _disposables = new ();
-        private readonly IScheduleService _scheduleService;
         private readonly ITimetableLayoutAdapter _timetableLayoutVmAdapter;
         private readonly IDialogHostService _dialogHostService;
         private readonly ITimetableDialogService _timetableDialogService;
@@ -68,7 +67,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             _dialogHostService = App.ServiceProvider.GetRequiredService<IDialogHostService>();
             _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
             _timetableLayoutVmAdapter = App.ServiceProvider.GetRequiredService<ITimetableLayoutAdapter>();
-            _scheduleService = App.ServiceProvider.GetRequiredService<IScheduleService>();
+        
             _connectivityService = App.ServiceProvider.GetRequiredService<IConnectivityService>();
             _courseCatalogService = App.ServiceProvider.GetRequiredService<ICourseCatalogService>();
             

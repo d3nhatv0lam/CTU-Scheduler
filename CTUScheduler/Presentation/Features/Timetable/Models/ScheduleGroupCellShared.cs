@@ -6,7 +6,7 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Timetable.Models;
 
-public class ScheduleGroupCellShared: ReactiveObject, IDisposable
+public partial class ScheduleGroupCellShared: ReactiveObject, IDisposable
 {
     private readonly CompositeDisposable _disposables = new ();
     private readonly ObservableAsPropertyHelper<string> _remainingConcatTotalStudents;
@@ -16,16 +16,7 @@ public class ScheduleGroupCellShared: ReactiveObject, IDisposable
     private bool _isMediumStatus;
     private bool _isLowStatus;
     private bool _isArchivedStatus;
-    
-    public enum RemainingLevel
-    {
-        Archived, // not active
-        None, // 0%
-        Low, // Dưới 10%
-        Medium, // 10–40%
-        High // Trên 40%
-    }
-    
+
     public IBrush BackgroundColor { get; set; } = Brushes.Transparent;
     public string CourseCode { get; set; } = string.Empty;
     // ReSharper disable once InconsistentNaming

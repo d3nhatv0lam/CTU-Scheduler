@@ -1,6 +1,6 @@
 ﻿<rxui:ReactiveUserControl
     x:Name="MainTimetableLayout"
-    x:TypeArguments="vm:TimetableLayoutViewModel"
+    x:TypeArguments="vm:TimetableLayoutBaseViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -9,11 +9,11 @@
     xmlns:rxui="http://reactiveui.net"
     x:CompileBindings="True"
     Focusable="True"
-    x:DataType="vm:TimetableLayoutViewModel"
+    x:DataType="vm:TimetableLayoutBaseViewModel"
     xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
     xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
-    xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Timetable.ViewModels"
-    xmlns:timetableVm="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Models"
+    xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels"
+    xmlns:timetableVm="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.Models"
     xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Views"
     xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     x:Class="CTUScheduler.Presentation.Features.Timetable.Views.TimetableLayoutView">
@@ -85,7 +85,7 @@
                                            VerticalAlignment="Stretch" 
                                            Padding="10"></TextBlock>
                                 <Border Padding="10" Grid.Row="1">
-                                    <ItemsRepeater ItemsSource="{Binding TimeTableVM.UnscheduledCourse}">
+                                    <ItemsRepeater ItemsSource="{Binding VisualizerVM.UnscheduledCourses}">
                                         <ItemsRepeater.ItemTemplate>
                                             <DataTemplate x:DataType="timetableVm:ScheduleGroupCellShared">
                                                 <TextBlock 
@@ -137,7 +137,7 @@
                                 <Button
                                     Classes="export"
                                     ToolTip.Tip="Xuất thời khóa biểu dưới dạng file ảnh png"
-                                    Command="{Binding SaveLayoutToImageCommand}"
+                                    Command="{Binding ExportToImageCommand}"
                                     CommandParameter="{Binding #MainTimetableLayout}">
                                     <StackPanel Orientation="Horizontal">
                                         <icon:MaterialIcon Kind="DownloadOutline" />
@@ -159,7 +159,7 @@
                     <!-- // TimeTable View // -->
                     <views:TimetableView
                         Grid.Column="2"
-                        DataContext="{Binding TimeTableVM}" />
+                        DataContext="{Binding VisualizerVM}" />
 
                 </Grid>
             </Border>

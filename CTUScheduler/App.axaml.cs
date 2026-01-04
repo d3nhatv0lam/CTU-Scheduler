@@ -21,6 +21,7 @@ using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
+using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Infrastructure.DriverCore;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Login;
@@ -34,6 +35,7 @@ using CTUScheduler.Legacy.User;
 using CTUScheduler.Legacy.WebDriver;
 using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
+using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 using CTUScheduler.Presentation.Services.Adapter;
 using CTUScheduler.Presentation.Services.AppToplevel;
 using CTUScheduler.Presentation.Services.Dialogs;
@@ -177,6 +179,9 @@ public class App : Application
             provider.GetRequiredService<IViewportService>().Initialize(window);
             return window;
         });
+        
+        services.AddTransient<Func<ScheduleProfile, TimetableEditorViewModel>>(provider => 
+            (profile) => ActivatorUtilities.CreateInstance<TimetableEditorViewModel>(provider, profile));
     }
     
     private Window InitSplashScreenWindow(IClassicDesktopStyleApplicationLifetime desktop)

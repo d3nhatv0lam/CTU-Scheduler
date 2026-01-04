@@ -6,8 +6,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
 			 xmlns:rxui="http://reactiveui.net"
-			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Timetable.ViewModels"
-			 xmlns:models="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Models"
+			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels"
+			 xmlns:models="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.Models"
 			 x:DataType="vm:TimetableViewModel"
 			 x:CompileBindings="True"
              x:Class="CTUScheduler.Presentation.Features.Timetable.Views.TimetableView">

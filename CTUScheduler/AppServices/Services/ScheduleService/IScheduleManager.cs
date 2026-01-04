@@ -8,7 +8,8 @@ namespace CTUScheduler.AppServices.Services.ScheduleService;
 public interface IScheduleManager :
     IScheduleRegistrationService,
     ICourseQueryService,
-    IProfileQueryService
+    IProfileQueryService,
+    IScheduleSyncService
 {
     void ImportSchedule(IEnumerable<Course> courses, IEnumerable<ScheduleProfile> profiles);
 }

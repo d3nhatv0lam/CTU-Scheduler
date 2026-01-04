@@ -6,9 +6,7 @@ using CTUScheduler.AppServices;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.AppServices.Services.UserSessionService;
-using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
-using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using CTUScheduler.Presentation.Base;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
@@ -42,7 +40,6 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
             
             _userSessionService = App.ServiceProvider.GetRequiredService<IUserSessionService>();
             _registrationRulesService = App.ServiceProvider.GetRequiredService<IRegistrationRulesService>();
-            // _registrationInformationService = App.ServiceProvider.GetRequiredService<IRegistrationInformationService>();
             HostScreen = hostScreen;
 
             

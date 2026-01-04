@@ -9,7 +9,7 @@ using DynamicData;
 
 namespace CTUScheduler.Presentation.Features.Timetable.ViewModels;
 
-public class TimetableViewModel : ViewModelBase, IDisposable
+public class TimetableViewModel1 : ViewModelBase, IDisposable
 {
     // Used to update the group cells in ScheduleCells
     private Dictionary<string, ScheduleGroupCellShared> GroupCellsDict { get; } = new();

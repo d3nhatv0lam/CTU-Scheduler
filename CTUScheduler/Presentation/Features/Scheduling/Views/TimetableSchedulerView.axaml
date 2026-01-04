@@ -246,7 +246,7 @@
                                                                         Height="390"
                                                                         VerticalAlignment="Stretch"
                                                                         HorizontalAlignment="Stretch"
-                                                                        DataContext="{Binding Item.TimeTableVM}" />
+                                                                        DataContext="{Binding Item.VisualizerVM}" />
                                                                 </Viewbox>
                                                             </Border>
                                                             <!-- // Open Timetable View // -->

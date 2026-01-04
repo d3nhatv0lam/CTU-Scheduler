@@ -1,11 +1,11 @@
 ﻿using System;
 using CTUScheduler.Core.Interfaces;
-using CTUScheduler.Presentation.Features.Timetable.ViewModels;
+using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Shared.Models;
 
-public class SelectableTimetableLayout: SelectableItem<TimetableLayoutViewModel>, IEnableable, IDisposable
+public class SelectableTimetableLayout: SelectableItem<TimetablePreviewViewModel>, IEnableable, IDisposable
 {
     private bool _isEnabled = true;
 
@@ -15,7 +15,7 @@ public class SelectableTimetableLayout: SelectableItem<TimetableLayoutViewModel>
         set => this.RaiseAndSetIfChanged(ref _isEnabled, value);
     }
     
-    public SelectableTimetableLayout(TimetableLayoutViewModel vm) : base(vm)
+    public SelectableTimetableLayout(TimetablePreviewViewModel vm) : base(vm)
     {
     }
 

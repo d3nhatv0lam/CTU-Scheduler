@@ -26,6 +26,7 @@ using CTUScheduler.Presentation.Shared.Models.Academic;
 using DynamicData;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
+using TimetablePreviewViewModel = CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels.TimetablePreviewViewModel;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 
@@ -135,10 +136,8 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
                          _ => true,
                          _cts.Token))
             {
-                var layout = new TimetableLayoutViewModel(new Core.Models.Academic.Curriculum.Schedule.ScheduleProfile());
-                foreach (var data in tableData)
-                    layout.TryAddSectionChoice(data);
-
+                var layout = new TimetablePreviewViewModel(tableData);
+                
                 var selectableLayoutViewModel = new SelectableTimetableLayout(layout);
                 batch.Add(selectableLayoutViewModel);
 
@@ -174,7 +173,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
     {
         foreach (var selectableTimetableLayout in await PaginationTimeTableViewModel.GetSelectedTimetables())
         {
-            ScheduleBlueprint buildData = selectableTimetableLayout.Item.GetScheduleBlueprint();
+            ScheduleBlueprint buildData = selectableTimetableLayout.Item.ToScheduleBlueprint();
             _scheduleService.AddTimetable(buildData);
         }
         PaginationTimeTableViewModel.Clear();

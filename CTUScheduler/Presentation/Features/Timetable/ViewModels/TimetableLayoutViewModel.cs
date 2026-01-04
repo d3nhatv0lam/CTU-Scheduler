@@ -76,7 +76,7 @@ public class TimetableLayoutViewModel:
         _name = scheduleProfile.Name;
         _description = scheduleProfile.Description;
         _lastUpdated = scheduleProfile.LastUpdated;
-        _timeTableVM = new TimetableViewModel();
+        // _timeTableVM = new TimetableViewModel();
         
         // init color palette for schedule table
         if (!ColorPalettes.IsInitialized)
@@ -98,7 +98,7 @@ public class TimetableLayoutViewModel:
                 _scheduleProfile.Name = newName;
                 _scheduleProfile.Description = newDesc;
                 
-                _scheduleProfile.LastUpdated = DateTime.Now;
+                _scheduleProfile.LastUpdated = DateTimeOffset.Now;
                 LastUpdated = _scheduleProfile.LastUpdated;
             })
             .DisposeWith(_disposables);
@@ -114,13 +114,13 @@ public class TimetableLayoutViewModel:
 
     private void AddUnScheduleCourse(ScheduleGroupCellShared groupCellShared)
     {
-        TimeTableVM.AddUnscheduledSubject(groupCellShared);
+        // TimeTableVM.AddUnscheduledSubject(groupCellShared);
         TotalCredit += groupCellShared.Credit;
     }
 
     private void AddScheduleCell(ScheduleGroupCellShared groupCellShared, List<ScheduleCellUi> cells)
     {
-        _timeTableVM.AddCells(groupCellShared, cells);
+        // _timeTableVM.AddCells(groupCellShared, cells);
         TotalCredit += groupCellShared.Credit;
     }
 
@@ -169,7 +169,7 @@ public class TimetableLayoutViewModel:
     {
         foreach (var section in sections)
         {
-            TimeTableVM.UpdateGroupCells(section);
+            // TimeTableVM.UpdateGroupCells(section);
         }
         LastUpdated = DateTime.Now;
     }
