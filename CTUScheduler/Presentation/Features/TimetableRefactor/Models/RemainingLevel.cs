@@ -1,4 +1,4 @@
-﻿namespace CTUScheduler.Presentation.Features.Timetable.Models;
+﻿namespace CTUScheduler.Presentation.Features.TimetableRefactor.Models;
 
 
 public enum RemainingLevel

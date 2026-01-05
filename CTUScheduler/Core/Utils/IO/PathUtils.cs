@@ -3,9 +3,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Path = System.IO.Path;
 
-namespace CTUScheduler.Core.Helpers;
+namespace CTUScheduler.Core.Utils.IO;
 
-public static class PathHelper
+public static class PathUtils
 {
     public static bool IsValidFilePath(string? path,[NotNullWhen(false)] out string? errorMessage)
     {

@@ -17,7 +17,7 @@
     xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Views"
     xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.Views"
-    x:Class="CTUScheduler.Presentation.Features.Timetable.Views.TimetableLayoutView">
+    x:Class="CTUScheduler.Presentation.Features.TimetableRefactor.Views.TimetableLayoutView">
 
     <rxui:ReactiveUserControl.Styles>
         <Style Selector="Border.padding">

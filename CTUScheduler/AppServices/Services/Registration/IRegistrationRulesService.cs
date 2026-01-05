@@ -8,6 +8,8 @@ namespace CTUScheduler.AppServices.Services.Registration;
 public interface IRegistrationRulesService
 {
     IObservable<RegistrationInformation> RegistrationInfoChanges { get; }
-    
+
+    void StartSync();
+    void StopSync();
     Task<OperationResult> NavigateToAsync();
 }

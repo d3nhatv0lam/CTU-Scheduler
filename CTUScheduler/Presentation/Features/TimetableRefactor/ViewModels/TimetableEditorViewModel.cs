@@ -22,7 +22,7 @@ public class TimetableEditorViewModel: TimetableLayoutBaseViewModel
     public ReactiveCommand<Unit, Unit> SaveCommand { get; }
     public ReactiveCommand<Unit, Unit> CancelCommand { get; }
 
-    public TimetableEditorViewModel(ScheduleProfile scheduleProfile, ICourseQueryService  courseQueryService)
+    public TimetableEditorViewModel(ScheduleProfile scheduleProfile, ICourseQueryService courseQueryService)
     {
         ArgumentNullException.ThrowIfNull(scheduleProfile, nameof(scheduleProfile));
         _scheduleProfile = scheduleProfile;

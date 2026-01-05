@@ -14,6 +14,7 @@
     xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.TimetableManager.Views"
     xmlns:timetableViewModel="clr-namespace:CTUScheduler.Presentation.Features.Timetable.ViewModels"
     xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Views"
+    xmlns:views2="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.Views"
     x:Class="CTUScheduler.Presentation.Features.TimetableManager.Views.TimetableManagerView">
 
     <Design.DataContext>
@@ -268,7 +269,7 @@
                                                         <!-- // TimeTable preview // -->
                                                         <Border>
                                                             <Viewbox Stretch="Uniform">
-                                                                <views1:TimetableView
+                                                                <views2:TimetableView
                                                                     IsHitTestVisible="False"
                                                                     Width="650"
                                                                     Height="390"

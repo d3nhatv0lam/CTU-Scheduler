@@ -51,19 +51,23 @@ public class CourseCatalogPage: RegistrationSpa, ICourseCatalogPage
         await Sidebar.NavigateToCatalogPageAsync(WebDriverService);
     }
 
-    public async Task FillQueryAsync(string query)
+    public async Task FillQueryAsync(string query, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         if (string.IsNullOrEmpty(query) || !await IsActive.FirstAsync())
             return;
         var searchBox = WebDriverService.GetLocator(SearchBoxSelector);
         await searchBox.FillAsync(query);
+        cancellationToken.ThrowIfCancellationRequested();
     }
 
-    public async Task SearchAsync()
+    public async Task SearchAsync(CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         if (!await IsActive.FirstAsync())
             return;
         var searchButton = WebDriverService.GetLocator(SearchButtonSelector);
         await searchButton.ClickAsync();
+        cancellationToken.ThrowIfCancellationRequested();
     }
 }

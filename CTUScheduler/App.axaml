@@ -4,6 +4,7 @@
 			 xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
 			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 			 xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
+             xmlns:timetableTemplates="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.Templates"
              RequestedThemeVariant="Light">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
@@ -22,4 +23,8 @@
 		<materialIcons:MaterialIconStyles />
 		<dialogHostAvalonia:DialogHostStyles />
 	</Application.Styles>
+             
+     <Application.DataTemplates>
+         <timetableTemplates:LayoutTemplate/>
+     </Application.DataTemplates>
 </Application>

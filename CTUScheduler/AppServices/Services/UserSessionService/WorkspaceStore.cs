@@ -11,6 +11,7 @@ using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Core.Models.UserSaves;
+using CTUScheduler.Core.Utils.IO;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.AppServices.Services.UserSessionService;
@@ -33,7 +34,7 @@ public class WorkspaceStore : IWorkspaceStore
 
     public async Task<bool> SaveAsync(string filePath)
     {
-        if (!PathHelper.IsValidFilePath(filePath, out var errorMessage))
+        if (!PathUtils.IsValidFilePath(filePath, out var errorMessage))
         {
             _logger.LogError("Invalid save path: {ErrorMessage}", errorMessage);
             return false;
@@ -72,7 +73,7 @@ public class WorkspaceStore : IWorkspaceStore
 
     public async Task<bool> LoadAsync(string filePath)
     {
-        if (!PathHelper.IsValidFilePath(filePath, out var errorMessage))
+        if (!PathUtils.IsValidFilePath(filePath, out var errorMessage))
         {
             _logger.LogError("Invalid save path: {ErrorMessage}", errorMessage);
             return false;

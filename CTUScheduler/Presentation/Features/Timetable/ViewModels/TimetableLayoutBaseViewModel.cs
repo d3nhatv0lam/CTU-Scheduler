@@ -9,6 +9,7 @@ using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Timetable.Mappers;
 using CTUScheduler.Presentation.Features.Timetable.Models;
 using CTUScheduler.Presentation.Features.Timetable.Resources;
+using CTUScheduler.Presentation.Features.TimetableRefactor.Resources;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Timetable.ViewModels;
@@ -86,7 +87,7 @@ public abstract class TimetableLayoutBaseViewModel: ViewModelBase, IDisposable
     // protected TimetableRenderItem CreateRenderItem(RuntimeCourse runtimeCourse, CourseSection section)
     // {
     //     // 1. Lấy màu (cùng logic cho cả 2 VM)
-    //     var color = ColorProvider.GetColorForCourse(runtimeCourse.Code);
+    //     var color = _colorProvider.GetColorForCourse(runtimeCourse.Code);
     //
     //     // 2. Tạo Shared Object (Reactive)
     //     // var shared = new ScheduleGroupCellShared(runtimeCourse, section, color);

@@ -12,7 +12,6 @@ public class ScheduleGroupCellShared: ReactiveObject, IDisposable
 {
     private readonly CompositeDisposable _disposables = new();
     
-    // Helper fields (Output properties)
     private readonly ObservableAsPropertyHelper<string> _courseCode;
     private readonly ObservableAsPropertyHelper<string> _courseNameVn;
     private readonly ObservableAsPropertyHelper<string> _group;
@@ -20,15 +19,13 @@ public class ScheduleGroupCellShared: ReactiveObject, IDisposable
     private readonly ObservableAsPropertyHelper<int> _credit;
     private readonly ObservableAsPropertyHelper<string> _remainingConcatTotalStudents;
     
-    // Status helpers
     private readonly ObservableAsPropertyHelper<bool> _isHighStatus;
     private readonly ObservableAsPropertyHelper<bool> _isMediumStatus;
     private readonly ObservableAsPropertyHelper<bool> _isLowStatus;
     private readonly ObservableAsPropertyHelper<bool> _isArchivedStatus;
 
     public IBrush BackgroundColor { get; }
-
-    // Constructor nhận Adapter
+    
     public ScheduleGroupCellShared(ICourseDisplaySource source, IBrush color)
     {
         BackgroundColor = color;
@@ -38,8 +35,7 @@ public class ScheduleGroupCellShared: ReactiveObject, IDisposable
         _group = source.Group.ToProperty(this, x => x.Group).DisposeWith(_disposables);
         _lecturer = source.Lecturer.ToProperty(this, x => x.Lecturer).DisposeWith(_disposables);
         _credit = source.Credits.ToProperty(this, x => x.Credit).DisposeWith(_disposables);
-
-        // Logic tính toán Status & Text hiển thị
+        
         var statusStream = source.RemainingStudents.CombineLatest(source.TotalStudents, 
             (rem, total) => new { rem, total })
             .Publish().RefCount();

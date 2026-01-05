@@ -2,6 +2,8 @@
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia.Media;
+using CTUScheduler.Presentation.Features.TimetableRefactor;
+using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Timetable.Models;

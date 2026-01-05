@@ -102,6 +102,22 @@
       <DependentUpon>SchedulingShellView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Presentation\Features\TimetableRefactor\Views\TimetableLayoutView.axaml.cs">
+      <DependentUpon>TimetableLayoutView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Features\TimetableRefactor\Views\TimetableView.axaml.cs">
+      <DependentUpon>TimetableView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Features\TimetableRefactor\Views\TimetableLayoutView.axaml.cs">
+      <DependentUpon>TimetableLayoutView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Features\TimetableRefactor\Views\TimetableView.axaml.cs">
+      <DependentUpon>TimetableView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -113,6 +129,7 @@
     <AdditionalFiles Include="Presentation\Features\Setting\Views\SettingView.axaml" />
     <AdditionalFiles Include="Presentation\Features\SplashScreen\Views\SplashScreenWindow.axaml" />
     <AdditionalFiles Include="Presentation\Features\TimetableManager\Views\TimetableManagerView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\TimetableRefactor\Views\TimetableLayoutView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Timetable\Views\TimetableView.axaml" />
     <AdditionalFiles Include="Presentation\Shared\Styles\Controls.axaml" />
   </ItemGroup>

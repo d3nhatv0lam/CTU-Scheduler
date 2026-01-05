@@ -57,27 +57,39 @@ public class CourseCatalogService: ICourseCatalogService
        }
    }
 
-   public async Task FillQueryAsync(string query)
+   public async Task FillQueryAsync(string query, CancellationToken cancellationToken = default)
    {
+       if (cancellationToken.IsCancellationRequested)
+           return;
        try
        {
-           await _catalogPage.FillQueryAsync(query);
+           await _catalogPage.FillQueryAsync(query, cancellationToken);
+       }
+       catch (OperationCanceledException)
+       {
+           throw;
        }
        catch (Exception ex)
        {
-           _logger.LogWarning(ex,"fail to fill query");
+           _logger.LogWarning(ex, "fail to fill query");
        }
    }
 
-   public async Task SearchAsync()
+   public async Task SearchAsync(CancellationToken cancellationToken = default)
    {
+       if (cancellationToken.IsCancellationRequested)
+           return;
        try
        {
-           await _catalogPage.SearchAsync();
+           await _catalogPage.SearchAsync(cancellationToken);
+       }
+       catch (OperationCanceledException)
+       {
+           throw;
        }
        catch (Exception ex)
        {
-           _logger.LogWarning(ex,"fail to search");
+           _logger.LogWarning(ex, "fail to search");
        }
    }
 
@@ -94,9 +106,9 @@ public class CourseCatalogService: ICourseCatalogService
                .ToTask(cancellationToken)
                .ConfigureAwait(false);
 
-           await FillQueryAsync(courseCode)
+           await FillQueryAsync(courseCode, cancellationToken)
                .ConfigureAwait(false);
-           await SearchAsync()
+           await SearchAsync(cancellationToken)
                .ConfigureAwait(false);
            
            var course = await task;
@@ -107,6 +119,7 @@ public class CourseCatalogService: ICourseCatalogService
            _logger.LogWarning("Timeout waiting for course {Code}", courseCode);
            throw new TimeoutException($"Search for course {courseCode} timed out.");
        }
+       catch (OperationCanceledException) { throw; }
        catch (Exception ex)
        {
            _logger.LogError(ex, "Fail to fetch course {Code}", courseCode);

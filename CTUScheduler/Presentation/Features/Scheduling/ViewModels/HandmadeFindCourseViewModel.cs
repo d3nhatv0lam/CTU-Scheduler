@@ -4,12 +4,14 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
+using CTUScheduler.Core.Utils.Comparers;
 using CTUScheduler.Legacy.WebDriver;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
@@ -26,7 +28,6 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
     public class HandmadeFindCourseViewModel : ViewModelBase, IDisposable, IStepViewModel
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
-        // private readonly ICTUWebDriverService _ctuWebDriverService;
         private readonly ICourseCatalogService _courseCatalogService;
         private readonly CourseMapper _courseMapper = new();
         private readonly SourceList<CourseUi> _coursesSourceList = new();
@@ -79,7 +80,6 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         
         public HandmadeFindCourseViewModel()
         {
-            // _ctuWebDriverService = App.ServiceProvider.GetRequiredService<ICTUWebDriverService>();
             _courseCatalogService = App.ServiceProvider.GetRequiredService<ICourseCatalogService>();
             // TreeView SourceList
             _coursesSourceList.Connect()
@@ -87,16 +87,72 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                 .Subscribe()
                 .DisposeWith(_disposables);
             
-            // quick select course
-            this.WhenAnyValue(x => x.TxtInputCourseKey)
-                .Throttle(TimeSpan.FromMilliseconds(300))
-                .ObserveOn(RxApp.TaskpoolScheduler)
-                .Subscribe( courseData =>
+            // Fill & Search Field //
+            SearchCommand = ReactiveCommand.Create(() => {}).DisposeWith(_disposables);
+
+            var autoFillStream = this.WhenAnyValue(x => x.TxtInputCourseKey)
+                .Throttle(TimeSpan.FromMilliseconds(300), RxApp.TaskpoolScheduler)
+                .DistinctUntilChanged()
+                .Select(query => (Query: query, IsSearch: false));
+            
+            var manualSearchStream = SearchCommand
+                .Select(_ => (Query: TxtInputCourseKey, IsSearch: true));
+
+            autoFillStream.Merge(manualSearchStream)
+                .DistinctUntilChanged(new LambdaComparer<(string Query, bool IsSearch)>((pre, curr) =>
                 {
-                    _courseCatalogService.FillQueryAsync(courseData);
-                    // _ctuWebDriverService.FillCourseKey(courseData);
-                })
+                    if (curr.IsSearch) return false;
+                    return pre.Query.Equals(curr.Query, StringComparison.OrdinalIgnoreCase);
+                }))
+                .Select(req => Observable.FromAsync(async ct => 
+                {
+                    if (string.IsNullOrEmpty(req.Query))
+                    {
+                        RxApp.MainThreadScheduler.Schedule(() => SearchedCourseSections.Clear());
+                        return;
+                    }
+                    try 
+                    {
+                        await _courseCatalogService.FillQueryAsync(req.Query,ct);
+                        if (req.IsSearch)
+                        {
+                            await _courseCatalogService.SearchAsync(ct);
+                        }
+                    }
+                    catch 
+                    {
+                       // ignored
+                    }
+                }))
+                .Switch()
+                .Subscribe()
                 .DisposeWith(_disposables);
+            // Cũ
+            // this.WhenAnyValue(x => x.TxtInputCourseKey)
+            //     .Throttle(TimeSpan.FromMilliseconds(300))
+            //     .ObserveOn(RxApp.TaskpoolScheduler)
+            //     .Subscribe( courseData =>
+            //     {
+            //         _courseCatalogService.FillQueryAsync(courseData);
+            //     })
+            //     .DisposeWith(_disposables);
+            // SearchCommand = ReactiveCommand.CreateFromTask(async () =>
+            // {
+            //     if (string.IsNullOrEmpty(TxtInputCourseKey))
+            //     {
+            //         SearchedCourseSections.Clear();
+            //         return;
+            //     }
+            //     try 
+            //     {
+            //         await _courseCatalogService.FillQueryAsync(TxtInputCourseKey);
+            //         await _courseCatalogService.SearchAsync();
+            //     }
+            //     catch (Exception ex)
+            //     {
+            //         // ignored
+            //     }
+            // }).DisposeWith(_disposables);
 
             // quick select course response
             _quickSelectCourses = _courseCatalogService.QuickSelectCourseChanges
@@ -171,21 +227,6 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                 })
                 .DisposeWith(_disposables);
             
-
-            SearchCommand = ReactiveCommand.CreateFromTask(async () =>
-            {
-                if (string.IsNullOrEmpty(TxtInputCourseKey))
-                {
-                    SearchedCourseSections.Clear();
-                    return;
-                }
-
-                await Task.WhenAll(
-                    Task.Delay(500),
-                    // _ctuWebDriverService.SearchCourse(TxtInputCourseKey));
-                    _courseCatalogService.SearchAsync()
-                    );
-            }).DisposeWith(_disposables);
 
             ChangeSelectStateSectionCommand = ReactiveCommand.Create<SelectableCourseSectionUi>(selectable =>
                 {

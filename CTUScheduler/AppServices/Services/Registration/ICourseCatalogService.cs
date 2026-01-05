@@ -14,7 +14,7 @@ public interface ICourseCatalogService
     IObservable<Course> CourseChanges { get; }
     Task<OperationResult> NavigateToAsync();
     
-    Task FillQueryAsync(string query);
-    Task SearchAsync();
+    Task FillQueryAsync(string query,CancellationToken cancellationToken = default);
+    Task SearchAsync(CancellationToken cancellationToken = default);
     Task<Course> FetchCourseAsync(string courseCode, CancellationToken cancellationToken = default);
 }

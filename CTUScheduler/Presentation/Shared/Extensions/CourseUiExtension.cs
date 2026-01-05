@@ -12,7 +12,7 @@ public static class CourseUiExtension
         {
             Code = course.Code,
             Name_VN = course.Name_VN,
-            Credit = course.Credit,
+            Credits = course.Credits,
             TheorySessions = course.TheorySessions,
             PracticalSessions = course.PracticalSessions,
             Sections = new ObservableCollection<CourseSectionUi>(sections)

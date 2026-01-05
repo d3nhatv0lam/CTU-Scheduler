@@ -9,10 +9,11 @@ namespace CTUScheduler.Core.Helpers;
 public static class ScheduleOptimizer
 {
     /// <summary>
-    /// 
+    /// Optimizes the provided list of courses by removing unnecessary data based on the specified schedule profiles.
+    /// Modifies the input collections directly.
     /// </summary>
-    /// <param name="courses"></param>
-    /// <param name="profiles"></param>
+    /// <param name="courses">The list of courses to be trimmed. This list will be altered during execution.</param>
+    /// <param name="profiles">The list of schedule profiles used to determine which courses and sections to keep. This list will also be altered by removing profiles with no saved course group keys.</param>
     public static void Trim(List<Course> courses, List<ScheduleProfile> profiles)
     {
         if (courses is null || profiles is null) return;

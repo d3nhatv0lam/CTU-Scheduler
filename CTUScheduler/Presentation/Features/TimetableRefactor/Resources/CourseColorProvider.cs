@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Avalonia.Media;
 
-namespace CTUScheduler.Presentation.Features.Timetable.Resources;
+namespace CTUScheduler.Presentation.Features.TimetableRefactor.Resources;
 
 public class CourseColorProvider
 {

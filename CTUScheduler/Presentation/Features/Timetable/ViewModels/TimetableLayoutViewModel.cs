@@ -21,6 +21,7 @@ using CTUScheduler.Presentation.Helpers;
 using CTUScheduler.Presentation.Shared.Extensions;
 using ReactiveUI;
 using Serilog;
+using TimetableLayoutView = CTUScheduler.Presentation.Features.TimetableRefactor.Views.TimetableLayoutView;
 
 namespace CTUScheduler.Presentation.Features.Timetable.ViewModels;
 

@@ -8,6 +8,7 @@ using CTUScheduler.Presentation.Features.Timetable.Resources;
 using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
+using CTUScheduler.Presentation.Features.TimetableRefactor.Resources;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
@@ -15,7 +16,7 @@ namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 public abstract class TimetableLayoutBaseViewModel: ViewModelBase, IDisposable
 {
     protected readonly CompositeDisposable Disposables = new();
-    protected readonly CourseColorProvider ColorProvider = new();    
+    private readonly CourseColorProvider _colorProvider = new();    
     private string _name = "New Schedule";
     private int _subjectCount = 0;
     private int _totalCredit = 0;
@@ -68,9 +69,8 @@ public abstract class TimetableLayoutBaseViewModel: ViewModelBase, IDisposable
     {
         string code = "";
         dataSource.Code.Take(1).Subscribe(c => code = c); 
-        var color = ColorProvider.GetColorForCourse(code);
-
-        // 2. Tạo Shared Object (Reactive Model)
+        var color = _colorProvider.GetColorForCourse(code);
+        
         var shared = new ScheduleGroupCellShared(dataSource, color);
         
         var cells = dataSource.ClassDays.Select(day => new ScheduleCellUi(shared)

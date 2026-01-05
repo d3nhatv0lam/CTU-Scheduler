@@ -17,12 +17,15 @@ namespace CTUScheduler.AppServices.Services.Registration;
 
 public class RegistrationRulesService: IRegistrationRulesService, IDisposable
 {
+    private readonly CompositeDisposable _disposables = new();
     private readonly ILogger<RegistrationRulesService> _logger;
+    private readonly IUserSessionService _userSessionService;
     private readonly ICtuSitePageFactory _factory;
     private readonly IRegistrationRulesPage _rulesPage;
-    private readonly CompositeDisposable _disposables = new();
+    private readonly SerialDisposable _syncSubscription = new SerialDisposable();
     
     public IObservable<RegistrationInformation> RegistrationInfoChanges { get; }
+    
     
     public RegistrationRulesService(
         IUserSessionService userSessionService,
@@ -31,21 +34,33 @@ public class RegistrationRulesService: IRegistrationRulesService, IDisposable
     {
         _factory = factory;
         _logger = logger;
-
+        _userSessionService = userSessionService;
         _rulesPage = factory.GetPage<IRegistrationRulesPage>();
         
         RegistrationInfoChanges = _rulesPage.RawRegistrationInformationResponse
             .Where(x => x is {IsSuccess:true, Content: not null})
             .Select(x => x.Content!)
-            .SelectMany(ProcessRegistrationInfoAsync)
+            .SelectMany(async (x, ct) => await ProcessRegistrationInfoAsync(x, ct))
             .Where(x => x is not null)
             .Select(x => x!)
             .Publish()
             .RefCount();
-        
-        RegistrationInfoChanges
-            .Subscribe(userSessionService.UpdateServerInfo)
-            .DisposeWith(_disposables);
+    }
+
+    public void StartSync()
+    {
+        _logger.LogInformation("Starting Registration Rules Sync...");
+        _syncSubscription.Disposable = RegistrationInfoChanges
+            .Subscribe(
+                info => _userSessionService.UpdateServerInfo(info),
+                error => _logger.LogError(error, "Lỗi trong quá trình sync registration info")
+            );
+    }
+    
+    public void StopSync()
+    {
+        _logger.LogInformation("Stopping Registration Rules Sync...");
+        _syncSubscription.Disposable = Disposable.Empty;
     }
 
     public async Task<OperationResult> NavigateToAsync()
@@ -93,6 +108,7 @@ public class RegistrationRulesService: IRegistrationRulesService, IDisposable
 
     public void Dispose()
     {
+        _syncSubscription.Dispose();
         _disposables.Dispose();
     }
 }
