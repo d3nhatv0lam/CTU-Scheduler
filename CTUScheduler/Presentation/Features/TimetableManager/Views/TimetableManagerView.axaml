@@ -12,8 +12,7 @@
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.TimetableManager.ViewModels"
     xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.TimetableManager.Views"
-    xmlns:timetableViewModel="clr-namespace:CTUScheduler.Presentation.Features.Timetable.ViewModels"
-    xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Views"
+    xmlns:timetableViewModel="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels"
     xmlns:views2="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.Views"
     x:Class="CTUScheduler.Presentation.Features.TimetableManager.Views.TimetableManagerView">
 
@@ -251,7 +250,7 @@
                                     </ItemsRepeater.Layout>
 
                                     <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate x:DataType="timetableViewModel:TimetableLayoutViewModel">
+                                        <DataTemplate x:DataType="timetableViewModel:TimetableLayoutBaseViewModel">
                                             <controls:Card
                                                 Width="250"
                                                 Height="220">
@@ -260,9 +259,10 @@
                                                     <TextBlock Grid.Row="0"
                                                                Text="{Binding Name, StringFormat=Thời khóa biểu: {0}}">
                                                     </TextBlock>
-                                                    <TextBlock Grid.Row="1"
-                                                               Text="{Binding Description,StringFormat=Mô tả: {0}}">
-                                                    </TextBlock>
+                                                    <TextBlock Grid.Row="1"></TextBlock>
+                                                    <!-- <TextBlock Grid.Row="1" -->
+                                                    <!--            Text="{Binding Description,StringFormat=Mô tả: {0}}"> -->
+                                                    <!-- </TextBlock> -->
                                                     <TextBlock Grid.Row="2" Text="{Binding LastUpdated,Mode=OneWay,StringFormat=Lần cuối cập nhật: {0}}"></TextBlock>
 
                                                     <Grid Grid.Row="3">
@@ -275,7 +275,7 @@
                                                                     Height="390"
                                                                     VerticalAlignment="Stretch"
                                                                     HorizontalAlignment="Stretch"
-                                                                    DataContext="{Binding TimeTableVM}" />
+                                                                    DataContext="{Binding VisualizerVM}" />
                                                             </Viewbox>
                                                         </Border>
                                                         <!-- // Open Timetable View // -->

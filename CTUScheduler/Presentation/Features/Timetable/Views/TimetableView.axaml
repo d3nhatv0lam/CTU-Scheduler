@@ -206,7 +206,7 @@
 											<TextBlock Text="{Binding Shared.CourseCode,Mode=OneWay}"></TextBlock>
 											<TextBlock Text="{Binding Shared.CourseName_VN,Mode=OneWay}"></TextBlock>
 											<TextBlock Text="{Binding Shared.Group,StringFormat=Nhóm:{0},Mode=OneWay}"></TextBlock>
-											<TextBlock Text="{Binding Shared.Credit,StringFormat=Tín chỉ:{0},Mode=OneWay}"></TextBlock>
+											<TextBlock Text="{Binding Shared.Credits,StringFormat=Tín chỉ:{0},Mode=OneWay}"></TextBlock>
 											<TextBlock Text="{Binding Room,StringFormat=Phòng:{0},Mode=OneWay}"></TextBlock>
 											<TextBlock Text="{Binding Shared.RemainingConcatTotalStudents, Mode=OneWay}"></TextBlock>
 											<TextBlock Text="{Binding Shared.Lecturer,Mode=OneWay}"></TextBlock>

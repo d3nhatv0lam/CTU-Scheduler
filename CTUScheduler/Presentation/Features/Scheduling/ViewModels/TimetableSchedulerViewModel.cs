@@ -7,6 +7,8 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Services.ScheduleService;
+using CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
 using CTUScheduler.AppServices.Validators;
 using CTUScheduler.Core.Algorithms;
 using CTUScheduler.Core.Interfaces;
@@ -35,6 +37,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
     private readonly IScheduleService _scheduleService;
+    private readonly IScheduleRegistrationService _scheduleRegistrationService;
     private readonly ITimetableDialogService _timetableDialogService;
     private readonly SchedulingCourseOptionViewModel _schedulingCourseOptionVM;
     private readonly SelectableTimeTablesPaginationUi _paginationTimeTableViewModel;
@@ -65,6 +68,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
         _scheduleService = App.ServiceProvider.GetRequiredService<IScheduleService>();
         _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
         _schedulingCourseOptionVM = new SchedulingCourseOptionViewModel();
+        _scheduleRegistrationService = App.ServiceProvider.GetRequiredService<IScheduleRegistrationService>();
 
         var maxScheduleTableCanSelect =
             _scheduleService.MaxTimetableCount - _scheduleService.CurrentTimetableCount;
@@ -171,11 +175,15 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
 
     public async Task CleanupAsync()
     {
-        foreach (var selectableTimetableLayout in await PaginationTimeTableViewModel.GetSelectedTimetables())
-        {
-            ScheduleBlueprint buildData = selectableTimetableLayout.Item.ToScheduleBlueprint();
-            _scheduleService.AddTimetable(buildData);
-        }
+        var blueprints = (await PaginationTimeTableViewModel.GetSelectedTimetables())
+            .Select(x => x.Item.ToScheduleBlueprint());
+        _scheduleRegistrationService.RegisterBlueprint(blueprints);
+        // foreach (var selectableTimetableLayout in await PaginationTimeTableViewModel.GetSelectedTimetables())
+        // {
+        //     ScheduleBlueprint buildData = selectableTimetableLayout.Item.ToScheduleBlueprint();
+        //     _scheduleService.AddTimetable(buildData);
+        //     _scheduleRegistrationService.RegisterBlueprint()
+        // }
         PaginationTimeTableViewModel.Clear();
     }
 

@@ -23,12 +23,12 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed
             var span = Period.AsSpan().TrimStart('-');
             return span.Length > 0 ? span[0] - '0' : 0;
         }
-
-        /// <summary>
-        /// Số tiết học
+        
+        ///  /// <summary>
+        /// Tiết kết thúc
         /// </summary>
         /// <returns></returns>
-        public int PeriodCount()
+        public int EndPeriod()
         {
             if (string.IsNullOrEmpty(Period)) return 0;
             var span = Period.AsSpan().TrimEnd('-');
@@ -36,10 +36,10 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed
         }
 
         /// <summary>
-        /// Tiết kết thúc
+        /// Số tiết học
         /// </summary>
         /// <returns></returns>
-        public int EndPeriod()
+        public int PeriodCount()
         {
             if (string.IsNullOrEmpty(Period)) return 0;
             var span = Period.AsSpan().Trim('-');

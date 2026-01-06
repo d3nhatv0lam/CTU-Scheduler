@@ -19,7 +19,7 @@ public abstract class TimetableLayoutBaseViewModel: ViewModelBase, IDisposable
     private readonly CourseColorProvider _colorProvider = new();    
     private string _name = "New Schedule";
     private int _subjectCount = 0;
-    private int _totalCredit = 0;
+    private int _totalCredits = 0;
     private DateTimeOffset _lastUpdated = DateTimeOffset.Now;
     private TimetableViewModel _visualizerVM;
     
@@ -33,10 +33,10 @@ public abstract class TimetableLayoutBaseViewModel: ViewModelBase, IDisposable
         get => _subjectCount;
         protected set => this.RaiseAndSetIfChanged(ref _subjectCount, value); 
     }
-    public  int TotalCredit 
+    public int TotalCredits 
     { 
-        get => _totalCredit;
-        protected set => this.RaiseAndSetIfChanged(ref _totalCredit, value);  
+        get => _totalCredits;
+        protected set => this.RaiseAndSetIfChanged(ref _totalCredits, value);  
     }
 
     public DateTimeOffset LastUpdated

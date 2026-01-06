@@ -234,7 +234,7 @@
                                                                    Text="{Binding Item.SubjectsCount, StringFormat=Số môn học: {0}}">
                                                         </TextBlock>
                                                         <TextBlock Grid.Row="2"
-                                                                   Text="{Binding Item.TotalCredit,StringFormat=Số tín chỉ: {0}}">
+                                                                   Text="{Binding Item.TotalCredits,StringFormat=Số tín chỉ: {0}}">
                                                         </TextBlock>
 
                                                         <Grid Grid.Row="3">

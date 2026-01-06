@@ -35,7 +35,7 @@ using CTUScheduler.Legacy.User;
 using CTUScheduler.Legacy.WebDriver;
 using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
-using CTUScheduler.Presentation.Features.Timetable.ViewModels;
+using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Services.Adapter;
 using CTUScheduler.Presentation.Services.AppToplevel;
 using CTUScheduler.Presentation.Services.Dialogs;
@@ -139,7 +139,8 @@ public class App : Application
             .AddSingleton<IScheduleManager>(sp => sp.GetRequiredService<ScheduleManager>())
             .AddSingleton<IScheduleRegistrationService>(sp => sp.GetRequiredService<ScheduleManager>())
             .AddSingleton<ICourseQueryService>(sp => sp.GetRequiredService<ScheduleManager>())
-            .AddSingleton<IProfileQueryService>(sp => sp.GetRequiredService<ScheduleManager>());
+            .AddSingleton<IProfileQueryService>(sp => sp.GetRequiredService<ScheduleManager>())
+            .AddSingleton<IScheduleSyncService>(sp => sp.GetRequiredService<ScheduleManager>());
         
         // cũ
         services.AddSingleton<ICTUWebDriverService, CtuWebDriverService>();

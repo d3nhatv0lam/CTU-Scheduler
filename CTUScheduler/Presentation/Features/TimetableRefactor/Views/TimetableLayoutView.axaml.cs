@@ -27,7 +27,7 @@ public partial class TimetableLayoutView : ReactiveUserControl<TimetableLayoutBa
                 text => $"Số môn: {text}")
                 .DisposeWith(disposable);
             this.OneWayBind(ViewModel,
-                    x => x.TotalCredit,
+                    x => x.TotalCredits,
                     v => v.TotalCreditTextBlock.Text,
                     text => $"Số tín chỉ: {text}")
                 .DisposeWith(disposable);

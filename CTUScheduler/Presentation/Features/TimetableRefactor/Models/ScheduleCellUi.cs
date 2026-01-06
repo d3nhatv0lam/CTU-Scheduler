@@ -37,7 +37,6 @@ public class ScheduleCellUi: ITableCell
     public int RowSpan => NumberOfPeriods;
 
     public int ColumnSpan { get; set; } = 1;
-        
     public string Room { get; set; } = string.Empty;
     public int AttendingDay { get; set; } = DEFAULT_ATTENDING_DAY;
     public int StartPeriod { get; set; } = DEFAULT_START_PERIOD;

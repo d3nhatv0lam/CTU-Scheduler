@@ -32,8 +32,8 @@ public class TimetablePreviewViewModel: TimetableLayoutBaseViewModel
         var stream = sourceCache.Connect().RemoveKey();
         VisualizerVM = new TimetableViewModel(stream);
             
-        stream.Transform(x => x.SharedData.Credit).ToCollection()
-            .Subscribe(x => TotalCredit = x.Sum()).DisposeWith(Disposables);
+        stream.Transform(x => x.SharedData.Credits).ToCollection()
+            .Subscribe(x => TotalCredits = x.Sum()).DisposeWith(Disposables);
     }
     
     public ScheduleBlueprint ToScheduleBlueprint()

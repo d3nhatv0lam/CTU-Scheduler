@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
-using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;
 using DynamicData;
 using ReactiveUI;
@@ -30,30 +30,42 @@ public class TimetableEditorViewModel: TimetableLayoutBaseViewModel
         LastUpdated = _scheduleProfile.LastUpdated;
         
         var savedRef = scheduleProfile.SavedCourseGroupKeys;
-        var itemsStream = courseQueryService.ConnectCourses()
+        var sharedCourse = courseQueryService.ConnectCourses()
             .Filter(x => savedRef.ContainsKey(x.Code))
             .MergeMany(runtimeCourse =>
             {
                 string targetGroup = savedRef[runtimeCourse.Code];
                 return runtimeCourse.Sections.Connect()
                     .Filter(s => s.Group == targetGroup)
-                    .Transform(section => new { RuntimeCourse = runtimeCourse, Section = section });
-            })
-            .Transform(t => 
-            {
-                var adapter = new LiveCourseAdapter(t.RuntimeCourse, t.Section);
-                return CreateRenderItem(adapter);
+                    .Transform(section => 
+                    {
+                        var adapter = new LiveCourseAdapter(runtimeCourse, section);
+                        return CreateRenderItem(adapter);
+                    })
+                    .ChangeKey(_ => Guid.NewGuid());
             })
             .DisposeMany()
             .RemoveKey()
-            .Publish();
+            .AsObservableList()
+            .DisposeWith(Disposables);
+
+        VisualizerVM = new TimetableViewModel(sharedCourse.Connect())
+            .DisposeWith(Disposables);
         
-        VisualizerVM = new TimetableViewModel(itemsStream);
-        itemsStream.Connect().DisposeWith(Disposables);
-        
-        itemsStream.Transform(x => x.SharedData.Credit).ToCollection()
-            .Subscribe(x => TotalCredit = x.Sum()).DisposeWith(Disposables);
-        
+        sharedCourse.Connect()
+            .Transform(item => item.SharedData.Credits)
+            .QueryWhenChanged(items => new 
+            {
+                items.Count, 
+                Sum = items.Sum() 
+            })
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(x => 
+            {
+                SubjectsCount = x.Count;
+                TotalCredits = x.Sum;
+            })
+            .DisposeWith(Disposables);
         
         StartEditCommand = ReactiveCommand.Create(() => {}).DisposeWith(Disposables);
         SaveCommand = ReactiveCommand.Create(() =>
@@ -73,5 +85,11 @@ public class TimetableEditorViewModel: TimetableLayoutBaseViewModel
             )
             .ToProperty(this, nameof(IsEditing), initialValue:false, scheduler: RxApp.MainThreadScheduler)
             .DisposeWith(Disposables);
+    }
+
+    public override void Dispose()
+    {
+        base.Dispose();
+        Debug.WriteLine($"TimetableEditorViewModel ID: {_scheduleProfile.Id}, Name: {Name} disposed");
     }
 }

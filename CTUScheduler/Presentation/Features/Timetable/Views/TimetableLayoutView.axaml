@@ -96,7 +96,7 @@
                                                     <ToolTip.Tip>
                                                         <StackPanel>
                                                             <TextBlock Text="{Binding RemainingConcatTotalStudents, Mode=OneWay}"></TextBlock>
-                                                            <TextBlock Text="{Binding Credit,StringFormat=Tín chỉ:{0},Mode=OneWay}"></TextBlock>
+                                                            <TextBlock Text="{Binding Credits,StringFormat=Tín chỉ:{0},Mode=OneWay}"></TextBlock>
                                                             <TextBlock Text="{Binding Lecturer, Mode=OneWay}"></TextBlock>
                                                         </StackPanel>
                                                     </ToolTip.Tip>
@@ -120,7 +120,7 @@
                             </TextBlock>
                             <TextBlock Grid.Row="1"
                                        x:Name="TotalCreditTextBlock"
-                                       Text="{Binding TotalCredit
+                                       Text="{Binding TotalCredits
                                        ,StringFormat={}Số tín chỉ: {0}
                                        ,Mode=OneTime}">
                             </TextBlock>

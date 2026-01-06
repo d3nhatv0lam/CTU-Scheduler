@@ -127,6 +127,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                 .Switch()
                 .Subscribe()
                 .DisposeWith(_disposables);
+            
             // Cũ
             // this.WhenAnyValue(x => x.TxtInputCourseKey)
             //     .Throttle(TimeSpan.FromMilliseconds(300))

@@ -9,11 +9,14 @@ using Avalonia.Platform.Storage;
 using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.AppServices.Services.ScheduleService;
+using CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
 using CTUScheduler.AppServices.Services.UserSessionService;
+using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Legacy.ScheduleManager;
+using CTUScheduler.Legacy.ScheduleProfileService;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels;
-using CTUScheduler.Presentation.Features.Timetable.ViewModels;
+using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Services.Adapter;
 using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.TimetableDialog;
@@ -33,10 +36,11 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly ITimetableDialogService _timetableDialogService;
         private readonly IConnectivityService  _connectivityService;
         private readonly ICourseCatalogService _courseCatalogService;
-        private readonly IScheduleManager _scheduleManager;
+        private readonly IProfileQueryService _profileQueryService;
+        private readonly IScheduleSyncService _scheduleSyncService;
 
-        private readonly ReadOnlyObservableCollection<TimetableLayoutViewModel> _bindableTimetableLayouts =
-            ReadOnlyObservableCollection<TimetableLayoutViewModel>.Empty;
+        private readonly ReadOnlyObservableCollection<TimetableEditorViewModel> _bindableTimetableLayouts =
+            ReadOnlyObservableCollection<TimetableEditorViewModel>.Empty;
 
         private readonly ObservableAsPropertyHelper<int> _timetableLayoutsCount;
         private readonly ObservableAsPropertyHelper<bool> _isEmptyTimetableLayouts;
@@ -44,7 +48,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly ObservableAsPropertyHelper<string> _lastSavedText;
         public string? UrlPathSegment => "TimetableManagerViewModel";
         public IScreen HostScreen { get; }
-        public ReadOnlyObservableCollection<TimetableLayoutViewModel> TimetableLayouts => _bindableTimetableLayouts;
+        public ReadOnlyObservableCollection<TimetableEditorViewModel> TimetableLayouts => _bindableTimetableLayouts;
         public int TimetableLayoutsCount => _timetableLayoutsCount.Value;
         public bool IsEmptyTimetableLayouts => _isEmptyTimetableLayouts.Value;
         public bool IsExpiredSaved => _isExpiredSaved.Value;
@@ -54,7 +58,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         public ReactiveCommand<IStorageFile[], Unit> LoadScheduleCommand { get; }
         public ReactiveCommand<IStorageFile, Unit> SaveScheduleCommand { get; }
         public ReactiveCommand<Unit, Unit> ReloadAllTimetableCommand { get; }
-        public ReactiveCommand<TimetableLayoutViewModel, Unit> ShowTimetableDetailsCommand { get; }
+        public ReactiveCommand<TimetableLayoutBaseViewModel, Unit> ShowTimetableDetailsCommand { get; }
         
 
         public TimetableManagerViewModel()
@@ -73,18 +77,19 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             
             var userSessionService = App.ServiceProvider.GetRequiredService<IUserSessionService>();
             var workspaceStore = App.ServiceProvider.GetRequiredService<IWorkspaceStore>();
-            _scheduleManager =  App.ServiceProvider.GetRequiredService<IScheduleManager>();
+            _profileQueryService =  App.ServiceProvider.GetRequiredService<IProfileQueryService>();
+            _scheduleSyncService = App.ServiceProvider.GetRequiredService<IScheduleSyncService>();
             
-            
-            _scheduleManager.ConnectProfiles()
-                .Transform(x => _timetableLayoutVmAdapter.GetOrCreateLayout(x))
+            var timetableEditorFactory = App.ServiceProvider.GetRequiredService<Func<ScheduleProfile, TimetableEditorViewModel>>();
+            _profileQueryService.ConnectProfiles()
+                .Transform(profile => timetableEditorFactory(profile))
                 .DisposeMany()
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _bindableTimetableLayouts)
                 .Subscribe()
                 .DisposeWith(_disposables);
             
-            _timetableLayoutsCount = _scheduleManager.ConnectProfiles()
+            _timetableLayoutsCount = _profileQueryService.ConnectProfiles()
                 .Count()
                 .ToProperty(this, nameof(TimetableLayoutsCount), scheduler: RxApp.MainThreadScheduler)
                 .DisposeWith(_disposables);
@@ -122,10 +127,10 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             ReloadAllTimetableCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 if (IsEmptyTimetableLayouts) return;
-                await _timetableLayoutVmAdapter.UpdateAsync();
+                await _scheduleSyncService.RefreshCoursesAsync();
             },canReloadAllTimetable).DisposeWith(_disposables);
 
-            ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<TimetableLayoutViewModel>(async
+            ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<TimetableLayoutBaseViewModel>(async
                     timetableLayoutViewModel =>
                     await _timetableDialogService.ShowTimetableDetails(timetableLayoutViewModel))
                 .DisposeWith(_disposables);
@@ -148,7 +153,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     foreach (var file in files)
                     {
                         var filePath = file.Path.LocalPath;
-                        var isLoaded = await Task.Run(async () => await workspaceStore.LoadAsync(filePath));
+                        var isLoaded = await workspaceStore.LoadAsync(filePath);
                         if (isLoaded)
                         {
                             

@@ -30,34 +30,37 @@ public class ScheduleGroupCellShared: ReactiveObject, IDisposable
     {
         BackgroundColor = color;
 
-        _courseCode = source.Code.ToProperty(this, x => x.CourseCode).DisposeWith(_disposables);
-        _courseNameVn = source.Name.ToProperty(this, x => x.CourseName_VN).DisposeWith(_disposables);
-        _group = source.Group.ToProperty(this, x => x.Group).DisposeWith(_disposables);
-        _lecturer = source.Lecturer.ToProperty(this, x => x.Lecturer).DisposeWith(_disposables);
-        _credit = source.Credits.ToProperty(this, x => x.Credit).DisposeWith(_disposables);
+        _courseCode = source.Code.ToProperty(this, x => x.CourseCode, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
+        _courseNameVn = source.Name.ToProperty(this, x => x.CourseName_VN, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
+        _group = source.Group.ToProperty(this, x => x.Group, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
+        _lecturer = source.Lecturer.ToProperty(this, x => x.Lecturer, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
+        _credit = source.Credits.ToProperty(this, x => x.Credits, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
         
         var statusStream = source.RemainingStudents.CombineLatest(source.TotalStudents, 
             (rem, total) => new { rem, total })
-            .Publish().RefCount();
+            .Replay(1).RefCount();
 
         _remainingConcatTotalStudents = statusStream
             .Select(x => $"Sĩ số: {x.rem}/{x.total}")
-            .ToProperty(this, x => x.RemainingConcatTotalStudents)
+            .ToProperty(this, x => x.RemainingConcatTotalStudents, scheduler:RxApp.MainThreadScheduler)
             .DisposeWith(_disposables);
 
-        var levelStream = statusStream.Select(x => CalculateStatus(x.rem, x.total));
+        var levelStream = statusStream
+            .Select(x => CalculateStatus(x.rem, x.total))
+            .Replay(1)
+            .RefCount();
 
-        _isHighStatus = levelStream.Select(l => l == RemainingLevel.High).ToProperty(this, x => x.IsHighStatus).DisposeWith(_disposables);
-        _isMediumStatus = levelStream.Select(l => l == RemainingLevel.Medium).ToProperty(this, x => x.IsMediumStatus).DisposeWith(_disposables);
-        _isLowStatus = levelStream.Select(l => l == RemainingLevel.Low).ToProperty(this, x => x.IsLowStatus).DisposeWith(_disposables);
-        _isArchivedStatus = levelStream.Select(l => l == RemainingLevel.Archived).ToProperty(this, x => x.IsArchivedStatus).DisposeWith(_disposables);
+        _isHighStatus = levelStream.Select(l => l == RemainingLevel.High).ToProperty(this, x => x.IsHighStatus, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
+        _isMediumStatus = levelStream.Select(l => l == RemainingLevel.Medium).ToProperty(this, x => x.IsMediumStatus, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
+        _isLowStatus = levelStream.Select(l => l == RemainingLevel.Low).ToProperty(this, x => x.IsLowStatus, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
+        _isArchivedStatus = levelStream.Select(l => l == RemainingLevel.Archived).ToProperty(this, x => x.IsArchivedStatus, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
     }
     
     public string CourseCode => _courseCode.Value;
     public string CourseName_VN => _courseNameVn.Value;
     public string Group => _group.Value;
     public string Lecturer => _lecturer.Value;
-    public int Credit => _credit.Value;
+    public int Credits => _credit.Value;
     public string RemainingConcatTotalStudents => _remainingConcatTotalStudents.Value;
     
     public string NameConcat => $"{CourseCode}-{Group}-{CourseName_VN}";
@@ -72,8 +75,8 @@ public class ScheduleGroupCellShared: ReactiveObject, IDisposable
     private static RemainingLevel CalculateStatus(int remaining, int total)
     {
         if (total <= 0  || remaining < 0) return RemainingLevel.Archived;
+        if (remaining == 0) return RemainingLevel.None;
         double ratio = (double)remaining / total;
-        if (ratio == 0) return RemainingLevel.None;
         if (ratio < 0.1) return RemainingLevel.Low;
         if (ratio <= 0.4) return RemainingLevel.Medium;
         return RemainingLevel.High;
