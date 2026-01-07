@@ -15,8 +15,6 @@ public class MainPage: CtuBasePage, IMainPage
 {
     protected override string PageUrl => "https://dkmh.ctu.edu.vn/htql/sinhvien/hindex.php";
     protected override string PathRegexPattern => "/hindex";
-
-
     private const string UserInfoSelector = "#user-login";
     private const string DkmhButtonSelector = "img[src*=\"hetinchi.gif\"][onclick*=\"gotoDKindex\"]";
     public MainPage(IWebDriverService webDriverService, ILoggerFactory logger) : base(webDriverService, logger)

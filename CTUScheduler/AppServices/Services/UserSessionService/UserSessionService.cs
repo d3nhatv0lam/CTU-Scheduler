@@ -76,7 +76,7 @@ public class UserSessionService: IUserSessionService, IDisposable
     {
         _serverInfoSubject.OnNext(info);
     }
-    public void NotifySaved()
+    public void NotifyModified()
     {
         _lastSavedSubject.OnNext(DateTimeOffset.Now);
     }
@@ -84,7 +84,6 @@ public class UserSessionService: IUserSessionService, IDisposable
     {
         _lastSavedSubject.OnNext(time);
     }
-
     public void Dispose()
     {
         _disposable.Dispose();

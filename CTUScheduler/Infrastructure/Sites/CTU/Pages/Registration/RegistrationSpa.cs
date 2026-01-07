@@ -15,8 +15,6 @@ public abstract class RegistrationSpa: CtuBasePage
     protected override string PageUrl => "https://dkmhfe.ctu.edu.vn/dangkyhocphan/sinhvien/quydinhdangky";
     private const string InvalidSessionSelector = ".ant-modal-confirm-error";
     protected const string SPA_REGEX_PATTERN = "/dangkyhocphan/sinhvien";
-    
-    
     protected RegistrationSpa(IWebDriverService webDriverService, ILoggerFactory logger) : base(webDriverService, logger) { }
     
     public override async Task NavigateToAsync(bool allowRedirection = true, CancellationToken cancellationToken = default)

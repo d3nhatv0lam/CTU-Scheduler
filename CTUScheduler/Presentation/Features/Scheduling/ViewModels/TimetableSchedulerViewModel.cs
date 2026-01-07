@@ -7,20 +7,15 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
 using CTUScheduler.AppServices.Validators;
 using CTUScheduler.Core.Algorithms;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
-using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
-using CTUScheduler.Legacy.ScheduleManager;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
-using CTUScheduler.Presentation.Features.Timetable.ViewModels;
-using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.TimetableDialog;
 using CTUScheduler.Presentation.Shared.Mappers;
 using CTUScheduler.Presentation.Shared.Models;
@@ -36,7 +31,6 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
     INextStepCondition, ICleanupAsync
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
-    private readonly IScheduleService _scheduleService;
     private readonly IScheduleRegistrationService _scheduleRegistrationService;
     private readonly ITimetableDialogService _timetableDialogService;
     private readonly SchedulingCourseOptionViewModel _schedulingCourseOptionVM;
@@ -65,14 +59,15 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
 
     public TimetableSchedulerViewModel(SourceList<CourseUi> courses)
     {
-        _scheduleService = App.ServiceProvider.GetRequiredService<IScheduleService>();
         _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
         _schedulingCourseOptionVM = new SchedulingCourseOptionViewModel();
         _scheduleRegistrationService = App.ServiceProvider.GetRequiredService<IScheduleRegistrationService>();
 
-        var maxScheduleTableCanSelect =
-            _scheduleService.MaxTimetableCount - _scheduleService.CurrentTimetableCount;
-        _paginationTimeTableViewModel = new(12, maxScheduleTableCanSelect);
+        var profileQueryService = App.ServiceProvider.GetRequiredService<IProfileQueryService>();
+        var maxCanSelect = profileQueryService.ProfileUsageState
+            .Select(x => x.Limit - x.Current)
+            .DistinctUntilChanged();
+        _paginationTimeTableViewModel = new(12, maxCanSelect);
 
         _limitTimetableSelectedDisplayedHelper = this.WhenAnyValue(
                 x => x.PaginationTimeTableViewModel.SelectedTimetableCount,
@@ -178,12 +173,6 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
         var blueprints = (await PaginationTimeTableViewModel.GetSelectedTimetables())
             .Select(x => x.Item.ToScheduleBlueprint());
         _scheduleRegistrationService.RegisterBlueprint(blueprints);
-        // foreach (var selectableTimetableLayout in await PaginationTimeTableViewModel.GetSelectedTimetables())
-        // {
-        //     ScheduleBlueprint buildData = selectableTimetableLayout.Item.ToScheduleBlueprint();
-        //     _scheduleService.AddTimetable(buildData);
-        //     _scheduleRegistrationService.RegisterBlueprint()
-        // }
         PaginationTimeTableViewModel.Clear();
     }
 
@@ -192,5 +181,6 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
         SchedulingCourseOptionVM.Dispose();
         PaginationTimeTableViewModel.Dispose();
         _disposables.Dispose();
+        Console.WriteLine("TimetableSchedulerViewModel disposed");
     }
 }

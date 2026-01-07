@@ -8,4 +8,6 @@ public record UserSettings
     
     public bool IsSaveUsername { get; init; } = false;
     public string? SavedUserName { get; init; } = null;
+    
+    public required int MaxScheduleProfiles { get; init; }
 }

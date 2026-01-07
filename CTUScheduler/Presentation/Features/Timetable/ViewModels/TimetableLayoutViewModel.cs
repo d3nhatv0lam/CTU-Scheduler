@@ -79,15 +79,6 @@ public class TimetableLayoutViewModel:
         _lastUpdated = scheduleProfile.LastUpdated;
         // _timeTableVM = new TimetableViewModel();
         
-        // init color palette for schedule table
-        if (!ColorPalettes.IsInitialized)
-        {
-            RxApp.MainThreadScheduler.Schedule(() =>
-            {
-                var _ = ColorPalettes.Colors;
-            });
-            ColorPalettes.IsInitialized = true;
-        }
         
         this.WhenAnyValue(x => x.Name, x => x.Description)
             .Throttle(TimeSpan.FromMilliseconds(500))

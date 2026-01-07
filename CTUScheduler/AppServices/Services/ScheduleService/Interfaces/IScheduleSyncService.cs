@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System;
+using System.Reactive;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
@@ -6,4 +8,5 @@ namespace CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
 public interface IScheduleSyncService
 {
     Task RefreshCoursesAsync(CancellationToken token = default);
+    IObservable<Unit> CoursesRefreshed { get; }
 }

@@ -12,9 +12,7 @@ namespace CTUScheduler.AppServices.State;
 public class AppState : IAppState, IDisposable
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
-    // System Config
-    internal readonly SystemConfig SystemConfig = new();
-    private readonly BehaviorSubject<UserSettings> _userSettingsSubject = new(new UserSettings());
+    private readonly BehaviorSubject<UserSettings> _userSettingsSubject;
     private readonly SourceCache<RuntimeCourse, string> _runtimeCoursesSource = new(x => x.Code);
     private readonly SourceCache<ScheduleProfile, Guid> _scheduleProfilesSource  = new(x => x.Id);
     
@@ -30,6 +28,9 @@ public class AppState : IAppState, IDisposable
     }
     public AppState()
     {
+        _userSettingsSubject = new BehaviorSubject<UserSettings>(
+            new UserSettings() { MaxScheduleProfiles = SystemConfig.DefaultMaxScheduleProfiles }
+        );
         UserSettingChanged = _userSettingsSubject.AsObservable();
         
         _userSettingsSubject.DisposeWith(_disposables);
@@ -37,7 +38,6 @@ public class AppState : IAppState, IDisposable
         _scheduleProfilesSource.DisposeWith(_disposables);
     }
     
-
     public void Dispose()
     {
        _disposables.Dispose();

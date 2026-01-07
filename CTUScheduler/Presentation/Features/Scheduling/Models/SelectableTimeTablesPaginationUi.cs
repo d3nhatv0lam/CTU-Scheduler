@@ -18,7 +18,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Models;
 public class SelectableTimeTablesPaginationUi: PaginationViewModel<SelectableTimetableLayout>
 {
     private int _selectedTimetableCount;
-    private int _maxPageCanSelect;
+    private readonly ObservableAsPropertyHelper<int> _maxPageCanSelect;
     
     private readonly BehaviorSubject<IReadOnlyCollection<SelectableTimetableLayout>> _selectedTimetablesSubject = 
         new(Array.Empty<SelectableTimetableLayout>());
@@ -26,11 +26,7 @@ public class SelectableTimeTablesPaginationUi: PaginationViewModel<SelectableTim
         get => _selectedTimetableCount;
         set => this.RaiseAndSetIfChanged(ref _selectedTimetableCount, value);
     }
-    public int MaxPageCanSelect
-    {
-        get => _maxPageCanSelect;
-        init => this.RaiseAndSetIfChanged(ref _maxPageCanSelect, value);
-    }
+    public int MaxPageCanSelect => _maxPageCanSelect?.Value ?? int.MaxValue;
     
     protected IObservable<IChangeSet<SelectableTimetableLayout>> SelectedTimetableChanged { get; private set; } = null!;
     public IObservable<int> SelectedTimetableCountChanged { get; private set; } = null!;
@@ -39,8 +35,15 @@ public class SelectableTimeTablesPaginationUi: PaginationViewModel<SelectableTim
     public SelectableTimeTablesPaginationUi(int pageSize, int maxPageCanSelect) : base(new SourceList<SelectableTimetableLayout>(), pageSize)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
-        MaxPageCanSelect = maxPageCanSelect;
+        _maxPageCanSelect = Observable.Return(MaxPageCanSelect).ToProperty(this, nameof(MaxPageCanSelect)).DisposeWith(Disposables);
         Disposables.Add(_selectedTimetablesSubject);
+    }
+    
+    public SelectableTimeTablesPaginationUi(int pageSize, IObservable<int> maxPageCanSelect) : base(new SourceList<SelectableTimetableLayout>(), pageSize)
+    {
+        _maxPageCanSelect = maxPageCanSelect.ToProperty(this, nameof(MaxPageCanSelect))
+            .DisposeWith(Disposables);
+        _selectedTimetablesSubject.DisposeWith(Disposables);
     }
 
     protected override void OnObservableInit()
@@ -78,6 +81,7 @@ public class SelectableTimeTablesPaginationUi: PaginationViewModel<SelectableTim
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(_ =>
             {
+             
                 if (SelectedTimetableCount >= MaxPageCanSelect)
                 {
                     foreach (var data in PagedData)
@@ -87,7 +91,7 @@ public class SelectableTimeTablesPaginationUi: PaginationViewModel<SelectableTim
                 else
                 {
                     foreach (var data in PagedData)
-                            data.IsEnabled = true;
+                        data.IsEnabled = true;
                 }
             })
             .DisposeWith(Disposables);

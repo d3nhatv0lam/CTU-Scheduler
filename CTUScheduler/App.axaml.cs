@@ -27,16 +27,9 @@ using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Login;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Main;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
-using CTUScheduler.Legacy.RegistrationInfor;
-using CTUScheduler.Legacy.RuntimeCourseService;
-using CTUScheduler.Legacy.ScheduleManager;
-using CTUScheduler.Legacy.ScheduleProfileService;
-using CTUScheduler.Legacy.User;
-using CTUScheduler.Legacy.WebDriver;
 using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
-using CTUScheduler.Presentation.Services.Adapter;
 using CTUScheduler.Presentation.Services.AppToplevel;
 using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.TimetableDialog;
@@ -142,19 +135,19 @@ public class App : Application
             .AddSingleton<IProfileQueryService>(sp => sp.GetRequiredService<ScheduleManager>())
             .AddSingleton<IScheduleSyncService>(sp => sp.GetRequiredService<ScheduleManager>());
         
-        // cũ
-        services.AddSingleton<ICTUWebDriverService, CtuWebDriverService>();
-        // cũ
-        services.AddSingleton<IScheduleProfileService, ScheduleProfileService>();
-        services.AddSingleton<RuntimeCourseService>()
-            .AddSingleton<IRuntimeCourseService>(sp => sp.GetRequiredService<RuntimeCourseService>())
-            .AddSingleton<ICourseStateService>(sp => sp.GetRequiredService<RuntimeCourseService>());
-        // cũ
-        services.AddSingleton<IRegistrationInformationService, RegistrationInformationService>();
-        services.AddSingleton<IUserDataService, UserDataService>();
-        services.AddSingleton<ScheduleService>()
-            .AddSingleton<IScheduleService, ScheduleService>(sp => sp.GetRequiredService<ScheduleService>())
-            .AddSingleton<ICourseScheduleService, ScheduleService>(sp => sp.GetRequiredService<ScheduleService>());
+        // // cũ
+        // services.AddSingleton<ICTUWebDriverService, CtuWebDriverService>();
+        // // cũ
+        // services.AddSingleton<IScheduleProfileService, ScheduleProfileService>();
+        // services.AddSingleton<RuntimeCourseService>()
+        //     .AddSingleton<IRuntimeCourseService>(sp => sp.GetRequiredService<RuntimeCourseService>())
+        //     .AddSingleton<ICourseStateService>(sp => sp.GetRequiredService<RuntimeCourseService>());
+        // // cũ
+        // services.AddSingleton<IRegistrationInformationService, RegistrationInformationService>();
+        // services.AddSingleton<IUserDataService, UserDataService>();
+        // services.AddSingleton<ScheduleService>()
+        //     .AddSingleton<IScheduleService, ScheduleService>(sp => sp.GetRequiredService<ScheduleService>())
+        //     .AddSingleton<ICourseScheduleService, ScheduleService>(sp => sp.GetRequiredService<ScheduleService>());
         
         ConfigurePresentationServices(services);
         //services.AddSingleton<ICachingNavigationServiceFactory, CachingNavigationServiceFactory>();
@@ -166,7 +159,6 @@ public class App : Application
         services.AddSingleton<IViewportService, ViewportService>();
         services.AddSingleton<IDialogHostService, DialogHostService>();
         services.AddSingleton<ITimetableDialogService, TimetableDialogService>();
-        services.AddSingleton<ITimetableLayoutAdapter, TimetableLayoutVmAdapter>();
         services.AddTransient<SplashScreenWindow>(provider =>
         {
             SplashScreenWindow window = new();

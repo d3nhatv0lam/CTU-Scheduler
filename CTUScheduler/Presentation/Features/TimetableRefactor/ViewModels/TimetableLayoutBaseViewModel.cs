@@ -4,8 +4,6 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Features.Timetable.Resources;
-using CTUScheduler.Presentation.Features.Timetable.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Resources;

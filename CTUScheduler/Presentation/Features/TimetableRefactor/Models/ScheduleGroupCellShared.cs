@@ -30,11 +30,11 @@ public class ScheduleGroupCellShared: ReactiveObject, IDisposable
     {
         BackgroundColor = color;
 
-        _courseCode = source.Code.ToProperty(this, x => x.CourseCode, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
-        _courseNameVn = source.Name.ToProperty(this, x => x.CourseName_VN, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
-        _group = source.Group.ToProperty(this, x => x.Group, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
-        _lecturer = source.Lecturer.ToProperty(this, x => x.Lecturer, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
-        _credit = source.Credits.ToProperty(this, x => x.Credits, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
+        _courseCode = source.Code.ToProperty(this, x => x.CourseCode).DisposeWith(_disposables);
+        _courseNameVn = source.Name.ToProperty(this, x => x.CourseName_VN).DisposeWith(_disposables);
+        _group = source.Group.ToProperty(this, x => x.Group).DisposeWith(_disposables);
+        _lecturer = source.Lecturer.ToProperty(this, x => x.Lecturer).DisposeWith(_disposables);
+        _credit = source.Credits.ToProperty(this, x => x.Credits).DisposeWith(_disposables);
         
         var statusStream = source.RemainingStudents.CombineLatest(source.TotalStudents, 
             (rem, total) => new { rem, total })
@@ -42,7 +42,7 @@ public class ScheduleGroupCellShared: ReactiveObject, IDisposable
 
         _remainingConcatTotalStudents = statusStream
             .Select(x => $"Sĩ số: {x.rem}/{x.total}")
-            .ToProperty(this, x => x.RemainingConcatTotalStudents, scheduler:RxApp.MainThreadScheduler)
+            .ToProperty(this, x => x.RemainingConcatTotalStudents)
             .DisposeWith(_disposables);
 
         var levelStream = statusStream
@@ -50,10 +50,10 @@ public class ScheduleGroupCellShared: ReactiveObject, IDisposable
             .Replay(1)
             .RefCount();
 
-        _isHighStatus = levelStream.Select(l => l == RemainingLevel.High).ToProperty(this, x => x.IsHighStatus, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
-        _isMediumStatus = levelStream.Select(l => l == RemainingLevel.Medium).ToProperty(this, x => x.IsMediumStatus, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
-        _isLowStatus = levelStream.Select(l => l == RemainingLevel.Low).ToProperty(this, x => x.IsLowStatus, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
-        _isArchivedStatus = levelStream.Select(l => l == RemainingLevel.Archived).ToProperty(this, x => x.IsArchivedStatus, scheduler:RxApp.MainThreadScheduler).DisposeWith(_disposables);
+        _isHighStatus = levelStream.Select(l => l == RemainingLevel.High).ToProperty(this, x => x.IsHighStatus).DisposeWith(_disposables);
+        _isMediumStatus = levelStream.Select(l => l == RemainingLevel.Medium).ToProperty(this, x => x.IsMediumStatus).DisposeWith(_disposables);
+        _isLowStatus = levelStream.Select(l => l == RemainingLevel.Low).ToProperty(this, x => x.IsLowStatus).DisposeWith(_disposables);
+        _isArchivedStatus = levelStream.Select(l => l == RemainingLevel.Archived).ToProperty(this, x => x.IsArchivedStatus).DisposeWith(_disposables);
     }
     
     public string CourseCode => _courseCode.Value;

@@ -1,6 +1,7 @@
 ﻿namespace CTUScheduler.Core.Models.Settings;
 
-public record SystemConfig
+public static class SystemConfig
 {
-    public string AppVersion { get; init; } = "0.1";
+    public const string AppVersion  = "0.1";
+    public const int DefaultMaxScheduleProfiles = 10;
 }

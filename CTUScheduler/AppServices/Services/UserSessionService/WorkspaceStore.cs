@@ -53,7 +53,7 @@ public class WorkspaceStore : IWorkspaceStore
         try
         {
             await JsonHelper.SerializeToFileAsync(filePath, workspace);
-            _userSessionService.NotifySaved();
+            _userSessionService.NotifyModified();
             return true;
         }
         catch (UnauthorizedAccessException)

@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Models;
@@ -9,16 +13,21 @@ using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
+using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Core.Utils.Comparers;
 using DynamicData;
+using DynamicData.Aggregation;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.AppServices.Services.ScheduleService;
 
-public class ScheduleManager: IScheduleManager
+public class ScheduleManager: IScheduleManager, IDisposable
 {
+    private readonly CompositeDisposable  _disposables = new CompositeDisposable();
     private readonly SourceCache<RuntimeCourse, string> _coursesSource;
     private readonly SourceCache<ScheduleProfile, Guid> _profileSource;
+    private readonly Subject<Unit> _refreshedSubject = new();
     private readonly ICourseCatalogService _catalogService;
     private readonly ILogger<ScheduleManager> _logger;
     
@@ -28,14 +37,37 @@ public class ScheduleManager: IScheduleManager
         _profileSource = appState.ScheduleProfilesSource;
         _catalogService = catalog;
         _logger = logger;
+
+        var currentProfileCountStream = _profileSource.Connect()
+            .Count()
+            .StartWith(_profileSource.Count)
+            .DistinctUntilChanged();
+
+        var maxProfileLimitStream = appState.UserSettingChanged
+            .Select(x => x.MaxScheduleProfiles)
+            .DistinctUntilChanged();
+
+        ProfileUsageState = currentProfileCountStream.CombineLatest(
+                maxProfileLimitStream,
+                (count, limit) => new ProfileUsageState(count, limit)
+            )
+            .Replay(1)
+            .RefCount();
+ 
+        
+        CoursesRefreshed = _refreshedSubject.AsObservable();
+        _disposables.Add(_refreshedSubject);
     }
 
     public IObservable<IChangeSet<RuntimeCourse, string>> ConnectCourses() => _coursesSource.Connect();
     public IObservable<IChangeSet<ScheduleProfile, Guid>> ConnectProfiles() => _profileSource.Connect();
+    public IObservable<ProfileUsageState> ProfileUsageState { get; }
     public IEnumerable<Course> GetCourseSnapshot() => _coursesSource
         .Items
-        .Select(x => x.ToCourse());
-    public IEnumerable<ScheduleProfile> GetProfileSnapshot() => _profileSource.Items;
+        .Select(x => x.ToCourse())
+        .ToList();
+    public IEnumerable<ScheduleProfile> GetProfileSnapshot() => _profileSource.Items.ToList();
+    public IObservable<Unit> CoursesRefreshed { get; }
     
     public void ImportSchedule(IEnumerable<Course> courses, IEnumerable<ScheduleProfile> profiles)
     {
@@ -212,5 +244,11 @@ public class ScheduleManager: IScheduleManager
                 }
             }
         }
+    }
+
+    public void Dispose()
+    {
+        _disposables.Dispose();
+        _logger.LogInformation(nameof(ScheduleManager) + " has been disposed.");
     }
 }

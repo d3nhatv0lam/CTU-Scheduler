@@ -20,6 +20,6 @@ public interface IUserSessionService
     IObservable<DateTimeOffset?> LastSaved { get; }
     void SetContext(RegistrationContext context);
     void UpdateServerInfo(RegistrationInformation info);
-    void NotifySaved();
+    void NotifyModified();
     void SetLastModified(DateTimeOffset lastSaved);
 }

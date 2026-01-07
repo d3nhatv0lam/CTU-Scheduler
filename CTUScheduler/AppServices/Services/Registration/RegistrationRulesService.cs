@@ -73,7 +73,7 @@ public class RegistrationRulesService: IRegistrationRulesService, IDisposable
             await _rulesPage.NavigateToAsync(allowRedirection:false);
             
             var homePage = _factory.GetPage<IMainPage>();
-            if (await homePage.TryWaitForActiveAsync(1000,5000))
+            if (await homePage.TryWaitForActiveAsync(1000,10000))
             {
                 await homePage.NavigateToDkmhAsync();
                 if (!await _rulesPage.TryWaitForActiveAsync()) 

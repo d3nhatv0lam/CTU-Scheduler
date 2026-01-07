@@ -46,14 +46,14 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
 
     public IPage? CurrentPage => _page;
     public string PageUrl => _page?.Url ?? string.Empty;
-    public IObservable<string> MainFrameUrlChanges => _navigationSubject.AsObservable();
-    public IObservable<string> InstallationStatus => _installationStatusSubject.AsObservable();
-    public IObservable<bool> IsInstalling => _isInstallingSubject.AsObservable();
-    public IObservable<string> InstallationProgress => _installationProgressSubject.AsObservable();
-    public IObservable<DialogInfo> AlertReceived => _alertSubject.AsObservable();
-    public IObservable<DialogInfo> ConfirmReceived => _confirmSubject.AsObservable();
-    public IObservable<DialogInfo> PromptReceived => _promptSubject.AsObservable();
-    public IObservable<NetworkPacket> JsonResponse => _jsonResponseSubject.AsObservable();
+    public IObservable<string> MainFrameUrlChanges { get; }
+    public IObservable<string> InstallationStatus { get; }
+    public IObservable<bool> IsInstalling { get; }
+    public IObservable<string> InstallationProgress { get; }
+    public IObservable<DialogInfo> AlertReceived { get; }
+    public IObservable<DialogInfo> ConfirmReceived { get; }
+    public IObservable<DialogInfo> PromptReceived { get; }
+    public IObservable<NetworkPacket> JsonResponse { get; }
 
     public WebDriverService(IConnectivityService connectivityService, ILogger<WebDriverService> logger)
     {
@@ -67,6 +67,18 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
         _installationStatusSubject.DisposeWith(_disposables);
         _isInstallingSubject.DisposeWith(_disposables);
         _jsonResponseSubject.DisposeWith(_disposables);
+        _navigationSubject.DisposeWith(_disposables);
+        _shutdownCts.Token.Register(() => _disposables.Dispose());
+        _disposables.Add(_shutdownCts);
+        
+        MainFrameUrlChanges = _navigationSubject.AsObservable();
+        InstallationStatus = _installationStatusSubject.AsObservable();
+        IsInstalling = _isInstallingSubject.AsObservable();
+        InstallationProgress = _installationProgressSubject.AsObservable();
+        AlertReceived = _alertSubject.AsObservable();
+        ConfirmReceived = _confirmSubject.AsObservable();
+        PromptReceived = _promptSubject.AsObservable();
+        JsonResponse = _jsonResponseSubject.AsObservable();
     }
 
     public async Task InitWebDriverService()
@@ -430,8 +442,6 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
         {
             // ignored
         }
-
-        _shutdownCts.Dispose();
         _disposables.Dispose();
         _logger.LogInformation("WebDriverService Disposed!");
     }

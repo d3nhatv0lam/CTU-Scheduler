@@ -19,10 +19,7 @@ public class RegistrationRulesPage : RegistrationSpa, IRegistrationRulesPage
     private const string CtuDkmhInfoKeySelector = "li:has-text('Khóa học') p:nth-of-type(2)";
     private const string CtuDkmhInfoUnitSelector = "li:has-text('Đơn vị') p:nth-of-type(2)";
     protected override string PathRegexPattern => "/quydinhdangky";
-
     public IObservable<CtuApiBody<RawRegistrationInformation>> RawRegistrationInformationResponse { get; }
-        
-
     public RegistrationRulesPage(IWebDriverService webDriverService, ILoggerFactory logger) : base(webDriverService,
         logger)
     {

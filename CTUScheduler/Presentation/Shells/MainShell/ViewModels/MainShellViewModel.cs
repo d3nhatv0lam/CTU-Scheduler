@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -95,6 +96,11 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                     .ShowDialogAsync<LogoutDialogViewModel,bool>(new LogoutDialogViewModel(), DialogIdentifier.MainLayout);
                 if (isAcceptLogout)
                 {
+                    var currentStack = Router.NavigationStack.ToList();
+                    foreach (var vm in currentStack)
+                    {
+                        if (vm is IDisposable disposable) disposable.Dispose();
+                    }
                     HostScreen.Router.NavigateAndReset.Execute(new LoginViewModel(HostScreen));
                     Dispose();
                 }

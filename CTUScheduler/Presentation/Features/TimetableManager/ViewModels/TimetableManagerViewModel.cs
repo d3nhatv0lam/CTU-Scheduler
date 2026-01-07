@@ -8,16 +8,12 @@ using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.AppServices.Services.Registration;
-using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
-using CTUScheduler.Legacy.ScheduleManager;
-using CTUScheduler.Legacy.ScheduleProfileService;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
-using CTUScheduler.Presentation.Services.Adapter;
 using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.TimetableDialog;
 using DynamicData;
@@ -31,7 +27,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
     public class TimetableManagerViewModel : ViewModelBase, IRoutableViewModel, IDisposable
     {
         private readonly CompositeDisposable _disposables = new ();
-        private readonly ITimetableLayoutAdapter _timetableLayoutVmAdapter;
+     
         private readonly IDialogHostService _dialogHostService;
         private readonly ITimetableDialogService _timetableDialogService;
         private readonly IConnectivityService  _connectivityService;
@@ -70,8 +66,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             HostScreen = hostScreen;
             _dialogHostService = App.ServiceProvider.GetRequiredService<IDialogHostService>();
             _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
-            _timetableLayoutVmAdapter = App.ServiceProvider.GetRequiredService<ITimetableLayoutAdapter>();
-        
             _connectivityService = App.ServiceProvider.GetRequiredService<IConnectivityService>();
             _courseCatalogService = App.ServiceProvider.GetRequiredService<ICourseCatalogService>();
             
@@ -82,6 +76,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             
             var timetableEditorFactory = App.ServiceProvider.GetRequiredService<Func<ScheduleProfile, TimetableEditorViewModel>>();
             _profileQueryService.ConnectProfiles()
+                .ObserveOn(RxApp.TaskpoolScheduler)
                 .Transform(profile => timetableEditorFactory(profile))
                 .DisposeMany()
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -95,12 +90,13 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 .DisposeWith(_disposables);
             
             _lastSavedText = userSessionService.LastSaved
-                .SelectMany(savedTime =>
+                .Select(savedTime =>
                 {
                     if (savedTime is null) return Observable.Return("Chưa có sao lưu!");
                     return Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(60))
                         .Select(_ => FormatTime(savedTime.Value));
                 })
+                .Switch()
                 .ToProperty(this, nameof(LastSaved), scheduler: RxApp.MainThreadScheduler)
                 .DisposeWith(_disposables);
             

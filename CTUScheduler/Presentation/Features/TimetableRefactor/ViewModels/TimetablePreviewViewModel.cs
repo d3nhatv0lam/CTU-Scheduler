@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
 using DynamicData;
+using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
@@ -19,21 +21,21 @@ public class TimetablePreviewViewModel: TimetableLayoutBaseViewModel
         if (choices is null) return;
         _choices.AddRange(choices);
         
-        var sourceCache = new SourceCache<TimetableRenderItem, string>(x => x.SharedData.CourseCode)
+        var sourceList = new SourceList<TimetableRenderItem>()
             .DisposeWith(Disposables);
         
         foreach (var choice in _choices)
         {
             var adapter = new StaticCourseAdapter(choice.Course, choice.Section);
             var item = CreateRenderItem(adapter);
-            sourceCache.AddOrUpdate(item);
+            sourceList.Add(item);
         }
-        
-        var stream = sourceCache.Connect().RemoveKey();
-        VisualizerVM = new TimetableViewModel(stream);
-            
-        stream.Transform(x => x.SharedData.Credits).ToCollection()
-            .Subscribe(x => TotalCredits = x.Sum()).DisposeWith(Disposables);
+
+        VisualizerVM = new TimetableViewModel(sourceList.Connect());
+
+        SubjectsCount = sourceList.Count;
+        TotalCredits = sourceList.Items
+            .Sum(x => x.SharedData.Credits);
     }
     
     public ScheduleBlueprint ToScheduleBlueprint()

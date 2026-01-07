@@ -66,12 +66,24 @@ public class TimetableEditorViewModel: TimetableLayoutBaseViewModel
                 TotalCredits = x.Sum;
             })
             .DisposeWith(Disposables);
+
+        sharedCourse.Connect()
+            .Skip(1)
+            .Throttle(TimeSpan.FromSeconds(1.2))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ =>
+            {
+                LastUpdated = DateTimeOffset.Now;
+                _scheduleProfile.LastUpdated = LastUpdated;
+            })
+            .DisposeWith(Disposables);
         
         StartEditCommand = ReactiveCommand.Create(() => {}).DisposeWith(Disposables);
         SaveCommand = ReactiveCommand.Create(() =>
         {
             _scheduleProfile.Name = this.Name;
             _scheduleProfile.LastUpdated = DateTimeOffset.Now;
+            LastUpdated = _scheduleProfile.LastUpdated;
         }).DisposeWith(Disposables);
         CancelCommand = ReactiveCommand.Create(() =>
         {

@@ -36,7 +36,7 @@ public class SplashScreenViewModel : ViewModelBase, IDisposable, IRequestClose
     public string Message
     {
         get => _message;
-        set => this.RaiseAndSetIfChanged(ref _message, value);
+        private set => this.RaiseAndSetIfChanged(ref _message, value);
     }
 
     public string Version => App.AppVersion;
