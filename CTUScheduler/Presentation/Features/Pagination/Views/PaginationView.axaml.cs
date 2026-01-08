@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.ReactiveUI;
+using ReactiveUI.Avalonia;
 using CTUScheduler.Presentation.Features.Pagination.Interfaces;
 using CTUScheduler.Presentation.Features.Pagination.ViewModels;
 

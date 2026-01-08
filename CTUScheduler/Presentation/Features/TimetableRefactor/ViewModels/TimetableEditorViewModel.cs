@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;

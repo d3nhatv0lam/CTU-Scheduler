@@ -3,11 +3,11 @@ using System.IO;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using CTUScheduler.AppServices;
 using CTUScheduler.AppServices.Services.Auth;
-using CTUScheduler.Infrastructure.Sites.CTU.Factory;
+using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -86,7 +86,8 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
 
         private void SaveSignInData()
         {
-            string path = string.Concat(AppConstants.Pwd, "/", AppConstants.USERCONFIG_FILENAME);
+            var pwd = AppDomain.CurrentDomain.BaseDirectory;
+            string path = string.Concat(pwd, "/", AppConstants.Files.UserConfig);
             using (FileStream fs = new FileStream(path, FileMode.Create))
             using (BinaryWriter writer = new BinaryWriter(fs))
             {
@@ -96,7 +97,8 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         }
         private void LoadSignInData()
         {
-            string path = string.Concat(AppConstants.Pwd,"/", AppConstants.USERCONFIG_FILENAME);
+            var pwd = AppDomain.CurrentDomain.BaseDirectory;
+            string path = string.Concat(pwd,"/", AppConstants.Files.UserConfig);
             if (!File.Exists(path))
                 return;
             using (FileStream fs = new FileStream(path, FileMode.Open))

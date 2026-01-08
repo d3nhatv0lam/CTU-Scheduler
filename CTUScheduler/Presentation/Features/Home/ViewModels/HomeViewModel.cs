@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Reactive;
 using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using CTUScheduler.AppServices;
+
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
+using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Presentation.Base;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
@@ -49,10 +51,11 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
                 .Select(x => x!)
                 .ToProperty(this, nameof(RegistrationInfo), scheduler: RxApp.MainThreadScheduler);
 
-            OpenFacebookCommand = ReactiveCommand.Create(() => OpenUrl(AppConstants.FACEBOOK_URL)).DisposeWith(_disposable);
-            OpenYoutubeCommand = ReactiveCommand.Create(() => OpenUrl(AppConstants.YOUTUBE_URL)).DisposeWith(_disposable);
-            OpenGithubCommand = ReactiveCommand.Create(() => OpenUrl(AppConstants.GITHUB_URL)).DisposeWith(_disposable);
-            OpenCTUHTQLCommand = ReactiveCommand.Create(() => OpenUrl(AppConstants.CTU_SIGN_IN_URL)).DisposeWith(_disposable);
+            var ownerContributor = AppConstants.AppCredits.AllContributors[0];
+            OpenFacebookCommand = ReactiveCommand.Create(() => OpenUrl(ownerContributor.SocialLinks[SocialPlatform.Facebook])).DisposeWith(_disposable);
+            OpenYoutubeCommand = ReactiveCommand.Create(() => OpenUrl(ownerContributor.SocialLinks[SocialPlatform.YouTube])).DisposeWith(_disposable);
+            OpenGithubCommand = ReactiveCommand.Create(() => OpenUrl(ownerContributor.SocialLinks[SocialPlatform.GitHub])).DisposeWith(_disposable);
+            OpenCTUHTQLCommand = ReactiveCommand.Create(() => OpenUrl(AppConstants.Urls.CtuSignIn)).DisposeWith(_disposable);
 
             this.WhenActivated((CompositeDisposable disposable) =>
             {

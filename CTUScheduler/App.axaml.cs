@@ -42,7 +42,6 @@ namespace CTUScheduler;
 
 public class App : Application
 {
-    public static readonly string AppVersion = "0.1";
     public static IServiceProvider ServiceProvider { get; private set; } = null!;
     public override void Initialize()
     {
@@ -61,10 +60,9 @@ public class App : Application
         
         LogSessionHeader();
         
-        // 2. Kích hoạt bắt lỗi toàn cục ngay lập tức
+        // Kích hoạt bắt lỗi toàn cục
         SetupGlobalExceptionHandling();
         
-
         // đăng ký ServiceCollection
         var services = new ServiceCollection();
         ConfigureServices(services);
@@ -134,20 +132,6 @@ public class App : Application
             .AddSingleton<ICourseQueryService>(sp => sp.GetRequiredService<ScheduleManager>())
             .AddSingleton<IProfileQueryService>(sp => sp.GetRequiredService<ScheduleManager>())
             .AddSingleton<IScheduleSyncService>(sp => sp.GetRequiredService<ScheduleManager>());
-        
-        // // cũ
-        // services.AddSingleton<ICTUWebDriverService, CtuWebDriverService>();
-        // // cũ
-        // services.AddSingleton<IScheduleProfileService, ScheduleProfileService>();
-        // services.AddSingleton<RuntimeCourseService>()
-        //     .AddSingleton<IRuntimeCourseService>(sp => sp.GetRequiredService<RuntimeCourseService>())
-        //     .AddSingleton<ICourseStateService>(sp => sp.GetRequiredService<RuntimeCourseService>());
-        // // cũ
-        // services.AddSingleton<IRegistrationInformationService, RegistrationInformationService>();
-        // services.AddSingleton<IUserDataService, UserDataService>();
-        // services.AddSingleton<ScheduleService>()
-        //     .AddSingleton<IScheduleService, ScheduleService>(sp => sp.GetRequiredService<ScheduleService>())
-        //     .AddSingleton<ICourseScheduleService, ScheduleService>(sp => sp.GetRequiredService<ScheduleService>());
         
         ConfigurePresentationServices(services);
         //services.AddSingleton<ICachingNavigationServiceFactory, CachingNavigationServiceFactory>();

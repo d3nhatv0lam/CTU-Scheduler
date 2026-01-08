@@ -14,7 +14,6 @@
     xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
     xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels"
     xmlns:timetableVm="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.Models"
-    xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Views"
     xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.Views"
     x:Class="CTUScheduler.Presentation.Features.TimetableRefactor.Views.TimetableLayoutView">

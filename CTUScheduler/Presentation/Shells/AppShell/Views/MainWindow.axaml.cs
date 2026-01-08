@@ -1,4 +1,4 @@
-﻿using Avalonia.ReactiveUI;
+﻿using ReactiveUI.Avalonia;
 using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
 using ReactiveUI;
 

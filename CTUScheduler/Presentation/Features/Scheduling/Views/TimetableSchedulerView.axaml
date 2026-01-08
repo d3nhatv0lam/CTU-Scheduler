@@ -12,7 +12,6 @@
     xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
     xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
     xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels"
-    xmlns:timetableView="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Views"
     xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Views"
     xmlns:timetableModel="clr-namespace:CTUScheduler.Presentation.Shared.Models"
     xmlns:paginationViews="clr-namespace:CTUScheduler.Presentation.Features.Pagination.Views"

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using CTUScheduler.Presentation.Base;
@@ -36,7 +37,6 @@ public class InstallationViewModel : ViewModelBase, IDisposable
             .Buffer(TimeSpan.FromMilliseconds(50))
             .Where(x => x.Count > 0)
             .Select(x => string.Concat(x))
-            .Do(x => Console.WriteLine(x + "\n"))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(ProcessLogChunk)
             .DisposeWith(_disposables);

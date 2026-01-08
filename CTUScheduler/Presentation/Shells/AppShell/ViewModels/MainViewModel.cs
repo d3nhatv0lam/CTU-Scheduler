@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.Presentation.Base;

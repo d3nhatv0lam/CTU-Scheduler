@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using CTUScheduler.AppServices.Models;
@@ -29,7 +30,7 @@ public class AppState : IAppState, IDisposable
     public AppState()
     {
         _userSettingsSubject = new BehaviorSubject<UserSettings>(
-            new UserSettings() { MaxScheduleProfiles = SystemConfig.DefaultMaxScheduleProfiles }
+            new UserSettings() { MaxScheduleProfiles = Core.Models.Settings.AppConstants.DefaultMaxScheduleProfiles }
         );
         UserSettingChanged = _userSettingsSubject.AsObservable();
         

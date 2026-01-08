@@ -2,13 +2,16 @@
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Metadata;
 using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.Core.Interfaces;
+using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Infrastructure.DriverCore;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Installation.ViewModels;
@@ -16,30 +19,27 @@ using CTUScheduler.Presentation.Features.Installation.Views;
 using CTUScheduler.Presentation.Services.AppToplevel;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 
-public class SplashScreenViewModel : ViewModelBase, IDisposable, IRequestClose
+public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IRequestClose
 {
     private readonly CompositeDisposable _disposables = new();
     private readonly IConnectivityService _connectivityService;
     private readonly IWebDriverService _webDriverService;
 
+    [Reactive(SetModifier = AccessModifier.Private)]
     private string _message = "Đang kiểm tra kết nối mạng";
+   
     public event Action<object?>? RequestClose;
 
     public void Close(object? result = null)
     {
         RequestClose?.Invoke(null);
     }
-
-    public string Message
-    {
-        get => _message;
-        private set => this.RaiseAndSetIfChanged(ref _message, value);
-    }
-
-    public string Version => App.AppVersion;
+    
+    public string Version => AppConstants.AppVersion;
 
     public ReactiveCommand<Unit, Unit> CloseAppCommand { get; }
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
+using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Services.TimetableDialog;
 using CTUScheduler.Presentation.Shared.Mappers;
 using CTUScheduler.Presentation.Shared.Models;
@@ -23,7 +25,6 @@ using CTUScheduler.Presentation.Shared.Models.Academic;
 using DynamicData;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
-using TimetablePreviewViewModel = CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels.TimetablePreviewViewModel;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 
@@ -181,6 +182,5 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
         SchedulingCourseOptionVM.Dispose();
         PaginationTimeTableViewModel.Dispose();
         _disposables.Dispose();
-        Console.WriteLine("TimetableSchedulerViewModel disposed");
     }
 }

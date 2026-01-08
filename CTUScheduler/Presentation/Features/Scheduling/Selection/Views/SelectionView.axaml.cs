@@ -1,7 +1,7 @@
 using System;
 using System.Reactive;
 using Avalonia.Controls;
-using Avalonia.ReactiveUI;
+using ReactiveUI.Avalonia;
 using CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels;
 using ReactiveUI;
 

@@ -1,7 +1,7 @@
 using System.Reactive;
-using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using Avalonia.Controls;
-using Avalonia.ReactiveUI;
+using ReactiveUI.Avalonia;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using ReactiveUI;
 

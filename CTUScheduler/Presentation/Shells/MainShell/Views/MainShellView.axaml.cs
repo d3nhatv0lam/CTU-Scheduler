@@ -1,10 +1,11 @@
 using System;
 using System.Reactive;
 using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.ReactiveUI;
+using ReactiveUI.Avalonia;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using ReactiveUI;
 

@@ -10,18 +10,14 @@
     x:CompileBindings="True"
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
-    xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple"
     xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
     xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
     xmlns:positioners="clr-namespace:DialogHostAvalonia.Positioners;assembly=DialogHost.Avalonia"
     xmlns:vm="clr-namespace:CTUScheduler.Presentation.Shells.MainShell.ViewModels"
     xmlns:models="clr-namespace:CTUScheduler.Presentation.Shells.MainShell.Models"
     xmlns:views="clr-namespace:CTUScheduler.Presentation.Shells.MainShell.Views"
-    xmlns:timetableViewModel="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels"
-    xmlns:timetableView="clr-namespace:CTUScheduler.Presentation.Features.Timetable.Views"
     xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels"
     xmlns:views2="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Shells.Views"
-    xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.Views"
     x:Class="CTUScheduler.Presentation.Shells.MainShell.Views.MainShellView">
 
     <rxui:ReactiveUserControl.Styles>

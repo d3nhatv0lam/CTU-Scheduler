@@ -1,5 +1,5 @@
-using Avalonia.ReactiveUI;
-using CTUScheduler.Presentation.Features.Timetable.ViewModels;
+using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
+using ReactiveUI.Avalonia;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.Views;
 
