@@ -66,7 +66,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
                     BtnNextContent = index == steps.Length - 1 ? "Hoàn thành" : "Tiếp theo";
                 });
             
-            NavigateBackCommand = ReactiveCommand.CreateFromTask(NavigateBack).DisposeWith(_disposables);
+            NavigateBackCommand = ReactiveCommand.Create(NavigateBack).DisposeWith(_disposables);
             var canNavigateNext = this.WhenAnyValue(x => x.CurrentStep)
                 .Select(currentStep =>
                 {
@@ -75,7 +75,8 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
                     return Observable.Return(true);
                 })
                 .Switch();
-            NavigateNextCommand = ReactiveCommand.CreateFromTask(async () => await NavigateNext(),canNavigateNext)
+            NavigateNextCommand = ReactiveCommand.CreateFromTask(async () => await NavigateNext()
+                    ,canNavigateNext)
                 .DisposeWith(_disposables);
             
             this.WhenActivated((CompositeDisposable disposables) =>
@@ -85,6 +86,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
                     Dispose();
                     Log.Information("SchedulingShellViewModel: Disposed");
                 }).DisposeWith(disposables);
+               
             });
         }
 
@@ -115,11 +117,15 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
 
         private async Task NavigateNext()
         {
-            await OnNavigate();
+            // await OnNavigate();
             if (CurrentStepIndex == _stepsVM.Length - 1)
             {
                 if (HostScreen is ICloseableDialog closeableDialog)
+                {
+                    if (CurrentStep is ICleanupAsync cleanupAsync)
+                        await cleanupAsync.CleanupAsync();
                     closeableDialog.Close();
+                }
                 else Log.Warning("SchedulingShellViewModel: CurrentStepIndex reach step but can't close dialog");
             }
             else
@@ -133,9 +139,9 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
             }
         }
 
-        private async Task NavigateBack()
+        private void NavigateBack()
         {
-            await OnNavigate();
+            // await OnNavigate();
             if (CurrentStepIndex == 0)
             {
                 HostScreen.Router.NavigateBack.Execute();
@@ -144,14 +150,14 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
                 CurrentStepIndex--;
         }
 
-        private async Task OnNavigate()
-        {
-            // ReSharper disable once SuspiciousTypeConversion.Global
-            if (CurrentStep is ICleanup cleanup)
-                cleanup.Cleanup();
-            if (CurrentStep is ICleanupAsync cleanupAsync)
-                await cleanupAsync.CleanupAsync();
-        }
+        // private async Task OnNavigate()
+        // {
+        //     // ReSharper disable once SuspiciousTypeConversion.Global
+        //     if (CurrentStep is ICleanup cleanup)
+        //         cleanup.Cleanup();
+        //     if (CurrentStep is ICleanupAsync cleanupAsync)
+        //         await cleanupAsync.CleanupAsync();
+        // }
 
         public void Dispose()
         {

@@ -23,7 +23,8 @@ public class SelectableTimeTablesPaginationUi: PaginationViewModel<SelectableTim
     
     private readonly BehaviorSubject<IReadOnlyCollection<SelectableTimetableLayout>> _selectedTimetablesSubject = 
         new(Array.Empty<SelectableTimetableLayout>());
-    public int SelectedTimetableCount { 
+    public int SelectedTimetableCount 
+    { 
         get => _selectedTimetableCount;
         set => this.RaiseAndSetIfChanged(ref _selectedTimetableCount, value);
     }

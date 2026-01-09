@@ -42,37 +42,17 @@ namespace CTUScheduler;
 
 public class App : Application
 {
-    public static IServiceProvider ServiceProvider { get; private set; } = null!;
+    public static IServiceProvider ServiceProvider { get; set; } = null!;
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
         
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .WriteTo.File(
-                path: "logs/log-.log",
-                rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 7,
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}"
-            )
-            .WriteTo.Debug()
-            .CreateLogger();
-        
-        LogSessionHeader();
-        
-        // Kích hoạt bắt lỗi toàn cục
         SetupGlobalExceptionHandling();
-        
-        // đăng ký ServiceCollection
-        var services = new ServiceCollection();
-        ConfigureServices(services);
-        ServiceProvider = services.BuildServiceProvider();
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
-        // load view
-        Locator.CurrentMutable.RegisterLazySingleton(() => new ConventionalViewLocator(), typeof(IViewLocator));
+      
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -84,81 +64,11 @@ public class App : Application
         {
             singleViewPlatform.MainView = new MainView
             {
-                DataContext = new MainViewModel()
+                DataContext = ServiceProvider.GetService<MainViewModel>() ?? new MainViewModel()
             };
             
         }
         base.OnFrameworkInitializationCompleted();
-    }
-    private void LogSessionHeader()
-    {
-        string separator = new string('=', 60);
-        Log.Information($"{separator}");
-        Log.Information("    CTU-SCHEDULER LOGGER");
-        Log.Information($"    Time: {DateTime.Now}");
-        Log.Information($"{separator}");
-    }
-    private void ConfigureServices(IServiceCollection services)
-    {
-        services.AddLogging(logging =>
-        {
-            logging.ClearProviders();  // Xóa các provider mặc định (nếu có)
-            logging.AddSerilog(dispose: false);      // Thêm Serilog
-        });
-        
-        services.AddTransient(typeof(Lazy<>), typeof(LazyService<>));
-        services.AddSingleton<AppState>()
-            .AddSingleton<IAppState>(sp => sp.GetRequiredService<AppState>());
-        
-        services.AddSingleton<IConnectivityService, ConnectivityService>();
-        services.AddSingleton<IWebDriverService,WebDriverService>();
-        
-        services.AddSingleton<ICtuSitePageFactory, CtuSitePageFactory>()
-            .AddTransient<ILoginPage, LoginPage>()
-            .AddTransient<ILoginService,LoginService>()
-            .AddTransient<IMainPage, MainPage>()
-            .AddTransient<IMainHomeService,MainHomeService>()
-            .AddTransient<IRegistrationRulesPage, RegistrationRulesPage>()
-            .AddTransient<IRegistrationRulesService,RegistrationRulesService>()
-            .AddTransient<ICourseCatalogPage,CourseCatalogPage>()
-            .AddTransient<ICourseCatalogService,CourseCatalogService>();
-        
-        services.AddSingleton<IUserSessionService, UserSessionService>()
-            .AddSingleton<IWorkspaceStore, WorkspaceStore>();
-        
-        services.AddSingleton<ScheduleManager>()
-            .AddSingleton<IScheduleManager>(sp => sp.GetRequiredService<ScheduleManager>())
-            .AddSingleton<IScheduleRegistrationService>(sp => sp.GetRequiredService<ScheduleManager>())
-            .AddSingleton<ICourseQueryService>(sp => sp.GetRequiredService<ScheduleManager>())
-            .AddSingleton<IProfileQueryService>(sp => sp.GetRequiredService<ScheduleManager>())
-            .AddSingleton<IScheduleSyncService>(sp => sp.GetRequiredService<ScheduleManager>());
-        
-        ConfigurePresentationServices(services);
-        //services.AddSingleton<ICachingNavigationServiceFactory, CachingNavigationServiceFactory>();
-    }
-    
-    private void ConfigurePresentationServices(IServiceCollection services)
-    {
-        services.AddSingleton<IToplevelService, ToplevelService>();
-        services.AddSingleton<IViewportService, ViewportService>();
-        services.AddSingleton<IDialogHostService, DialogHostService>();
-        services.AddSingleton<ITimetableDialogService, TimetableDialogService>();
-        services.AddTransient<SplashScreenWindow>(provider =>
-        {
-            SplashScreenWindow window = new();
-            provider.GetRequiredService<IToplevelService>().Initialize(window);
-            return window;
-        });
-        services.AddTransient<MainWindow>(provider =>
-        {
-            MainWindow window = new();
-            provider.GetRequiredService<IToplevelService>().Initialize(window);
-            provider.GetRequiredService<IViewportService>().Initialize(window);
-            return window;
-        });
-        
-        services.AddTransient<Func<ScheduleProfile, TimetableEditorViewModel>>(provider => 
-            (profile) => ActivatorUtilities.CreateInstance<TimetableEditorViewModel>(provider, profile));
     }
     
     private Window InitSplashScreenWindow(IClassicDesktopStyleApplicationLifetime desktop)
@@ -192,21 +102,16 @@ public class App : Application
             if (sender is IClassicDesktopStyleApplicationLifetime desktop)
                 desktop.Exit -= Desktop_Exit;
             
+            Log.Information("Stopping services and releasing resources..."); 
+            
             if (ServiceProvider is IAsyncDisposable asyncDisposable) 
                 Task.Run(async () => await asyncDisposable.DisposeAsync()).Wait();
             else if (ServiceProvider is IDisposable disposableService)
                 disposableService.Dispose();
-            
-            Log.Logger.Information("Application exiting normally.");
         }
         catch (Exception ex)
         {
-            Log.Logger.Error(ex, "Error during application shutdown");
-        }
-        finally
-        {
-            Log.Logger.Information("App Exited!");
-            Log.CloseAndFlush();
+            Log.Error(ex, "Error during resource cleanup");
         }
     }
     
