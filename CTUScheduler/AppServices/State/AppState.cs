@@ -30,7 +30,7 @@ public class AppState : IAppState, IDisposable
     public AppState()
     {
         _userSettingsSubject = new BehaviorSubject<UserSettings>(
-            new UserSettings() { MaxScheduleProfiles = Core.Models.Settings.AppConstants.DefaultMaxScheduleProfiles }
+            new UserSettings()
         );
         UserSettingChanged = _userSettingsSubject.AsObservable();
         

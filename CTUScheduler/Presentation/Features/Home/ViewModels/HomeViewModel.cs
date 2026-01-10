@@ -39,12 +39,14 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
 
         public HomeViewModel(IScreen hostScreen)
         {
+            HostScreen = hostScreen;
+            
             _userSessionService = App.ServiceProvider.GetRequiredService<IUserSessionService>();
             _registrationRulesService = App.ServiceProvider.GetRequiredService<IRegistrationRulesService>();
             
-            _registrationRulesService.StartSync();
-            HostScreen = hostScreen;
-
+            _registrationRulesService.RegistrationInfoChanges
+                .Subscribe(info => _userSessionService.UpdateServerInfo(info))
+                .DisposeWith(_disposable);
             
             _registrationInfo = _userSessionService.RegistrationInfo
                 .Where(x => x is not null)
@@ -85,7 +87,6 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
 
         public void Dispose()
         {
-            _registrationRulesService.StopSync();
             (_registrationRulesService as IDisposable)?.Dispose();
             _disposable.Dispose();
             Log.Information("HomeViewModel: Disposed");

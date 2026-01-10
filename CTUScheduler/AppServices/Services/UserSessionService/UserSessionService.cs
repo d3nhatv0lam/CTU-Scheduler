@@ -17,9 +17,9 @@ public class UserSessionService: IUserSessionService, IDisposable
     private readonly BehaviorSubject<RegistrationInformation?> _serverInfoSubject = new(null);
     private readonly BehaviorSubject<RegistrationContext?> _localContextSubject = new(null);
     private readonly BehaviorSubject<DateTimeOffset?> _lastSavedSubject = new(null);
-    public IObservable<RegistrationContext?> LocalContext => _localContextSubject.AsObservable();
+    public IObservable<RegistrationContext?> LocalContext { get; }
     public RegistrationContext? CurrentContext => _localContextSubject.Value ?? _serverInfoSubject.Value?.ToContext();
-    public IObservable<RegistrationInformation?> RegistrationInfo => _serverInfoSubject.AsObservable();
+    public IObservable<RegistrationInformation?> RegistrationInfo { get; }
     public RegistrationInformation? CurrentRegistrationInfo => _serverInfoSubject.Value;
     public IObservable<bool> IsReadonly { get; }
     public IObservable<DateTimeOffset?> LastSaved { get; }
@@ -29,6 +29,9 @@ public class UserSessionService: IUserSessionService, IDisposable
         _serverInfoSubject.DisposeWith(_disposable);
         _localContextSubject.DisposeWith(_disposable);
         _lastSavedSubject.DisposeWith(_disposable);
+        
+        LocalContext = _localContextSubject.AsObservable();
+        RegistrationInfo = _serverInfoSubject.AsObservable();
         
         var isEmptyProfiles = profileQueryService.ConnectProfiles()
             .Count()

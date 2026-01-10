@@ -8,7 +8,9 @@ using CTUScheduler.Presentation.Services.Factories;
 using CTUScheduler.Presentation.Services.TimetableDialog;
 using CTUScheduler.Presentation.Services.Viewport;
 using CTUScheduler.Presentation.Shared.Interfaces;
+using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
 using CTUScheduler.Presentation.Shells.AppShell.Views;
+using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using Splat;
@@ -26,7 +28,7 @@ public static class DesktopServiceExtensions
         
         // --- ViewModel Registration ---
         services.Scan(scan => scan
-            .FromAssemblyOf<IViewModel>()
+            .FromAssemblyOf<MainViewModel>()
             .AddClasses(c => c.AssignableTo<ISingletonViewModel>())
             .AsSelf()
             .WithSingletonLifetime()

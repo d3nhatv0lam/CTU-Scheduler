@@ -30,8 +30,8 @@ public class MainViewModel : ViewModelBase , IScreen , IActivatableViewModel
         
         _connectivityService = App.ServiceProvider!.GetRequiredService<IConnectivityService>();
         Router = new RoutingState();
-        Router.Navigate.Execute(new LoginViewModel(this));
-        // Router.Navigate.Execute(new MainShellViewModel(this));
+        // Router.Navigate.Execute(new LoginViewModel(this));
+        Router.Navigate.Execute(new MainShellViewModel(this));
 
         this.WhenActivated(disposables =>
         {

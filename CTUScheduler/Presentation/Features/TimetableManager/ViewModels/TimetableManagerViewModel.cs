@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Reactive;
@@ -16,6 +18,7 @@ using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Services.Dialogs;
+using CTUScheduler.Presentation.Services.Factories;
 using CTUScheduler.Presentation.Services.TimetableDialog;
 using DynamicData;
 using DynamicData.Aggregation;
@@ -28,13 +31,13 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
     public class TimetableManagerViewModel : ViewModelBase, IRoutableViewModel, IDisposable
     {
         private readonly CompositeDisposable _disposables = new ();
-     
         private readonly IDialogHostService _dialogHostService;
         private readonly ITimetableDialogService _timetableDialogService;
         private readonly IConnectivityService  _connectivityService;
         private readonly ICourseCatalogService _courseCatalogService;
         private readonly IProfileQueryService _profileQueryService;
         private readonly IScheduleSyncService _scheduleSyncService;
+        
 
         private readonly ReadOnlyObservableCollection<TimetableEditorViewModel> _bindableTimetableLayouts =
             ReadOnlyObservableCollection<TimetableEditorViewModel>.Empty;
@@ -51,8 +54,8 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         public bool IsExpiredSaved => _isExpiredSaved.Value;
         public string LastSaved => _lastSavedText.Value;
 
-        public ReactiveCommand<Unit, Unit> ShowAddCourseDialogCommand { get; }
-        public ReactiveCommand<IStorageFile[], Unit> LoadScheduleCommand { get; }
+        public ReactiveCommand<Unit, Unit> ShowAddCourseDialogCommand { get;  }
+        public ReactiveCommand<IReadOnlyList<IStorageFile>, Unit> LoadScheduleCommand { get; }
         public ReactiveCommand<IStorageFile, Unit> SaveScheduleCommand { get; }
         public ReactiveCommand<Unit, Unit> ReloadAllTimetableCommand { get; }
         public ReactiveCommand<TimetableLayoutBaseViewModel, Unit> ShowTimetableDetailsCommand { get; }
@@ -75,10 +78,10 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             _profileQueryService =  App.ServiceProvider.GetRequiredService<IProfileQueryService>();
             _scheduleSyncService = App.ServiceProvider.GetRequiredService<IScheduleSyncService>();
             
-            var timetableEditorFactory = App.ServiceProvider.GetRequiredService<Func<ScheduleProfile, TimetableEditorViewModel>>();
+            var viewModelFactory = App.ServiceProvider.GetRequiredService<IViewModelFactory>();
             _profileQueryService.ConnectProfiles()
                 .ObserveOn(RxApp.TaskpoolScheduler)
-                .Transform(profile => timetableEditorFactory(profile))
+                .Transform(profile => viewModelFactory.Create<TimetableEditorViewModel,ScheduleProfile>(profile))
                 .DisposeMany()
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _bindableTimetableLayouts)
@@ -145,7 +148,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 }
             }).DisposeWith(_disposables);
 
-            LoadScheduleCommand = ReactiveCommand.CreateFromTask<IStorageFile[]>(async files =>
+            LoadScheduleCommand = ReactiveCommand.CreateFromTask<IReadOnlyList<IStorageFile>>(async files =>
                 {
                     foreach (var file in files)
                     {

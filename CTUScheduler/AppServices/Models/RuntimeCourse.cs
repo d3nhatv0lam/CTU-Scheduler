@@ -171,5 +171,10 @@ public class RuntimeCourse : IDisposable, INotifyPropertyChanged
         OnPropertyChanged(propertyName);
         return true;
     }
-    public void Dispose() => _sectionsCache.Dispose();
+
+    public void Dispose()
+    {
+        _sectionsCache.Clear();
+        _sectionsCache.Dispose();
+    }
 }

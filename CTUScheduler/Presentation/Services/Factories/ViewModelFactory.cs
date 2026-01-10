@@ -34,10 +34,10 @@ public class ViewModelFactory: IViewModelFactory
         }
         
         // IInitializable
-        if (typeof(IInitializable<TContext>).IsAssignableFrom(typeof(TVM)))
+        if (typeof(IInitializable<TContext>).IsAssignableFrom(typeVM))
         {
             var vm = _sp.GetRequiredService<TVM>();
-            (vm as IInitializable<TContext>)!.Init(args);
+            ((IInitializable<TContext>)vm).Init(args);
             return vm;
         }
 

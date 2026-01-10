@@ -110,7 +110,7 @@ public class WorkspaceStore : IWorkspaceStore
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unknown error during file save.");
+            _logger.LogError(ex, "Unknown error during load save.");
         }
         return false;
     }

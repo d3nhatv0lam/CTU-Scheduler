@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -44,7 +45,7 @@ public class ScheduleManager: IScheduleManager, IDisposable
             .DistinctUntilChanged();
 
         var maxProfileLimitStream = appState.UserSettingChanged
-            .Select(x => x.MaxScheduleProfiles)
+            .Select(x => x.General.MaxScheduleProfiles)
             .DistinctUntilChanged();
 
         ProfileUsageState = currentProfileCountStream.CombineLatest(
@@ -72,12 +73,24 @@ public class ScheduleManager: IScheduleManager, IDisposable
     public void ImportSchedule(IEnumerable<Course> courses, IEnumerable<ScheduleProfile> profiles)
     {
         if (courses is null || profiles is null) return;
-        ClearAll();
+        
+        _profileSource.Edit(innerCache =>
+        {
+            innerCache.Clear();
+            innerCache.AddOrUpdate(profiles);
+        });
+        
+        var oldCourses = _coursesSource.Items.ToList();
         _coursesSource.Edit(innerCache =>
         {
+            innerCache.Clear();
             ApplySnapshotToCourses(innerCache, courses, profiles);
         });
-        _profileSource.AddOrUpdate(profiles);
+        
+        foreach (var course in oldCourses)
+        {
+            course.Dispose();
+        }
     }
 
     public bool RegisterBlueprint(ScheduleBlueprint blueprint)
@@ -169,9 +182,10 @@ public class ScheduleManager: IScheduleManager, IDisposable
 
     public void ClearAll()
     {
-        foreach (var course in _coursesSource.Items) course.Dispose();
-        _coursesSource.Clear();
+        var coursesSnapshot = _coursesSource.Items.ToList();
         _profileSource.Clear();
+        _coursesSource.Clear();
+        foreach (var course in coursesSnapshot) course.Dispose();
     }
     
     private static void ApplyBlueprintToCourses(

@@ -6,6 +6,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
+using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;
 using DynamicData;
@@ -13,7 +14,7 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
-public class TimetableEditorViewModel: TimetableLayoutBaseViewModel
+public class TimetableEditorViewModel: TimetableLayoutBaseViewModel, INeedArgs<ScheduleProfile>
 {
     private readonly ScheduleProfile _scheduleProfile;
     private readonly ObservableAsPropertyHelper<bool> _isEditing;

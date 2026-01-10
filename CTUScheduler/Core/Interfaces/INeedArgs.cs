@@ -1,6 +1,3 @@
 ﻿namespace CTUScheduler.Core.Interfaces;
 
-public interface INeedArgs<in TContext>
-{
-    
-}
+public interface INeedArgs<in TContext> {}

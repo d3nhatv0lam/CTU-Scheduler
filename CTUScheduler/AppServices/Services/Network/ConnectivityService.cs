@@ -22,12 +22,10 @@ public class ConnectivityService: IConnectivityService, IDisposable
     
     private readonly CompositeDisposable _disposables = new();
     private readonly ILogger<ConnectivityService> _logger;
-
     private readonly BehaviorSubject<bool> _internetSubject;
     private readonly HttpClient _httpClient;
     private readonly TimeSpan _checkInterval = TimeSpan.FromSeconds(5);
-
-    public IObservable<bool> IsInternetAvailable => _internetSubject.AsObservable();
+    public IObservable<bool> IsInternetAvailable { get; }
 
     public ConnectivityService(ILogger<ConnectivityService> logger, IScheduler? scheduler = null)
     {
@@ -41,6 +39,7 @@ public class ConnectivityService: IConnectivityService, IDisposable
         
         // trạng thái đầu tiên là hỏi hệ điều hành
         _internetSubject = new BehaviorSubject<bool>(NetworkInterface.GetIsNetworkAvailable());
+        IsInternetAvailable = _internetSubject.AsObservable();
         
         var networkChangeStream = Observable.FromEventPattern<NetworkAvailabilityChangedEventHandler, NetworkAvailabilityEventArgs>(
                 h => NetworkChange.NetworkAvailabilityChanged += h,
