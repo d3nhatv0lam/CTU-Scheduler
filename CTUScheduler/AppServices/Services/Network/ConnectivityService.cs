@@ -30,7 +30,8 @@ public class ConnectivityService: IConnectivityService, IDisposable
     public ConnectivityService(ILogger<ConnectivityService> logger, IScheduler? scheduler = null)
     {
         _logger = logger;
-        var schedulerUsed = scheduler ?? TaskPoolScheduler.Default;
+        var schedulerUsed = scheduler ?? Scheduler.Default;
+        
         
         _httpClient = new HttpClient
         {
@@ -57,7 +58,7 @@ public class ConnectivityService: IConnectivityService, IDisposable
             .Select(_ => Observable.FromAsync(ct => CheckInternetAccessAsync(ct))
                 .Catch((Exception ex) => 
                 {
-                    _logger.LogWarning(ex, "Exception when checking internet status"); 
+                    _logger.LogWarning(ex, "Failed to check internet connectivity");                    
                     return Observable.Return(false); 
                 }))
             .Switch()

@@ -244,11 +244,6 @@
                     Margin="100"
                     />
             </dialogHostAvalonia:DialogHost.PopupPositioner>
-            <dialogHostAvalonia:DialogHost.DataTemplates>
-                <!-- <DataTemplate x:DataType="timetableViewModel:TimetableLayoutBaseViewModel"> -->
-                <!--     <views1:TimetableLayoutView/> -->
-                <!-- </DataTemplate> -->
-            </dialogHostAvalonia:DialogHost.DataTemplates>
         </dialogHostAvalonia:DialogHost>
     </Grid>
 </rxui:ReactiveUserControl>

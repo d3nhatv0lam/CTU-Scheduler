@@ -7,6 +7,7 @@
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
 			 xmlns:rxui="http://reactiveui.net"
 			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Setting.ViewModels"
+			 xmlns:u="https://irihi.tech/ursa"
 			 x:DataType="vm:SettingViewModel"
 			 x:CompileBindings="True"
              x:Class="CTUScheduler.Presentation.Features.Setting.Views.SettingView">
@@ -17,5 +18,18 @@
 
 	<Grid>
 		<TextBlock Text="Setting view" FontSize="100"/>
+		<u:ThemeToggleButton/>
+
+		<u:Timeline Mode="Center">
+			<u:TimelineItem Header="Lập trình mạng" Type="Success">
+				<TextBlock Text="Phòng 101 - Thầy A (Nhớ mang laptop)" Classes="Tertiary"/>
+			</u:TimelineItem>
+			<u:TimelineItem Header="Giải lao" Type="Warning">
+				<TextBlock Text="Canteen khu II" />
+			</u:TimelineItem>
+			<u:TimelineItem Header="Hệ điều hành" Type="Error">
+				<TextBlock Text="Phòng máy 2 - Kiểm tra giữa kỳ" FontWeight="Bold" Foreground="Red"/>
+			</u:TimelineItem>
+		</u:Timeline>
 	</Grid>
 </rxui:ReactiveUserControl>

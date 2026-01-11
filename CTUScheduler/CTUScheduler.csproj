@@ -23,6 +23,8 @@
     <PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.3.0.6" />
     <PackageReference Include="DialogHost.Avalonia" Version="0.10.3" />
     <PackageReference Include="Humanizer.Core.vi" Version="3.0.1" />
+    <PackageReference Include="Irihi.Ursa" Version="1.14.1" />
+    <PackageReference Include="Irihi.Ursa.Themes.Semi" Version="1.14.1" />
     <PackageReference Include="Material.Avalonia" Version="3.13.4" />
     <PackageReference Include="Material.Avalonia.DataGrid" Version="3.13.4" />
     <PackageReference Include="Material.Icons.Avalonia" Version="2.4.1" />
@@ -39,6 +41,7 @@
     </PackageReference>
     <PackageReference Include="Riok.Mapperly" Version="4.3.1" />
     <PackageReference Include="Scrutor" Version="7.0.0" />
+    <PackageReference Include="Semi.Avalonia" Version="11.3.7.2" />
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
@@ -122,6 +125,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AdditionalFiles Include="Assets\Localization\vi-VN.axaml" />
     <AdditionalFiles Include="Presentation\Features\Authentication\Views\LoginView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Home\Views\HomeView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Scheduling\Shared\Styles\controls.axaml" />

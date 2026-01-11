@@ -1,0 +1,55 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    
+    <!-- x:Class="Semi.Avalonia.Locale" -->
+    <sys:String x:Key="STRING_DATEPICKER_DAY_TEXT">ngày</sys:String>
+    <sys:String x:Key="STRING_DATEPICKER_MONTH_TEXT">tháng</sys:String>
+    <sys:String x:Key="STRING_DATEPICKER_YEAR_TEXT">năm</sys:String>
+    
+    <sys:String x:Key="STRING_TIMEPICKER_HOUR_TEXT">giờ</sys:String>
+    <sys:String x:Key="STRING_TIMEPICKER_MINUTE_TEXT">phút</sys:String>
+    <sys:String x:Key="STRING_TIMEPICKER_SECOND_TEXT">giây</sys:String>
+    
+    <sys:String x:Key="STRING_MENU_CUT">Cắt</sys:String>
+    <sys:String x:Key="STRING_MENU_COPY">Sao chép</sys:String>
+    <sys:String x:Key="STRING_MENU_PASTE">Dán</sys:String>
+    
+    <sys:String x:Key="STRING_CHOOSER_FILE_NAME">Tên tập tin</sys:String>
+    <sys:String x:Key="STRING_CHOOSER_SHOW_HIDDEN_FILES">Hiện tệp ẩn</sys:String>
+    <sys:String x:Key="STRING_CHOOSER_DIALOG_OK">OK</sys:String>
+    <sys:String x:Key="STRING_CHOOSER_DIALOG_CANCEL">Hủy</sys:String>
+    <sys:String x:Key="STRING_CHOOSER_NAME_COLUMN">Tên</sys:String>
+    <sys:String x:Key="STRING_CHOOSER_DATEMODIFIED_COLUMN">Ngày sửa đổi</sys:String>
+    <sys:String x:Key="STRING_CHOOSER_TYPE_COLUMN">Loại</sys:String>
+    <sys:String x:Key="STRING_CHOOSER_SIZE_COLUMN">Kích thước</sys:String>
+    <sys:String x:Key="STRING_CHOOSER_PROMPT_FILE_ALREADY_EXISTS">{0} đã tồn tại. Bạn có muốn ghi đè không?</sys:String>
+
+    <sys:String x:Key="STRING_THEME_TOGGLE_SWITCH_TO_DARK">Chuyển sang giao diện Tối</sys:String>
+    <sys:String x:Key="STRING_THEME_TOGGLE_SWITCH_TO_LIGHT">Chuyển sang giao diện Sáng</sys:String>
+    
+    
+     <!-- x:Class="Ursa.Themes.Semi.Locale" -->
+    <x:String x:Key="STRING_MENU_BRING_TO_FRONT">Đưa lên đầu</x:String>
+    <x:String x:Key="STRING_MENU_BRING_FORWARD">Đưa lên một lớp</x:String>
+    <x:String x:Key="STRING_MENU_SEND_BACKWARD">Đưa xuống một lớp</x:String>
+    <x:String x:Key="STRING_MENU_SEND_TO_BACK">Đưa xuống đáy</x:String>
+
+    <x:String x:Key="STRING_MENU_DIALOG_OK">Đồng ý</x:String>
+    <x:String x:Key="STRING_MENU_DIALOG_CANCEL">Hủy</x:String>
+    <x:String x:Key="STRING_MENU_DIALOG_YES">Có</x:String>
+    <x:String x:Key="STRING_MENU_DIALOG_NO">Không</x:String>
+    <x:String x:Key="STRING_MENU_DIALOG_CLOSE">Đóng</x:String>
+
+    <x:String x:Key="STRING_PAGINATION_JUMP_TO">Đến trang</x:String>
+    <x:String x:Key="STRING_PAGINATION_PAGE"> </x:String>
+
+    <x:String x:Key="STRING_THEME_TOGGLE_DARK">Tối</x:String>
+    <x:String x:Key="STRING_THEME_TOGGLE_LIGHT">Sáng</x:String>
+    <x:String x:Key="STRING_THEME_TOGGLE_SYSTEM">Hệ thống</x:String>
+
+    <x:String x:Key="STRING_DATE_TIME_CONFIRM">Xác nhận</x:String>
+    <x:String x:Key="STRING_DATE_TIME_START_TIME">Thời gian bắt đầu</x:String>
+    <x:String x:Key="STRING_DATE_TIME_END_TIME">Thời gian kết thúc</x:String>
+
+</ResourceDictionary>

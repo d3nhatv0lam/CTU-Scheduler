@@ -88,8 +88,8 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                 .Subscribe(item => OnNavigatePage(item))
                 .DisposeWith(_disposables);
 
-            // SelectedItem = NavigationItems[0];
-            SelectedItem = NavigationItems[1];
+            SelectedItem = NavigationItems[0];
+            // SelectedItem = NavigationItems[1];
 
             LogoutCommand = ReactiveCommand.CreateFromTask(async () =>
             {
