@@ -9,11 +9,11 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
-using CTUScheduler.AppServices.Validators;
 using CTUScheduler.Core.Algorithms;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Core.Validators;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
@@ -132,7 +132,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
             var batch = new List<SelectableTimetableLayout>();
             foreach (var tableData in Combinatorics.CartesianProduct(
                          sets,
-                         prefix => ScheduleValidator.IsValidTimeTableFromRaw(prefix),
+                     (currentPath,next) => ScheduleValidator.ValidateStep(currentPath,next),
                          _ => true,
                          _cts.Token))
             {

@@ -42,7 +42,7 @@ public class WorkspaceStore : IWorkspaceStore
         
         var courseSnapshot = _scheduleManager.GetCourseSnapshot().ToList();
         var profileSnapshot = _scheduleManager.GetProfileSnapshot().ToList();
-        ScheduleOptimizer.Trim(courseSnapshot, profileSnapshot);
+        ScheduleDataPruner.Trim(courseSnapshot, profileSnapshot);
         var workspace = new WorkspaceSnapshot()
         {
             Context = _userSessionService.CurrentContext ?? RegistrationContext.Unknown,

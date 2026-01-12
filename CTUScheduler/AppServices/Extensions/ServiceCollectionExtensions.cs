@@ -6,6 +6,7 @@ using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
+using CTUScheduler.AppServices.Services.TimetableGeneratorService;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
@@ -57,6 +58,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ICourseQueryService>(sp => sp.GetRequiredService<ScheduleManager>())
             .AddSingleton<IProfileQueryService>(sp => sp.GetRequiredService<ScheduleManager>())
             .AddSingleton<IScheduleSyncService>(sp => sp.GetRequiredService<ScheduleManager>());
+        
+        services.AddSingleton<ITimetableGeneratorService, TimetableGeneratorService>();
 
         return services;
     }

@@ -6,7 +6,7 @@ using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 
 namespace CTUScheduler.Core.Helpers;
 
-public static class ScheduleOptimizer
+public static class ScheduleDataPruner
 {
     /// <summary>
     /// Optimizes the provided list of courses by removing unnecessary data based on the specified schedule profiles.
