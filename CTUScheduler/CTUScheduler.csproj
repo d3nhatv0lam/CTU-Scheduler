@@ -24,15 +24,15 @@
     <PackageReference Include="DialogHost.Avalonia" Version="0.10.3" />
     <PackageReference Include="Humanizer.Core.vi" Version="3.0.1" />
     <PackageReference Include="Irihi.Ursa" Version="1.14.1" />
+    <PackageReference Include="Irihi.Ursa.ReactiveUIExtension" Version="1.1.0" />
     <PackageReference Include="Irihi.Ursa.Themes.Semi" Version="1.14.1" />
     <PackageReference Include="Material.Avalonia" Version="3.13.4" />
     <PackageReference Include="Material.Avalonia.DataGrid" Version="3.13.4" />
     <PackageReference Include="Material.Icons.Avalonia" Version="2.4.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.1" />
     <PackageReference Include="Microsoft.Playwright" Version="1.57.0" />
     <PackageReference Include="ReactiveUI.Avalonia" Version="11.3.8" />
     <PackageReference Include="ReactiveUI.SourceGenerators" Version="2.5.1">
@@ -43,9 +43,6 @@
     <PackageReference Include="Scrutor" Version="7.0.0" />
     <PackageReference Include="Semi.Avalonia" Version="11.3.7.2" />
     <PackageReference Include="Serilog" Version="4.3.0" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
-    <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="SkiaSharp" Version="3.119.1" />
   </ItemGroup>
 

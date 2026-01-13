@@ -1,49 +1,130 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Presentation.Services.Factories;
 
-public class ViewModelFactory: IViewModelFactory
+public class ViewModelFactory : IViewModelFactory
 {
     private readonly IServiceProvider _sp;
+    private readonly ILogger<ViewModelFactory> _logger;
+    private readonly IHostApplicationLifetime _appLifetime;
+    private readonly ConcurrentDictionary<Type, InjectionMetadata[]> _cache = new();
+    private readonly TimeSpan _asyncInitTimeout = TimeSpan.FromSeconds(30);
 
-    public ViewModelFactory(IServiceProvider sp)
+
+    public ViewModelFactory(IServiceProvider sp, IHostApplicationLifetime appLifetime,  ILogger<ViewModelFactory> logger)
     {
         _sp = sp;
+        _appLifetime = appLifetime;
+        _logger = logger;
+    }
+
+    public IViewModel Create(Type vmType)
+    {
+        ArgumentNullException.ThrowIfNull(vmType);
+
+        if (!typeof(IViewModel).IsAssignableFrom(vmType))
+            throw new ArgumentException($"Type '{vmType.Name}' không phải là IViewModel");
+
+        return (IViewModel)_sp.GetRequiredService(vmType);
+    }
+    public IViewModel Create(Type vmType, object args)
+    {
+        ArgumentNullException.ThrowIfNull(vmType);
+        ArgumentNullException.ThrowIfNull(args);
+        
+        var strategies = _cache.GetOrAdd(vmType, ScanTypeForStrategies);
+
+        foreach (var strategy in strategies)
+        {
+            if (!strategy.ArgType.IsInstanceOfType(args)) continue;
+            
+            switch (strategy.Type)
+            {
+                case InjectionType.Constructor:
+                    return (IViewModel)ActivatorUtilities.CreateInstance(_sp, vmType, args);
+
+                case InjectionType.Method:
+                {
+                    var vm = (IViewModel)_sp.GetRequiredService(vmType);
+                    strategy.InitMethod!.Invoke(vm, [args]);
+                    return vm;
+                }
+
+                case InjectionType.AsyncMethod: 
+                {
+                    var vm = (IViewModel)_sp.GetRequiredService(vmType);
+                    
+                    var shutdownToken = _appLifetime.ApplicationStopping; 
+                    var task = (Task)strategy.InitMethod!.Invoke(vm, [args, shutdownToken])!;
+                    
+                    HandleAsyncInitSafely(task, vmType);
+                    
+                    return vm;
+                }
+            }
+        }
+        
+        throw new InvalidOperationException(
+            $"ViewModel '{vmType.Name}' không có Interface (INeedArgs/IInitializable) phù hợp với tham số kiểu '{args.GetType().Name}'.");
     }
     
-    public TVM Create<TVM>() where TVM : class, IViewModel
+    private async void HandleAsyncInitSafely(Task task, Type vmType)
     {
-        return _sp.GetRequiredService<TVM>();
+        try
+        {
+            await task;
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogWarning("Initialization timed out or cancelled for {Type}", vmType.Name);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Async initialization crashed for {Type}", vmType.Name);
+        }
     }
-   
-    public TVM Create<TVM, TContext>(TContext args) 
-        where TVM : class, IViewModel
+    
+    private static InjectionMetadata[] ScanTypeForStrategies(Type type)
     {
-        if (args is null) throw new ArgumentNullException(nameof(args));
-        
-        var typeVM = typeof(TVM);
-        var typeArgs = typeof(TContext);
-        
-        // INeedArgs
-        if (typeof(INeedArgs<TContext>).IsAssignableFrom(typeVM))
-        {
-            return ActivatorUtilities.CreateInstance<TVM>(_sp, args);
-        }
-        
-        // IInitializable
-        if (typeof(IInitializable<TContext>).IsAssignableFrom(typeVM))
-        {
-            var vm = _sp.GetRequiredService<TVM>();
-            ((IInitializable<TContext>)vm).Init(args);
-            return vm;
-        }
+        var results = new List<InjectionMetadata>();
+        var interfaces = type.GetInterfaces();
 
-        throw new InvalidOperationException(
-            $"ViewModel '{typeVM.Name}' không hỗ trợ tham số '{typeArgs.Name}'.\n" +
-            $"Vui lòng implement 'INeedArgs<{typeArgs.Name}>' (nếu muốn tạo mới) " +
-            $"hoặc 'IInitializable<{typeArgs.Name}>' (nếu muốn dùng Singleton/DI).");
+        foreach (var i in interfaces)
+        {
+            if (!i.IsGenericType) continue;
+            var def = i.GetGenericTypeDefinition();
+            var argType = i.GetGenericArguments()[0];
+
+            if (def == typeof(INeedArgs<>))
+            {
+                results.Add(new InjectionMetadata(InjectionType.Constructor, argType, null));
+            }
+            else if (def == typeof(IInitializable<>))
+            {
+                var method = i.GetMethod("Init");
+                results.Add(new InjectionMetadata(InjectionType.Method, argType, method));
+            }
+            else if (def == typeof(IAsyncInitializable<>))
+            {
+                var method = i.GetMethod("InitAsync");
+                results.Add(new InjectionMetadata(InjectionType.AsyncMethod, argType, method));
+            }
+        }
+        // Sắp xếp ưu tiên: Constructor -> Init (Đồng bộ) -> InitAsync (Bất đồng bộ)
+        return results.OrderBy(x => x.Type).ToArray();
     }
+    
+    private enum InjectionType { Constructor, Method , AsyncMethod}
+    private record InjectionMetadata(InjectionType Type, Type ArgType, MethodInfo? InitMethod);
 }

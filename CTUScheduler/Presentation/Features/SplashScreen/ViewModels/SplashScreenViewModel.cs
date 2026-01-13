@@ -5,6 +5,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -18,6 +19,7 @@ using CTUScheduler.Presentation.Features.Installation.ViewModels;
 using CTUScheduler.Presentation.Features.Installation.Views;
 using CTUScheduler.Presentation.Services.AppToplevel;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
@@ -28,6 +30,8 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     private readonly CompositeDisposable _disposables = new();
     private readonly IConnectivityService _connectivityService;
     private readonly IWebDriverService _webDriverService;
+    private readonly IHostApplicationLifetime _appLifetime;
+    private readonly CancellationTokenSource _localCts = new();
 
     [Reactive(SetModifier = AccessModifier.Private)]
     private string _message = "Đang kiểm tra kết nối mạng";
@@ -47,14 +51,14 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     {
         _connectivityService = App.ServiceProvider.GetRequiredService<IConnectivityService>();
         _webDriverService = App.ServiceProvider.GetRequiredService<IWebDriverService>();
-
+        _appLifetime = App.ServiceProvider.GetRequiredService<IHostApplicationLifetime>();
         var toplevelService = App.ServiceProvider.GetRequiredService<IToplevelService>();
         CloseAppCommand = ReactiveCommand.Create(CloseApplication).DisposeWith(_disposables);
 
         _webDriverService.InstallationStatus
             .Delay(TimeSpan.FromSeconds(1d), RxApp.MainThreadScheduler)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(async message => Message = message)
+            .Subscribe( message => Message = message)
             .DisposeWith(_disposables);
 
 
@@ -91,6 +95,11 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     /// </summary>
     private void InitializeStartup()
     {
+        var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+            _appLifetime.ApplicationStopping, 
+            _localCts.Token
+        );
+        
         _connectivityService.IsInternetAvailable
             .Where(status => status)
             .Take(1)
@@ -101,7 +110,10 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
             .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(async _ =>
             {
-                await _webDriverService.InitWebDriverService();
+                using (linkedCts) 
+                {
+                    await _webDriverService.InitWebDriverService(linkedCts.Token);
+                }
                 return Unit.Default;
             })
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -113,6 +125,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
             .Subscribe(_ =>  Close(),
                 ex =>
                 {
+                    if (ex is OperationCanceledException) return;
                     Message = "Lỗi Khi khởi động, Hãy mở lại app!, tự động tắt sau 30s";
                     RxApp.MainThreadScheduler.Schedule(TimeSpan.FromSeconds(30), CloseApplication);
                 })
@@ -126,9 +139,11 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
             desktop.Shutdown();
         }
     }
-
+    
     public void Dispose()
     {
+        _localCts.Cancel(); 
+        _localCts.Dispose();
         _disposables.Dispose();
     }
 }

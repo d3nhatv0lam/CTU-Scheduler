@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Models.WebResponse;
 using Microsoft.Playwright;
@@ -19,7 +20,7 @@ public interface IWebDriverService
     IObservable<DialogInfo> PromptReceived { get; }
     IObservable<NetworkPacket> JsonResponse { get; }
     
-    Task InitWebDriverService();
+    Task InitWebDriverService(CancellationToken cancellationToken = default);
     Task<bool> TryWaitForUrlAsync(string url, int timeout = 10000);
     Task GoToPageAsync(string url);
     Task RefreshPageAsync();

@@ -1,24 +1,31 @@
 ﻿using System;
+using CTUScheduler.Core.Helpers;
 using Serilog;
 
-namespace CTUScheduler.AppServices.Helpers;
+namespace CTUScheduler.Desktop.Configs;
 
 public static class LoggingConfig
 {
     public static void Init()
     {
+        var logPath = PathProvider.GetLogPath();
+
         Log.Logger = new LoggerConfiguration()
+#if DEBUG
             .MinimumLevel.Debug()
-            .WriteTo.File(
-                path: "logs/log-.log",
-                rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 7,
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}"
-            )
             .WriteTo.Debug()
+#else
+        .MinimumLevel.Information()
+#endif
+            .WriteTo.File(
+                path: logPath,
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 14,
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message}{NewLine}{Exception}"
+            )
             .CreateLogger();
-                
         LogHeader();
+        PathProvider.CreateLogShortcut();
     }
 
     private static void LogHeader()

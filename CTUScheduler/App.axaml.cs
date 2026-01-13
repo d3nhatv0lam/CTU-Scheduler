@@ -52,8 +52,6 @@ public class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-      
-
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var splashScreen = InitSplashScreenWindow(desktop);
@@ -76,7 +74,9 @@ public class App : Application
         var splashScreenViewModel = new SplashScreenViewModel();
         var splashScreen = ServiceProvider.GetRequiredService<SplashScreenWindow>();
         splashScreen.DataContext = splashScreenViewModel;
-        
+        // var splashScreenViewModel = ServiceProvider.GetRequiredService<TestSpashWindowViewModel>();
+        // var splashScreen = ServiceProvider.GetRequiredService<TestSplashWindow>();
+        // splashScreen.DataContext = splashScreenViewModel;
         if (splashScreenViewModel is IRequestClose requestClose)
         {
             Action<object?>? handler = null;
@@ -104,10 +104,10 @@ public class App : Application
             
             Log.Information("Stopping services and releasing resources..."); 
             
-            if (ServiceProvider is IAsyncDisposable asyncDisposable) 
-                Task.Run(async () => await asyncDisposable.DisposeAsync()).Wait();
-            else if (ServiceProvider is IDisposable disposableService)
-                disposableService.Dispose();
+            // if (ServiceProvider is IAsyncDisposable asyncDisposable) 
+            //     Task.Run(async () => await asyncDisposable.DisposeAsync()).Wait();
+            // else if (ServiceProvider is IDisposable disposableService)
+            //     disposableService.Dispose();
         }
         catch (Exception ex)
         {

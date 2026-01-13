@@ -14,6 +14,7 @@ using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Core.Models.WebResponse;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 
@@ -26,8 +27,7 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
     private readonly ILogger<WebDriverService> _logger;
     private readonly IConnectivityService _connectivityService;
-
-    private readonly CancellationTokenSource _shutdownCts = new();
+    
     private readonly Subject<DialogInfo> _alertSubject = new();
     private readonly Subject<DialogInfo> _confirmSubject = new();
     private readonly Subject<DialogInfo> _promptSubject = new();
@@ -56,7 +56,7 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
     public IObservable<DialogInfo> PromptReceived { get; }
     public IObservable<NetworkPacket> JsonResponse { get; }
 
-    public WebDriverService(IConnectivityService connectivityService, ILogger<WebDriverService> logger)
+    public WebDriverService(IConnectivityService connectivityService,IHostApplicationLifetime appLifetime, ILogger<WebDriverService> logger)
     {
         _connectivityService = connectivityService;
         _logger = logger;
@@ -69,8 +69,6 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
         _isInstallingSubject.DisposeWith(_disposables);
         _jsonResponseSubject.DisposeWith(_disposables);
         _navigationSubject.DisposeWith(_disposables);
-        _shutdownCts.Token.Register(() => _disposables.Dispose());
-        _disposables.Add(_shutdownCts);
         
         MainFrameUrlChanges = _navigationSubject.AsObservable();
         InstallationStatus = _installationStatusSubject.AsObservable();
@@ -82,9 +80,9 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
         JsonResponse = _jsonResponseSubject.AsObservable();
     }
 
-    public async Task InitWebDriverService()
+    public async Task InitWebDriverService(CancellationToken cancellationToken = default)
     {
-        await EnsureBrowserInstalledAsync();
+        await EnsureBrowserInstalledAsync(cancellationToken);
         await CreatePlayWrightChromiumAsync();
         await ConfigPageAsync();
     }
@@ -258,7 +256,7 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
         await dialog.AcceptAsync("Giá trị mặc định từ AutoTool");
     }
 
-    private async Task EnsureBrowserInstalledAsync()
+    private async Task EnsureBrowserInstalledAsync(CancellationToken cancellationToken = default)
     {
         var (scriptPath, browserDir) = GetInstallationPaths();
 
@@ -283,7 +281,7 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
             CleanupOldInstallation(browserDir);
 
             // Gọi hàm chuyên dụng để chạy Process
-            await RunInstallerProcessAsync(scriptPath, browserDir);
+            await RunInstallerProcessAsync(scriptPath, browserDir, cancellationToken);
             _installationStatusSubject.OnNext("Tải tài nguyên thành công!");
 
             // 4. Kiểm tra lại
@@ -315,7 +313,7 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
         _page = await _browser.NewPageAsync();
     }
 
-    private async Task RunInstallerProcessAsync(string scriptPath, string browserDir)
+    private async Task RunInstallerProcessAsync(string scriptPath, string browserDir, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Launching playwright installer...");
 
@@ -339,7 +337,7 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
                 envVars: envVars,
                 onOutput: (msg) => ForwardLogToSubject(msg),
                 onError: (msg) => ForwardLogToSubject(msg, isError: true),
-                cancellationToken: _shutdownCts.Token
+                cancellationToken: cancellationToken
             );
 
             if (exitCode != 0)
@@ -432,17 +430,11 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
         if (_page is not null)
             await _page.CloseAsync();
         if (_browser is not null)
+        {
+            await _browser.CloseAsync();
             await _browser.DisposeAsync();
+        }
         _playwright?.Dispose();
-
-        try
-        {
-            await _shutdownCts.CancelAsync();
-        }
-        catch
-        {
-            // ignored
-        }
         _disposables.Dispose();
         _logger.LogInformation("WebDriverService Disposed!");
     }

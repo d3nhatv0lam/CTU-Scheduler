@@ -1,19 +1,15 @@
-﻿using System;
-using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
-using CTUScheduler.Presentation.Features.SplashScreen.Views;
-using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
+﻿using CTUScheduler.Presentation.Features.SplashScreen.Views;
 using CTUScheduler.Presentation.Services.AppToplevel;
 using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.Factories;
+using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.TimetableDialog;
 using CTUScheduler.Presentation.Services.Viewport;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
 using CTUScheduler.Presentation.Shells.AppShell.Views;
-using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
-using Splat;
 
 namespace CTUScheduler.Presentation.Extensions;
 
@@ -40,6 +36,7 @@ public static class DesktopServiceExtensions
         );
 
         services.AddSingleton<IViewModelFactory, ViewModelFactory>();
+        services.AddSingleton<INavigationRegionManager, NavigationRegionManager>();
         
         // --- UI Helper Services ---
         services.AddSingleton<IToplevelService, ToplevelService>();
@@ -57,6 +54,15 @@ public static class DesktopServiceExtensions
             provider.GetRequiredService<IToplevelService>().Initialize(window);
             return window;
         });
+        
+        // test
+        services.AddTransient<TestSplashWindow>(provider =>
+        {
+            var window = new TestSplashWindow();
+            // Inject window instance vào service để điều khiển
+            provider.GetRequiredService<IToplevelService>().Initialize(window);
+            return window;
+        });
 
         // MainWindow: Cần khởi tạo ToplevelService & ViewportService
         services.AddTransient<MainWindow>(provider =>
@@ -66,12 +72,6 @@ public static class DesktopServiceExtensions
             provider.GetRequiredService<IViewportService>().Initialize(window);
             return window;
         });
-
-        // --- ViewModel Factories ---
-        // Factory để tạo ViewModel có tham số động (ScheduleProfile)
-        services.AddTransient<Func<ScheduleProfile, TimetableEditorViewModel>>(provider => 
-            (profile) => ActivatorUtilities.CreateInstance<TimetableEditorViewModel>(provider, profile));
-
         return services;
     }
 }

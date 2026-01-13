@@ -28,14 +28,13 @@ public class MainViewModel : ViewModelBase , IScreen , IActivatableViewModel
     {
         Activator = new ViewModelActivator();
         
-        _connectivityService = App.ServiceProvider!.GetRequiredService<IConnectivityService>();
+        _connectivityService = App.ServiceProvider.GetRequiredService<IConnectivityService>();
         Router = new RoutingState();
         Router.Navigate.Execute(new LoginViewModel(this));
         // Router.Navigate.Execute(new MainShellViewModel(this));
 
         this.WhenActivated(disposables =>
         {
-            // Check internet status and update window title accordingly
             _connectivityService.IsInternetAvailable
                 .DistinctUntilChanged()
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -44,6 +43,5 @@ public class MainViewModel : ViewModelBase , IScreen , IActivatableViewModel
                     WindowTitle = isAvailable ? "CTU Scheduler" : "CTU Scheduler - No Internet";
                 }).DisposeWith(disposables);
         });
-        
     }
 }

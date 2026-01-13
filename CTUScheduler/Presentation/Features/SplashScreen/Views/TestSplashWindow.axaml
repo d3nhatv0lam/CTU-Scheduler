@@ -1,0 +1,101 @@
+﻿<u:ReactiveUrsaWindow x:TypeArguments="vm:TestSpashWindowViewModel"
+                      xmlns="https://github.com/avaloniaui"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                      xmlns:u="https://irihi.tech/ursa"
+                      x:CompileBindings="True"
+                      x:DataType="vm:TestSpashWindowViewModel"
+                      SizeToContent="WidthAndHeight"
+                      SystemDecorations="None"
+                      WindowStartupLocation="CenterScreen"
+                      CanResize="False"
+                      Width="{Binding WindowWidth}"
+                      Height="{Binding WindowHeight}"
+                      xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.SplashScreen.ViewModels"
+                      xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                      x:Class="CTUScheduler.Presentation.Features.SplashScreen.Views.TestSplashWindow"
+                      Title="TestSplashWindow">
+
+    <Border CornerRadius="12" ClipToBounds="True"
+            Background="{DynamicResource SemiactiveThemeBackgroundBrush}"
+
+            Width="{Binding WindowWidth}"
+            Height="{Binding WindowHeight}">
+
+        <Border.Transitions>
+            <Transitions>
+                <DoubleTransition Property="Width" Duration="0:0:0.4" Easing="CubicEaseOut" />
+                <DoubleTransition Property="Height" Duration="0:0:0.4" Easing="CubicEaseOut" />
+            </Transitions>
+        </Border.Transitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0" RowDefinitions="*, Auto, Auto" Margin="20">
+                <StackPanel Grid.Row="0" VerticalAlignment="Center" Spacing="15">
+                    <Image Source="avares://CTUScheduler/Assets/Logo/icon.ico" Height="100" />
+                    <TextBlock Text="CTU Scheduler" Classes="H4" HorizontalAlignment="Center" />
+                    <u:Loading IsLoading="True" Height="4" Margin="20,0" />
+                    <TextBlock Text="{Binding Message}" HorizontalAlignment="Center" Opacity="0.7" FontSize="12" />
+                </StackPanel>
+
+                <Button Grid.Row="2" Command="{Binding ToggleConsole}"
+                        Classes="Ghost" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <materialIcons:MaterialIcon>
+                            <materialIcons:MaterialIcon.Styles>
+                                <Style Selector="materialIcons|MaterialIcon[Tag=False]">
+                                    <Setter Property="Kind" Value="ChevronRight" />
+                                </Style>
+                                <Style Selector="materialIcons|MaterialIcon[Tag=True]">
+                                    <Setter Property="Kind" Value="ChevronLeft" />
+                                </Style>
+                            </materialIcons:MaterialIcon.Styles>
+                            <materialIcons:MaterialIcon.Tag>
+                                <Binding Path="IsExpanded" />
+                            </materialIcons:MaterialIcon.Tag>
+                        </materialIcons:MaterialIcon>
+
+                        <TextBlock>
+                            <TextBlock.Styles>
+                                <Style Selector="TextBlock[Tag=False]">
+                                    <Setter Property="Text" Value="Chi tiết" />
+                                </Style>
+                                <Style Selector="TextBlock[Tag=True]">
+                                    <Setter Property="Text" Value="Thu gọn" />
+                                </Style>
+                            </TextBlock.Styles>
+                            <TextBlock.Tag>
+                                <Binding Path="IsExpanded" />
+                            </TextBlock.Tag>
+                        </TextBlock>
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <Border Grid.Column="1" Background="Black"
+                    IsVisible="{Binding IsExpanded}"
+                    Padding="10">
+                <Grid RowDefinitions="*, Auto">
+                    <TextBox Text="{Binding InstallationViewModel.ConsoleLog}"
+                             Background="Transparent" BorderThickness="0"
+                             Foreground="#00FF00" FontFamily="Consolas" FontSize="13"
+                             IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True"
+                             CaretIndex="{Binding InstallationViewModel.ConsoleLog.Length}" />
+
+                    <Button Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Top"
+                            Theme="{DynamicResource IconButtonStyle}"
+                            Command="{Binding CloseAppCommand}">
+                        <u:Avatar Classes="Small" Content="X" Background="Red" />
+                    </Button>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</u:ReactiveUrsaWindow>
