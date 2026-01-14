@@ -45,18 +45,21 @@
                 LeftDrawerExpandThresholdWidth="999"
                 LeftDrawerWidth="220">
                 <controls:NavigationDrawer.LeftDrawerContent>
-                    <DockPanel Background="#ECECEC">
+                    <DockPanel Background="White">
                         <!--// CTU Title //-->
-                        <Border Padding="15" Height="70" DockPanel.Dock="Top">
-                            <Grid ColumnDefinitions="auto *">
+                        <Border Classes="header-bar" Background="{StaticResource PrimaryColor}" DockPanel.Dock="Top">
+                            <Grid ColumnDefinitions="50 *"
+                                  ColumnSpacing="-10">
                                 <Image Grid.Column="0"
-                                       Height="50"
-                                       Width="50"
+                                       Height="40"
+                                       Width="40"
                                        Source="/Assets/Images/CTU Logo/CTU_logo_50x50.png" />
-                                <TextBlock Grid.Column="1" Text="Cần Thơ University"
+                                <TextBlock Grid.Column="1" Text="Đại học Cần Thơ"
                                            VerticalAlignment="Center"
                                            HorizontalAlignment="Center"
-                                           FontFamily="{StaticResource Ctu-Title-Font}" />
+                                           FontFamily="{StaticResource Ctu-Title-Font}"
+                                           Foreground="White"
+                                           FontSize="16"/>
                             </Grid>
                         </Border>
 
@@ -200,29 +203,33 @@
 
                 <!--// Content //-->
                 <controls:NavigationDrawer.Content>
-                    <Border Padding="15 10 15 10">
+                    <Border Background="{StaticResource BaseBackgroundColor}">
                         <Grid RowDefinitions="auto *">
                             <!--// Title content //-->
-                            <Grid Grid.Row="0" RowDefinitions="* auto" ColumnDefinitions="50 *">
-                                <ToggleButton x:Name="ExpandToggleButton"
-                                              Grid.Row="0"
-                                              Grid.Column="0"
-                                              Height="35"
-                                              Width="35"
-                                              HorizontalAlignment="Left"
-                                              Content="{materialIcons:MaterialIconTextExt Kind=Menu,Size=25}" />
+                            <Border Grid.Row="0"
+                                    Classes="header-bar">
 
-                                <TextBlock x:Name="txtTitle"
-                                           Text="{Binding Title}"
-                                           Grid.Row="0"
-                                           Grid.Column="1"
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Left"
-                                           FontWeight="Bold"
-                                           FontSize="30" />
-                                <Separator Grid.Row="1" Grid.ColumnSpan="2" />
+                                <Grid RowDefinitions="* auto" ColumnDefinitions="50 *">
+                                    <ToggleButton x:Name="ExpandToggleButton"
+                                                  Grid.Row="0"
+                                                  Grid.Column="0"
+                                                  Height="35"
+                                                  Width="35"
+                                                  HorizontalAlignment="Left"
+                                                  Content="{materialIcons:MaterialIconTextExt Kind=Menu,Size=25}" />
 
-                            </Grid>
+                                    <TextBlock x:Name="txtTitle"
+                                               Text="{Binding Title}"
+                                               Grid.Row="0"
+                                               Grid.Column="1"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Left"
+                                               FontWeight="Bold"
+                                               FontSize="26" 
+                                               Foreground="White"/>
+                                    <!-- <Separator Grid.Row="1" Grid.ColumnSpan="2" /> -->
+                                </Grid>
+                            </Border>
                             <!--// Navigation content //-->
                             <rxui:RoutedViewHost Grid.Row="1" x:Name="PageRounter" Router="{Binding Router}" />
                             <!-- // test // -->
@@ -233,19 +240,17 @@
                 </controls:NavigationDrawer.Content>
             </controls:NavigationDrawer>
         </dialogHostAvalonia:DialogHost>
-        
+
         <!-- // Timetable Information Dialog // -->
         <dialogHostAvalonia:DialogHost
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             Identifier="Timetable"
             CloseOnClickAway="True"
-            DisableOpeningAnimation="True"
-            >
+            DisableOpeningAnimation="True">
             <dialogHostAvalonia:DialogHost.PopupPositioner>
                 <positioners:AlignmentDialogPopupPositioner
-                    Margin="100"
-                    />
+                    Margin="100" />
             </dialogHostAvalonia:DialogHost.PopupPositioner>
         </dialogHostAvalonia:DialogHost>
     </Grid>
