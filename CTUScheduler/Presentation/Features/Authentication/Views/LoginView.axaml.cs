@@ -20,8 +20,8 @@ public partial class LoginView : ReactiveUserControl<LoginViewModel>
             //this.WhenAnyValue(v => v.txtPassword.Text).WhereNotNull().BindTo(ViewModel, vm => vm.Password).DisposeWith(disposables);
 
 
-            this.Bind<LoginViewModel, LoginView, string, string>(ViewModel, vm => vm.UserName, v => v.txtUsername.Text).DisposeWith(disposables);
-            this.Bind<LoginViewModel, LoginView, string, string>(ViewModel, vm => vm.Password, v => v.txtPassword.Text).DisposeWith(disposables);
+            this.Bind<LoginViewModel, LoginView, string, string>(ViewModel, vm => vm.UserName, v => v.txtUsername.Text!).DisposeWith(disposables);
+            this.Bind<LoginViewModel, LoginView, string, string>(ViewModel, vm => vm.Password, v => v.txtPassword.Text!).DisposeWith(disposables);
          
             this.Bind<LoginViewModel, LoginView, bool, bool?>(ViewModel, vm => vm.IsSaveUsername, x => x.chkSaveUsername.IsChecked).DisposeWith(disposables);
             this.BindCommand<LoginView, LoginViewModel, ReactiveCommand<Unit, Unit>, Button>(ViewModel, vm => vm.SignInCommand, x => x.LoginButton).DisposeWith(disposables);

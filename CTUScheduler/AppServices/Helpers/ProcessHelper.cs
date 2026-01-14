@@ -140,11 +140,12 @@ public static class ProcessHelper
                     process.Kill(true); 
                 }
             }
-            catch (Exception ex)
+            catch 
             {
                 // Có thể process vừa tự tắt xong, hoặc không đủ quyền truy cập.
                 // Việc Kill thất bại lúc này không quan trọng, vì mục tiêu là dừng task.
                 // Có thể log warning nhẹ nếu muốn: Debug.WriteLine($"Kill failed: {ex.Message}");
+                // ignore
             }
             throw;
         }

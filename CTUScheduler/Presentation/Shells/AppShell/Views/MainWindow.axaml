@@ -1,8 +1,9 @@
-<rxui:ReactiveWindow
+<u:ReactiveUrsaWindow
 	    x:TypeArguments="vm:MainViewModel" 
-		 xmlns="https://github.com/avaloniaui"
+	    xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:rxui="http://reactiveui.net"
+	    xmlns:u="https://irihi.tech/ursa"
 	    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="clr-namespace:CTUScheduler.Presentation.Shells.AppShell.Views"
@@ -14,9 +15,20 @@
         Icon="avares://CTUScheduler/Assets/Logo/icon.ico"
 		Height="600" Width="1000"
 		MinWidth="350"
+	    SystemDecorations="Full"
 		x:DataType="vm:MainViewModel"
 		x:CompileBindings="True"
 		Focusable="True"
-        Title="{Binding WindowTitle,Mode=OneWay}">
-       <views:MainView/>
-</rxui:ReactiveWindow>
+	    ExtendClientAreaToDecorationsHint="False"
+	    Title="{Binding WindowTitle, Mode=OneWay}"
+	    >
+	
+	<u:ReactiveUrsaWindow.Styles>
+		<!-- // Custom title // -->
+		<Style Selector="u|TitleBar /template/ u|CaptionButtons#PART_CaptionButtons">
+	        <Setter Property="IsVisible" Value="False"></Setter>
+        </Style>
+	</u:ReactiveUrsaWindow.Styles>
+	
+	<views:MainView/>
+</u:ReactiveUrsaWindow>

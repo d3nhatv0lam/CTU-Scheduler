@@ -21,10 +21,11 @@
 	</Application.Resources>
 	
     <Application.Styles>
-        <FluentTheme />
+  <!--       <FluentTheme /> -->
 		<themes:CustomMaterialTheme PrimaryColor="Blue" SecondaryColor="#1f5ca9"/>
+  <dialogHostAvalonia:DialogHostStyles /> 
 		<materialIcons:MaterialIconStyles />
-		<dialogHostAvalonia:DialogHostStyles /> 
+
         <semi:SemiTheme Locale="vi-VN" />
         <u-Semi:SemiTheme Locale="vi-VN"/>
 	</Application.Styles>

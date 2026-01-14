@@ -1,29 +1,39 @@
-<rxui:ReactiveWindow
+<u:ReactiveUrsaWindow
 		x:TypeArguments="viewModels:SplashScreenViewModel"
 		xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="400"
-		Height="400"
-		Width="300"
 		Icon="avares://CTUScheduler/Assets/Logo/icon.ico"
-		TransparencyLevelHint="Transparent"
+		Height="{Binding WindowHeight,Mode=OneTime}"
+		Width="{Binding WindowWidth, Mode=OneTime}"
 		Background="Transparent"
 		WindowStartupLocation="CenterScreen"
 		ExtendClientAreaToDecorationsHint="True"
-		ExtendClientAreaTitleBarHeightHint="0"
 		CanResize="False"
-		xmlns:rxui="http://reactiveui.net"
+		IsCloseButtonVisible="False"
+		CanMinimize="False"
+		IsTitleBarVisible="False"
+		SizeToContent="Manual"
+		xmlns:u="https://irihi.tech/ursa"
 		x:DataType="viewModels:SplashScreenViewModel"
 		x:CompileBindings="True"
-		xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
 		xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 		xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.SplashScreen.ViewModels"
 		x:Class="CTUScheduler.Presentation.Features.SplashScreen.Views.SplashScreenWindow"
 		Title="Splash Screen">
+
 	
-    <Border Background="{StaticResource PrimaryColor}" CornerRadius="10">
+	<!-- assists:ShadowAssist.ShadowDepth="Depth1" -->
+	
+	<Border Background="{StaticResource PrimaryColor}"
+	        CornerRadius="{StaticResource SemiBorderRadiusLarge}">
+		
+		<Border.Effect>
+			<DropShadowEffect BlurRadius="20" Opacity="0.4" Color="Black" OffsetX="5" OffsetY="5"/>
+		</Border.Effect>
+		
 		<Grid RowDefinitions="auto * *">
 			<Grid.Styles>
 				<Style Selector="Button#CloseAppButton:pointerover">
@@ -43,7 +53,6 @@
 				 Height="30"
 				 Width="30"
 				 Cursor="Hand"
-				 assists:ShadowAssist.ShadowDepth="Depth1"
 				 Foreground="White"
 				 Content="{materialIcons:MaterialIconExt Kind=CloseThick,Size=30}"
 				/>
@@ -74,7 +83,7 @@
 							 IsIndeterminate="True"
 							 CornerRadius="5"
 							 Width="200"
-							 Height="15"
+							 Height="{StaticResource SemiWidthIconExtraSmall}"
 							 Background="#184985"
 							 Foreground="White"/>
 				
@@ -84,7 +93,10 @@
 							   HorizontalAlignment="Center"
 							   TextWrapping="Wrap"
 							   TextAlignment="Center"/>
-					
+					<Button Content="hello" 
+					        ZIndex="10" 
+					        Background="Azure" 
+					        Command="{Binding ToggleConsoleCommand}"></Button>
 				</Panel>
 				<TextBlock Grid.Row="7"
 						   x:Name="AppVersionTextBlock"
@@ -93,4 +105,4 @@
 			 </Grid>
 		</Grid>
 	</Border>
-</rxui:ReactiveWindow>
+</u:ReactiveUrsaWindow>

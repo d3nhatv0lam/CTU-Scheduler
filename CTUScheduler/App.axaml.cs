@@ -62,7 +62,7 @@ public class App : Application
         {
             singleViewPlatform.MainView = new MainView
             {
-                DataContext = ServiceProvider.GetService<MainViewModel>() ?? new MainViewModel()
+                DataContext = ServiceProvider.GetService<MainViewModel>()
             };
             
         }
@@ -71,7 +71,7 @@ public class App : Application
     
     private Window InitSplashScreenWindow(IClassicDesktopStyleApplicationLifetime desktop)
     {
-        var splashScreenViewModel = new SplashScreenViewModel();
+        var splashScreenViewModel = ServiceProvider.GetRequiredService<SplashScreenViewModel>();
         var splashScreen = ServiceProvider.GetRequiredService<SplashScreenWindow>();
         splashScreen.DataContext = splashScreenViewModel;
         // var splashScreenViewModel = ServiceProvider.GetRequiredService<TestSpashWindowViewModel>();
@@ -84,7 +84,7 @@ public class App : Application
             {
                 requestClose.RequestClose -= handler;
                 MainWindow mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-                mainWindow.DataContext = new MainViewModel();
+                mainWindow.DataContext = ServiceProvider.GetService<MainViewModel>();
 
                 desktop.MainWindow = mainWindow;
                 desktop.MainWindow?.Show();
@@ -128,14 +128,14 @@ public class App : Application
         TaskScheduler.UnobservedTaskException += (_, args) =>
         {
             Log.Error(args.Exception, "Background Task Error (Unobserved)");
-            args.SetObserved(); // Ngăn app bị crash nếu muốn
+            args.SetObserved(); // Ngăn app bị crash
         };
 
         // Bắt lỗi của ReactiveUI
         RxApp.DefaultExceptionHandler = Observer.Create<Exception>(ex => 
         {
             Log.Error(ex, "ReactiveUI Exception");
-            // Tại đây bạn có thể hiển thị Dialog báo lỗi cho User nếu muốn
+            // có thể hiển thị Dialog báo lỗi cho User tại đây
         });
     }
 }
