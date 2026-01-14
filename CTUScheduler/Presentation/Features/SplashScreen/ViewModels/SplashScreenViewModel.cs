@@ -4,21 +4,15 @@ using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Metadata;
 using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Infrastructure.DriverCore;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Features.Installation.ViewModels;
-using CTUScheduler.Presentation.Features.Installation.Views;
-using CTUScheduler.Presentation.Services.AppToplevel;
-using Microsoft.Extensions.DependencyInjection;
+using CTUScheduler.Presentation.Features.SplashScreen.Components.Installation.ViewModels;
 using Microsoft.Extensions.Hosting;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
@@ -33,6 +27,8 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     private readonly IHostApplicationLifetime _appLifetime;
     private readonly CancellationTokenSource _localCts = new();
     
+    private bool _isDisposed;
+
     // --- 1. CONSTANTS CHO VIỆC RESIZE ---
     private const double SMALL_WIDTH = 300;
     private const double SMALL_HEIGHT = 400;
@@ -41,13 +37,20 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
 
     [Reactive(SetModifier = AccessModifier.Private)]
     private string _message = "Đang kiểm tra kết nối mạng";
-    
-    [Reactive]
-    private double _windowWidth = SMALL_WIDTH;
-    [Reactive]
-    private double _windowHeight = SMALL_HEIGHT;
-    [Reactive]
-    private bool _isExpanded = false;
+
+    [Reactive] private double _windowWidth = SMALL_WIDTH;
+    [Reactive] private double _windowHeight = SMALL_HEIGHT;
+    [Reactive] private bool _isExpanded = false;
+    [ObservableAsProperty] private bool _isDownloading = false;
+
+    [Reactive(SetModifier = AccessModifier.Private)]
+    private InstallationViewModel _installationViewModel;
+
+
+    public string Version => AppConstants.AppVersion;
+
+    public ReactiveCommand<Unit, Unit> CloseAppCommand { get; }
+    public ReactiveCommand<Unit, Unit> ToggleConsoleCommand { get; }
 
     public event Action<object?>? RequestClose;
 
@@ -55,65 +58,23 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     {
         RequestClose?.Invoke(null);
     }
-    
 
-    public string Version => AppConstants.AppVersion;
-
-    public ReactiveCommand<Unit, Unit> CloseAppCommand { get; }
-    public ReactiveCommand<Unit, Unit> ToggleConsoleCommand { get; }
-
-    // public SplashScreenViewModel()
-    // {
-    //     _connectivityService = App.ServiceProvider.GetRequiredService<IConnectivityService>();
-    //     _webDriverService = App.ServiceProvider.GetRequiredService<IWebDriverService>();
-    //     _appLifetime = App.ServiceProvider.GetRequiredService<IHostApplicationLifetime>();
-    //     var toplevelService = App.ServiceProvider.GetRequiredService<IToplevelService>();
-    //     CloseAppCommand = ReactiveCommand.Create(CloseApplication).DisposeWith(_disposables);
-    //     
-    //     _webDriverService.InstallationStatus
-    //         .Delay(TimeSpan.FromSeconds(1d), RxApp.MainThreadScheduler)
-    //         .ObserveOn(RxApp.MainThreadScheduler)
-    //         .Subscribe(message => Message = message)
-    //         .DisposeWith(_disposables);
-    //     
-    //     
-    //     InstallationView? installationView = null;
-    //     _webDriverService.IsInstalling
-    //         .DistinctUntilChanged()
-    //         .ObserveOn(RxApp.MainThreadScheduler)
-    //         .Subscribe(isInstalling =>
-    //         {
-    //             if (isInstalling && installationView is null)
-    //             {
-    //                 InstallationViewModel vm = new(_webDriverService.InstallationProgress);
-    //                 installationView = new InstallationView
-    //                 {
-    //                     ViewModel = vm
-    //                 };
-    //                 toplevelService.ShowWindow(installationView);
-    //             }
-    //             else if (!isInstalling && installationView is not null)
-    //             {
-    //                 installationView.Close();
-    //                 (installationView.ViewModel as IDisposable)?.Dispose();
-    //                 installationView = null;
-    //             }
-    //         })
-    //         .DisposeWith(_disposables);
-    //     
-    //     InitializeStartup();
-    // }
 
     public SplashScreenViewModel(
         IConnectivityService connectivityService,
         IWebDriverService webDriverService,
-        IHostApplicationLifetime appLifetime,
-        IToplevelService toplevelService)
+        IHostApplicationLifetime appLifetime)
     {
         _connectivityService = connectivityService;
         _webDriverService = webDriverService;
         _appLifetime = appLifetime;
-        var localToplevelService = toplevelService;
+        _installationViewModel = new InstallationViewModel(_webDriverService.InstallationProgress)
+            .DisposeWith(_disposables);
+
+        _isDownloadingHelper = _webDriverService.IsInstalling
+            .ToProperty(this, nameof(IsDownloading), scheduler: RxApp.MainThreadScheduler)
+            .DisposeWith(_disposables);
+
         
         CloseAppCommand = ReactiveCommand.Create(CloseApplication).DisposeWith(_disposables);
         ToggleConsoleCommand = ReactiveCommand.Create(ToggleConsole).DisposeWith(_disposables);
@@ -123,32 +84,17 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(message => Message = message)
             .DisposeWith(_disposables);
-
-
-        InstallationView? installationView = null;
-        _webDriverService.IsInstalling
-            .DistinctUntilChanged()
+        
+        // clean up when download sussess
+        this.WhenAnyValue(x => x.IsDownloading,
+                x => x.IsExpanded,
+                (isDownloading, isExpanded) => !isDownloading && isExpanded)
+            .Skip(1)
+            .Where(x => x)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(isInstalling =>
-            {
-                if (isInstalling && installationView is null)
-                {
-                    InstallationViewModel vm = new(_webDriverService.InstallationProgress);
-                    installationView = new InstallationView
-                    {
-                        ViewModel = vm
-                    };
-                    localToplevelService.ShowWindow(installationView);
-                }
-                else if (!isInstalling && installationView is not null)
-                {
-                    installationView.Close();
-                    (installationView.ViewModel as IDisposable)?.Dispose();
-                    installationView = null;
-                }
-            })
+            .Subscribe(_ => ToggleConsole())
             .DisposeWith(_disposables);
-
+        
         InitializeStartup();
     }
 
@@ -174,11 +120,22 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
             .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(async _ =>
             {
-                using (linkedCts)
-                {
-                    await _webDriverService.InitWebDriverService(linkedCts.Token);
-                }
+                if (_localCts.IsCancellationRequested) return Unit.Default;
 
+                using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+                    _appLifetime.ApplicationStopping,
+                    _localCts.Token
+                );
+
+                try 
+                {
+                    await _webDriverService.InitWebDriverService(linkedTokenSource.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    // ignored
+                }
+                
                 return Unit.Default;
             })
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -196,7 +153,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
                 })
             .DisposeWith(_disposables);
     }
-    
+
     private void ToggleConsole()
     {
         IsExpanded = !IsExpanded;
@@ -210,7 +167,6 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
             WindowHeight = LARGE_HEIGHT;
             WindowWidth = LARGE_WIDTH;
         }
-
     }
 
     private void CloseApplication()
@@ -223,8 +179,25 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
 
     public void Dispose()
     {
-        _localCts.Cancel();
-        _localCts.Dispose();
-        _disposables.Dispose();
+        if (_isDisposed) return;
+        
+        _isDisposed = true;
+        
+        try 
+        {
+            if (!_localCts.IsCancellationRequested)
+            {
+                _localCts.Cancel();
+            }
+        }
+        catch (ObjectDisposedException) 
+        { 
+            // Bỏ qua nếu nó đã lỡ bị dispose ở đâu đó khác
+        }
+        finally
+        {
+            _localCts.Dispose();
+            _disposables.Dispose();
+        }
     }
 }

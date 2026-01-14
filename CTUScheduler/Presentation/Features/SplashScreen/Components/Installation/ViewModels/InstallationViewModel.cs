@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
@@ -7,12 +6,13 @@ using System.Text.RegularExpressions;
 using CTUScheduler.Presentation.Base;
 using ReactiveUI;
 
-namespace CTUScheduler.Presentation.Features.Installation.ViewModels;
+namespace CTUScheduler.Presentation.Features.SplashScreen.Components.Installation.ViewModels;
 
 public class InstallationViewModel : ViewModelBase, IDisposable
 {
     private readonly CompositeDisposable _disposables = new();
-    private string _consoleLog = "> Khởi tạo môi trường...\n> Bạn có thể tắt cửa sổ này, quá trình tải vẫn được thực hiện trong nền\n";
+    
+    private string _consoleLog = "> Khởi tạo môi trường...\n";
 
     // 1. Regex xóa mã màu rác (ANSI)
     private readonly Regex _ansiRegex = new Regex(@"\x1B\[[0-9;?]*[a-zA-Z]", RegexOptions.Compiled);

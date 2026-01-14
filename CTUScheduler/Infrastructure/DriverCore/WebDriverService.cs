@@ -425,6 +425,7 @@ public class WebDriverService : IWebDriverService, IAsyncDisposable
         }
     }
 
+
     public async ValueTask DisposeAsync()
     {
         if (_page is not null)

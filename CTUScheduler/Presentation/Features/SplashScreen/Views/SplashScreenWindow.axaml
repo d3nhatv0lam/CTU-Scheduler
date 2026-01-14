@@ -1,108 +1,187 @@
 <u:ReactiveUrsaWindow
-		x:TypeArguments="viewModels:SplashScreenViewModel"
-		xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="400"
-		Icon="avares://CTUScheduler/Assets/Logo/icon.ico"
-		Height="{Binding WindowHeight,Mode=OneTime}"
-		Width="{Binding WindowWidth, Mode=OneTime}"
-		Background="Transparent"
-		WindowStartupLocation="CenterScreen"
-		ExtendClientAreaToDecorationsHint="True"
-		CanResize="False"
-		IsCloseButtonVisible="False"
-		CanMinimize="False"
-		IsTitleBarVisible="False"
-		SizeToContent="Manual"
-		xmlns:u="https://irihi.tech/ursa"
-		x:DataType="viewModels:SplashScreenViewModel"
-		x:CompileBindings="True"
-		xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-		xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.SplashScreen.ViewModels"
-		x:Class="CTUScheduler.Presentation.Features.SplashScreen.Views.SplashScreenWindow"
-		Title="Splash Screen">
+    x:TypeArguments="viewModels:SplashScreenViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="400"
+    Icon="avares://CTUScheduler/Assets/Logo/icon.ico"
+    Height="{Binding WindowHeight,Mode=OneTime}"
+    Width="{Binding WindowWidth, Mode=OneTime}"
+    Background="Transparent"
+    WindowStartupLocation="CenterScreen"
+    ExtendClientAreaToDecorationsHint="False"
+    ExtendClientAreaChromeHints="NoChrome"
+    CanResize="False"
+    IsCloseButtonVisible="False"
+    CanMinimize="False"
+    IsTitleBarVisible="False"
+    BorderThickness="0"
+    SizeToContent="Manual"
+    TransparencyLevelHint="Transparent"
+    SystemDecorations="None"
+    BorderBrush="Transparent"
+    UseLayoutRounding="True"
+    xmlns:u="https://irihi.tech/ursa"
+    x:DataType="viewModels:SplashScreenViewModel"
+    x:CompileBindings="True"
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.SplashScreen.ViewModels"
+    xmlns:gridHelper="clr-namespace:CTUScheduler.Presentation.Shared.Helpers"
+    xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.SplashScreen.Components.Installation.Views"
+    x:Class="CTUScheduler.Presentation.Features.SplashScreen.Views.SplashScreenWindow"
+    Title="Splash Screen">
 
-	
-	<!-- assists:ShadowAssist.ShadowDepth="Depth1" -->
-	
-	<Border Background="{StaticResource PrimaryColor}"
-	        CornerRadius="{StaticResource SemiBorderRadiusLarge}">
-		
-		<Border.Effect>
-			<DropShadowEffect BlurRadius="20" Opacity="0.4" Color="Black" OffsetX="5" OffsetY="5"/>
-		</Border.Effect>
-		
-		<Grid RowDefinitions="auto * *">
-			<Grid.Styles>
-				<Style Selector="Button#CloseAppButton:pointerover">
-						<Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-							<Setter Property="Background" Value="Transparent"/>
-							<Setter Property="Foreground" Value="LightGray"/>
-					</Style>
-				</Style>
-			</Grid.Styles>
-			
-			<Button Grid.Row="0"
-				 Name="CloseAppButton"
-				 VerticalAlignment="Top"
-				 HorizontalAlignment="Right"
-				 Background="Transparent"
-				 Margin="0 10 10 0"
-				 Height="30"
-				 Width="30"
-				 Cursor="Hand"
-				 Foreground="White"
-				 Content="{materialIcons:MaterialIconExt Kind=CloseThick,Size=30}"
-				/>
+    <u:ReactiveUrsaWindow.Styles>
+        <Style Selector="Grid.Container">
+            <Setter Property="gridHelper:GridHelper.ColDefs" Value="* auto" />
+            <Style Selector="^.expanded">
+                <Setter Property="gridHelper:GridHelper.ColDefs" Value="* 2*" />
+                <!-- <Setter Property="Background" Value="Black" /> -->
+            </Style>
+        </Style>
+        
+        <Style Selector="Button.close-button">
+            <Setter Property="Grid.Column" Value="0"/>
+            <Style Selector="^.expanded">
+                <Setter Property="Grid.Column" Value="1"/>
+            </Style>
+        </Style>
+        
+    </u:ReactiveUrsaWindow.Styles>
 
-			<Image Grid.Row="1" Height="180" Source="avares://CTUScheduler/Assets/Images/CTU Logo/CTU_logo_180x180.png"/>
-			<Grid Grid.Row="2" RowDefinitions="10 auto auto 15 auto 5 * auto 5">
-				 <Grid.Styles>
-					 <Style Selector="TextBlock">
-						 <Setter Property="HorizontalAlignment" Value="Center"/>
-						 <Setter Property="VerticalAlignment" Value="Center"/>
-						 <Setter Property="Foreground" Value="White"/>
-						 <Setter Property="FontFamily" Value="{StaticResource Ctu-Title-Font}"/>
-					 </Style>
-					<Style Selector="TextBlock.Title">
-						<Setter Property="FontFamily" Value="{StaticResource Ctu-Text-Font}"/>
-					</Style>
-				 </Grid.Styles>
-				
-				 <TextBlock Grid.Row="1"
-							Classes="Title"
-							FontSize="20"
-							Text="CTU Scheduler"
-							/>
-				
-				<Separator Grid.Row="2" Background="White"/>
-				
-				<ProgressBar Grid.Row="4"
-							 IsIndeterminate="True"
-							 CornerRadius="5"
-							 Width="200"
-							 Height="{StaticResource SemiWidthIconExtraSmall}"
-							 Background="#184985"
-							 Foreground="White"/>
-				
-				<Panel Grid.Row="6">
-					<TextBlock Name="MessageTextBlock"
-							   VerticalAlignment="Center"
-							   HorizontalAlignment="Center"
-							   TextWrapping="Wrap"
-							   TextAlignment="Center"/>
-					<Button Content="hello" 
-					        ZIndex="10" 
-					        Background="Azure" 
-					        Command="{Binding ToggleConsoleCommand}"></Button>
-				</Panel>
-				<TextBlock Grid.Row="7"
-						   x:Name="AppVersionTextBlock"
-						   VerticalAlignment="Center"
-						   HorizontalAlignment="Center"/>
-			 </Grid>
-		</Grid>
-	</Border>
+
+    <!-- assists:ShadowAssist.ShadowDepth="Depth1" -->
+
+    <Border
+        x:Name="MainContainer"
+        ClipToBounds="True"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"
+        Background="{StaticResource PrimaryColor}"
+        CornerRadius="{StaticResource SemiBorderRadiusLarge}">
+
+        <Border.Transitions>
+            <Transitions>
+                <ThicknessTransition Property="Margin" Duration="0:0:0.3">
+                    <ThicknessTransition.Easing>
+                        <QuarticEaseOut />
+                    </ThicknessTransition.Easing>
+                </ThicknessTransition>
+                <DoubleTransition Property="Width" Duration="0:0:0.3">
+                    <DoubleTransition.Easing>
+                        <QuarticEaseOut />
+                    </DoubleTransition.Easing>
+                </DoubleTransition>
+                <DoubleTransition Property="Height" Duration="0:0:0.3">
+                    <DoubleTransition.Easing>
+                        <QuarticEaseOut />
+                    </DoubleTransition.Easing>
+                </DoubleTransition>
+            </Transitions>
+        </Border.Transitions>
+
+        <Grid 
+              Classes="Container"
+              Classes.expanded="{Binding IsExpanded}"
+              ColumnDefinitions="* auto"
+              >
+            
+            <!-- // Close Button // -->
+            <Button
+                    Classes="close-button"
+                    Classes.expanded="{Binding IsExpanded}"
+                    Name="CloseAppButton"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Right"
+                    Background="Transparent"
+                    Margin="0 10 10 0"
+                    Height="30"
+                    Width="30"
+                    Cursor="Hand"
+                    Foreground="White"
+                    ZIndex="100"
+                    Content="{materialIcons:MaterialIconExt Kind=CloseThick,Size=30}" />
+            
+            <!-- // Card // -->
+            <Grid Grid.Column="0"
+                  RowDefinitions="auto * *">
+                <Grid.Styles>
+                    <Style Selector="Button#CloseAppButton:pointerover">
+                        <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="Foreground" Value="LightGray" />
+                        </Style>
+                    </Style>
+                </Grid.Styles>
+                
+                <Image Grid.Row="1" Height="180"
+                       Source="avares://CTUScheduler/Assets/Images/CTU Logo/CTU_logo_180x180.png" />
+
+                <Grid Grid.Row="2"
+                      RowDefinitions="10 auto auto 15 auto 5 * auto 5">
+                    <Grid.Styles>
+                        <Style Selector="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Center" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="Foreground" Value="White" />
+                            <Setter Property="FontFamily" Value="{StaticResource Ctu-Title-Font}" />
+                        </Style>
+                        <Style Selector="TextBlock.Title">
+                            <Setter Property="FontFamily" Value="{StaticResource Ctu-Text-Font}" />
+                        </Style>
+                    </Grid.Styles>
+
+                    <TextBlock Grid.Row="1"
+                               Classes="Title"
+                               FontSize="20"
+                               Text="CTU Scheduler" />
+
+                    <Separator Grid.Row="2" Background="White" />
+
+                    <ProgressBar Grid.Row="4"
+                                 IsIndeterminate="True"
+                                 CornerRadius="5"
+                                 Width="200"
+                                 Height="{StaticResource SemiWidthIconExtraSmall}"
+                                 Background="#184985"
+                                 Foreground="White" />
+
+                    <Panel Grid.Row="6">
+                        <TextBlock Name="MessageTextBlock"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center" />
+                    </Panel>
+                    <TextBlock Grid.Row="7"
+                               x:Name="AppVersionTextBlock"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center" 
+                               Margin="0 5 0 0"/>
+                </Grid>
+                
+                <Button Grid.Row="0" 
+                        Grid.RowSpan="3"
+                        Margin="0 0 5 10"
+                        VerticalAlignment="Bottom"
+                        HorizontalAlignment="Right"
+                        ZIndex="10"
+                        Background="Azure"
+                        Content="{materialIcons:MaterialIconExt Kind=Console}"
+                        ToolTip.Tip="Xem chi tiết tải gói tài nguyên!"
+                        IsVisible="{Binding IsDownloading}"
+                        Command="{Binding ToggleConsoleCommand}">
+                </Button>
+            </Grid>
+
+            <!-- // Console // -->
+            <Border Grid.Column="1"
+                    IsVisible="{Binding IsExpanded}">
+                <views:InstallationView 
+                    DataContext="{Binding InstallationViewModel}"/>
+            </Border>
+        </Grid>
+
+    </Border>
 </u:ReactiveUrsaWindow>

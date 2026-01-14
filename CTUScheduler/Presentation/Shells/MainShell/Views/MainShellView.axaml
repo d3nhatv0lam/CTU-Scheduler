@@ -24,9 +24,9 @@
         <themes:CustomMaterialTheme PrimaryColor="Blue" SecondaryColor="#1f5ca9" />
     </rxui:ReactiveUserControl.Styles>
 
-    <Design.DataContext>
-        <vm:MainShellViewModel />
-    </Design.DataContext>
+    <!-- <Design.DataContext> -->
+    <!--     <vm:MainShellViewModel /> -->
+    <!-- </Design.DataContext> -->
     <!-- // Main Dialog // -->
     <Grid>
         <dialogHostAvalonia:DialogHost Identifier="MainLayout" CloseOnClickAway="False">

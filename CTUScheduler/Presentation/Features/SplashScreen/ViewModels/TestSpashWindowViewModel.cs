@@ -13,7 +13,7 @@ using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Infrastructure.DriverCore;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Features.Installation.ViewModels;
+using CTUScheduler.Presentation.Features.SplashScreen.Components.Installation.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;

@@ -119,6 +119,10 @@
       <DependentUpon>TimetableView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Presentation\Features\SplashScreen\Components\Installation\Views\InstallationView.axaml.cs">
+      <DependentUpon>InstallationView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -129,14 +133,11 @@
     <AdditionalFiles Include="Presentation\Features\Scheduling\Views\HandmadeFindCourseView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Scheduling\Views\TimetableSchedulerView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Setting\Views\SettingView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\SplashScreen\Components\Installation\Views\InstallationView.axaml" />
     <AdditionalFiles Include="Presentation\Features\SplashScreen\Views\SplashScreenWindow.axaml" />
     <AdditionalFiles Include="Presentation\Features\TimetableManager\Views\TimetableManagerView.axaml" />
     <AdditionalFiles Include="Presentation\Features\TimetableRefactor\Views\TimetableLayoutView.axaml" />
     <AdditionalFiles Include="Presentation\Shared\Styles\Controls.axaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Presentation\Features\SplashScreen\Components\" />
   </ItemGroup>
 
 </Project>

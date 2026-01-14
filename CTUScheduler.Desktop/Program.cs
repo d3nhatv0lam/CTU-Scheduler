@@ -55,7 +55,8 @@ class Program
         }
         finally
         {
-            bool cleanShutdown = Task.Run(async () =>
+            // check sau
+            var cleanShutdown = Task.Run(async () =>
             {
                 try
                 {
@@ -72,6 +73,7 @@ class Program
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Cleanup error: {ex.Message}");
+                    Log.Error(ex, "Failed to clean up resources");
                     return false;
                 }
             }).Wait(5000);
