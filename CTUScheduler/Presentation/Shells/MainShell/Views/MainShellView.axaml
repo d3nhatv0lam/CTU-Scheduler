@@ -65,8 +65,8 @@
 
                         <!--// Student Info //-->
                         <StackPanel DockPanel.Dock="Top">
-                            <Border Padding="15">
-                                <Border MinHeight="60" CornerRadius="10" Background="White">
+                            <Border MinHeight="90" CornerRadius="0,0,15,15" Background="{StaticResource BaseBackgroundColor}">
+                                <Border MinHeight="60">
                                     <Grid ColumnDefinitions="50 *">
                                         <materialIcons:MaterialIcon Grid.Column="0"
                                                                     Kind="AccountSchool"
@@ -86,7 +86,8 @@
                                                                  Text="{Binding UserName, Mode=OneWay}"
                                                                  VerticalAlignment="Bottom"
                                                                  FontWeight="Bold"
-                                                                 FontSize="15" />
+                                                                 FontSize="15" 
+                                                                 Foreground="{StaticResource Grey}"/>
                                             <SelectableTextBlock x:Name="txtMSSV"
                                                                  Grid.Row="1"
                                                                  Text="{Binding UserMSSV, Mode=OneWay}"
@@ -100,7 +101,7 @@
                         </StackPanel>
 
                         <!--// navigation & Logout //-->
-                        <Border Padding="15">
+                        <Border Padding="8">
                             <Border CornerRadius="5" Background="White">
                                 <StackPanel>
                                     <!--// Navigation //-->
@@ -112,16 +113,23 @@
                                                  Focusable="{Binding ElementName=LeftDrawer, Path=LeftDrawerOpened}">
                                             <ListBox.Styles>
                                                 <Style Selector="ListBoxItem">
-                                                    <Setter Property="Height" Value="40" />
+                                                    <Setter Property="Height" Value="45" />
                                                     <Setter Property="Padding" Value="0" />
-                                                    <Setter Property="Margin" Value="0" />
                                                     <Setter Property="Cursor" Value="Hand" />
+                                                    <Setter Property="Margin" Value="0,5"></Setter>
+                                                    <Setter Property="BorderThickness" Value="6,0,0,0"></Setter>
                                                 </Style>
-
-                                                <Style Selector="ListBoxItem:selected Border">
-                                                    <Setter Property="Background" Value="#9ddcfa" />
+                                                <Style Selector="ListBoxItem > Border">
+                                                    <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}"></Setter>
                                                 </Style>
-
+                                                <Style Selector="ListBoxItem Border Panel Border">
+                                                    <Setter Property="CornerRadius" Value="8"></Setter>
+                                                </Style>
+                                                <Style Selector="ListBoxItem:selected > Border">
+                                                    <Setter Property="BorderBrush" Value="{StaticResource PrimaryColor}" />
+                                                    <Setter Property="BorderThickness" Value="6,0,0,0"></Setter>
+                                                    <Setter Property="CornerRadius" Value="10"></Setter>
+                                                </Style>
 
                                             </ListBox.Styles>
 
@@ -132,13 +140,18 @@
                                                             <Style Selector="TextBlock">
                                                                 <Setter Property="VerticalAlignment" Value="Center" />
                                                             </Style>
+                                                            <Style Selector="Border">
+                                                                <Setter Property="BorderBrush" Value="Transparent"/>
+                                                            </Style>
                                                         </Grid.Styles>
-                                                        <Border
-                                                            IsVisible="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType= ListBoxItem}}"
-                                                            Grid.Column="0" CornerRadius="0 5 5 0" Background="Blue" />
+                                                        <!-- <Border -->
+                                                        <!--     IsVisible="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType= ListBoxItem}}" -->
+                                                        <!--     Grid.Column="0" CornerRadius="0 5 5 0" Background="Blue" /> -->
                                                         <materialIcons:MaterialIcon Grid.Column="2" Height="25"
-                                                                Width="25" Kind="{Binding Kind}" />
-                                                        <TextBlock Grid.Column="5" Text="{Binding Title}" />
+                                                                Width="25" Kind="{Binding Kind}"
+                                                                Foreground="{StaticResource Grey}"/>
+                                                        <TextBlock Grid.Column="5" Text="{Binding Title}"
+                                                                   Foreground="{StaticResource Grey}"/>
                                                     </Grid>
                                                 </DataTemplate>
                                             </ListBox.ItemTemplate>
@@ -161,16 +174,16 @@
                                     </Border>
 
 
-                                    <Border Padding="15">
+                                    <Border Padding="10">
                                         <Separator Height="2" />
                                     </Border>
 
                                     <!--// Logout Button //-->
 
                                     <Button x:Name="BtnLogout"
-                                            Background="White"
                                             Height="50"
-                                            Foreground="Black"
+                                            Foreground="{StaticResource RedColor}"
+                                            Background="Transparent"
                                             VerticalContentAlignment="Stretch"
                                             HorizontalContentAlignment="Stretch"
                                             Padding="0"

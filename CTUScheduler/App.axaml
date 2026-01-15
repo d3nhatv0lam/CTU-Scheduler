@@ -9,29 +9,30 @@
              xmlns:u="https://irihi.tech/ursa"
              xmlns:timetableTemplates="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.Templates"
              RequestedThemeVariant="Light">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+    <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
-	<Application.Resources>
-		<ResourceDictionary>
-			<ResourceDictionary.MergedDictionaries>
-				<ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Colors.axaml"></ResourceInclude>
-				<ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Fonts.axaml"></ResourceInclude>
-				<ResourceInclude Source="avares://CTUScheduler/Assets/Localization/Locale.vi-VN.axaml"></ResourceInclude>
-			</ResourceDictionary.MergedDictionaries>
-		</ResourceDictionary>
-	</Application.Resources>
-	
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Colors.axaml"></ResourceInclude>
+                <ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Fonts.axaml"></ResourceInclude>
+                <ResourceInclude Source="avares://CTUScheduler/Assets/Localization/Locale.vi-VN.axaml"></ResourceInclude>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
     <Application.Styles>
-		<!--<FluentTheme /> -->
-		<themes:CustomMaterialTheme PrimaryColor="Blue" SecondaryColor="#1f5ca9"/>
-		<dialogHostAvalonia:DialogHostStyles />
-		<materialIcons:MaterialIconStyles/>
+        <!--       <FluentTheme /> -->
+        <themes:CustomMaterialTheme PrimaryColor="Blue" SecondaryColor="#1f5ca9" />
+        <dialogHostAvalonia:DialogHostStyles />
+        <materialIcons:MaterialIconStyles />
+
         <semi:SemiTheme Locale="vi-VN" />
-        <u-Semi:SemiTheme Locale="vi-VN"/>
-        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml"/>
-	</Application.Styles>
-             
-     <Application.DataTemplates>
-         <timetableTemplates:LayoutTemplate/>
-     </Application.DataTemplates>
+        <u-Semi:SemiTheme Locale="vi-VN" />
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
+    </Application.Styles>
+
+    <Application.DataTemplates>
+        <timetableTemplates:LayoutTemplate />
+    </Application.DataTemplates>
 </Application>
