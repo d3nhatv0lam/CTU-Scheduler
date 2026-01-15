@@ -9,6 +9,7 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using ReactiveUI;
+using Ursa.Controls;
 using Ursa.ReactiveUIExtension;
 
 namespace CTUScheduler.Presentation.Features.SplashScreen.Views;

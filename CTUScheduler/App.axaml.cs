@@ -74,9 +74,6 @@ public class App : Application
         var splashScreenViewModel = ServiceProvider.GetRequiredService<SplashScreenViewModel>();
         var splashScreen = ServiceProvider.GetRequiredService<SplashScreenWindow>();
         splashScreen.DataContext = splashScreenViewModel;
-        // var splashScreenViewModel = ServiceProvider.GetRequiredService<TestSpashWindowViewModel>();
-        // var splashScreen = ServiceProvider.GetRequiredService<TestSplashWindow>();
-        // splashScreen.DataContext = splashScreenViewModel;
         if (splashScreenViewModel is IRequestClose requestClose)
         {
             Action<object?>? handler = null;

@@ -39,7 +39,6 @@ public static class DesktopServiceExtensions
         services.AddSingleton<INavigationRegionManager, NavigationRegionManager>();
         
         // --- UI Helper Services ---
-        services.AddSingleton<IToplevelService, ToplevelService>();
         services.AddSingleton<IViewportService, ViewportService>();
         services.AddSingleton<IDialogHostService, DialogHostService>();
         services.AddSingleton<ITimetableDialogService, TimetableDialogService>();
@@ -50,25 +49,14 @@ public static class DesktopServiceExtensions
         services.AddTransient<SplashScreenWindow>(provider =>
         {
             var window = new SplashScreenWindow();
-            // Inject window instance vào service để điều khiển
-            provider.GetRequiredService<IToplevelService>().Initialize(window);
             return window;
         });
         
-        // test
-        services.AddTransient<TestSplashWindow>(provider =>
-        {
-            var window = new TestSplashWindow();
-            // Inject window instance vào service để điều khiển
-            provider.GetRequiredService<IToplevelService>().Initialize(window);
-            return window;
-        });
 
         // MainWindow: Cần khởi tạo ToplevelService & ViewportService
         services.AddTransient<MainWindow>(provider =>
         {
             var window = new MainWindow();
-            provider.GetRequiredService<IToplevelService>().Initialize(window);
             provider.GetRequiredService<IViewportService>().Initialize(window);
             return window;
         });

@@ -55,36 +55,43 @@ class Program
         }
         finally
         {
-            // check sau
-            var cleanShutdown = Task.Run(async () =>
+            var shutdownTask = Task.Run(async () =>
             {
                 try
                 {
                     using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
                     await host.StopAsync(cts.Token);
-                    
+        
                     if (host is IAsyncDisposable asyncDisposable)
                         await asyncDisposable.DisposeAsync();
                     else
                         host.Dispose();
-                
-                    return true;
+    
+                    return true; 
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Cleanup error: {ex.Message}");
                     Log.Error(ex, "Failed to clean up resources");
                     return false;
                 }
-            }).Wait(5000);
+            });
+            
+            bool finishedInTime = shutdownTask.Wait(5000);
 
-            if (!cleanShutdown)
+            if (!finishedInTime)
             {
                 Log.Warning("Shutdown timed out - some resources might be forced to close.");
             }
             else
             {
-                Log.Information("Shutdown complete.");
+                if (shutdownTask.Result) 
+                {
+                    Log.Information("Shutdown complete successfully.");
+                }
+                else
+                {
+                    Log.Error("Shutdown completed but failed internally (check cleanup error log).");
+                }
             }
             
             Log.Information("================= LOG END =================");
