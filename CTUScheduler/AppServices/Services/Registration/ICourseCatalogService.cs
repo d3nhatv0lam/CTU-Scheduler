@@ -33,7 +33,7 @@ public interface ICourseCatalogService
     /// </summary>
     /// <param name="courseCode">The unique identifier for the course to retrieve.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the task to complete, allowing the operation to be canceled.</param>
-    /// <param name="timeout"> default is 5sec</param>
+    /// <param name="timeout"> default is 3sec</param>
     /// <returns>A task that represents the asynchronous operation, returning the course details for the provided course code.</returns>
     Task<Course> FetchCourseAsync(string courseCode, CancellationToken cancellationToken = default,TimeSpan? timeout = null);
 }

@@ -16,11 +16,16 @@ namespace CTUScheduler.AppServices.Services.Registration;
 
 public class CourseCatalogService : ICourseCatalogService
 {
+    private static readonly TimeSpan DefaultFetchTimeout = TimeSpan.FromSeconds(3);
+    private static readonly TimeSpan DefaultStreamTimeout = TimeSpan.FromSeconds(10);
+    
     private readonly ILogger<CourseCatalogService> _logger;
     private readonly ICtuSitePageFactory _factory;
     private readonly ICourseCatalogPage _catalogPage;
     
-    public CourseCatalogService(ILogger<CourseCatalogService> logger, ICtuSitePageFactory factory)
+    public CourseCatalogService(
+        ILogger<CourseCatalogService> logger, 
+        ICtuSitePageFactory factory)
     {
         _logger = logger;
         _factory = factory;
@@ -46,7 +51,7 @@ public class CourseCatalogService : ICourseCatalogService
 
     public IObservable<List<QuickSelectCourse>> GetSuggestionsStream(string query, TimeSpan? timeout = null)
     {
-        var finalTimeout = timeout ?? TimeSpan.FromSeconds(5);
+        var finalTimeout = timeout ?? DefaultStreamTimeout;
         return Observable.Create<List<QuickSelectCourse>>(async (observer, ct) =>
         {
             var subscription = _catalogPage.AutoCompleteQueryResponse
@@ -76,7 +81,7 @@ public class CourseCatalogService : ICourseCatalogService
 
     public IObservable<Course> GetCourseStream(string query, TimeSpan? timeout = null)
     {
-        var finalTimeout = timeout ?? TimeSpan.FromSeconds(10);
+        var finalTimeout = timeout ?? DefaultStreamTimeout;
         return Observable.Create<Course>(async (observer, ct) =>
         {
             var subscription = _catalogPage.CourseCatalogResponse
@@ -113,12 +118,11 @@ public class CourseCatalogService : ICourseCatalogService
         if (!await _catalogPage.IsActive.FirstAsync())
             throw new InvalidOperationException("Course catalog page is not active");
         
-        var finalTimeout = timeout ?? TimeSpan.FromSeconds(5);
+        var finalTimeout = timeout ?? DefaultFetchTimeout;
         
         try
         {
-            return await GetCourseStream(courseCode)
-                .Timeout(finalTimeout)
+            return await GetCourseStream(courseCode,finalTimeout)
                 .FirstAsync() 
                 .ToTask(cancellationToken);
         }
