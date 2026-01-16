@@ -45,7 +45,7 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
         _navigationRegionManager.NavigateAndResetTo<MainShellViewModel>(_regionId);
 
         // Router.Navigate.Execute(new LoginViewModel(this));
-        // Router.Navigate.Execute(new MainShellViewModel(this));
+        Router.Navigate.Execute(new MainShellViewModel(this));
 
         this.WhenActivated((CompositeDisposable disposables) =>
         {
