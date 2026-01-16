@@ -13,9 +13,8 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.AppServices.Services.Registration;
 
-public class RegistrationRulesService: IRegistrationRulesService, IDisposable
+public class RegistrationRulesService: IRegistrationRulesService
 {
-    private readonly CompositeDisposable _disposables = new();
     private readonly ILogger<RegistrationRulesService> _logger;
     private readonly ICtuSitePageFactory _factory;
     private readonly IRegistrationRulesPage _rulesPage;
@@ -39,7 +38,7 @@ public class RegistrationRulesService: IRegistrationRulesService, IDisposable
             .RefCount();
     }
 
-    public async Task<OperationResult> NavigateToAsync()
+    public async Task<OperationResult> EnsureReadyAsync()
     {
         try
         {
@@ -49,7 +48,7 @@ public class RegistrationRulesService: IRegistrationRulesService, IDisposable
             await _rulesPage.NavigateToAsync(allowRedirection:false);
             
             var homePage = _factory.GetPage<IMainPage>();
-            if (await homePage.TryWaitForActiveAsync(1000,10000))
+            if (await homePage.TryWaitForActiveAsync( stabilityMs:1000,timeout:10000))
             {
                 await homePage.NavigateToDkmhAsync();
                 if (!await _rulesPage.TryWaitForActiveAsync()) 
@@ -80,10 +79,5 @@ public class RegistrationRulesService: IRegistrationRulesService, IDisposable
             _logger.LogWarning(ex, "Failed to parse registration info or get user key.");
             return null; 
         }
-    }
-
-    public void Dispose()
-    {
-        _disposables.Dispose();
     }
 }

@@ -6,6 +6,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Services.MainHomeService;
+using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Features.Home.ViewModels;
@@ -19,7 +20,7 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 {
-    public class MainShellViewModel: ViewModelBase, IScreen , IRoutableViewModel, IDisposable
+    public class MainShellViewModel: ViewModelBase, IScreen , IRoutableViewModel, IDisposable, INeedArgs<IScreen>
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly IDialogHostService _dialogHostService;

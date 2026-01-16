@@ -45,8 +45,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
 
     [Reactive(SetModifier = AccessModifier.Private)]
     private InstallationViewModel _installationViewModel;
-
-
+    
     public string Version => AppConstants.AppVersion;
 
     public ReactiveCommand<Unit, Unit> CloseAppCommand { get; }

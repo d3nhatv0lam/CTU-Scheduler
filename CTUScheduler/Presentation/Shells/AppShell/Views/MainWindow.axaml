@@ -19,16 +19,22 @@
 		x:DataType="vm:MainViewModel"
 		x:CompileBindings="True"
 		Focusable="True"
-	    ExtendClientAreaToDecorationsHint="False"
+	    IsFullScreenButtonVisible="True"
 	    Title="{Binding WindowTitle, Mode=OneWay}"
 	    >
 	
 	<u:ReactiveUrsaWindow.Styles>
 		<!-- // Custom title // -->
-		<Style Selector="u|TitleBar /template/ u|CaptionButtons#PART_CaptionButtons">
-	        <Setter Property="IsVisible" Value="False"></Setter>
-        </Style>
+		<!-- <Style Selector="u|TitleBar /template/ u|CaptionButtons#PART_CaptionButtons"> -->
+	 <!--        <Setter Property="IsVisible" Value="False"></Setter> -->
+  <!--       </Style> -->
 	</u:ReactiveUrsaWindow.Styles>
 	
+	<u:ReactiveUrsaWindow.RightContent>
+		<Grid>
+			<u:ThemeToggleButton/>
+		</Grid>
+	</u:ReactiveUrsaWindow.RightContent>
+
 	<views:MainView/>
 </u:ReactiveUrsaWindow>

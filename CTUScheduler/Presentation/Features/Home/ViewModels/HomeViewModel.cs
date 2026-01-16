@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.AppServices.Services.UserSessionService;
+using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Presentation.Base;
@@ -16,27 +17,23 @@ using Serilog;
 
 namespace CTUScheduler.Presentation.Features.Home.ViewModels
 {
-    public class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivatableViewModel, IDisposable
+    public class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivatableViewModel, IDisposable, INeedArgs<IScreen>
     {
         private readonly CompositeDisposable _disposable = new CompositeDisposable();
         private readonly IUserSessionService _userSessionService;
         private readonly IRegistrationRulesService _registrationRulesService;
         private readonly ObservableAsPropertyHelper<RegistrationInformation> _registrationInfo;
         public string? UrlPathSegment => "HomeViewModel";
-        
-        public ViewModelActivator Activator { get; } = new ViewModelActivator();
-        public RegistrationInformation RegistrationInfo => _registrationInfo.Value;
         public IScreen HostScreen { get; }
+        public ViewModelActivator Activator { get; } = new ();
+        public RegistrationInformation RegistrationInfo => _registrationInfo.Value;
+        
 
         public ReactiveCommand<Unit,Unit> OpenFacebookCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenYoutubeCommand { get; }
         public ReactiveCommand<Unit,Unit> OpenGithubCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenCTUHTQLCommand { get; }
-
-        public HomeViewModel()
-        {
-        }
-
+        
         public HomeViewModel(IScreen hostScreen)
         {
             HostScreen = hostScreen;
@@ -77,7 +74,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
         {
             try
             {
-                await _registrationRulesService.NavigateToAsync();
+                await _registrationRulesService.EnsureReadyAsync();
             }
             catch (Exception e)
             {
@@ -89,7 +86,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
         {
             (_registrationRulesService as IDisposable)?.Dispose();
             _disposable.Dispose();
-            Log.Information("HomeViewModel: Disposed");
+            Log.Debug(nameof(HomeViewModel) + ": Disposed");
         }
     }
 }

@@ -14,116 +14,123 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.AppServices.Services.Registration;
 
-public class CourseCatalogService: ICourseCatalogService
+public class CourseCatalogService : ICourseCatalogService
 {
-   private readonly ILogger<CourseCatalogService> _logger;
-   private readonly ICtuSitePageFactory _factory;
-   private readonly ICourseCatalogPage _catalogPage;
+    private readonly ILogger<CourseCatalogService> _logger;
+    private readonly ICtuSitePageFactory _factory;
+    private readonly ICourseCatalogPage _catalogPage;
+    
+    public CourseCatalogService(ILogger<CourseCatalogService> logger, ICtuSitePageFactory factory)
+    {
+        _logger = logger;
+        _factory = factory;
+        _catalogPage = factory.GetPage<ICourseCatalogPage>();
+    }
 
-   public IObservable<List<QuickSelectCourse>> QuickSelectCourseChanges { get; }
-   public IObservable<Course> CourseChanges { get; }
-   
-   public CourseCatalogService(ILogger<CourseCatalogService> logger, ICtuSitePageFactory factory)
-   {
-      _logger = logger;
-       _factory = factory;
-       _catalogPage = factory.GetPage<ICourseCatalogPage>();
-       
-       QuickSelectCourseChanges = _catalogPage.AutoCompleteQueryResponse
-           .Where(x => x is { IsSuccess: true, Content: not null })
-           .Select(x => x.Content!);
-       
-       CourseChanges = _catalogPage.CourseCatalogResponse
-           .Where(x => x is { IsSuccess: true, Content: not null })
-           .Select(x => x.Content?.ToCourse())
-           .Where(course => course is not null)
-           .Select(x => x!);
-   }
+    public async Task<OperationResult> EnsureReadyAsync()
+    {
+        try
+        {
+            if (await _catalogPage.IsActive.FirstAsync())
+                return OperationResult.Success();
 
-   public async Task<OperationResult> NavigateToAsync()
-   {
-       try
-       {
-           if (await _catalogPage.IsActive.FirstAsync())
-               return OperationResult.Success();
+            await _catalogPage.NavigateToAsync();
+            return OperationResult.Success();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "fail to navigate to course catalog");
+            return OperationResult.Failed("trang chưa sẵn sàng", OperationFailureReason.Network);
+        }
+    }
 
-           await _catalogPage.NavigateToAsync();
-           return OperationResult.Success();
-       }
-       catch (Exception ex)
-       {
-           _logger.LogWarning(ex,"fail to navigate to course catalog");
-           return OperationResult.Failed("trang chưa sẵn sàng",OperationFailureReason.Network);
-       }
-   }
+    public IObservable<List<QuickSelectCourse>> GetSuggestionsStream(string query, TimeSpan? timeout = null)
+    {
+        var finalTimeout = timeout ?? TimeSpan.FromSeconds(5);
+        return Observable.Create<List<QuickSelectCourse>>(async (observer, ct) =>
+        {
+            var subscription = _catalogPage.AutoCompleteQueryResponse
+                .Where(x => x is { IsSuccess: true, Content: not null })
+                .Select(x => x.Content!)
+                .Timeout(finalTimeout)
+                .Subscribe(observer);
 
-   public async Task FillQueryAsync(string query, CancellationToken cancellationToken = default)
-   {
-       if (cancellationToken.IsCancellationRequested)
-           return;
-       try
-       {
-           await _catalogPage.FillQueryAsync(query, cancellationToken);
-       }
-       catch (OperationCanceledException)
-       {
-           throw;
-       }
-       catch (Exception ex)
-       {
-           _logger.LogWarning(ex, "fail to fill query");
-       }
-   }
+            try
+            {
+                await _catalogPage.FillQueryAsync(query, ct);
+            }
+            catch (OperationCanceledException)
+            {
+                /* ignore */
+                _logger.LogDebug("suggestions stream cancelled by User");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "fail to get suggestions stream");
+                observer.OnError(ex);
+            }
 
-   public async Task SearchAsync(CancellationToken cancellationToken = default)
-   {
-       if (cancellationToken.IsCancellationRequested)
-           return;
-       try
-       {
-           await _catalogPage.SearchAsync(cancellationToken);
-       }
-       catch (OperationCanceledException)
-       {
-           throw;
-       }
-       catch (Exception ex)
-       {
-           _logger.LogWarning(ex, "fail to search");
-       }
-   }
+            return subscription;
+        });
+    }
 
-   public async Task<Course> FetchCourseAsync(string courseCode, CancellationToken cancellationToken = default)
-   {
-       if (!await _catalogPage.IsActive.FirstAsync())
-           throw new InvalidOperationException("Course catalog page is not active");
-       try
-       {
-           var task = CourseChanges
-               .Where(c => string.Equals(c.Code, courseCode, StringComparison.OrdinalIgnoreCase))
-               .Timeout(TimeSpan.FromSeconds(5))
-               .FirstAsync()
-               .ToTask(cancellationToken)
-               .ConfigureAwait(false);
+    public IObservable<Course> GetCourseStream(string query, TimeSpan? timeout = null)
+    {
+        var finalTimeout = timeout ?? TimeSpan.FromSeconds(10);
+        return Observable.Create<Course>(async (observer, ct) =>
+        {
+            var subscription = _catalogPage.CourseCatalogResponse
+                .Where(x => x is { IsSuccess: true, Content: not null })
+                .Select(x => x.Content?.ToCourse())
+                .Where(course => course is not null && 
+                                 course.Code.Equals(query, StringComparison.OrdinalIgnoreCase))
+                .Select(x => x!)
+                .Take(1)
+                .Timeout(finalTimeout)
+                .Subscribe(observer);
 
-           await FillQueryAsync(courseCode, cancellationToken)
-               .ConfigureAwait(false);
-           await SearchAsync(cancellationToken)
-               .ConfigureAwait(false);
-           
-           var course = await task;
-           return course;
-       }
-       catch (TimeoutException)
-       {
-           _logger.LogWarning("Timeout waiting for course {Code}", courseCode);
-           throw new TimeoutException($"Search for course {courseCode} timed out.");
-       }
-       catch (OperationCanceledException) { throw; }
-       catch (Exception ex)
-       {
-           _logger.LogError(ex, "Fail to fetch course {Code}", courseCode);
-           throw;
-       }
-   }
+            try
+            {
+                await _catalogPage.FillQueryAsync(query, ct);
+                await _catalogPage.SearchAsync(ct);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogDebug("suggestions stream cancelled by User");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "fail to get course stream");
+                observer.OnError(ex);
+            }
+
+            return subscription;
+        });
+    }
+    
+    public async Task<Course> FetchCourseAsync(string courseCode, CancellationToken cancellationToken = default, TimeSpan? timeout = null)
+    {
+        if (!await _catalogPage.IsActive.FirstAsync())
+            throw new InvalidOperationException("Course catalog page is not active");
+        
+        var finalTimeout = timeout ?? TimeSpan.FromSeconds(5);
+        
+        try
+        {
+            return await GetCourseStream(courseCode)
+                .Timeout(finalTimeout)
+                .FirstAsync() 
+                .ToTask(cancellationToken);
+        }
+        catch (TimeoutException)
+        {
+            _logger.LogWarning("Search for course {Code} timed out.", courseCode);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Fail to fetch course {Code}", courseCode);
+            throw;
+        }
+    }
 }

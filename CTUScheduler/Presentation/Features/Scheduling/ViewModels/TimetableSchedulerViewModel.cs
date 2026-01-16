@@ -49,7 +49,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
         set => this.RaiseAndSetIfChanged(ref _isGeneratingTimeTable, value);
     }
 
-    public ViewModelActivator Activator { get; } = new ViewModelActivator();
+    public ViewModelActivator Activator { get; } = new ();
     public SchedulingCourseOptionViewModel SchedulingCourseOptionVM => _schedulingCourseOptionVM;
     public SelectableTimeTablesPaginationUi PaginationTimeTableViewModel => _paginationTimeTableViewModel;
     public string LimitTimetableSelectedDisplayed => _limitTimetableSelectedDisplayedHelper.Value;

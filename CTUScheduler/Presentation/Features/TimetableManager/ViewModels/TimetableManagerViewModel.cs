@@ -13,6 +13,7 @@ using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
 using CTUScheduler.AppServices.Services.UserSessionService;
+using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels;
@@ -28,7 +29,7 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 {
-    public class TimetableManagerViewModel : ViewModelBase, IRoutableViewModel, IDisposable
+    public class TimetableManagerViewModel : ViewModelBase, IRoutableViewModel, IDisposable, INeedArgs<IScreen>
     {
         private readonly CompositeDisposable _disposables = new ();
         private readonly IDialogHostService _dialogHostService;
@@ -60,10 +61,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         public ReactiveCommand<Unit, Unit> ReloadAllTimetableCommand { get; }
         public ReactiveCommand<TimetableLayoutBaseViewModel, Unit> ShowTimetableDetailsCommand { get; }
         
-
-        public TimetableManagerViewModel()
-        {
-        }
+        
 
         public TimetableManagerViewModel(IScreen hostScreen)
         {
@@ -179,7 +177,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         {
             try
             {
-                 await _courseCatalogService.NavigateToAsync();
+                 await _courseCatalogService.EnsureReadyAsync();
             }
             catch
             {

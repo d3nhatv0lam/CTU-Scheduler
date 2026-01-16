@@ -31,6 +31,7 @@ public class ScheduleManager: IScheduleManager, IDisposable
     private readonly Subject<Unit> _refreshedSubject = new();
     private readonly ICourseCatalogService _catalogService;
     private readonly ILogger<ScheduleManager> _logger;
+    private bool _isDisposed;
     
     public ScheduleManager(AppState appState, ICourseCatalogService catalog, ILogger<ScheduleManager> logger)
     {
@@ -262,6 +263,9 @@ public class ScheduleManager: IScheduleManager, IDisposable
 
     public void Dispose()
     {
+        if (_isDisposed) return;
+        _isDisposed = true;
+        
         _disposables.Dispose();
         _logger.LogInformation(nameof(ScheduleManager) + " has been disposed.");
     }

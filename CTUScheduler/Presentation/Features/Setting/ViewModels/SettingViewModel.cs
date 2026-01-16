@@ -1,15 +1,14 @@
-﻿using CTUScheduler.Presentation.Base;
+﻿using CTUScheduler.Core.Interfaces;
+using CTUScheduler.Presentation.Base;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Setting.ViewModels
 {
-    public class SettingViewModel: ViewModelBase, IRoutableViewModel
+    public class SettingViewModel: ViewModelBase, IRoutableViewModel, INeedArgs<IScreen>
     {
         public string? UrlPathSegment => "SettingViewModel";
         public IScreen HostScreen { get; }
-        public SettingViewModel()
-        {
-        }
+        
         public SettingViewModel(IScreen hostScreen)
         {
             HostScreen = hostScreen;

@@ -11,15 +11,11 @@
 			 x:DataType="vm:SettingViewModel"
 			 x:CompileBindings="True"
              x:Class="CTUScheduler.Presentation.Features.Setting.Views.SettingView">
-
-	<Design.DataContext>
-		<vm:SettingViewModel/>
-	</Design.DataContext>
+	
 
 	<Grid>
 		<TextBlock Text="Setting view" FontSize="100"/>
-		<u:ThemeToggleButton/>
-
+		
 		<u:Timeline Mode="Center">
 			<u:TimelineItem Header="Lập trình mạng" Type="Success">
 				<TextBlock Text="Phòng 101 - Thầy A (Nhớ mang laptop)" Classes="Tertiary"/>
