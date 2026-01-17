@@ -16,7 +16,7 @@ namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
 public class TimetablePreviewViewModel: TimetableLayoutBaseViewModel
 {
-    private readonly List<SectionChoice> _choices = new ();
+    private readonly List<SectionChoice> _choices = new();
     public TimetablePreviewViewModel(IEnumerable<SectionChoice> choices)
     {
         if (choices is null) return;

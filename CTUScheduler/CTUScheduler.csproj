@@ -126,7 +126,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="Assets\Localization\vi-VN.axaml" />
     <AdditionalFiles Include="Presentation\Features\Authentication\Views\LoginView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Home\Views\HomeView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Scheduling\Shared\Styles\controls.axaml" />

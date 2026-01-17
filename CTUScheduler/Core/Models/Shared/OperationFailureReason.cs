@@ -7,5 +7,6 @@ public enum OperationFailureReason
     Validation,
     NotFound,
     Unauthorized,
-    System
+    System,
+    Database
 }

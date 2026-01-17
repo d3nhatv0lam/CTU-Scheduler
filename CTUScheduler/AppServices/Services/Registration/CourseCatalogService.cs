@@ -49,7 +49,7 @@ public class CourseCatalogService : ICourseCatalogService
         }
     }
 
-    public IObservable<List<QuickSelectCourse>> GetSuggestionsStream(string query, TimeSpan? timeout = null)
+    public IObservable<List<QuickSelectCourse>> RequestSuggestionsStream(string query, TimeSpan? timeout = null)
     {
         var finalTimeout = timeout ?? DefaultStreamTimeout;
         return Observable.Create<List<QuickSelectCourse>>(async (observer, ct) =>
@@ -79,7 +79,7 @@ public class CourseCatalogService : ICourseCatalogService
         });
     }
 
-    public IObservable<Course> GetCourseStream(string query, TimeSpan? timeout = null)
+    public IObservable<Course> RequestCourseStream(string query, TimeSpan? timeout = null)
     {
         var finalTimeout = timeout ?? DefaultStreamTimeout;
         return Observable.Create<Course>(async (observer, ct) =>
@@ -122,7 +122,7 @@ public class CourseCatalogService : ICourseCatalogService
         
         try
         {
-            return await GetCourseStream(courseCode,finalTimeout)
+            return await RequestCourseStream(courseCode,finalTimeout)
                 .FirstAsync() 
                 .ToTask(cancellationToken);
         }

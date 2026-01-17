@@ -98,7 +98,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                 .Select(query =>
                 {
                     if (string.IsNullOrEmpty(query)) return Observable.Return(new List<QuickSelectCourse>());;
-                    return _courseCatalogService.GetSuggestionsStream(query)
+                    return _courseCatalogService.RequestSuggestionsStream(query)
                         .Catch((Exception _) =>  Observable.Return(new List<QuickSelectCourse>()));
                 })
                 .Switch()
@@ -112,7 +112,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
 
             // không cần Switch vì viết CreateFromObservable sẽ lock nút đến khi xong
             SearchCommand = ReactiveCommand.CreateFromObservable(() =>
-                _courseCatalogService.GetCourseStream(TxtInputCourseKey)
+                _courseCatalogService.RequestCourseStream(TxtInputCourseKey)
                     .Catch((Exception _) => Observable.Empty<Course>())
             );
 

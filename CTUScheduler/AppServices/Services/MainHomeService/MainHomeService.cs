@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reactive.Linq;
-using CTUScheduler.AppServices.Services.Auth;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using Microsoft.Extensions.Logging;
@@ -23,6 +22,5 @@ public class MainHomeService: IMainHomeService
         StudentIdChanges = _mainPage.UserInfoChanges
             .Where(x => !string.IsNullOrWhiteSpace(x));
     }
-
     
 }

@@ -18,7 +18,7 @@ public interface ICourseCatalogService
     /// <param name="query">The search query used to filter and fetch course suggestions.</param>
     /// <param name="timeout">default is 5sec</param>
     /// <returns>An observable sequence that provides a list of quick-select courses matching the query.</returns>
-    IObservable<List<QuickSelectCourse>> GetSuggestionsStream(string query, TimeSpan? timeout = null);
+    IObservable<List<QuickSelectCourse>> RequestSuggestionsStream(string query, TimeSpan? timeout = null);
 
     /// <summary>
     /// Retrieves a stream of course details based on the provided query parameter.
@@ -26,7 +26,7 @@ public interface ICourseCatalogService
     /// <param name="query">The search query used to filter and fetch course details.</param>
     /// <param name="timeout">default is 10sec</param>
     /// <returns>An observable sequence that provides detailed information about the courses matching the query.</returns>
-    IObservable<Course> GetCourseStream(string query, TimeSpan? timeout = null);
+    IObservable<Course> RequestCourseStream(string query, TimeSpan? timeout = null);
 
     /// <summary>
     /// Fetches detailed course information based on the specified course code.

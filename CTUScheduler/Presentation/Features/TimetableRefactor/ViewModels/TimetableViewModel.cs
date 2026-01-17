@@ -15,11 +15,13 @@ public class TimetableViewModel: ViewModelBase, IDisposable
 {
     private readonly CompositeDisposable _disposables = new();
     private readonly ReadOnlyObservableCollection<ScheduleCellUi> _scheduleCells;
-    // private readonly ReadOnlyObservableCollection<ScheduleGroupCellShared> _courseList;
     private readonly ReadOnlyObservableCollection<ScheduleGroupCellShared> _unscheduledCourses;
+    
     public ReadOnlyObservableCollection<ScheduleCellUi> ScheduleCells => _scheduleCells;
-    // public ReadOnlyObservableCollection<ScheduleGroupCellShared> CourseList => _courseList;
     public ReadOnlyObservableCollection<ScheduleGroupCellShared> UnscheduledCourses => _unscheduledCourses;
+    
+    // private readonly ReadOnlyObservableCollection<ScheduleGroupCellShared> _courseList;
+    // public ReadOnlyObservableCollection<ScheduleGroupCellShared> CourseList => _courseList;
 
     public TimetableViewModel(IObservable<IChangeSet<TimetableRenderItem>> renderStream)
     {

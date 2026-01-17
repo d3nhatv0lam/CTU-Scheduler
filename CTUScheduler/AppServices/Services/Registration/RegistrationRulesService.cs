@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Extensions;
@@ -15,6 +16,7 @@ namespace CTUScheduler.AppServices.Services.Registration;
 
 public class RegistrationRulesService: IRegistrationRulesService
 {
+    private static readonly TimeSpan DefaultFetchTimeout = TimeSpan.FromSeconds(10);
     private readonly ILogger<RegistrationRulesService> _logger;
     private readonly ICtuSitePageFactory _factory;
     private readonly IRegistrationRulesPage _rulesPage;
@@ -65,6 +67,19 @@ public class RegistrationRulesService: IRegistrationRulesService
             _logger.LogWarning(ex, "Failed to navigate to registration rules page");
             return OperationResult.Failed("Hệ thống truy cập trang dkmh không thành công!", OperationFailureReason.System);
         }
+    }
+    
+    public async Task<RegistrationInformation> FetchRegistrationInfoAsync(CancellationToken cancellationToken = default
+        , TimeSpan? timeout = null)
+    {
+        await EnsureReadyAsync();
+        
+        var finalTimeout = timeout ?? DefaultFetchTimeout;
+        
+        return await RegistrationInfoChanges
+            .Timeout(finalTimeout)
+            .FirstAsync()
+            .ToTask(cancellationToken);
     }
     
     private async Task<RegistrationInformation?> ProcessRegistrationInfoAsync(RawRegistrationInformation rawContent, CancellationToken token)
