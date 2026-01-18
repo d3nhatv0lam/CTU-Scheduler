@@ -9,6 +9,7 @@ using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Raw;
 using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using Microsoft.Extensions.Logging;
 
@@ -60,12 +61,12 @@ public class RegistrationRulesService: IRegistrationRulesService
         }
         catch (InvalidOperationException ex)
         {
-            return OperationResult.Failed(ex.Message, OperationFailureReason.Network);
+            return OperationResult.Failed(ex.Message, kind:OperationFailureReason.Network);
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to navigate to registration rules page");
-            return OperationResult.Failed("Hệ thống truy cập trang dkmh không thành công!", OperationFailureReason.System);
+            return OperationResult.Failed("Hệ thống truy cập trang dkmh không thành công!", kind:OperationFailureReason.Unauthorized);
         }
     }
     

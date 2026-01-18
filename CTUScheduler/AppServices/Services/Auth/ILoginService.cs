@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Core.Models.WebResponse;
 
 namespace CTUScheduler.AppServices.Services.Auth;

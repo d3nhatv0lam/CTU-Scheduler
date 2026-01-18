@@ -8,5 +8,6 @@ public enum OperationFailureReason
     NotFound,
     Unauthorized,
     System,
-    Database
+    Database,
+    UserAction
 }

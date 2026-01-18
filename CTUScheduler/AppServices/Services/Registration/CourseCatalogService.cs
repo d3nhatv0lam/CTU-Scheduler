@@ -9,6 +9,7 @@ using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
 using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using Microsoft.Extensions.Logging;
 
@@ -45,7 +46,7 @@ public class CourseCatalogService : ICourseCatalogService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "fail to navigate to course catalog");
-            return OperationResult.Failed("trang chưa sẵn sàng", OperationFailureReason.Network);
+            return OperationResult.Failed("Trang chưa sẵn sàng", kind: OperationFailureReason.Network);
         }
     }
 

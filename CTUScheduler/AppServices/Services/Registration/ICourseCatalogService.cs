@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;
 using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Core.Models.Shared.Results;
 
 namespace CTUScheduler.AppServices.Services.Registration;
 

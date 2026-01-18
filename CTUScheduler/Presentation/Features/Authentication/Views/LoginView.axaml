@@ -60,6 +60,7 @@
 						   FontWeight="Bold"
 						   />
 			</StackPanel>
+			
 		</Grid>
 	
 		<!--// right side //-->
@@ -142,6 +143,7 @@
 							TextAlignment="Center" 
 							TextWrapping="WrapWithOverflow"
 							Margin="0 50 0 0"/>
+					
 				</StackPanel>
 			</Grid>
 			
