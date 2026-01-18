@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using CTUScheduler.Core.Models.Contributors;
 
 namespace CTUScheduler.Core.Models.Settings;
 

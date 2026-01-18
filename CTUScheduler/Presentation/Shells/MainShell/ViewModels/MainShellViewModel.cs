@@ -5,10 +5,12 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.MainHomeService;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
+using CTUScheduler.Presentation.Features.Authentication.Views;
 using CTUScheduler.Presentation.Features.Home.ViewModels;
 using CTUScheduler.Presentation.Features.Setting.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableManager.ViewModels;
@@ -17,6 +19,7 @@ using CTUScheduler.Presentation.Shells.MainShell.Models;
 using Material.Icons;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
+using Ursa.Controls;
 
 namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 {
@@ -55,6 +58,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             set => this.RaiseAndSetIfChanged(ref _title, value);
         }
         public ReactiveCommand<Unit, Unit> LogoutCommand { get; }
+        public ReactiveCommand<Unit, Unit> TestCommand { get; }
 
         public MainShellViewModel()
         {
@@ -107,8 +111,19 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                     Dispose();
                 }
             }).DisposeWith(_disposables);
+            
+            TestCommand = ReactiveCommand.CreateFromTask( async() =>
+            {
+                await OverlayDialog.ShowCustomModal<LoginView, LoginViewModel, object>(new LoginViewModel(this),
+                    options: new()
+                    {
+                        Buttons = DialogButton.YesNoCancel, CanLightDismiss = true, CanDragMove = true,
+                        CanResize = true, Mode = DialogMode.Info
+                    });
+            });
         }
-        
+
+       
         private void OnNavigatePage(NavigationItem item)
         {
             Title = item.Title;

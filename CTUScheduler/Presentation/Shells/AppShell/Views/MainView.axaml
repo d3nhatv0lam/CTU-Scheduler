@@ -1,4 +1,4 @@
-<u:ReactiveUrsaView
+<rxui:ReactiveUserControl
 			 x:TypeArguments="vm:MainViewModel" 
 			 xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,15 +6,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
 			 x:DataType="vm:MainViewModel"
+			 x:CompileBindings="True"
 			 xmlns:rxui="http://reactiveui.net"
 			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.Shells.AppShell.ViewModels"
-			 xmlns:u="https://irihi.tech/ursa"
-			 x:CompileBindings="True"
-			 IsTitleBarVisible="False"
              x:Class="CTUScheduler.Presentation.Shells.AppShell.Views.MainView"
              >
 	
 	<rxui:RoutedViewHost x:Name="RoutedViewHost"
 	                     VerticalContentAlignment="Stretch"
 	                     HorizontalContentAlignment="Stretch"/>
-</u:ReactiveUrsaView>
+</rxui:ReactiveUserControl>

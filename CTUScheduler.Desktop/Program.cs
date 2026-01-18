@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Dialogs;
 using CTUScheduler.AppServices.Extensions;
 using CTUScheduler.Desktop.Configs;
 using CTUScheduler.Presentation.Extensions;
@@ -14,6 +16,10 @@ using Splat.Microsoft.Extensions.DependencyInjection;
 
 namespace CTUScheduler.Desktop;
 
+
+[SupportedOSPlatform("windows")]
+[SupportedOSPlatform("linux")]
+[SupportedOSPlatform("macos")]
 class Program
 {
     // Initialization code. Don't use any Avalonia, third-party APIs or any

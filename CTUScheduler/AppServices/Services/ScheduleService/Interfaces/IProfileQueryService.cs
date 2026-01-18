@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Settings;
+using CTUScheduler.Core.Models.Shared;
 using DynamicData;
 
 namespace CTUScheduler.AppServices.Services.ScheduleService.Interfaces;

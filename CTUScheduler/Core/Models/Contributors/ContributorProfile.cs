@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace CTUScheduler.Core.Models.Settings;
+namespace CTUScheduler.Core.Models.Contributors;
 
 public record ContributorProfile(
     string Id,

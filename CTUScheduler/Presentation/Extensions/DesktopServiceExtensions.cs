@@ -42,8 +42,7 @@ public static class DesktopServiceExtensions
         services.AddSingleton<IViewportService, ViewportService>();
         services.AddSingleton<IDialogHostService, DialogHostService>();
         services.AddSingleton<ITimetableDialogService, TimetableDialogService>();
-
-        // --- Windows & Initialization Logic ---
+        
             
         // SplashScreenWindow: Cần khởi tạo ToplevelService
         services.AddTransient<SplashScreenWindow>(provider =>
@@ -52,7 +51,6 @@ public static class DesktopServiceExtensions
             return window;
         });
         
-
         // MainWindow: Cần khởi tạo ToplevelService & ViewportService
         services.AddTransient<MainWindow>(provider =>
         {

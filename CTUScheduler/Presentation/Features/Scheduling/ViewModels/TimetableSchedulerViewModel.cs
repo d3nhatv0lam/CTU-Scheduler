@@ -25,6 +25,7 @@ using CTUScheduler.Presentation.Shared.Models.Academic;
 using DynamicData;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
+using Ursa.Controls;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 

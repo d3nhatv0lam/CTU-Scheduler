@@ -10,7 +10,6 @@ using CTUScheduler.Core.Helpers;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Settings;
-using CTUScheduler.Core.Models.UserSaves;
 using CTUScheduler.Core.Utils.IO;
 using Microsoft.Extensions.Logging;
 

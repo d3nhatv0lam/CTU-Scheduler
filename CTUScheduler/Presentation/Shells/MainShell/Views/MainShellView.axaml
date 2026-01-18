@@ -225,6 +225,9 @@
                             </Grid>
                             <!--// Navigation content //-->
                             <rxui:RoutedViewHost Grid.Row="1" x:Name="PageRounter" Router="{Binding Router}" />
+                            <!-- // test // -->
+                            <Button Content="TESTTTTTTT" Height="100" Width="100" Command="{Binding TestCommand}"></Button>
+                            
                         </Grid>
                     </Border>
                 </controls:NavigationDrawer.Content>

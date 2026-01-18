@@ -1,5 +1,5 @@
 ﻿using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
-using CTUScheduler.Core.Models.UserSaves;
+using CTUScheduler.Core.Models.Settings;
 
 namespace CTUScheduler.Core.Extensions;
 

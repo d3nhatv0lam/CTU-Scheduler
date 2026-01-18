@@ -1,4 +1,4 @@
-﻿namespace CTUScheduler.Core.Models.UserSaves;
+﻿namespace CTUScheduler.Core.Models.Settings;
 
 public record RegistrationContext
 {

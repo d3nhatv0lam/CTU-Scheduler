@@ -3,7 +3,6 @@ using CTUScheduler.AppServices.Models;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Settings;
-using CTUScheduler.Core.Models.UserSaves;
 using DynamicData;
 
 namespace CTUScheduler.AppServices.State;

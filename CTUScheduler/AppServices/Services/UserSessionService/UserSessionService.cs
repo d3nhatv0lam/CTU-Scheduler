@@ -6,7 +6,7 @@ using System.Reactive.Subjects;
 using CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
 using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
-using CTUScheduler.Core.Models.UserSaves;
+using CTUScheduler.Core.Models.Settings;
 using DynamicData.Aggregation;
 
 namespace CTUScheduler.AppServices.Services.UserSessionService;

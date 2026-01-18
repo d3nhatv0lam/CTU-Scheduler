@@ -9,6 +9,7 @@ using CTUScheduler.AppServices.Services.Registration;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
+using CTUScheduler.Core.Models.Contributors;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Presentation.Base;
 using Microsoft.Extensions.DependencyInjection;

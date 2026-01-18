@@ -1,4 +1,4 @@
-﻿namespace CTUScheduler.Core.Models.Settings;
+﻿namespace CTUScheduler.Core.Models.Contributors;
 
 public enum ContributorRole
 {

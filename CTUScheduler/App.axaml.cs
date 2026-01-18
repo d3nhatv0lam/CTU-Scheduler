@@ -3,39 +3,16 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Serilog;
-using Splat;
 using System;
 using System.Reactive;
 using System.Threading.Tasks;
-using CTUScheduler.AppServices.Models;
-using CTUScheduler.AppServices.Services.Auth;
-using CTUScheduler.AppServices.Services.MainHomeService;
-using CTUScheduler.AppServices.Services.Network;
-using CTUScheduler.AppServices.Services.Registration;
-using CTUScheduler.AppServices.Services.ScheduleService;
-using CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
-using CTUScheduler.AppServices.Services.UserSessionService;
-using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Interfaces;
-using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
-using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
-using CTUScheduler.Infrastructure.DriverCore;
-using CTUScheduler.Infrastructure.Sites.CTU.Factory;
-using CTUScheduler.Infrastructure.Sites.CTU.Pages.Login;
-using CTUScheduler.Infrastructure.Sites.CTU.Pages.Main;
-using CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
-using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
-using CTUScheduler.Presentation.Services.AppToplevel;
-using CTUScheduler.Presentation.Services.Dialogs;
-using CTUScheduler.Presentation.Services.TimetableDialog;
-using CTUScheduler.Presentation.Services.Viewport;
 using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
-using MainView = CTUScheduler.Presentation.Shells.AppShell.Views.MainView;
+using CTUScheduler.Presentation.Shells.AppShell.Views;
 using MainWindow = CTUScheduler.Presentation.Shells.AppShell.Views.MainWindow;
 
 namespace CTUScheduler;
@@ -46,7 +23,6 @@ public class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
-        
         SetupGlobalExceptionHandling();
     }
 
@@ -56,11 +32,10 @@ public class App : Application
         {
             var splashScreen = InitSplashScreenWindow(desktop);
             desktop.MainWindow = splashScreen;
-            desktop.Exit += Desktop_Exit;
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {
-            singleViewPlatform.MainView = new MainView
+            singleViewPlatform.MainView = new SingleView()
             {
                 DataContext = ServiceProvider.GetService<MainViewModel>()
             };
@@ -92,25 +67,7 @@ public class App : Application
         return splashScreen;
     }
 
-    private void Desktop_Exit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
-    {
-        try
-        {
-            if (sender is IClassicDesktopStyleApplicationLifetime desktop)
-                desktop.Exit -= Desktop_Exit;
-            
-            Log.Information("Stopping services and releasing resources..."); 
-            
-            // if (ServiceProvider is IAsyncDisposable asyncDisposable) 
-            //     Task.Run(async () => await asyncDisposable.DisposeAsync()).Wait();
-            // else if (ServiceProvider is IDisposable disposableService)
-            //     disposableService.Dispose();
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Error during resource cleanup");
-        }
-    }
+  
     
     private void SetupGlobalExceptionHandling()
     {
