@@ -1,7 +1,21 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     
-    <SolidColorBrush x:Key="PrimaryColor" Color="#1f5ca9"/>
-    <SolidColorBrush x:Key="SecondaryColor" Color="#00afef"/>
+    <Color x:Key="PrimaryColor">#1f5ca9</Color>
+    <Color x:Key="SecondaryColor">#00afef</Color>
+
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+    <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource SecondaryColor}"/>
     
+    <LinearGradientBrush x:Key="CtuGradient" StartPoint="0%,50%" EndPoint="100%,50%">
+        <GradientStop Color="{StaticResource PrimaryColor}" Offset="0"/>
+        <GradientStop Color="{StaticResource SecondaryColor}" Offset="1"/>
+    </LinearGradientBrush>
+
+    
+    <SolidColorBrush x:Key="BaseBackgroundColor" Color="#F5F5F9"/>
+    <SolidColorBrush x:Key="Grey" Color="#343A40"/>
+    <SolidColorBrush x:Key="BorderColor" Color="#E3E3E3"/>
+    <SolidColorBrush x:Key="DisableColor" Color="#C2C2C2"></SolidColorBrush>
+    <SolidColorBrush x:Key="RedColor" Color="#D90429"></SolidColorBrush>
 </ResourceDictionary>
