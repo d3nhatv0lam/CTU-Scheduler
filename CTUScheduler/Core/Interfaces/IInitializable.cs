@@ -2,5 +2,5 @@
 
 public interface IInitializable<in TContext>
 {
-    void Init(TContext context);
+    void Initialize(TContext context);
 }

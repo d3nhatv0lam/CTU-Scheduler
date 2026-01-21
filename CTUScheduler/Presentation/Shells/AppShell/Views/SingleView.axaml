@@ -9,6 +9,7 @@
                     xmlns:u="https://irihi.tech/ursa"
                     xmlns:views="clr-namespace:CTUScheduler.Presentation.Shells.AppShell.Views"
                     xmlns:vm="clr-namespace:CTUScheduler.Presentation.Shells.AppShell.ViewModels"
+                    xmlns:behaviors="clr-namespace:CTUScheduler.Presentation.Shared.Behaviors"
                     Focusable="True"
                     IsTitleBarVisible="False"
                     x:Class="CTUScheduler.Presentation.Shells.AppShell.Views.SingleView">
@@ -24,4 +25,8 @@
         </StackPanel>
     </u:ReactiveUrsaView.RightContent>
     <views:MainView/>
+    
+    <Interaction.Behaviors>
+        <behaviors:TopLevelBehavior></behaviors:TopLevelBehavior>
+    </Interaction.Behaviors>
 </u:ReactiveUrsaView>

@@ -20,6 +20,7 @@ using Material.Icons;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using Ursa.Controls;
+using Notification = Ursa.Controls.Notification;
 
 namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 {
@@ -114,12 +115,6 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             
             TestCommand = ReactiveCommand.CreateFromTask( async() =>
             {
-                await OverlayDialog.ShowCustomModal<LoginView, LoginViewModel, object>(new LoginViewModel(this),
-                    options: new()
-                    {
-                        Buttons = DialogButton.YesNoCancel, CanLightDismiss = true, CanDragMove = true,
-                        CanResize = true, Mode = DialogMode.Info
-                    });
             });
         }
 

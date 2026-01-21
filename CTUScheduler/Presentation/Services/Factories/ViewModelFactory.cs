@@ -112,16 +112,16 @@ public class ViewModelFactory : IViewModelFactory
             }
             else if (def == typeof(IInitializable<>))
             {
-                var method = i.GetMethod("Init");
+                var method = i.GetMethod("Initialize");
                 results.Add(new InjectionMetadata(InjectionType.Method, argType, method));
             }
             else if (def == typeof(IAsyncInitializable<>))
             {
-                var method = i.GetMethod("InitAsync");
+                var method = i.GetMethod("InitializeAsync");
                 results.Add(new InjectionMetadata(InjectionType.AsyncMethod, argType, method));
             }
         }
-        // Sắp xếp ưu tiên: Constructor -> Init (Đồng bộ) -> InitAsync (Bất đồng bộ)
+        // Sắp xếp ưu tiên: Constructor -> Initialize (Đồng bộ) -> InitializeAsync (Bất đồng bộ)
         return results.OrderBy(x => x.Type).ToArray();
     }
     

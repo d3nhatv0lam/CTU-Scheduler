@@ -5,5 +5,5 @@ namespace CTUScheduler.Core.Interfaces;
 
 public interface IAsyncInitializable<in T>
 {
-    Task InitAsync(T args, CancellationToken cancellationToken = default);
+    Task InitializeAsync(T args, CancellationToken cancellationToken = default);
 }

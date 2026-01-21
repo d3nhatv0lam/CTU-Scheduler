@@ -4,6 +4,8 @@ using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.Factories;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.TimetableDialog;
+using CTUScheduler.Presentation.Services.UserInteractionService;
+using CTUScheduler.Presentation.Services.UserInteractionService.Components;
 using CTUScheduler.Presentation.Services.Viewport;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
@@ -42,6 +44,11 @@ public static class DesktopServiceExtensions
         services.AddSingleton<IViewportService, ViewportService>();
         services.AddSingleton<IDialogHostService, DialogHostService>();
         services.AddSingleton<ITimetableDialogService, TimetableDialogService>();
+        
+        services.AddSingleton<IUserInteractionService, UserInteractionService>()
+            .AddSingleton<IToastService, ToastService>()
+            .AddSingleton<INotificationService,NotificationService>()
+            .AddSingleton<IDialogService, DialogService>();
         
             
         // SplashScreenWindow: Cần khởi tạo ToplevelService
