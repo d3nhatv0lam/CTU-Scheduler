@@ -20,5 +20,8 @@
         <Setter Property="Background" Value="{StaticResource CtuGradient}" />
         <Setter Property="Padding" Value="10,0" />
     </Style>
-
+    
+    <Style Selector="Border.cus-box-shadow">
+        <Setter Property="BoxShadow" Value="0 8 24 #1a000000"/>
+    </Style>
 </Styles>

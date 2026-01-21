@@ -18,4 +18,8 @@
     <SolidColorBrush x:Key="BorderColor" Color="#E3E3E3"/>
     <SolidColorBrush x:Key="DisableColor" Color="#C2C2C2"></SolidColorBrush>
     <SolidColorBrush x:Key="RedColor" Color="#D90429"></SolidColorBrush>
+    <StaticResource x:Key="semiBoxShadow" ResourceKey="SemiShadowElevated" />
+    <StaticResource x:Key="semiBoxShadow2" ResourceKey="SemiColorShadow" />
+    <!-- <BoxShadows x:Key="CustomShadowValue"></BoxShadows> -->
+    
 </ResourceDictionary>
