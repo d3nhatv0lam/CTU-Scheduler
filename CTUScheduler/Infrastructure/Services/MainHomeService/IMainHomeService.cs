@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CTUScheduler.AppServices.Services.MainHomeService;
+namespace CTUScheduler.Infrastructure.Services.MainHomeService;
 
 public interface IMainHomeService
 {

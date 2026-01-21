@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Shared.Results;
-using CTUScheduler.Core.Models.WebResponse;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using Microsoft.Extensions.Logging;
 
-namespace CTUScheduler.AppServices.Services.Auth;
+namespace CTUScheduler.Infrastructure.Services.Auth;
 
 public class LoginService: ILoginService
 {
@@ -22,7 +20,7 @@ public class LoginService: ILoginService
         _logger = logger;
     }
 
-    public async Task<OperationResult> NavigateToAsync()
+    public async Task<OperationResult> EnsureReadyAsync()
     {
         try
         {
@@ -46,7 +44,6 @@ public class LoginService: ILoginService
         }
         catch (OperationCanceledException)
         {
-            // throw;
             return OperationResult.Failed("Hủy đăng nhập", kind:OperationFailureReason.UserAction);
         }
         catch (NoInternetException)

@@ -6,9 +6,9 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using CTUScheduler.AppServices.Services.Auth;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Settings;
+using CTUScheduler.Infrastructure.Services.Auth;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,7 +53,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
             var loginService = App.ServiceProvider.GetRequiredService<ILoginService>();
             LoadSignInData();
 
-            Observable.StartAsync(() => loginService.NavigateToAsync());
+            Observable.StartAsync(() => loginService.EnsureReadyAsync());
             
             SignInCommand = ReactiveCommand.CreateFromTask(async () =>
             {

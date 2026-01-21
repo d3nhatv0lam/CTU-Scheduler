@@ -3,7 +3,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using CTUScheduler.AppServices.Services.Network;
+using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Features.Authentication.Views;
