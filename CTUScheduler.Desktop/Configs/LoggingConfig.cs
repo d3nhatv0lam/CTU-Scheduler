@@ -37,7 +37,7 @@ public static class LoggingConfig
         Log.Information($"{separator}");
     }
     
-    public static void Flush()
+    public static void CloseAndFlush()
     {
         Log.CloseAndFlush();
     }
