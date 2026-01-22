@@ -6,6 +6,7 @@ using System.Reactive.Subjects;
 using Avalonia.Controls;
 using CTUScheduler.Presentation.Services.UserInteractionService.Components;
 using Microsoft.Extensions.Logging;
+using Semi.Avalonia.Locale;
 
 namespace CTUScheduler.Presentation.Services.UserInteractionService;
 
@@ -18,19 +19,17 @@ public class UserInteractionService : IUserInteractionService, IDisposable
     public INotificationService Notification { get; }
     public IToastService Toast { get; }
 
-    public UserInteractionService(
-        IDialogService dialogService, 
-        INotificationService notificationService,
-        IToastService toastService,
-        ILogger<UserInteractionService> logger)
+    public UserInteractionService(ILogger<UserInteractionService> logger)
     {
-        Dialog = dialogService;
-        Notification = notificationService;
-        Toast = toastService;
+        Dialog = new DialogService();
+        Notification = new NotificationService()
+            .DisposeWith(_disposables);
+        Toast = new ToastService()
+            .DisposeWith(_disposables);
         _logger = logger;
-        
-        _toplevelSubject.DisposeWith(_disposables);
 
+        _toplevelSubject.DisposeWith(_disposables);
+        
         _toplevelSubject
             .Subscribe(toplevel =>
             {
@@ -39,7 +38,7 @@ public class UserInteractionService : IUserInteractionService, IDisposable
             })
             .DisposeWith(_disposables);
     }
-    
+
     public void Initialize(TopLevel? topLevel)
     {
         _logger.LogDebug("Initializing UserInteractionService");
@@ -49,5 +48,6 @@ public class UserInteractionService : IUserInteractionService, IDisposable
     public void Dispose()
     {
         _disposables.Dispose();
+        _logger.LogInformation("UserInteractionService disposed");
     }
 }

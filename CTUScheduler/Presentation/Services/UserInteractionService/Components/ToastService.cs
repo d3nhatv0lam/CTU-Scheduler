@@ -6,23 +6,30 @@ using Ursa.Controls;
 
 namespace CTUScheduler.Presentation.Services.UserInteractionService.Components;
 
-public class ToastService: IToastService
+public class ToastService : IToastService, IDisposable
 {
-    private WindowToastManager? _toastManager = null;
-    
+    private WindowToastManager? _toastManager;
+
     public void Initialize(TopLevel? context)
     {
         _toastManager?.Uninstall();
-        
+        _toastManager = null;
+        if (context is null) return;
+
         _toastManager = new WindowToastManager(context)
         {
             MaxItems = 10,
-            
         };
 
         foreach (var _ in Enumerable.Range(0, 10))
         {
             _toastManager.Show("hello", NotificationType.Warning, TimeSpan.FromSeconds(10));
         }
+    }
+
+    public void Dispose()
+    {
+        _toastManager?.Uninstall();
+        _toastManager = null;
     }
 }

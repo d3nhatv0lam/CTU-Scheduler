@@ -9,6 +9,7 @@ using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Features.Authentication.Views;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.Navigation.Models;
+using CTUScheduler.Presentation.Services.UserInteractionService;
 using CTUScheduler.Presentation.Shared.Models.Regions;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +19,7 @@ using Ursa.Controls;
 
 namespace CTUScheduler.Presentation.Shells.AppShell.ViewModels;
 
-public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewModel, IDisposable
+public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewModel, IDisposable, IUserInteractionContext
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
     private readonly IConnectivityService _connectivityService;
@@ -27,26 +28,27 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
     private readonly RegionId _regionId = RegionIds.Root;
     public RoutingState Router { get; } = new();
     public ViewModelActivator Activator { get; } = new();
+    public IUserInteractionService UserInteraction { get; }
 
     [Reactive(SetModifier = AccessModifier.Private)]
     private string _windowTitle = "CTU Scheduler";
 
-    public MainViewModel(IConnectivityService connectivityService, INavigationRegionManager navigationRegionManager)
+
+    public MainViewModel(
+        IConnectivityService connectivityService,
+        INavigationRegionManager navigationRegionManager,
+        IUserInteractionService userInteractionService)
     {
         _connectivityService = connectivityService;
         _navigationRegionManager = navigationRegionManager;
-
-        _disposables.Add(Activator);
+        UserInteraction = userInteractionService;
 
         _navigationRegionManager.Register(_regionId, this)
             .DisposeWith(_disposables);
 
         // _navigationRegionManager.NavigateAndResetTo<LoginViewModel>(_regionId);
         _navigationRegionManager.NavigateAndResetTo<MainShellViewModel>(_regionId);
-
-        // Router.Navigate.Execute(new LoginViewModel(this));
-        // Router.Navigate.Execute(new MainShellViewModel(this));
-
+        
         this.WhenActivated((CompositeDisposable disposables) =>
         {
             _connectivityService.IsInternetAvailable

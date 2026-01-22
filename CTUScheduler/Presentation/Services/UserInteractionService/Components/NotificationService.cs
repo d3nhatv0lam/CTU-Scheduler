@@ -6,13 +6,16 @@ using WindowNotificationManager = Ursa.Controls.WindowNotificationManager;
 
 namespace CTUScheduler.Presentation.Services.UserInteractionService.Components;
 
-public class NotificationService : INotificationService
+public class NotificationService : INotificationService, IDisposable
 {
-    private WindowNotificationManager? _notificationManager = null;
+    private WindowNotificationManager? _notificationManager;
 
     public void Initialize(TopLevel? context)
     {
         _notificationManager?.Uninstall();
+        _notificationManager = null;
+        if (context is null) return;
+        
         _notificationManager = new(context)
         {
             MaxItems = 5,
@@ -23,5 +26,11 @@ public class NotificationService : INotificationService
             _notificationManager.Show(content: "test nè", NotificationType.Success, expiration: TimeSpan.FromSeconds(10)
             );
         }
+    }
+
+    public void Dispose()
+    {
+        _notificationManager?.Uninstall();
+        _notificationManager = null;
     }
 }

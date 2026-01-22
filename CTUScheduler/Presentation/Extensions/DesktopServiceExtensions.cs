@@ -44,13 +44,9 @@ public static class DesktopServiceExtensions
         services.AddSingleton<IViewportService, ViewportService>();
         services.AddSingleton<IDialogHostService, DialogHostService>();
         services.AddSingleton<ITimetableDialogService, TimetableDialogService>();
+        services.AddSingleton<IUserInteractionService, UserInteractionService>();
         
-        services.AddSingleton<IUserInteractionService, UserInteractionService>()
-            .AddSingleton<IToastService, ToastService>()
-            .AddSingleton<INotificationService,NotificationService>()
-            .AddSingleton<IDialogService, DialogService>();
         
-            
         // SplashScreenWindow: Cần khởi tạo ToplevelService
         services.AddTransient<SplashScreenWindow>(provider =>
         {

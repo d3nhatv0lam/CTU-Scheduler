@@ -37,6 +37,7 @@ namespace CTUScheduler.Presentation.Services.Viewport
         {
             _subscription?.Dispose();
             _sizeSubject.Dispose();
+            _logger.LogInformation("ViewportService disposed");
         }
     }
 }
