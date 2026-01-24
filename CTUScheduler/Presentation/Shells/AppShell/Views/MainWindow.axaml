@@ -20,7 +20,7 @@
     Focusable="True"
     IsFullScreenButtonVisible="True"
     Title="{Binding WindowTitle, Mode=OneWay}"
-    xmlns:behaviors="clr-namespace:CTUScheduler.Presentation.Services.UserInteractionService.Behaviors"
+    xmlns:behaviors="clr-namespace:CTUScheduler.Presentation.Services.ViewContext.Behaviors"
     x:Class="CTUScheduler.Presentation.Shells.AppShell.Views.MainWindow">
 
     <u:ReactiveUrsaWindow.Styles>
@@ -45,6 +45,6 @@
 
     <!-- // khởi động các Toast, Notification // -->
     <Interaction.Behaviors>
-        <behaviors:UserInteractionBehavior></behaviors:UserInteractionBehavior>
+        <behaviors:ViewContextBehavior></behaviors:ViewContextBehavior>
     </Interaction.Behaviors>
 </u:ReactiveUrsaWindow>

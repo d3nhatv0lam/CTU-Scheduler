@@ -46,7 +46,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
             
             CloseDialogCommand = ReactiveCommand.Create(() => Close())
                 .DisposeWith(_disposables);
-            _viewportService.SizeChanged
+            _viewportService.WhenSizeChanged
                 .Subscribe(size =>
                 {
                     Height = size.Height;
