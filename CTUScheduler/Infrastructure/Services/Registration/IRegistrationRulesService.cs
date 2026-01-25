@@ -2,10 +2,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
-using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Shared.Results;
 
-namespace CTUScheduler.AppServices.Services.Registration;
+namespace CTUScheduler.Infrastructure.Services.Registration;
 
 public interface IRegistrationRulesService
 {

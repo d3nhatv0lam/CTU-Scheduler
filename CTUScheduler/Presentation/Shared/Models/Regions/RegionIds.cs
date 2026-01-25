@@ -4,6 +4,6 @@ namespace CTUScheduler.Presentation.Shared.Models.Regions;
 
 public static class RegionIds
 {
-    public static RegionId Root { get; } = new RegionId("root");
-    public static RegionId Main { get; } = new RegionId("main");
+    public static readonly RegionId Root = new("root");
+    public static readonly RegionId Main = new("main");
 }

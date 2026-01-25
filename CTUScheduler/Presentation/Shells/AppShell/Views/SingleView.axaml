@@ -1,4 +1,4 @@
-﻿<u:ReactiveUrsaView x:TypeArguments="vm:MainViewModel" 
+﻿<u:ReactiveUrsaView x:TypeArguments="vm:MainViewModel"
                     xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -9,6 +9,7 @@
                     xmlns:u="https://irihi.tech/ursa"
                     xmlns:views="clr-namespace:CTUScheduler.Presentation.Shells.AppShell.Views"
                     xmlns:vm="clr-namespace:CTUScheduler.Presentation.Shells.AppShell.ViewModels"
+                    xmlns:behaviors="clr-namespace:CTUScheduler.Presentation.Services.ViewContext.Behaviors"
                     Focusable="True"
                     IsTitleBarVisible="False"
                     x:Class="CTUScheduler.Presentation.Shells.AppShell.Views.SingleView">
@@ -17,11 +18,15 @@
             <u:IconButton
                 Theme="{StaticResource BorderlessIconButton}"
                 Classes="Tertiary"
-                Icon="{StaticResource SemiIconGithubLogo}"
-               />
+                Icon="{StaticResource SemiIconGithubLogo}" />
             <u:ThemeToggleButton
                 Mode="Controller" />
         </StackPanel>
     </u:ReactiveUrsaView.RightContent>
-    <views:MainView/>
+    <views:MainView />
+
+    <!-- // khởi động các Toast, Notification // -->
+    <Interaction.Behaviors>
+        <behaviors:ViewContextBehavior></behaviors:ViewContextBehavior>
+    </Interaction.Behaviors>
 </u:ReactiveUrsaView>

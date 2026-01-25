@@ -7,7 +7,6 @@ namespace CTUScheduler.Presentation.Services.Viewport
     public interface IViewportService
     {
         Size CurrentSize { get; }
-        IObservable<Size> SizeChanged { get; }
-        void Initialize(Control visualRoot);
+        IObservable<Size> WhenSizeChanged { get; }
     }
 }

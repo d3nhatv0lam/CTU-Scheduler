@@ -7,15 +7,17 @@ using Avalonia.Dialogs;
 using CTUScheduler.AppServices.Extensions;
 using CTUScheduler.Desktop.Configs;
 using CTUScheduler.Presentation.Extensions;
+using CTUScheduler.Presentation.Services.ApplicationLifetime;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
 using Serilog;
 using Splat;
 using Splat.Microsoft.Extensions.DependencyInjection;
+using IApplicationLifetime = CTUScheduler.Presentation.Services.ApplicationLifetime.IApplicationLifetime;
 
 namespace CTUScheduler.Desktop;
-
 
 [SupportedOSPlatform("windows")]
 [SupportedOSPlatform("linux")]
@@ -31,29 +33,31 @@ class Program
         LoggingConfig.Init();
         // hạ tầng
         var host = Host.CreateDefaultBuilder(args)
-            .UseSerilog(dispose: false) 
+            .UseSerilog(dispose: false)
             .ConfigureServices((context, services) =>
             {
                 // reactiveUI register 
                 services.UseMicrosoftDependencyResolver();
                 var resolver = Locator.CurrentMutable;
-                resolver.InitializeSplat();
+                // resolver.InitializeSplat();
                 resolver.InitializeReactiveUI();
+                
+                services.AddSingleton<IApplicationLifetime, DesktopApplicationLifetime>();
+                
                 // app services
                 services.AddApplicationServices();
                 services.AddPresentationServices();
             })
             .Build();
-        
+
         try
         {
             host.Start();
-            
+
             App.ServiceProvider = host.Services;
             // UI
             BuildAvaloniaApp()
                 .StartWithClassicDesktopLifetime(args);
-            
         }
         catch (Exception ex)
         {
@@ -67,13 +71,14 @@ class Program
                 {
                     using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
                     await host.StopAsync(cts.Token);
-        
+
+                    Log.Information("Cleaning up resources...");
                     if (host is IAsyncDisposable asyncDisposable)
                         await asyncDisposable.DisposeAsync();
                     else
                         host.Dispose();
-    
-                    return true; 
+
+                    return true;
                 }
                 catch (Exception ex)
                 {
@@ -81,7 +86,7 @@ class Program
                     return false;
                 }
             });
-            
+
             bool finishedInTime = shutdownTask.Wait(5000);
 
             if (!finishedInTime)
@@ -90,7 +95,7 @@ class Program
             }
             else
             {
-                if (shutdownTask.Result) 
+                if (shutdownTask.Result)
                 {
                     Log.Information("Shutdown complete successfully.");
                 }
@@ -99,9 +104,9 @@ class Program
                     Log.Error("Shutdown completed but failed internally (check cleanup error log).");
                 }
             }
-            
+
             Log.Information("================= LOG END =================");
-            LoggingConfig.Flush();
+            LoggingConfig.CloseAndFlush();
         }
     }
 

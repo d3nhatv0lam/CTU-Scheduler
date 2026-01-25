@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace CTUScheduler.AppServices.Services.Network
+namespace CTUScheduler.Infrastructure.Services.Network
 {
     public interface IConnectivityService
     {

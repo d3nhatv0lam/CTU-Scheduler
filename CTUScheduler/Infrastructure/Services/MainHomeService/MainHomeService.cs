@@ -4,7 +4,7 @@ using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using Microsoft.Extensions.Logging;
 
-namespace CTUScheduler.AppServices.Services.MainHomeService;
+namespace CTUScheduler.Infrastructure.Services.MainHomeService;
 
 public class MainHomeService: IMainHomeService
 {

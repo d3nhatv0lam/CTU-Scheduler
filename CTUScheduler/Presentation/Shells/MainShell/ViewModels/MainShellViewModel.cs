@@ -5,21 +5,21 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
-using CTUScheduler.AppServices.Services.MainHomeService;
 using CTUScheduler.Core.Interfaces;
+using CTUScheduler.Infrastructure.Services.MainHomeService;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
-using CTUScheduler.Presentation.Features.Authentication.Views;
 using CTUScheduler.Presentation.Features.Home.ViewModels;
 using CTUScheduler.Presentation.Features.Setting.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableManager.ViewModels;
 using CTUScheduler.Presentation.Services.Dialogs;
+using CTUScheduler.Presentation.Services.UserInteractionService.Abstractions.Interfaces;
+using CTUScheduler.Presentation.Services.UserInteractionService.Abstractions.Models.Dialogs;
 using CTUScheduler.Presentation.Shells.MainShell.Models;
 using Material.Icons;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
-using Ursa.Controls;
+using DialogOptions = CTUScheduler.Presentation.Services.UserInteractionService.Abstractions.Models.Dialogs.DialogOptions;
 
 namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 {
@@ -112,14 +112,19 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                 }
             }).DisposeWith(_disposables);
             
-            TestCommand = ReactiveCommand.CreateFromTask( async() =>
+            TestCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                await OverlayDialog.ShowCustomModal<LoginView, LoginViewModel, object>(new LoginViewModel(this),
-                    options: new()
-                    {
-                        Buttons = DialogButton.YesNoCancel, CanLightDismiss = true, CanDragMove = true,
-                        CanResize = true, Mode = DialogMode.Info
-                    });
+                var toast = App.ServiceProvider.GetRequiredService<IUserInteractionService>();
+                await toast.Dialog.ShowModal<LoginViewModel, bool>(new LoginViewModel(HostScreen), new DialogOptions()
+                {
+                    Title = "HELOOOOOOOO",
+                    CanResize = true,
+                    CanDragMove = true,
+                    CanLightDismiss = true,
+                    IsCloseButtonVisible = true,
+                    Buttons = DialogButtons.OKCancel
+                });
+                // toast.Dialog.Show<LoginViewModel>(new LoginViewModel(HostScreen));
             });
         }
 

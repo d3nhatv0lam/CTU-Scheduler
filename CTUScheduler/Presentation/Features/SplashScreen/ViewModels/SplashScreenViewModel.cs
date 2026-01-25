@@ -7,15 +7,15 @@ using System.Reactive.Linq;
 using System.Threading;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using CTUScheduler.AppServices.Services.Network;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Infrastructure.DriverCore;
+using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.SplashScreen.Components.Installation.ViewModels;
-using Microsoft.Extensions.Hosting;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
+using IApplicationLifetime = CTUScheduler.Presentation.Services.ApplicationLifetime.IApplicationLifetime;
 
 namespace CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 
@@ -24,7 +24,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     private readonly CompositeDisposable _disposables = new();
     private readonly IConnectivityService _connectivityService;
     private readonly IWebDriverService _webDriverService;
-    private readonly IHostApplicationLifetime _appLifetime;
+    private readonly IApplicationLifetime _appLifetime;
     private readonly CancellationTokenSource _localCts = new();
     
     private bool _isDisposed;
@@ -62,7 +62,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     public SplashScreenViewModel(
         IConnectivityService connectivityService,
         IWebDriverService webDriverService,
-        IHostApplicationLifetime appLifetime)
+        IApplicationLifetime appLifetime)
     {
         _connectivityService = connectivityService;
         _webDriverService = webDriverService;

@@ -13,7 +13,7 @@ using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using Microsoft.Extensions.Logging;
 
-namespace CTUScheduler.AppServices.Services.Registration;
+namespace CTUScheduler.Infrastructure.Services.Registration;
 
 public class CourseCatalogService : ICourseCatalogService
 {

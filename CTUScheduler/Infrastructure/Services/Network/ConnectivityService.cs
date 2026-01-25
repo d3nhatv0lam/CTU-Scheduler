@@ -12,8 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-
-namespace CTUScheduler.AppServices.Services.Network;
+namespace CTUScheduler.Infrastructure.Services.Network;
 
 public class ConnectivityService: IConnectivityService, IDisposable
 {

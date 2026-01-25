@@ -4,6 +4,12 @@ using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.Factories;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.TimetableDialog;
+using CTUScheduler.Presentation.Services.UserInteractionService;
+using CTUScheduler.Presentation.Services.UserInteractionService.Abstractions.Interfaces;
+using CTUScheduler.Presentation.Services.UserInteractionService.Infrastructure.Ursa;
+using CTUScheduler.Presentation.Services.UserInteractionService.Infrastructure.Ursa.Dialogs;
+using CTUScheduler.Presentation.Services.UserInteractionService.Infrastructure.Ursa.Notifications;
+using CTUScheduler.Presentation.Services.ViewContext;
 using CTUScheduler.Presentation.Services.Viewport;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
@@ -39,11 +45,19 @@ public static class DesktopServiceExtensions
         services.AddSingleton<INavigationRegionManager, NavigationRegionManager>();
         
         // --- UI Helper Services ---
-        services.AddSingleton<IViewportService, ViewportService>();
+        services.AddSingleton<IViewContextService, ViewContextService>()
+            .AddSingleton<IToastService, UrsaInteractionToast>()
+            .AddSingleton<INotificationService, UrsaInteractionNotification>()
+            .AddSingleton<IDialogService, UrsaDialogService>()
+            .AddSingleton<IUserInteractionService, UserInteractionService>()
+            .AddSingleton<IViewportService, ViewportService>();
+        
         services.AddSingleton<IDialogHostService, DialogHostService>();
         services.AddSingleton<ITimetableDialogService, TimetableDialogService>();
         
-            
+
+        
+        
         // SplashScreenWindow: Cần khởi tạo ToplevelService
         services.AddTransient<SplashScreenWindow>(provider =>
         {
@@ -55,7 +69,6 @@ public static class DesktopServiceExtensions
         services.AddTransient<MainWindow>(provider =>
         {
             var window = new MainWindow();
-            provider.GetRequiredService<IViewportService>().Initialize(window);
             return window;
         });
         return services;
