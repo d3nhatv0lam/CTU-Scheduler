@@ -26,6 +26,8 @@ using DynamicData;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using Ursa.Controls;
+using CTUScheduler.Infrastructure.Exel;
+
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 
@@ -40,9 +42,9 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
     private readonly CourseMapper _courseMapper = new();
     private readonly ObservableAsPropertyHelper<string> _limitTimetableSelectedDisplayedHelper;
     private readonly ObservableAsPropertyHelper<bool> _isNextStepEnabled;
+
     private CancellationTokenSource? _cts;
     private bool _isGeneratingTimeTable;
-
 
     public bool IsGeneratingTimeTable
     {
@@ -128,17 +130,21 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
         _cts?.Dispose();
         _cts = new CancellationTokenSource();
         PaginationTimeTableViewModel.Clear();
+
+        // Lấy Excel exporter từ DI một lần, rồi truyền vào mỗi TimetablePreviewViewModel
+        var excelExporter = App.ServiceProvider.GetRequiredService<IExcelExporterService>();
+
         await Task.Run(() =>
         {
             var batch = new List<SelectableTimetableLayout>();
             foreach (var tableData in Combinatorics.CartesianProduct(
                          sets,
-                     (currentPath,next) => ScheduleValidator.ValidateStep(currentPath,next),
+                     (currentPath, next) => ScheduleValidator.ValidateStep(currentPath, next),
                          _ => true,
                          _cts.Token))
             {
-                var layout = new TimetablePreviewViewModel(tableData);
-                
+                var layout = new TimetablePreviewViewModel(tableData, excelExporter);
+
                 var selectableLayoutViewModel = new SelectableTimetableLayout(layout);
                 batch.Add(selectableLayoutViewModel);
 
@@ -159,7 +165,6 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
             }
         });
     }
-
 
     private IEnumerable<List<SectionChoice>> CourseSectionsTrackerFlatten(IEnumerable<List<Course>> courseSets)
     {

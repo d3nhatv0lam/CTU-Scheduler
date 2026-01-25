@@ -1,24 +1,30 @@
-﻿using System;
+﻿using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
+using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
+using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Core.Models.Shared.Results;
+using CTUScheduler.Infrastructure.Exel;
+using CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;
+using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
+using DynamicData;
+using ReactiveUI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
-using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
-using CTUScheduler.Core.Models.Shared;
-using CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;
-using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
-using DynamicData;
-using ReactiveUI;
+using System.Threading.Tasks;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
 public class TimetablePreviewViewModel: TimetableLayoutBaseViewModel
 {
     private readonly List<SectionChoice> _choices = new();
-    public TimetablePreviewViewModel(IEnumerable<SectionChoice> choices)
+    private readonly IExcelExporterService _excelExporter;
+
+    public TimetablePreviewViewModel(IEnumerable<SectionChoice> choices, IExcelExporterService excelExporter)
     {
+        _excelExporter = excelExporter ?? throw new ArgumentNullException(nameof(excelExporter));
         if (choices is null) return;
         _choices.AddRange(choices);
         
@@ -58,5 +64,21 @@ public class TimetablePreviewViewModel: TimetableLayoutBaseViewModel
             LastUpdated = this.LastUpdated
         };
         return new ScheduleBlueprint(courses, profile);
+    }
+
+    public async Task<OperationResult<string>> ExportToExcelFileAsync(string filePath)
+    {
+        // Tạo column định nghĩa (tùy domain)
+        var columns = new[]
+        {
+            new ExportColumnDefinition<SectionChoice> { Header = "Code", ValueSelector = c => c.Course?.Code },
+            new ExportColumnDefinition<SectionChoice> { Header = "Name", ValueSelector = c => c.Course?.Name_VN },
+            new ExportColumnDefinition<SectionChoice> { Header = "Section", ValueSelector = c => c.Section?.Group },
+            new ExportColumnDefinition<SectionChoice> { Header = "Credits", ValueSelector = c => c.Course?.Credits, NumberFormat = "0" }
+        };
+
+        var options = new ExcelExportOptions { SheetName = "Timetable", AutoFitColumns = true };
+
+        return await _excelExporter.ExportToFileAsync(_choices, filePath, columns, options);
     }
 }

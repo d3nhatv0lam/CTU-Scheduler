@@ -14,7 +14,7 @@ public class ExcelExporterService : IExcelExporterService
 {
     public async Task<OperationResult<string>> ExportAsync<T>(
         IEnumerable<T> data,
-        Stream output,  // stream là nơi xuất file excel vào
+        Stream output,
         IEnumerable<ExportColumnDefinition<T>>? columns = null,
         ExcelExportOptions? options = null,
         CancellationToken cancellationToken = default)
@@ -25,15 +25,15 @@ public class ExcelExporterService : IExcelExporterService
 
         options ??= new ExcelExportOptions();
 
-        // Ưu tiên CancellationToken từ tham số hàm nếu có, nếu không thì dùng từ options
+        // Determine cancellation token precedence: explicit param wins, otherwise options token.
         var ct = cancellationToken != default ? cancellationToken : options.CancellationToken;
 
         try
         {
             ct.ThrowIfCancellationRequested();
 
-            // ResolveColumns: nếu không có định nghĩa cột thì dùng phản chiếu để lấy tất cả thuộc tính công khai
-            var columnList = ResolveColumns(columns);   
+            // Prepare column definitions (fallback to reflection when columns not provided)
+            var columnList = ResolveColumns(columns);
 
             using var wb = new XLWorkbook();
             var sheet = wb.Worksheets.Add(options.SheetName ?? "Sheet1");
@@ -46,73 +46,100 @@ public class ExcelExporterService : IExcelExporterService
             {
                 foreach (var c in columnList)
                 {
-                    var cell = sheet.Cell(row, col);    // Lấy ô hiện tại để ghi header
-                    cell.Value = c.Header ?? string.Empty;  // Gán giá trị header, nếu null thì gán chuỗi rỗng
+                    var cell = sheet.Cell(row, col);
+                    cell.Value = c.Header ?? string.Empty;
                     cell.Style.Font.Bold = true;
                     cell.Style.Fill.BackgroundColor = XLColor.FromArgb(0xF2, 0xF2, 0xF2);
                     col++;
                 }
 
                 if (options.FreezeTopRow)
-                    sheet.SheetView.FreezeRows(1);      // Đóng băng hàng đầu tiên nếu được yêu cầu
+                    sheet.SheetView.FreezeRows(1);
 
                 row++;
             }
 
             // Rows
-            foreach (var item in data)              // Duyệt qua từng mục dữ liệu
+            foreach (var item in data)
             {
                 ct.ThrowIfCancellationRequested();
 
                 col = 1;
-                foreach (var c in columnList)       // Duyệt qua từng cột đã định nghĩa
+                foreach (var c in columnList)
                 {
-                    var cell = sheet.Cell(row, col);    // Lấy ô hiện tại để ghi dữ liệu
-                    object? value = null;               // Biến để giữ giá trị lấy được từ selector
+                    var cell = sheet.Cell(row, col);
+                    object? value = null;
                     try
                     {
-                        value = c.ValueSelector?.Invoke(item);  // Lấy giá trị bằng cách gọi selector
+                        value = c.ValueSelector?.Invoke(item);
                     }
                     catch
                     {
                         value = null;
                     }
 
-                    // Null handling
-                    if (value is null)
+                    // --- FIX FOR ClosedXML: Xử lý gán giá trị thủ công ---
+                    if (value == null)
                     {
-                        cell.Value = string.Empty;
+                        cell.Value = string.Empty; // Sửa lỗi .From() tại đây
                     }
                     else
                     {
-                        switch (value)  // Hổ trợ một số kiểu dữ liệu phổ biến
+                        switch (value)
                         {
-                            case DateTime dt:   // Khi value là DateTime thì gán trực tiếp
+                            case DateTime dt:
                                 cell.Value = dt;
                                 cell.Style.DateFormat.Format = c.NumberFormat ?? options.DateFormat ?? "yyyy-MM-dd";
                                 break;
-                            case DateTimeOffset dto:    // Khi value là DateTimeOffset thì gán giá trị DateTime của nó
+                            case DateTimeOffset dto:
                                 cell.Value = dto.DateTime;
                                 cell.Style.DateFormat.Format = c.NumberFormat ?? options.DateFormat ?? "yyyy-MM-dd";
                                 break;
-                            case IFormattable formattable:  // Hỗ trợ các kiểu dữ liệu có thể định dạng (số, ngày tháng, v.v.)
-                                // If specific number format provided use it, otherwise assign raw value
-                                cell.Value = formattable;
+                            case double dbl:
+                                cell.Value = dbl;
                                 if (!string.IsNullOrWhiteSpace(c.NumberFormat))
                                     cell.Style.NumberFormat.Format = c.NumberFormat;
                                 break;
+                            case float flt:
+                                cell.Value = flt; // Implicit conversion
+                                if (!string.IsNullOrWhiteSpace(c.NumberFormat))
+                                    cell.Style.NumberFormat.Format = c.NumberFormat;
+                                break;
+                            case decimal dec:
+                                cell.Value = dec;
+                                if (!string.IsNullOrWhiteSpace(c.NumberFormat))
+                                    cell.Style.NumberFormat.Format = c.NumberFormat;
+                                break;
+                            case int intVal:
+                                cell.Value = intVal;
+                                if (!string.IsNullOrWhiteSpace(c.NumberFormat))
+                                    cell.Style.NumberFormat.Format = c.NumberFormat;
+                                break;
+                            case long longVal:
+                                cell.Value = longVal; // Implicit conversion
+                                if (!string.IsNullOrWhiteSpace(c.NumberFormat))
+                                    cell.Style.NumberFormat.Format = c.NumberFormat;
+                                break;
+                            case bool b:
+                                cell.Value = b;
+                                break;
+                            case string s:
+                                cell.Value = s;
+                                break;
                             default:
-                                cell.Value = value;
+                                // Fallback: Ép về string cho các kiểu dữ liệu lạ
+                                cell.Value = value.ToString();
                                 break;
                         }
                     }
+                    // --- END FIX ---
 
                     col++;
                 }
 
                 row++;
-                // yield control to keep UI responsive in long operations
-                await Task.Yield();
+                // Nhường thread định kỳ để UI không bị đơ
+                if (row % 100 == 0) await Task.Yield();
             }
 
             // Column widths / autofit
@@ -128,8 +155,7 @@ public class ExcelExporterService : IExcelExporterService
                 sheet.Columns(1, totalColumns).AdjustToContents();
 
             // Save workbook to provided stream
-            // ClosedXML SaveAs(Stream) is synchronous; keep as Task.Run to avoid blocking caller thread if desired.
-            await Task.Run(() =>    // này là để tránh blocking thread chính
+            await Task.Run(() =>
             {
                 wb.SaveAs(output);
                 output.Flush();
@@ -157,25 +183,22 @@ public class ExcelExporterService : IExcelExporterService
         if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentNullException(nameof(filePath));
         options ??= new ExcelExportOptions();
 
-        // Ensure directory exists
         var dir = Path.GetDirectoryName(filePath);
         if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
             Directory.CreateDirectory(dir);
 
-        // Handle overwrite policy
         if (File.Exists(filePath) && !options.OverwriteIfExists)
             return OperationResult<string>.Failed($"File already exists: {filePath}");
 
         try
         {
-            // Open FileStream and delegate to ExportAsync
             using var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
             var result = await ExportAsync(data, fs, columns, options, cancellationToken);
+
             if (result.IsSuccess)
                 return OperationResult<string>.Success(filePath);
 
-            // propagate failure (wrap message)
-            return OperationResult<string>.Failed(result.FirstErrorMessage ?? "Lỗi không xác định trong quá trình xuất file");
+            return OperationResult<string>.Failed(result.FirstErrorMessage ?? "Unknown error while exporting");
         }
         catch (OperationCanceledException ex)
         {
@@ -187,14 +210,11 @@ public class ExcelExporterService : IExcelExporterService
         }
     }
 
-    // Helpers
-
     private static List<ExportColumnDefinition<T>> ResolveColumns<T>(IEnumerable<ExportColumnDefinition<T>>? columns)
     {
         if (columns != null && columns.Any())
-            return columns.ToList();        // nếu đã có định nghĩa cột thì dùng luôn
+            return columns.ToList();
 
-        // Fallback to reflection: là lấy tất cả các thuộc tính công khai của T
         var props = typeof(T)
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .Where(p => p.CanRead)
@@ -203,7 +223,6 @@ public class ExcelExporterService : IExcelExporterService
         var list = new List<ExportColumnDefinition<T>>(props.Length);
         foreach (var p in props)
         {
-            // Capture property in local for closure
             var prop = p;
             var def = new ExportColumnDefinition<T>
             {

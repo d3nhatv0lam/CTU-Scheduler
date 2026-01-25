@@ -15,6 +15,7 @@ using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Login;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Main;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
+using CTUScheduler.Infrastructure.Exel;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CTUScheduler.AppServices.Extensions;
@@ -38,6 +39,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IWebDriverService, WebDriverService>();
         services.AddSingleton<IUserSessionService, UserSessionService>();
         services.AddSingleton<IWorkspaceStore, WorkspaceStore>();
+
+        // Register Excel exporter, dùng Singleton vì service không giữ state per-request; nếu cần thay đổi, chọn Scoped/Transient theo nhu cầu. 
+        services.AddSingleton<CTUScheduler.Infrastructure.Exel.IExcelExporterService, CTUScheduler.Infrastructure.Exel.ExcelExporterService>();
 
         // --- Page Factories & Page Services (CTU Site) ---
         services.AddSingleton<ICtuSitePageFactory, CtuSitePageFactory>()
