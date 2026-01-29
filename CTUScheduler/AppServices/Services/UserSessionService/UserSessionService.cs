@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
@@ -34,11 +35,13 @@ public class UserSessionService: IUserSessionService, IDisposable
         RegistrationInfo = _serverInfoSubject.AsObservable();
         
         var isEmptyProfiles = profileQueryService.ConnectProfiles()
+            .SubscribeOn(TaskPoolScheduler.Default)
             .Count()
             .Select(x => x == 0)
             .DistinctUntilChanged()
             .Replay(1)
             .RefCount();
+        
         
         IsReadonly = _localContextSubject
             .CombineLatest(_serverInfoSubject, isEmptyProfiles, 
