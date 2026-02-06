@@ -1,11 +1,8 @@
-﻿using System;
-using System.Runtime.Versioning;
-using System.Threading;
-using System.Threading.Tasks;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Dialogs;
 using CTUScheduler.AppServices.Extensions;
 using CTUScheduler.Desktop.Configs;
+using CTUScheduler.Infrastructure.Exel;
 using CTUScheduler.Presentation.Extensions;
 using CTUScheduler.Presentation.Services.ApplicationLifetime;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +12,10 @@ using ReactiveUI.Avalonia;
 using Serilog;
 using Splat;
 using Splat.Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Runtime.Versioning;
+using System.Threading;
+using System.Threading.Tasks;
 using IApplicationLifetime = CTUScheduler.Presentation.Services.ApplicationLifetime.IApplicationLifetime;
 
 namespace CTUScheduler.Desktop;
@@ -43,7 +44,7 @@ class Program
                 resolver.InitializeReactiveUI();
                 
                 services.AddSingleton<IApplicationLifetime, DesktopApplicationLifetime>();
-                
+
                 // app services
                 services.AddApplicationServices();
                 services.AddPresentationServices();

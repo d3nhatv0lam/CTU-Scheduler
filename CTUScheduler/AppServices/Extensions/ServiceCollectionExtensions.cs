@@ -40,8 +40,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IUserSessionService, UserSessionService>();
         services.AddSingleton<IWorkspaceStore, WorkspaceStore>();
 
-        // Register Excel exporter, dùng Singleton vì service không giữ state per-request; nếu cần thay đổi, chọn Scoped/Transient theo nhu cầu. 
-        services.AddSingleton<CTUScheduler.Infrastructure.Exel.IExcelExporterService, CTUScheduler.Infrastructure.Exel.ExcelExporterService>();
+        services.AddSingleton<IExcelExporterService, ExcelExporterService>();
 
         // --- Page Factories & Page Services (CTU Site) ---
         services.AddSingleton<ICtuSitePageFactory, CtuSitePageFactory>()

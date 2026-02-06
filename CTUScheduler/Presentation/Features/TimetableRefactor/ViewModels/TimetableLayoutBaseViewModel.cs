@@ -20,7 +20,7 @@ public abstract class TimetableLayoutBaseViewModel: ViewModelBase, IDisposable
     private int _subjectCount = 0;
     private int _totalCredits = 0;
     private DateTimeOffset _lastUpdated = DateTimeOffset.Now;
-    private TimetableViewModel _visualizerVM;
+    private TimetableViewModel? _visualizerVM;
     
     public string Name 
     { 
@@ -43,27 +43,36 @@ public abstract class TimetableLayoutBaseViewModel: ViewModelBase, IDisposable
         get => _lastUpdated;
         protected set => this.RaiseAndSetIfChanged(ref _lastUpdated, value);
     }
-    public TimetableViewModel VisualizerVM 
+    public TimetableViewModel? VisualizerVM 
     {
         get => _visualizerVM;
         protected set => this.RaiseAndSetIfChanged(ref _visualizerVM, value);
     }
-    
+
+    private ReactiveCommand<Unit, Unit>? _exportToExcelCommand;
+
     public ReactiveCommand<object,Unit> ExportToImageCommand { get; protected set; }
-    public ReactiveCommand<Unit,Unit> ExportToExcelCommand { get; protected set; }
+    public ReactiveCommand<Unit, Unit>? ExportToExcelCommand
+    {
+        get => _exportToExcelCommand;
+        protected set => this.RaiseAndSetIfChanged(ref _exportToExcelCommand, value);
+    }
 
     public TimetableLayoutBaseViewModel()
     {
         ExportToImageCommand = ReactiveCommand.CreateFromTask<object>(async (view) => { })
             .DisposeWith(Disposables);
 
-        ExportToExcelCommand = ReactiveCommand.CreateFromTask(async () => { })
-            .DisposeWith(Disposables);
+        //ExportToExcelCommand = ReactiveCommand.CreateFromTask(async () => { })
+        //    .DisposeWith(Disposables);
+        ExportToExcelCommand = ReactiveCommand.Create(() =>
+        {
+            System.Diagnostics.Debug.WriteLine("DEBUG: Nút đang chạy lệnh rỗng (Chưa load lệnh thật)");
+        }).DisposeWith(Disposables);
 
         VisualizerVM?.DisposeWith(Disposables);
     }
     
-
     protected TimetableRenderItem CreateRenderItem(ICourseDisplaySource dataSource)
     {
         string code = "";

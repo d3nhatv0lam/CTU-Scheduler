@@ -9,6 +9,7 @@ using DynamicData;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
@@ -24,13 +25,60 @@ public class TimetablePreviewViewModel: TimetableLayoutBaseViewModel
 
     public TimetablePreviewViewModel(IEnumerable<SectionChoice> choices, IExcelExporterService excelExporter)
     {
+        ExportToExcelCommand = ReactiveCommand.CreateFromTask(async () =>
+        {
+            try
+            {
+                // 1. In ra để biết lệnh đã bắt đầu chạy
+                System.Diagnostics.Debug.WriteLine("=== BẮT ĐẦU XUẤT EXCEL ===");
+
+                var safeName = string.IsNullOrWhiteSpace(this.Name) ? "TKB" : this.Name.Trim();
+                string fileName = $"{safeName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                string fullPath = Path.Combine(desktopPath, fileName);
+
+                System.Diagnostics.Debug.WriteLine($"Đường dẫn file: {fullPath}");
+
+                // 2. Gọi hàm xuất file
+                var result = await ExportToExcelFileAsync(fullPath);
+
+                if (result.IsSuccess)
+                {
+                    System.Diagnostics.Debug.WriteLine("=== XUẤT THÀNH CÔNG ===");
+                    // Mở file lên (dùng Explorer để mở thư mục chứa file)
+                    new System.Diagnostics.Process
+                    {
+                        StartInfo = new System.Diagnostics.ProcessStartInfo("explorer.exe", $"/select,\"{fullPath}\"")
+                    }.Start();
+                }
+                else
+                {
+                    // Lỗi logic từ Service trả về
+                    throw new Exception($"Service báo lỗi: {result.FirstErrorMessage}");
+                }
+            }
+            catch (Exception ex)
+            {
+                // 3. BẮT ĐƯỢC LỖI Ở ĐÂY
+                // Nó sẽ in chi tiết lỗi ra cửa sổ Output
+                System.Diagnostics.Debug.WriteLine("=================================");
+                System.Diagnostics.Debug.WriteLine("CHẾT Ở ĐÂY: " + ex.ToString());
+                System.Diagnostics.Debug.WriteLine("=================================");
+
+                // Nếu ông có DialogService thì show lên, còn không thì throw để App crash luôn cho dễ thấy
+                // throw; 
+            }
+        });
+
         _excelExporter = excelExporter ?? throw new ArgumentNullException(nameof(excelExporter));
-        if (choices is null) return;
+
+        if (choices is null) return; // Nếu return ở đây thì lệnh Export ở trên ĐÃ ĐƯỢC GÁN RỒI -> An toàn!
+
         _choices.AddRange(choices);
-        
+
         var sourceList = new SourceList<TimetableRenderItem>()
             .DisposeWith(Disposables);
-        
+
         foreach (var choice in _choices)
         {
             var adapter = new StaticCourseAdapter(choice.Course, choice.Section);
@@ -41,8 +89,7 @@ public class TimetablePreviewViewModel: TimetableLayoutBaseViewModel
         VisualizerVM = new TimetableViewModel(sourceList.Connect());
 
         SubjectsCount = sourceList.Count;
-        TotalCredits = sourceList.Items
-            .Sum(x => x.SharedData.Credits);
+        TotalCredits = sourceList.Items.Sum(x => x.SharedData.Credits);
     }
     
     public ScheduleBlueprint ToScheduleBlueprint()
