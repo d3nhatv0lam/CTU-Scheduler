@@ -64,9 +64,6 @@ public class TimetablePreviewViewModel: TimetableLayoutBaseViewModel
                 System.Diagnostics.Debug.WriteLine("=================================");
                 System.Diagnostics.Debug.WriteLine("CHẾT Ở ĐÂY: " + ex.ToString());
                 System.Diagnostics.Debug.WriteLine("=================================");
-
-                // Nếu ông có DialogService thì show lên, còn không thì throw để App crash luôn cho dễ thấy
-                // throw; 
             }
         });
 
