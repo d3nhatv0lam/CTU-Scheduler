@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Exceptions;
-using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Shared.Results;
+using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using Microsoft.Extensions.Logging;
 

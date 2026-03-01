@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reactive.Linq;
-using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
+using CTUScheduler.AppServices.Abstractions;
+using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using Microsoft.Extensions.Logging;
 

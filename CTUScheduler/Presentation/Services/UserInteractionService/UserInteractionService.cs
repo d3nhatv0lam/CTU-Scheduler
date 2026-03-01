@@ -4,7 +4,7 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Controls;
-using CTUScheduler.Presentation.Services.UserInteractionService.Abstractions.Interfaces;
+using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using Microsoft.Extensions.Logging;
 using Semi.Avalonia.Locale;
 

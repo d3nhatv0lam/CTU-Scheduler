@@ -1,6 +1,5 @@
 ﻿using System;
 using CTUScheduler.AppServices.Models;
-using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Settings;
 using DynamicData;

@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using CTUScheduler.Core.Models.WebResponse;
+using CTUScheduler.Infrastructure.DriverCore.Response;
 using Microsoft.Playwright;
 
 namespace CTUScheduler.Infrastructure.DriverCore;

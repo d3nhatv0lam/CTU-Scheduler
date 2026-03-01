@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
 
 namespace CTUScheduler.Presentation.Shared.Models.Academic;
 
