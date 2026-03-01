@@ -9,11 +9,13 @@ using WindowNotificationManager = Ursa.Controls.WindowNotificationManager;
 
 namespace CTUScheduler.Presentation.Services.UserInteractionService.Infrastructure.Ursa.Notifications;
 
-public class UrsaInteractionNotification(IViewContextService viewContextService, ILogger<UrsaInteractionNotification> logger)
+public class UrsaInteractionNotification(
+    IViewContextService viewContextService,
+    ILogger<UrsaInteractionNotification> logger)
     : UrsaInteractionManagerBase<WindowNotificationManager>(viewContextService, logger), INotificationService
 {
     protected override WindowNotificationManager CreateManager(TopLevel context) =>
-        new (context) { MaxItems = 5, Position = NotificationPosition.BottomRight};
+        new(context) { MaxItems = 5, Position = NotificationPosition.BottomRight };
 
     protected override void UninstallManager(WindowNotificationManager manager) => manager.Uninstall();
 

@@ -30,17 +30,17 @@ public abstract class UrsaInteractionManagerBase<TManager> : INotificationPopup,
             .Subscribe(InitializeInternal);
     }
 
-    public void Success(object content, in NotificationOptions opt = default) =>
-        Show(content, NotificationType.Success, in opt);
+    public void Success(object content, in NotificationOptions options = default) =>
+        Show(content, NotificationType.Success, in options);
 
-    public void Error(object content, in NotificationOptions opt = default) =>
-        Show(content, NotificationType.Error, in opt);
+    public void Error(object content, in NotificationOptions options = default) =>
+        Show(content, NotificationType.Error, in options);
 
-    public void Warning(object content, in NotificationOptions opt = default) =>
-        Show(content, NotificationType.Warning, in opt);
+    public void Warning(object content, in NotificationOptions options = default) =>
+        Show(content, NotificationType.Warning, in options);
 
-    public void Info(object content, in NotificationOptions opt = default) =>
-        Show(content, NotificationType.Information, in opt);
+    public void Info(object content, in NotificationOptions options = default) =>
+        Show(content, NotificationType.Information, in options);
 
 
     public void Show(object content, NotificationType type, in NotificationOptions options = default)
@@ -70,7 +70,6 @@ public abstract class UrsaInteractionManagerBase<TManager> : INotificationPopup,
 
     protected abstract TManager CreateManager(TopLevel context);
     protected abstract void UninstallManager(TManager manager);
-
     protected abstract void InvokeShow(TManager manager, NotificationType type, object content,
         in NotificationOptions opt);
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -18,8 +19,6 @@ public class ViewModelFactory : IViewModelFactory
     private readonly ILogger<ViewModelFactory> _logger;
     private readonly IApplicationLifetime _appLifetime;
     private readonly ConcurrentDictionary<Type, InjectionMetadata[]> _cache = new();
-    private readonly TimeSpan _asyncInitTimeout = TimeSpan.FromSeconds(30);
-
 
     public ViewModelFactory(IServiceProvider sp, IApplicationLifetime appLifetime, ILogger<ViewModelFactory> logger)
     {
@@ -28,7 +27,10 @@ public class ViewModelFactory : IViewModelFactory
         _logger = logger;
     }
 
-    public IViewModel Create(Type vmType)
+    public IViewModel Create(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors |
+                                    DynamicallyAccessedMemberTypes.Interfaces)]
+        Type vmType)
     {
         ArgumentNullException.ThrowIfNull(vmType);
 
@@ -38,12 +40,16 @@ public class ViewModelFactory : IViewModelFactory
         return (IViewModel)_sp.GetRequiredService(vmType);
     }
 
-    public IViewModel Create(Type vmType, object args)
+    public IViewModel Create(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors |
+                                    DynamicallyAccessedMemberTypes.Interfaces)]
+        Type vmType, object args)
     {
         ArgumentNullException.ThrowIfNull(vmType);
         ArgumentNullException.ThrowIfNull(args);
 
         var strategies = _cache.GetOrAdd(vmType, ScanTypeForStrategies);
+        var argType = args.GetType();
 
         foreach (var strategy in strategies)
         {
@@ -57,30 +63,28 @@ public class ViewModelFactory : IViewModelFactory
                 case InjectionType.Method:
                 {
                     var vm = (IViewModel)_sp.GetRequiredService(vmType);
-                    strategy.InitMethod!.Invoke(vm, [args]);
+                    (vm as IInitializable)?.Initialize(args);
                     return vm;
                 }
 
                 case InjectionType.AsyncMethod:
                 {
                     var vm = (IViewModel)_sp.GetRequiredService(vmType);
-
-                    var shutdownToken = _appLifetime.ApplicationStopping;
-                    var task = (Task)strategy.InitMethod!.Invoke(vm, [args, shutdownToken])!;
+                    var task = (vm as IAsyncInitializable)?.InitializeAsync(args, _appLifetime.ApplicationStopping);
 
                     HandleAsyncInitSafely(task, vmType);
-
                     return vm;
                 }
             }
         }
 
         throw new InvalidOperationException(
-            $"ViewModel '{vmType.Name}' không có Interface (INeedArgs/IInitializable) phù hợp với tham số kiểu '{args.GetType().Name}'.");
+            $"ViewModel '{vmType.Name}' không hỗ trợ tham số kiểu '{argType.Name}'");
     }
 
-    private async void HandleAsyncInitSafely(Task task, Type vmType)
+    private async void HandleAsyncInitSafely(Task? task, Type vmType)
     {
+        if (task is null) return;
         try
         {
             await task;
@@ -98,28 +102,19 @@ public class ViewModelFactory : IViewModelFactory
     private static InjectionMetadata[] ScanTypeForStrategies(Type type)
     {
         var results = new List<InjectionMetadata>();
-        var interfaces = type.GetInterfaces();
 
-        foreach (var i in interfaces)
+        foreach (var i in type.GetInterfaces())
         {
             if (!i.IsGenericType) continue;
             var def = i.GetGenericTypeDefinition();
             var argType = i.GetGenericArguments()[0];
 
             if (def == typeof(INeedArgs<>))
-            {
-                results.Add(new InjectionMetadata(InjectionType.Constructor, argType, null));
-            }
+                results.Add(new InjectionMetadata(InjectionType.Constructor, argType));
             else if (def == typeof(IInitializable<>))
-            {
-                var method = i.GetMethod("Initialize");
-                results.Add(new InjectionMetadata(InjectionType.Method, argType, method));
-            }
+                results.Add(new InjectionMetadata(InjectionType.Method, argType));
             else if (def == typeof(IAsyncInitializable<>))
-            {
-                var method = i.GetMethod("InitializeAsync");
-                results.Add(new InjectionMetadata(InjectionType.AsyncMethod, argType, method));
-            }
+                results.Add(new InjectionMetadata(InjectionType.AsyncMethod, argType));
         }
 
         // Sắp xếp ưu tiên: Constructor -> Initialize (Đồng bộ) -> InitializeAsync (Bất đồng bộ)
@@ -133,5 +128,5 @@ public class ViewModelFactory : IViewModelFactory
         AsyncMethod
     }
 
-    private record InjectionMetadata(InjectionType Type, Type ArgType, MethodInfo? InitMethod);
+    private record InjectionMetadata(InjectionType Type, Type ArgType);
 }
