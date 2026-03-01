@@ -16,15 +16,12 @@ namespace CTUScheduler.Presentation.Services.Factories;
 public class ViewModelFactory : IViewModelFactory
 {
     private readonly IServiceProvider _sp;
-    private readonly ILogger<ViewModelFactory> _logger;
-    private readonly IApplicationLifetime _appLifetime;
-    private readonly ConcurrentDictionary<Type, InjectionMetadata[]> _cache = new();
+    // VM type -> required args type
+    private readonly ConcurrentDictionary<Type, Type?> _cache = new();
 
-    public ViewModelFactory(IServiceProvider sp, IApplicationLifetime appLifetime, ILogger<ViewModelFactory> logger)
+    public ViewModelFactory(IServiceProvider sp)
     {
         _sp = sp;
-        _appLifetime = appLifetime;
-        _logger = logger;
     }
 
     public IViewModel Create(
@@ -43,79 +40,25 @@ public class ViewModelFactory : IViewModelFactory
     {
         EnsureIsViewModel(vmType);
         ArgumentNullException.ThrowIfNull(args);
-
-        var strategies = _cache.GetOrAdd(vmType, ScanTypeForStrategies);
-        var argType = args.GetType();
-
-        foreach (var strategy in strategies)
+        
+        var requiredArgsType = _cache.GetOrAdd(vmType, type =>
+            type.GetInterfaces()
+                .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(INeedArgs<>))
+                ?.GetGenericArguments()[0]
+        );
+        
+        if (requiredArgsType is not null)
         {
-            if (!strategy.ArgType.IsInstanceOfType(args)) continue;
-
-            switch (strategy.Type)
-            {
-                case InjectionType.Constructor:
-                    return (IViewModel)ActivatorUtilities.CreateInstance(_sp, vmType, args);
-
-                case InjectionType.Method:
-                {
-                    var vm = (IViewModel)_sp.GetRequiredService(vmType);
-                    (vm as IInitializable)?.Initialize(args);
-                    return vm;
-                }
-
-                case InjectionType.AsyncMethod:
-                {
-                    var vm = (IViewModel)_sp.GetRequiredService(vmType);
-                    var task = (vm as IAsyncInitializable)?.InitializeAsync(args, _appLifetime.ApplicationStopping);
-
-                    HandleAsyncInitSafely(task, vmType);
-                    return vm;
-                }
-            }
+            if (requiredArgsType.IsInstanceOfType(args))
+                return (IViewModel)ActivatorUtilities.CreateInstance(_sp, vmType, args);
+            
+            throw new InvalidOperationException(
+                $"ViewModel '{vmType.Name}' yêu cầu tham số kiểu '{requiredArgsType.Name}', nhưng bạn lại truyền vào '{args.GetType().Name}'.");
         }
-
-        throw new InvalidOperationException(
-            $"ViewModel '{vmType.Name}' không hỗ trợ tham số kiểu '{argType.Name}'");
+        
+        return (IViewModel)_sp.GetRequiredService(vmType);
     }
 
-    private async void HandleAsyncInitSafely(Task? task, Type vmType)
-    {
-        if (task is null) return;
-        try
-        {
-            await task;
-        }
-        catch (OperationCanceledException)
-        {
-            _logger.LogWarning("Initialization timed out or cancelled for {Type}", vmType.Name);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Async initialization crashed for {Type}", vmType.Name);
-        }
-    }
-
-    private static InjectionMetadata[] ScanTypeForStrategies(Type type)
-    {
-        var results = new List<InjectionMetadata>();
-
-        foreach (var i in type.GetInterfaces())
-        {
-            if (!i.IsGenericType) continue;
-            var def = i.GetGenericTypeDefinition();
-            var argType = i.GetGenericArguments()[0];
-
-            if (def == typeof(INeedArgs<>))
-                results.Add(new InjectionMetadata(InjectionType.Constructor, argType));
-            else if (def == typeof(IInitializable<>))
-                results.Add(new InjectionMetadata(InjectionType.Method, argType));
-            else if (def == typeof(IAsyncInitializable<>))
-                results.Add(new InjectionMetadata(InjectionType.AsyncMethod, argType));
-        }
-
-        // Sắp xếp ưu tiên: Constructor -> Initialize (Đồng bộ) -> InitializeAsync (Bất đồng bộ)
-        return results.OrderBy(x => x.Type).ToArray();
-    }
 
     private void EnsureIsViewModel(Type type)
     {
@@ -123,13 +66,4 @@ public class ViewModelFactory : IViewModelFactory
         if (!typeof(IViewModel).IsAssignableFrom(type))
             throw new ArgumentException($"Type '{type.Name}' không phải là {nameof(IViewModel)}");
     }
-
-    private enum InjectionType
-    {
-        Constructor,
-        Method,
-        AsyncMethod
-    }
-
-    private record InjectionMetadata(InjectionType Type, Type ArgType);
 }

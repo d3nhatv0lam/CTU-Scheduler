@@ -12,7 +12,7 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Services.Navigation
 {
-    public class CachingNavigationService : ICachingNavigationService
+    public class CachingNavigationService : ICachingNavigationService, IDisposable
     {
         private readonly IScreen _hostScreen;
         private readonly IViewModelFactory _vmFactory;
