@@ -32,11 +32,7 @@ public class ViewModelFactory : IViewModelFactory
                                     DynamicallyAccessedMemberTypes.Interfaces)]
         Type vmType)
     {
-        ArgumentNullException.ThrowIfNull(vmType);
-
-        if (!typeof(IViewModel).IsAssignableFrom(vmType))
-            throw new ArgumentException($"Type '{vmType.Name}' không phải là IViewModel");
-
+        EnsureIsViewModel(vmType);
         return (IViewModel)_sp.GetRequiredService(vmType);
     }
 
@@ -45,7 +41,7 @@ public class ViewModelFactory : IViewModelFactory
                                     DynamicallyAccessedMemberTypes.Interfaces)]
         Type vmType, object args)
     {
-        ArgumentNullException.ThrowIfNull(vmType);
+        EnsureIsViewModel(vmType);
         ArgumentNullException.ThrowIfNull(args);
 
         var strategies = _cache.GetOrAdd(vmType, ScanTypeForStrategies);
@@ -119,6 +115,13 @@ public class ViewModelFactory : IViewModelFactory
 
         // Sắp xếp ưu tiên: Constructor -> Initialize (Đồng bộ) -> InitializeAsync (Bất đồng bộ)
         return results.OrderBy(x => x.Type).ToArray();
+    }
+
+    private void EnsureIsViewModel(Type type)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        if (!typeof(IViewModel).IsAssignableFrom(type))
+            throw new ArgumentException($"Type '{type.Name}' không phải là {nameof(IViewModel)}");
     }
 
     private enum InjectionType
