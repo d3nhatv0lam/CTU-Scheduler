@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
+using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.Interfaces;
 

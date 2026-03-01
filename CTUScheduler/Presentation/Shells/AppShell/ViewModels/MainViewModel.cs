@@ -2,17 +2,15 @@
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using CTUScheduler.Infrastructure.Services.Network;
+using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.Navigation.Models;
-using CTUScheduler.Presentation.Services.UserInteractionService.Abstractions.Interfaces;
-using CTUScheduler.Presentation.Services.UserInteractionService.Abstractions.Models;
-using CTUScheduler.Presentation.Services.ViewContext;
+using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
+using CTUScheduler.Presentation.Services.UserInteractionService.Models;
 using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
 using CTUScheduler.Presentation.Shared.Models.Regions;
-using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 

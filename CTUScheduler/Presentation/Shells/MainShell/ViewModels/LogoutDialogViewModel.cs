@@ -4,6 +4,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Base;
+using CTUScheduler.Presentation.Shared.Interfaces;
 using DialogHostAvalonia;
 using ReactiveUI;
 

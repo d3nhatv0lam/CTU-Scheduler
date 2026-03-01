@@ -9,6 +9,7 @@ using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
+using CTUScheduler.Presentation.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Serilog;

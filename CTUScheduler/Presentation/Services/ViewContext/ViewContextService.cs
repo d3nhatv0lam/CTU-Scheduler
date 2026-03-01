@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reactive.Linq;
 using Avalonia.Controls;
+using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
 using DialogHostAvalonia.Utilities;
 using Microsoft.Extensions.Logging;
 

@@ -5,6 +5,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Infrastructure.Services.MainHomeService;
 using CTUScheduler.Presentation.Base;
@@ -14,14 +15,12 @@ using CTUScheduler.Presentation.Features.Setting.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableManager.ViewModels;
 using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.Navigation;
-using CTUScheduler.Presentation.Services.UserInteractionService.Abstractions.Interfaces;
-using CTUScheduler.Presentation.Services.UserInteractionService.Abstractions.Models.Dialogs;
 using CTUScheduler.Presentation.Shared.Models.Regions;
 using CTUScheduler.Presentation.Shells.MainShell.Models;
 using Material.Icons;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
-using DialogOptions = CTUScheduler.Presentation.Services.UserInteractionService.Abstractions.Models.Dialogs.DialogOptions;
+using DialogOptions = CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs.DialogOptions;
 
 namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 {
