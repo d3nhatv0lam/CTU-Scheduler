@@ -5,22 +5,22 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
+using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Infrastructure.Services.MainHomeService;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
-using CTUScheduler.Presentation.Features.Authentication.Views;
 using CTUScheduler.Presentation.Features.Home.ViewModels;
 using CTUScheduler.Presentation.Features.Setting.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableManager.ViewModels;
 using CTUScheduler.Presentation.Services.Dialogs;
+using CTUScheduler.Presentation.Services.Navigation;
+using CTUScheduler.Presentation.Shared.Models.Regions;
 using CTUScheduler.Presentation.Shells.MainShell.Models;
 using Material.Icons;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
-using Ursa.Controls;
-using Notification = Ursa.Controls.Notification;
+using DialogOptions = CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs.DialogOptions;
 
 namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 {
@@ -29,13 +29,14 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly IDialogHostService _dialogHostService;
         private readonly IMainHomeService _mainHomeService;
+        private readonly INavigationRegionManager _navigationRegionManager;
         private NavigationItem _selectedItem;
         private string _userName = "họ tên";
         private string _userMSSV = "MSSV";
-        private string _title;
+        private string _title = "";
 
         public string? UrlPathSegment => "MainLayout";
-        public RoutingState Router { get; }
+        public RoutingState Router { get; } = new RoutingState();
         public IScreen HostScreen { get; }
         public ObservableCollection<NavigationItem> NavigationItems { get; }
         public NavigationItem SelectedItem
@@ -59,19 +60,22 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             set => this.RaiseAndSetIfChanged(ref _title, value);
         }
         public ReactiveCommand<Unit, Unit> LogoutCommand { get; }
-        public ReactiveCommand<Unit, Unit> TestCommand { get; }
 
         public MainShellViewModel()
         {
 
         }
 
-        public MainShellViewModel(IScreen hostScreen)
+        public MainShellViewModel(IScreen hostScreen,IMainHomeService mainHomeService, INavigationRegionManager navigationRegionManager)
         {
-            Router = new RoutingState();
             HostScreen = hostScreen;
             _dialogHostService = App.ServiceProvider.GetRequiredService<IDialogHostService>();
-            _mainHomeService = App.ServiceProvider.GetRequiredService<IMainHomeService>();
+            _mainHomeService = mainHomeService;
+            _navigationRegionManager = navigationRegionManager;
+
+            _navigationRegionManager
+                .Register(RegionIds.Main, this)
+                .DisposeWith(_disposables);
 
             _mainHomeService.StudentIdChanges
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -108,23 +112,21 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                     {
                         if (vm is IDisposable disposable) disposable.Dispose();
                     }
-                    HostScreen.Router.NavigateAndReset.Execute(new LoginViewModel(HostScreen));
+
+                    await _navigationRegionManager.NavigateAndResetTo<LoginViewModel>(RegionIds.Root);
                     Dispose();
                 }
             }).DisposeWith(_disposables);
-            
-            TestCommand = ReactiveCommand.CreateFromTask( async() =>
-            {
-            });
         }
 
        
         private void OnNavigatePage(NavigationItem item)
         {
             Title = item.Title;
-            var page = (IRoutableViewModel)Activator.CreateInstance(item.ViewModelType,HostScreen)!;
+            // var page = (IRoutableViewModel)Activator.CreateInstance(item.ViewModelType,HostScreen)!;
+            // Router.NavigateAndReset.Execute(page);
             var oldPage = Router.GetCurrentViewModel();
-            Router.NavigateAndReset.Execute(page);
+            _navigationRegionManager.NavigateAndResetTo(RegionIds.Main, item.ViewModelType);
                     
             if (oldPage is IDisposable disposable)
                 disposable.Dispose();

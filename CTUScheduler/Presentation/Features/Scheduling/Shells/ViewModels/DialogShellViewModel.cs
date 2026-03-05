@@ -7,6 +7,7 @@ using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 using CTUScheduler.Presentation.Services.Viewport;
+using CTUScheduler.Presentation.Shared.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 
@@ -46,7 +47,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
             
             CloseDialogCommand = ReactiveCommand.Create(() => Close())
                 .DisposeWith(_disposables);
-            _viewportService.SizeChanged
+            _viewportService.WhenSizeChanged
                 .Subscribe(size =>
                 {
                     Height = size.Height;

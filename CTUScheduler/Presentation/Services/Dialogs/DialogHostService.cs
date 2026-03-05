@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CTUScheduler.Core.Interfaces;
+using CTUScheduler.Presentation.Shared.Interfaces;
 using DialogHostAvalonia;
 
 namespace CTUScheduler.Presentation.Services.Dialogs

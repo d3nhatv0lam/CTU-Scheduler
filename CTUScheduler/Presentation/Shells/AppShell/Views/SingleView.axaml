@@ -9,7 +9,7 @@
                     xmlns:u="https://irihi.tech/ursa"
                     xmlns:views="clr-namespace:CTUScheduler.Presentation.Shells.AppShell.Views"
                     xmlns:vm="clr-namespace:CTUScheduler.Presentation.Shells.AppShell.ViewModels"
-                    xmlns:behaviors="clr-namespace:CTUScheduler.Presentation.Services.UserInteractionService.Behaviors"
+                    xmlns:behaviors="clr-namespace:CTUScheduler.Presentation.Services.ViewContext.Behaviors"
                     Focusable="True"
                     IsTitleBarVisible="False"
                     x:Class="CTUScheduler.Presentation.Shells.AppShell.Views.SingleView">
@@ -27,6 +27,6 @@
 
     <!-- // khởi động các Toast, Notification // -->
     <Interaction.Behaviors>
-        <behaviors:UserInteractionBehavior></behaviors:UserInteractionBehavior>
+        <behaviors:ViewContextBehavior></behaviors:ViewContextBehavior>
     </Interaction.Behaviors>
 </u:ReactiveUrsaView>

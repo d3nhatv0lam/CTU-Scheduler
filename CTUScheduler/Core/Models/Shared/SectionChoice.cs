@@ -1,5 +1,5 @@
 ﻿using System;
-using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
+using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 
 namespace CTUScheduler.Core.Models.Shared;
 

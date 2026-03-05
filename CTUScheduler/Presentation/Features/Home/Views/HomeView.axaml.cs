@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables.Fluent;
+using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
 using ReactiveUI.Avalonia;
-using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
 using CTUScheduler.Presentation.Features.Home.ViewModels;
 using ReactiveUI;
 

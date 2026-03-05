@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using CTUScheduler.AppServices.Helpers.Json;
 using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.Core.Helpers;
-using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
+using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Core.Utils.IO;

@@ -1,4 +1,4 @@
-﻿using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
+﻿using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Presentation.Shared.Models.Academic;
 using Riok.Mapperly.Abstractions;
 

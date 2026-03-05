@@ -40,7 +40,7 @@ class Program
                 // reactiveUI register 
                 services.UseMicrosoftDependencyResolver();
                 var resolver = Locator.CurrentMutable;
-                resolver.InitializeSplat();
+                // resolver.InitializeSplat();
                 resolver.InitializeReactiveUI();
                 
                 services.AddSingleton<IApplicationLifetime, DesktopApplicationLifetime>();
@@ -107,7 +107,7 @@ class Program
             }
 
             Log.Information("================= LOG END =================");
-            LoggingConfig.Flush();
+            LoggingConfig.CloseAndFlush();
         }
     }
 

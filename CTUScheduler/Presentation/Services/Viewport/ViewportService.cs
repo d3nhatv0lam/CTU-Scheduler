@@ -3,6 +3,8 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia;
 using Avalonia.Controls;
+using CTUScheduler.Presentation.Services.ViewContext;
+using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Presentation.Services.Viewport
@@ -13,11 +15,15 @@ namespace CTUScheduler.Presentation.Services.Viewport
         private readonly BehaviorSubject<Size> _sizeSubject = new BehaviorSubject<Size>(new Size(0, 0));
         private IDisposable _subscription = null!;
         public Size CurrentSize => _sizeSubject.Value;
-        public IObservable<Size> SizeChanged => _sizeSubject.AsObservable();
+        public IObservable<Size> WhenSizeChanged => _sizeSubject.AsObservable();
 
-        public ViewportService(ILogger<ViewportService> logger)
+        public ViewportService(IViewContextService viewContextService,ILogger<ViewportService> logger)
         {
             _logger = logger;
+            viewContextService.WhenTopLevelChanged
+                .Where(x => x is not null)
+                .Select(x => x!)
+                .Subscribe(Initialize);
         }
 
         public void Initialize(Control visualRoot)
