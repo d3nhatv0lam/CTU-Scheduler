@@ -55,17 +55,12 @@ public abstract class TimetableLayoutBaseViewModel: ViewModelBase, IDisposable
     public ReactiveCommand<Unit, Unit>? ExportToExcelCommand
     {
         get => _exportToExcelCommand;
-        protected set
-        {
-            System.Diagnostics.Debug.WriteLine($"ExportToExcelCommand đang được set. Giá trị mới: {(value != null ? "CÓ" : "KHÔNG")}");
-            this.RaiseAndSetIfChanged(ref _exportToExcelCommand, value);
-            System.Diagnostics.Debug.WriteLine($"Sau khi set: {(_exportToExcelCommand != null ? "CÓ" : "KHÔNG")}");
-        }
-    }
+        set => this.RaiseAndSetIfChanged(ref _exportToExcelCommand, value);
+    }   
 
     public TimetableLayoutBaseViewModel()
     {
-        ExportToImageCommand = ReactiveCommand.CreateFromTask<object>(async (view) => 
+        ExportToImageCommand = ReactiveCommand.CreateFromTask<object>(async (view) =>
         {
             System.Diagnostics.Debug.WriteLine("DEBUG: Nút đang chạy lệnh rỗng (Chưa load lệnh thật) NÍ ƠI");
 

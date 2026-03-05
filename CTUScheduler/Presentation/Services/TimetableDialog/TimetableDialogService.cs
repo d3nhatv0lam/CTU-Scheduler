@@ -15,11 +15,21 @@ public class TimetableDialogService: ITimetableDialogService
         _logger = logger;
         _dialogHostService = dialogHostService;
     }
-    
+
     public async Task ShowTimetableDetails<TViewModel>(TViewModel viewModel) where TViewModel : class
     {
         _logger.LogInformation("Opening timetable details");
-        await _dialogHostService.ShowDialogAsync<TViewModel,Unit>(viewModel,
+
+        if (viewModel is CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels.TimetableLayoutBaseViewModel baseVm)
+        {
+            var cmd = baseVm.ExportToExcelCommand;
+            _logger.LogInformation($"==== KẾT QUẢ SOI ====");
+            _logger.LogInformation($"1. Tên thật của nó: {viewModel.GetType().Name}");
+            _logger.LogInformation($"2. Nó có lệnh Excel không? {(cmd == null ? "TRẮNG TAY (NULL)" : "CÓ LỆNH")}");
+            _logger.LogInformation($"=====================");
+        }
+
+        await _dialogHostService.ShowDialogAsync<TViewModel, Unit>(viewModel,
             DialogIdentifier.Timetable,
             false);
         _logger.LogInformation("Closed timetable details");
