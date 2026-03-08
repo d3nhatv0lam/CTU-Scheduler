@@ -67,7 +67,6 @@ public class TimetablePreviewViewModel: TimetableLayoutBaseViewModel
             catch (Exception ex)
             {
                 // 3. BẮT ĐƯỢC LỖI Ở ĐÂY
-                // Nó sẽ in chi tiết lỗi ra cửa sổ Output
                 System.Diagnostics.Debug.WriteLine("=================================");
                 System.Diagnostics.Debug.WriteLine("CHẾT Ở ĐÂY: " + ex.ToString());
                 System.Diagnostics.Debug.WriteLine("=================================");
@@ -119,17 +118,32 @@ public class TimetablePreviewViewModel: TimetableLayoutBaseViewModel
 
     public async Task<OperationResult<string>> ExportToExcelFileAsync(string filePath)
     {
-        // Tạo column định nghĩa (tùy domain)
-        var columns = new[]
+        try
         {
-            new ExportColumnDefinition<SectionChoice> { Header = "Code", ValueSelector = c => c.Course?.Code },
-            new ExportColumnDefinition<SectionChoice> { Header = "Name", ValueSelector = c => c.Course?.Name_VN },
-            new ExportColumnDefinition<SectionChoice> { Header = "Section", ValueSelector = c => c.Section?.Group },
-            new ExportColumnDefinition<SectionChoice> { Header = "Credits", ValueSelector = c => c.Course?.Credits, NumberFormat = "0" }
-        };
+            // 1. Lấy dữ liệu 
+            var choicesCopy = _choices.ToList();
+            if (choicesCopy.Count == 0) return OperationResult<string>.Failed("Không có dữ liệu để xuất");
 
-        var options = new ExcelExportOptions { SheetName = "Timetable", AutoFitColumns = true };
+            var wb = await Task.Run(() => TimetableExcelBuilder.BuildWorkbook(choicesCopy, "Thời Khóa Biểu"));
 
-        return await _excelExporter.ExportToFileAsync(_choices, filePath, columns, options);
+            var dir = System.IO.Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrEmpty(dir) && !System.IO.Directory.Exists(dir))
+            {
+                System.IO.Directory.CreateDirectory(dir);
+            }
+
+            // 4. Lưu file xuống đĩa cứng
+            await Task.Run(() => wb.SaveAs(filePath));
+
+            return OperationResult<string>.Success(filePath);
+        }
+        catch (OperationCanceledException ex)
+        {
+            return OperationResult<string>.FromException(ex);
+        }
+        catch (Exception ex)
+        {
+            return OperationResult<string>.FromException(ex);
+        }
     }
 }

@@ -121,63 +121,52 @@ public class TimetableEditorViewModel: TimetableLayoutBaseViewModel, INeedArgs<S
         {
             try
             {
-                // Build list of SectionChoice from profile saved keys using schedule snapshot
-                var allCourses = _scheduleManager.GetCourseSnapshot().ToList();
-                var sectionChoices = new List<SectionChoice>();
-                foreach (var kvp in _scheduleProfile.SavedCourseGroupKeys ?? new Dictionary<string, string>())
+                // 1. Lấy dữ liệu gốc từ DataService và ép sang SectionChoice
+                var allCourses = _scheduleManager.GetCourseSnapshot();
+                var listToExport = new List<SectionChoice>();
+
+                foreach (var kvp in _scheduleProfile.SavedCourseGroupKeys)
                 {
-                    var code = kvp.Key;
-                    var group = kvp.Value;
-                    var course = allCourses.FirstOrDefault(c => string.Equals(c.Code, code, StringComparison.OrdinalIgnoreCase));
-                    if (course is null) continue;
-                    var section = course.Sections.FirstOrDefault(s => s.Group == group);
-                    if (section is null) continue;
-                    sectionChoices.Add(new SectionChoice(course, section));
-                }
+                    var courseCode = kvp.Key;
+                    var groupName = kvp.Value;
 
-                if (!sectionChoices.Any())
-                {
-                    // không có dữ liệu để export
-                    return;
-                }
-
-                // Prepare file path (Desktop with timestamp)
-                var safeName = string.IsNullOrWhiteSpace(this.Name) ? "TKB" : this.Name.Trim();
-                var fileName = $"{safeName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
-                var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-                var fullPath = Path.Combine(desktopPath, fileName);
-
-                // Prepare columns (same as preview)
-                var columns = new[]
-                {
-                    new ExportColumnDefinition<SectionChoice> { Header = "Code", ValueSelector = c => c.Course?.Code },
-                    new ExportColumnDefinition<SectionChoice> { Header = "Name", ValueSelector = c => c.Course?.Name_VN },
-                    new ExportColumnDefinition<SectionChoice> { Header = "Section", ValueSelector = c => c.Section?.Group },
-                    new ExportColumnDefinition<SectionChoice> { Header = "Credits", ValueSelector = c => c.Course?.Credits, NumberFormat = "0" }
-                };
-                var options = new ExcelExportOptions { SheetName = "Timetable", AutoFitColumns = true };
-
-                var result = await _excelExporter.ExportToFileAsync(sectionChoices, fullPath, columns, options);
-
-                if (result.IsSuccess)
-                {
-                    // open folder select
-                    new System.Diagnostics.Process
+                    var course = allCourses.FirstOrDefault(c => c.Code == courseCode);
+                    if (course != null)
                     {
-                        StartInfo = new System.Diagnostics.ProcessStartInfo("explorer.exe", $"/select,\"{fullPath}\"")
-                    }.Start();
+                        var section = course.Sections.FirstOrDefault(s => s.Group == groupName);
+                        if (section != null)
+                        {
+                            listToExport.Add(new SectionChoice(course, section));
+                        }
+                    }
                 }
-                else
+
+                if (listToExport.Count == 0) return;
+
+                // 2. Định vị nơi lưu file
+                var safeName = string.IsNullOrWhiteSpace(this.Name) ? "TKB" : this.Name.Trim();
+                string fileName = $"{safeName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                string fullPath = Path.Combine(desktopPath, fileName);
+
+                // 3. Gọi Builder vẽ lưới Excel
+                await Task.Run(() =>
                 {
-                    // Log or show dialog - here we write to debug
-                    Debug.WriteLine($"Export failed: {result.FirstErrorMessage}");
-                }
+                    var wb = CTUScheduler.Infrastructure.Exel.TimetableExcelBuilder.BuildWorkbook(listToExport, "Thời Khóa Biểu");
+                    wb.SaveAs(fullPath);
+                });
+
+                // 4. Mở thư mục
+                new System.Diagnostics.Process
+                {
+                    StartInfo = new System.Diagnostics.ProcessStartInfo("explorer.exe", $"/select,\"{fullPath}\"")
+                }.Start();
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Export exception: {ex}");
+                System.Diagnostics.Debug.WriteLine(ex.ToString());
             }
-        }).DisposeWith(Disposables);
+        });
     }
 
     public override void Dispose()
