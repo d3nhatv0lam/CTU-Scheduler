@@ -1,5 +1,5 @@
 ﻿using System;
-using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
+using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
 using CTUScheduler.Core.Models.Settings;
 
 namespace CTUScheduler.AppServices.Services.UserSessionService;

@@ -3,13 +3,15 @@ using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Extensions;
-using CTUScheduler.Core.Interfaces.WebDriver.Sites.CTU;
-using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
-using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Raw;
+using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Shared.Results;
+using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
+using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
+using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.Registration;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Services.Registration;

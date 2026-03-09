@@ -4,69 +4,71 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using CTUScheduler.Core.Algorithms;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Timetable;
 
 namespace CTUScheduler.AppServices.Services.TimetableGeneratorService;
 
-public class TimetableGeneratorService: ITimetableGeneratorService
+public class TimetableGeneratorService : ITimetableGeneratorService
 {
-    public IObservable<List<SectionChoice>> Generate(IEnumerable<IReadOnlyList<SectionChoice>> sets, ScheduleGenerationOptions? options)
+    private const int Batch_Size = (1 << 9) - 1;
+    public IObservable<List<SectionChoice>> Generate(IEnumerable<IReadOnlyList<SectionChoice>> sets,
+        ScheduleGenerationOptions? options)
     {
         var opts = options ?? new ScheduleGenerationOptions();
         return Observable.Create<List<SectionChoice>>(observer =>
         {
-            
-            var cts = CancellationTokenSource.CreateLinkedTokenSource(opts.CancellationToken);
-            if (opts.Timeout.HasValue) cts.CancelAfter(opts.Timeout.Value);
+            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(opts.CancellationToken);
+            if (opts.Timeout.HasValue) linkedCts.CancelAfter(opts.Timeout.Value);
 
-            Task.Run(() =>
+            var token = linkedCts.Token;
+            try
             {
-                try
-                {
-                    int count = 0;
-                    var results = Combinatorics.CartesianProduct(
-                        sets,
-                        (path, candidate) => opts.PruningRules.All(r => r.CanContinue(path, candidate)),
-                        fullTimetable => opts.PostFilterRules.All(filter => filter.IsSatisfied(fullTimetable)),
-                        cts.Token
-                    );
+                var results = Combinatorics.CartesianProduct(
+                    sets,
+                    (path, candidate) => opts.PruningRules.All(r => r.CanContinue(path, candidate)),
+                    fullTimetable => opts.PostFilterRules.All(filter => filter.IsSatisfied(fullTimetable)),
+                    token
+                );
 
-                    foreach (var schedule in results)
+                int count = 0;
+                int? maxResults = opts.MaxResults;
+                foreach (var schedule in results)
+                {
+                    if ((count & Batch_Size) == 0)
                     {
-                        if (cts.Token.IsCancellationRequested) break;
-                        observer.OnNext(schedule);
-                        count++;
-                        if (opts.MaxResults.HasValue && count >= opts.MaxResults) break;
+                        if (token.IsCancellationRequested) break;
                     }
+                    observer.OnNext(schedule);
+                    count++;
+                    if (maxResults.HasValue && count >= maxResults) break;
+                }
+                
+                if (!token.IsCancellationRequested)
                     observer.OnCompleted();
-                }
-                catch (OperationCanceledException) 
-                { 
-                    observer.OnCompleted(); 
-                }
-                catch (Exception ex) { observer.OnError(ex); }
-                finally
-                {
-                    cts.Dispose(); 
-                }
-            }, cts.Token);
-            
-            return Disposable.Create(cts, CancelSafe);
+            }
+            catch (OperationCanceledException)
+            {
+                observer.OnCompleted();
+            }
+            catch (Exception ex)
+            {
+                observer.OnError(ex);
+            }
 
-            static void CancelSafe(CancellationTokenSource cts)
+            return Disposable.Create(linkedCts, cts =>
             {
                 try
                 {
                     cts.Cancel();
+                    cts.Dispose();
                 }
-                catch(ObjectDisposedException)
+                catch (ObjectDisposedException)
                 {
-                    // ignored
+                    /* ignore */
                 }
-            }
+            });
         });
     }
 }

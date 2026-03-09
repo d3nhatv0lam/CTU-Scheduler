@@ -4,6 +4,7 @@ using System.Reactive.Subjects;
 using Avalonia;
 using Avalonia.Controls;
 using CTUScheduler.Presentation.Services.ViewContext;
+using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Presentation.Services.Viewport

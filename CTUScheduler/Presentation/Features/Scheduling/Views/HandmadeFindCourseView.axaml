@@ -6,7 +6,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="500"
     xmlns:rxui="http://reactiveui.net"
-    xmlns:qSelectCourse="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Raw;assembly=CTUScheduler"
     x:DataType="viewModels1:HandmadeFindCourseViewModel"
     x:CompileBindings="True"
     xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
@@ -18,6 +17,7 @@
     Focusable="True"
     xmlns:behaviors="clr-namespace:CTUScheduler.Presentation.Shared.Behaviors"
     xmlns:selectableCourseData="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Models"
+    xmlns:qSelectCourse="clr-namespace:CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.CourseData"
     x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.HandmadeFindCourseView">
 
     <rxui:ReactiveUserControl.KeyBindings>

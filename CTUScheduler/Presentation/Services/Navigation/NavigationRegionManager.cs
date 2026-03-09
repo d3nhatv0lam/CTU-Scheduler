@@ -45,7 +45,7 @@ public class NavigationRegionManager : INavigationRegionManager
             if (_regions.TryRemove(id, out var s))
             {
                 _logger.LogInformation("Unregistering region: {RegionId}", id.Value);
-                s.Dispose();
+                if (s is IDisposable disposable) disposable.Dispose();
             }
         });
     }

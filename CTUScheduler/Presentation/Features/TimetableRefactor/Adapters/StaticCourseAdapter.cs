@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
-using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
+using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Interfaces;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;

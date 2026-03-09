@@ -1,12 +1,14 @@
 ﻿using System;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using CTUScheduler.AppServices.Services.ScheduleService.Interfaces;
+using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.Core.Extensions;
-using CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;
+using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
 using CTUScheduler.Core.Models.Settings;
+using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
 using DynamicData.Aggregation;
 
 namespace CTUScheduler.AppServices.Services.UserSessionService;
@@ -34,11 +36,13 @@ public class UserSessionService: IUserSessionService, IDisposable
         RegistrationInfo = _serverInfoSubject.AsObservable();
         
         var isEmptyProfiles = profileQueryService.ConnectProfiles()
+            .SubscribeOn(TaskPoolScheduler.Default)
             .Count()
             .Select(x => x == 0)
             .DistinctUntilChanged()
             .Replay(1)
             .RefCount();
+        
         
         IsReadonly = _localContextSubject
             .CombineLatest(_serverInfoSubject, isEmptyProfiles, 

@@ -1,5 +1,4 @@
-﻿using CTUScheduler.Core.Models.Academic.Curriculum.CourseData.Processed;
-using CTUScheduler.Core.Models.Shared;
+﻿using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Shared.Models;
 using CTUScheduler.Presentation.Shared.Models.Academic;
 

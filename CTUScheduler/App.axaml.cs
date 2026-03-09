@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
+using CTUScheduler.Presentation.Shared.Interfaces;
 using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
 using CTUScheduler.Presentation.Shells.AppShell.Views;
 using MainWindow = CTUScheduler.Presentation.Shells.AppShell.Views.MainWindow;

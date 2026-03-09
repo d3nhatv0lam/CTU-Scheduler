@@ -1,4 +1,5 @@
 ﻿using CTUScheduler.Core.Interfaces;
+using CTUScheduler.Presentation.Features.TimetableRefactor.Interfaces;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.Models;
 

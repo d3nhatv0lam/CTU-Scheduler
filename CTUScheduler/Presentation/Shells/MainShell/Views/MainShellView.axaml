@@ -257,12 +257,12 @@
                                            Margin="15,5"/>
                                 <!-- <Separator Grid.Row="1" Grid.ColumnSpan="2" /> -->
                             </Grid>
-                        </Border>
-                        <!--// Navigation content //-->
-                        <rxui:RoutedViewHost Grid.Row="1" x:Name="PageRounter" Router="{Binding Router}" />
-                    </Grid>
-                </Border>
-            </Grid>
+                            <!--// Navigation content //-->
+                            <rxui:RoutedViewHost Grid.Row="1" x:Name="PageRounter" Router="{Binding Router}" />
+                        </Grid>
+                    </Border>
+                </controls:NavigationDrawer.Content>
+            </controls:NavigationDrawer>
         </dialogHostAvalonia:DialogHost>
 
         <!-- // Timetable Information Dialog // -->

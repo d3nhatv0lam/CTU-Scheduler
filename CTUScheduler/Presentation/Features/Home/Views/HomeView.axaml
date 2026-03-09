@@ -6,12 +6,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="550"
 			 xmlns:rxui="http://reactiveui.net"
-			 xmlns:model ="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.Registration.Processed;assembly=CTUScheduler"
-			 x:DataType="vm:HomeViewModel"
+			x:DataType="vm:HomeViewModel"
 			 x:CompileBindings="True"
 			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
 			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Home.ViewModels;assembly=CTUScheduler"
+			 xmlns:model="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.Registration"
 			 x:Class="CTUScheduler.Presentation.Features.Home.Views.HomeView">
 
 	<Design.DataContext>

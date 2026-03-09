@@ -1,15 +1,21 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Settings;
+using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Infrastructure.Services.Auth;
 using CTUScheduler.Presentation.Base;
+using CTUScheduler.Presentation.Services.Navigation;
+using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
+using CTUScheduler.Presentation.Shared.Models.Regions;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
@@ -19,6 +25,8 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
     public class LoginViewModel : ViewModelBase, IDisposable, IRoutableViewModel, INeedArgs<IScreen>
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private readonly IUserInteractionService _userInteractionService;
+        private readonly INavigationRegionManager _navigationRegionManager;
        
         private string _userName = string.Empty;
         private string _password = string.Empty;
@@ -39,16 +47,18 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         }
         public bool IsSaveUsername
         {
-            get => _isSaveUsername;
+            get => _isSaveUsername; 
             set => this.RaiseAndSetIfChanged(ref _isSaveUsername, value);
         }
 
         public ReactiveCommand<Unit, Unit> SignInCommand { get; private set; }
 
 #pragma warning disable CS8618
-        public LoginViewModel(IScreen hostScreen)
+        public LoginViewModel(IScreen hostScreen, IUserInteractionService userInteractionService, INavigationRegionManager navigationRegionManager)
         {
             HostScreen = hostScreen;
+            _userInteractionService = userInteractionService;
+            _navigationRegionManager = navigationRegionManager;
 
             var loginService = App.ServiceProvider.GetRequiredService<ILoginService>();
             LoadSignInData();
@@ -58,14 +68,17 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
             SignInCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 var result = await loginService.LoginAsync(UserName, Password);
-                if (result.IsSuccess)
-                {
-                    OnLoggedIn();
-                }
-                else
-                {
-                    await Task.Delay(1000);
-                }
+                
+                result.Match(() =>
+                    {
+                        _userInteractionService.Notification.Light.Success("Đăng nhập thành công");
+                        OnLoggedIn();
+                    }
+                    , (errors, reason) =>
+                    {
+                        var errorTexts = errors.Select(e => e.FormattedMessage);
+                        _userInteractionService.Notification.Light.Error($"{string.Join('\n',errorTexts)}");
+                    });
             })
             .DisposeWith(_disposables);
         }
@@ -82,7 +95,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         
         private void NavigateToHome()
         {
-            HostScreen.Router.NavigateAndReset.Execute(new MainShellViewModel(HostScreen));
+            _navigationRegionManager.NavigateAndResetTo<MainShellViewModel>(RegionIds.Root);
         }
 
         private void SaveSignInData()

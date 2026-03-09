@@ -23,8 +23,7 @@ public interface IInitializable<in TContext> : IInitializable
             Initialize(default!);
             return;
         }
-
-        // Trường hợp 3: Sai kiểu -> Log warning
+        
         throw new InvalidOperationException($"[Warning] Expected {typeof(TContext).Name}, got {args?.GetType().Name ?? "null"}");
     }
     

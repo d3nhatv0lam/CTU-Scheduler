@@ -1,6 +1,4 @@
 ﻿using System;
-using CTUScheduler.Core.Interfaces.WebDriver;
-using CTUScheduler.Core.Interfaces.WebDriver.Sites;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CTUScheduler.Infrastructure.Sites.Base;

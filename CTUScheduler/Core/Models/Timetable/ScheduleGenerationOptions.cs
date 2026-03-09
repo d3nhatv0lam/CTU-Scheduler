@@ -8,7 +8,7 @@ namespace CTUScheduler.Core.Models.Timetable;
 public record ScheduleGenerationOptions
 {
     // --- Cấu hình quản lý tài nguyên ---
-    public CancellationToken CancellationToken { get; init; } = default;
+    public CancellationToken CancellationToken { get; init; } = CancellationToken.None;
     public int? MaxResults { get; init; } = 1000; 
     public TimeSpan? Timeout { get; init; } = TimeSpan.FromSeconds(30);
 
