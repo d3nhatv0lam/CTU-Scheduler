@@ -8,4 +8,5 @@ public interface INavigationRegionManager
 {
     IDisposable Register(RegionId regionId, IScreen screen);
     ICachingNavigationService Get(RegionId regionId);
+    void ClearCache(RegionId regionId);
 }
