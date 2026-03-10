@@ -65,7 +65,7 @@ public class ScheduleManager: IScheduleManager, IDisposable
     public IObservable<IChangeSet<RuntimeCourse, string>> ConnectCourses() => _coursesSource.Connect();
     public IObservable<IChangeSet<ScheduleProfile, Guid>> ConnectProfiles() => _profileSource.Connect();
     public IObservable<ProfileUsageState> ProfileUsageState { get; }
-    public IEnumerable<Course> GetCourseSnapshot() => _coursesSource
+    public IEnumerable<Course> GetCoursesSnapshot() => _coursesSource
         .Items
         .Select(x => x.ToCourse())
         .ToList();
