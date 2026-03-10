@@ -85,4 +85,29 @@ public record ScheduleBlueprint
         return metadata.SavedCourseGroupKeys
             .All(kvp => availableKeys.Contains((kvp.Key, kvp.Value)));
     }
+
+    public override string ToString()
+    {
+        var sb = new System.Text.StringBuilder();
+        
+        sb.AppendLine($"ScheduleBlueprint | Consistency Status: {(IsConsistent ? "Consistent" : "Inconsistent")}");
+    
+    
+        var shortId = Metadata.Id.ToString()[..8]; 
+        sb.AppendLine($"[Profile] Name: {Metadata.Name} (ID: {shortId}...) | Last Updated: {Metadata.LastUpdated:MM/dd/yyyy HH:mm}");
+        sb.AppendLine($"[Profile] Saved course keys count: {Metadata.SavedCourseGroupKeys.Count}");
+
+   
+        sb.AppendLine($"[Courses] Total courses available: {Courses.Count}");
+        foreach (var course in Courses)
+        {
+            var groupNames = course.Sections.Count > 0 
+                ? string.Join(", ", course.Sections.Select(s => s.Group)) 
+                : "Empty (No sections)";
+
+            sb.AppendLine($"  - [{course.Code}] {course.Name_VN} ({course.Credits} Credits) | Current Groups: {groupNames}");
+        }
+        
+        return sb.ToString().TrimEnd();
+    }
 }

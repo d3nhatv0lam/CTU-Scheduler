@@ -69,7 +69,8 @@ public static class AppConstants
                 },
                 Roles: new List<ContributorRole>
                 {
-                    ContributorRole.Designer
+                    ContributorRole.Designer,
+                    ContributorRole.Tester
                 },
                 DisplayOrder: 2
             ),
