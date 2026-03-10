@@ -99,7 +99,7 @@ public class WorkspaceStore : IWorkspaceStore
             {
                 _logger.LogWarning("Found broken references in Saved: {Warnings}", warnings);
             }
-            _userSessionService.SetContext(newWorkspace.Context);
+            _userSessionService.SetLocalContext(newWorkspace.Context);
             _userSessionService.SetLastModified(newWorkspace.LastModified);
             _scheduleManager.ImportSchedule(newWorkspace.Courses, newWorkspace.Profiles);
             return true;

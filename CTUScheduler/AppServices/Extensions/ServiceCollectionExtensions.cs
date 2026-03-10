@@ -4,6 +4,7 @@ using CTUScheduler.AppServices.Models;
 using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.AppServices.Services.TimetableGeneratorService;
 using CTUScheduler.AppServices.Services.UserSessionService;
+using CTUScheduler.AppServices.Services.UserSettingService;
 using CTUScheduler.AppServices.State;
 using CTUScheduler.Infrastructure.DriverCore;
 using CTUScheduler.Infrastructure.Services.Auth;
@@ -30,8 +31,8 @@ public static class ServiceCollectionExtensions
         services.AddTransient(typeof(Lazy<>), typeof(LazyService<>));
 
         // --- State Management ---
-        services.AddSingleton<AppState>()
-            .AddSingleton<IAppState>(sp => sp.GetRequiredService<AppState>());
+        services.AddSingleton<AppState>();
+        services.AddSingleton<IUserSettingService, UserSettingService>();
 
         // --- Infrastructure / External Services ---
         services.AddSingleton<IConnectivityService, ConnectivityService>();
