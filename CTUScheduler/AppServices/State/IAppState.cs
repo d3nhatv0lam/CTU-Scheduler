@@ -8,7 +8,4 @@ namespace CTUScheduler.AppServices.State;
 
 public interface IAppState
 {
-    IObservable<UserSettings> UserSettingChanged { get; }
-    UserSettings CurrentSettings { get; set; }
-    
 }

@@ -74,8 +74,8 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
             .DisposeWith(Disposables);
 
         sharedCourse.Connect()
-            .Skip(1)
             .Throttle(TimeSpan.FromSeconds(1.2))
+            .Skip(1)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(_ =>
             {

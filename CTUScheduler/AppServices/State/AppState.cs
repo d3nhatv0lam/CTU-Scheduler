@@ -13,34 +13,27 @@ namespace CTUScheduler.AppServices.State;
 public class AppState : IAppState, IDisposable
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
-    private readonly BehaviorSubject<UserSettings> _userSettingsSubject;
+
+    private readonly BehaviorSubject<UserSettings> _userSettingsSubject = new (
+        new UserSettings()
+    );
+
     private readonly SourceCache<RuntimeCourse, string> _runtimeCoursesSource = new(x => x.Code);
-    private readonly SourceCache<ScheduleProfile, Guid> _scheduleProfilesSource  = new(x => x.Id);
-    
+    private readonly SourceCache<ScheduleProfile, Guid> _scheduleProfilesSource = new(x => x.Id);
+
     internal SourceCache<RuntimeCourse, string> RuntimeCoursesSource => _runtimeCoursesSource;
     internal SourceCache<ScheduleProfile, Guid> ScheduleProfilesSource => _scheduleProfilesSource;
-    
-    public IObservable<UserSettings> UserSettingChanged { get; }
-    
-    public UserSettings CurrentSettings 
-    {
-        get => _userSettingsSubject.Value;
-        set => _userSettingsSubject.OnNext(value);
-    }
+    internal BehaviorSubject<UserSettings> UserSettingsSubject => _userSettingsSubject;
+
     public AppState()
     {
-        _userSettingsSubject = new BehaviorSubject<UserSettings>(
-            new UserSettings()
-        );
-        UserSettingChanged = _userSettingsSubject.AsObservable();
-        
-        _userSettingsSubject.DisposeWith(_disposables);
         _runtimeCoursesSource.DisposeWith(_disposables);
         _scheduleProfilesSource.DisposeWith(_disposables);
+        _userSettingsSubject.DisposeWith(_disposables);
     }
-    
+
     public void Dispose()
     {
-       _disposables.Dispose();
+        _disposables.Dispose();
     }
 }

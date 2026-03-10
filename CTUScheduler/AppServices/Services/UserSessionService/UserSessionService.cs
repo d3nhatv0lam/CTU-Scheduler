@@ -19,21 +19,24 @@ public class UserSessionService: IUserSessionService, IDisposable
     private readonly BehaviorSubject<RegistrationInformation?> _serverInfoSubject = new(null);
     private readonly BehaviorSubject<RegistrationContext?> _localContextSubject = new(null);
     private readonly BehaviorSubject<DateTimeOffset?> _lastSavedSubject = new(null);
-    public IObservable<RegistrationContext?> LocalContext { get; }
-    public RegistrationContext? CurrentContext => _localContextSubject.Value ?? _serverInfoSubject.Value?.ToContext();
-    public IObservable<RegistrationInformation?> RegistrationInfo { get; }
-    public RegistrationInformation? CurrentRegistrationInfo => _serverInfoSubject.Value;
+    
+    public IObservable<RegistrationContext?> LocalContextChanged { get; }
+   
+    public IObservable<RegistrationInformation?> RegistrationInfoChanged { get; }
     public IObservable<bool> IsReadonly { get; }
     public IObservable<DateTimeOffset?> LastSaved { get; }
-
+    
+    public RegistrationInformation? CurrentRegistrationInfo => _serverInfoSubject.Value;
+    public RegistrationContext? CurrentContext => _localContextSubject.Value ?? _serverInfoSubject.Value?.ToContext();
+    
     public UserSessionService(IProfileQueryService profileQueryService)
     {
         _serverInfoSubject.DisposeWith(_disposable);
         _localContextSubject.DisposeWith(_disposable);
         _lastSavedSubject.DisposeWith(_disposable);
         
-        LocalContext = _localContextSubject.AsObservable();
-        RegistrationInfo = _serverInfoSubject.AsObservable();
+        LocalContextChanged = _localContextSubject.AsObservable();
+        RegistrationInfoChanged = _serverInfoSubject.AsObservable();
         
         var isEmptyProfiles = profileQueryService.ConnectProfiles()
             .SubscribeOn(TaskPoolScheduler.Default)
@@ -75,7 +78,9 @@ public class UserSessionService: IUserSessionService, IDisposable
         LastSaved = _lastSavedSubject.AsObservable();
     }
     
-    public void SetContext(RegistrationContext context)
+
+    
+    public void SetLocalContext(RegistrationContext context)
     {
         _localContextSubject.OnNext(context);
     }
