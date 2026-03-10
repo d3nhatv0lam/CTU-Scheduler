@@ -109,6 +109,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                 writer.Write(UserName);
             }
         }
+        
         private void LoadSignInData()
         {
             var pwd = AppDomain.CurrentDomain.BaseDirectory;
@@ -123,6 +124,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                     UserName = reader.ReadString();
             }
         }
+        
         public void Dispose()
         {
             _disposables.Dispose();

@@ -49,8 +49,8 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
         _navigationRegionManager.Register(_regionId, this)
             .DisposeWith(_disposables);
 
-        // _navigationRegionManager.NavigateAndResetTo<LoginViewModel>(_regionId);
-        _navigationRegionManager.NavigateAndResetTo<MainShellViewModel>(_regionId);
+        _navigationRegionManager.NavigateAndResetTo<LoginViewModel>(_regionId);
+        // _navigationRegionManager.NavigateAndResetTo<MainShellViewModel>(_regionId);
         
         this.WhenActivated((CompositeDisposable disposables) =>
         {

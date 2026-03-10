@@ -8,9 +8,9 @@ public record RegistrationContext
     
     public static readonly RegistrationContext Unknown = new() 
     { 
-        AcademicYear = 0, 
+        AcademicYear = -1, 
         Semester = "Unknown",
-        MaxCreditPerSemester = 0 
+        MaxCreditPerSemester = -1
     };
     
     public bool IsUnknown() => this == Unknown;

@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Models;
+using CTUScheduler.AppServices.Services.UserSettingService;
 using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
@@ -34,7 +35,7 @@ public class ScheduleManager: IScheduleManager, IDisposable
     private readonly ILogger<ScheduleManager> _logger;
     private bool _isDisposed;
     
-    public ScheduleManager(AppState appState, ICourseCatalogService catalog, ILogger<ScheduleManager> logger)
+    public ScheduleManager(AppState appState, IUserSettingService settingService, ICourseCatalogService catalog, ILogger<ScheduleManager> logger)
     {
         _coursesSource = appState.RuntimeCoursesSource;
         _profileSource = appState.ScheduleProfilesSource;
@@ -46,7 +47,7 @@ public class ScheduleManager: IScheduleManager, IDisposable
             .StartWith(_profileSource.Count)
             .DistinctUntilChanged();
 
-        var maxProfileLimitStream = appState.UserSettingChanged
+        var maxProfileLimitStream = settingService.SettingsChanged
             .Select(x => x.General.MaxScheduleProfiles)
             .DistinctUntilChanged();
 

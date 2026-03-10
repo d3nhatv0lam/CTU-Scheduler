@@ -73,7 +73,8 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             _mainHomeService = mainHomeService;
             _navigationRegionManager = navigationRegionManager;
 
-            _navigationRegionManager.Register(RegionIds.Main, this);
+            _navigationRegionManager.Register(RegionIds.Main, this)
+                .DisposeWith(_disposables);
 
             _mainHomeService.StudentIdChanges
                 .ObserveOn(RxApp.MainThreadScheduler)
