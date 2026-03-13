@@ -59,7 +59,7 @@ public static class ScheduleValidator
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsConflict(ClassDay x, ClassDay y)
     {
-        return !(x.EndPeriod() < y.StartPeriod() || y.EndPeriod() < x.StartPeriod());
+        return !(x.EndPeriod < y.StartPeriod || y.EndPeriod < x.StartPeriod);
     }
 
     

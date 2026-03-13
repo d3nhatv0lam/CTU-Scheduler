@@ -5,7 +5,7 @@ using CTUScheduler.Core.Validators;
 
 namespace CTUScheduler.Core.Models.Timetable;
 
-public class NoOverlapPruningRule: IPruningRule
+public class OverlapPruningRule: IPruningRule
 {
     public bool CanContinue(IReadOnlyList<SectionChoice> currentPath, SectionChoice nextCandidate)
     {
