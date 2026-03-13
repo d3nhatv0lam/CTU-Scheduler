@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using CTUScheduler.Core.Interfaces;
 
@@ -16,4 +15,6 @@ public record ScheduleGenerationOptions
     // --- Cấu hình thuật toán (Strategy Pattern) ---
     public IReadOnlyList<IPruningRule> AdditionalPruningRules { get; init; } = [];
     public IReadOnlyList<IPostFilterRule> AdditionalPostFilterRules { get; init; } = [];
+    // --- Chấm điểm để hiện lên theo thứ tự từ tốt nhất trở xuống cho user
+    public IReadOnlyList<IScheduleScorer> Scorers { get; init; } = [];
 }

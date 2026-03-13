@@ -7,14 +7,14 @@ using CTUScheduler.Core.Models.Shared;
 
 namespace CTUScheduler.Core.Models.Timetable;
 
-public class AvoidTimeRule : IPruningRule
+public class AvoidTimePruningRule : IPruningRule
 {
     private readonly List<AvoidanceSlot> _avoidanceSlots;
 
     // - Chỉ truyền day: Tránh nguyên ngày
     // - Chỉ truyền time: Tránh buổi đó ở tất cả các ngày
     // - Truyền cả hai: Tránh chính xác buổi của ngày đó
-    public AvoidTimeRule(IEnumerable<AvoidanceSlot> slotsToAvoid)
+    public AvoidTimePruningRule(IEnumerable<AvoidanceSlot> slotsToAvoid)
     {
         _avoidanceSlots = slotsToAvoid?.ToList() ?? new List<AvoidanceSlot>();
     }
