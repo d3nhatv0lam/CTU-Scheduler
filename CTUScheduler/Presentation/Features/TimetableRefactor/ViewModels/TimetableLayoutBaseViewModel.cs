@@ -4,6 +4,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
@@ -72,8 +73,7 @@ public abstract class TimetableLayoutBaseViewModel: ViewModelBase, IDisposable
 
         ExportToExcelCommand = ReactiveCommand.CreateFromTask(async () => { })
             .DisposeWith(Disposables);
-
-        VisualizerVM?.DisposeWith(Disposables);
+        
     }
     
 
@@ -95,6 +95,8 @@ public abstract class TimetableLayoutBaseViewModel: ViewModelBase, IDisposable
 
         return new TimetableRenderItem(shared, cells);
     }
+    
+    public abstract ScheduleBlueprint ToScheduleBlueprint();
 
     public virtual void Dispose() => Disposables.Dispose();
 }
