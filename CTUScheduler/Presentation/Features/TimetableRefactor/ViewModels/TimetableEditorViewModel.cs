@@ -16,9 +16,7 @@ namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
 public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<ScheduleProfile>
 {
-    public readonly ScheduleProfile _scheduleProfile;
-
-    public ScheduleProfile ScheduleProfile => _scheduleProfile;
+    private readonly ScheduleProfile _scheduleProfile;
     private readonly ObservableAsPropertyHelper<bool> _isEditing;
     private readonly ICourseQueryService _courseQueryService;
     public bool IsEditing => _isEditing.Value;
