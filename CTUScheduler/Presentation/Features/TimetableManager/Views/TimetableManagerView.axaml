@@ -211,7 +211,7 @@
                                            
                             </StackPanel>
                         </Button>
-                            <Button DockPanel.Dock="Left" x:Name="btnDeleteTables" Command="{Binding DeleteSelectedTimetablesCommand}"> 
+                            <Button DockPanel.Dock="Left" x:Name="btnDeleteTables" Command="{Binding DeleteSelectedTimetablesCommand}" IsVisible="{Binding HasSelectedTimetable}"> 
                             <StackPanel Orientation="Horizontal"> 
                             <materialIcons:MaterialIcon Kind="Delete" Height="20" Width="20"/> <TextBlock VerticalAlignment="Center" Text="Xóa thời khóa biểu" Margin="5 0 0 0"/>
                             </StackPanel>

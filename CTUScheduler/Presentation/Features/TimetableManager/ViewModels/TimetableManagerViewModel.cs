@@ -24,6 +24,7 @@ using CTUScheduler.Presentation.Services.Factories;
 using CTUScheduler.Presentation.Services.TimetableDialog;
 using DynamicData;
 using DynamicData.Aggregation;
+using DynamicData.Binding;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
@@ -49,6 +50,8 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly ObservableAsPropertyHelper<bool> _isEmptyTimetableLayouts;
         private readonly ObservableAsPropertyHelper<bool> _isExpiredSaved;
         private readonly ObservableAsPropertyHelper<string> _lastSavedText;
+        private readonly ObservableAsPropertyHelper<bool> _hasSelectedTimetable;
+        public bool HasSelectedTimetable => _hasSelectedTimetable.Value;
         public string? UrlPathSegment => "TimetableManagerViewModel";
         public IScreen HostScreen { get; }
         public ReadOnlyObservableCollection<TimetableEditorViewModel> TimetableLayouts => _bindableTimetableLayouts;
@@ -88,6 +91,13 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _bindableTimetableLayouts)
                 .Subscribe()
+                .DisposeWith(_disposables);
+            _hasSelectedTimetable = TimetableLayouts.ToObservableChangeSet()
+                .AutoRefresh(x => x.IsSelected)
+                .ToCollection()
+                .Select(items => items.Any(x => x.IsSelected))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .ToProperty(this, nameof(HasSelectedTimetable))
                 .DisposeWith(_disposables);
             
             _timetableLayoutsCount = _profileQueryService.ConnectProfiles()
@@ -137,7 +147,8 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 foreach (var timetable in TimetableLayouts.Where(x => x.IsSelected)){
                     _scheduleSyncService.UnregisterProfile(timetable.ScheduleProfile);
                 }
-            }).DisposeWith(_disposables);
+            }, this.WhenAnyValue(x => x.HasSelectedTimetable))
+            .DisposeWith(_disposables);
 
             ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<TimetableLayoutBaseViewModel>(async
                     timetableLayoutViewModel =>
