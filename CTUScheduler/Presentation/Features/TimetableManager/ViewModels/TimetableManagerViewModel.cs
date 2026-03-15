@@ -41,6 +41,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly ICourseCatalogService _courseCatalogService;
         private readonly IProfileQueryService _profileQueryService;
         private readonly IScheduleSyncService _scheduleSyncService;
+        private readonly IScheduleRegistrationService _scheduleRegistrationService;
         
 
         private readonly ReadOnlyObservableCollection<TimetableEditorViewModel> _bindableTimetableLayouts =
@@ -82,7 +83,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             var workspaceStore = App.ServiceProvider.GetRequiredService<IWorkspaceStore>();
             _profileQueryService =  App.ServiceProvider.GetRequiredService<IProfileQueryService>();
             _scheduleSyncService = App.ServiceProvider.GetRequiredService<IScheduleSyncService>();
-            
+            _scheduleRegistrationService = App.ServiceProvider.GetRequiredService<IScheduleRegistrationService>();
             var viewModelFactory = App.ServiceProvider.GetRequiredService<IViewModelFactory>();
             _profileQueryService.ConnectProfiles()
                 .ObserveOn(RxApp.TaskpoolScheduler)
@@ -145,7 +146,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             DeleteSelectedTimetablesCommand = ReactiveCommand.Create(() =>
             {
                 foreach (var timetable in TimetableLayouts.Where(x => x.IsSelected)){
-                    _scheduleSyncService.UnregisterProfile(timetable.ScheduleProfile);
+                    _scheduleRegistrationService.UnregisterProfile(timetable.ScheduleProfile);
                 }
             }, this.WhenAnyValue(x => x.HasSelectedTimetable))
             .DisposeWith(_disposables);

@@ -10,5 +10,4 @@ public interface IScheduleSyncService
 {
     Task RefreshCoursesAsync(CancellationToken token = default);
     IObservable<Unit> CoursesRefreshed { get; }
-    void UnregisterProfile(ScheduleProfile profile);
 }
