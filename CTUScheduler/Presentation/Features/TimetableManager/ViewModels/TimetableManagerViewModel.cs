@@ -27,6 +27,7 @@ using DynamicData.Aggregation;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
+using System.Linq;
 
 namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 {
@@ -60,6 +61,8 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         public ReactiveCommand<IReadOnlyList<IStorageFile>, Unit> LoadScheduleCommand { get; }
         public ReactiveCommand<IStorageFile, Unit> SaveScheduleCommand { get; }
         public ReactiveCommand<Unit, Unit> ReloadAllTimetableCommand { get; }
+
+        public ReactiveCommand<Unit, Unit> DeleteSelectedTimetablesCommand { get;}
         public ReactiveCommand<TimetableLayoutBaseViewModel, Unit> ShowTimetableDetailsCommand { get; }
         
         
@@ -128,6 +131,13 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 if (IsEmptyTimetableLayouts) return;
                 await _scheduleSyncService.RefreshCoursesAsync();
             },canReloadAllTimetable).DisposeWith(_disposables);
+            
+            DeleteSelectedTimetablesCommand = ReactiveCommand.Create(() =>
+            {
+                foreach (var timetable in TimetableLayouts.Where(x => x.IsSelected)){
+                    _scheduleSyncService.UnregisterProfile(timetable.ScheduleProfile);
+                }
+            }).DisposeWith(_disposables);
 
             ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<TimetableLayoutBaseViewModel>(async
                     timetableLayoutViewModel =>
