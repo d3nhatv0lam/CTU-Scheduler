@@ -9,5 +9,5 @@ namespace CTUScheduler.AppServices.Services.ScheduleService;
 public interface ICourseQueryService
 {
     IObservable<IChangeSet<RuntimeCourse, string>> ConnectCourses();
-    IEnumerable<Course> GetCourseSnapshot();
+    IEnumerable<Course> GetCoursesSnapshot();
 }

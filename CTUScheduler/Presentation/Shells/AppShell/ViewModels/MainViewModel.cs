@@ -11,6 +11,7 @@ using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models;
 using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
 using CTUScheduler.Presentation.Shared.Models.Regions;
+using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 

@@ -4,6 +4,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
@@ -22,6 +23,8 @@ public abstract class TimetableLayoutBaseViewModel: ViewModelBase, IDisposable
     private DateTimeOffset _lastUpdated = DateTimeOffset.Now;
     private TimetableViewModel? _visualizerVM;
     
+    private bool _isSelected;
+    private bool _isEnabled = true;
     public string Name 
     { 
         get => _name;
@@ -49,8 +52,17 @@ public abstract class TimetableLayoutBaseViewModel: ViewModelBase, IDisposable
         protected set => this.RaiseAndSetIfChanged(ref _visualizerVM, value);
     }
 
-    private ReactiveCommand<Unit, Unit>? _exportToExcelCommand;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => this.RaiseAndSetIfChanged(ref _isSelected, value);
+    }
 
+    public bool IsEnabled
+    {
+        get => _isEnabled;
+        set => this.RaiseAndSetIfChanged(ref _isEnabled, value);
+    }
     public ReactiveCommand<object,Unit> ExportToImageCommand { get; protected set; }
     public ReactiveCommand<Unit, Unit>? ExportToExcelCommand
     {
@@ -94,6 +106,8 @@ public abstract class TimetableLayoutBaseViewModel: ViewModelBase, IDisposable
 
         return new TimetableRenderItem(shared, cells);
     }
+    
+    public abstract ScheduleBlueprint ToScheduleBlueprint();
 
     public virtual void Dispose() => Disposables.Dispose();
 }

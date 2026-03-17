@@ -208,6 +208,12 @@
                                 <materialIcons:MaterialIcon Kind="Reload" Height="20" Width="20" />
                                 <TextBlock VerticalAlignment="Center" Text="Cập nhật thông tin học phần"
                                            Margin="5 0 0 0" />
+                                           
+                            </StackPanel>
+                        </Button>
+                            <Button DockPanel.Dock="Left" x:Name="btnDeleteTables" Command="{Binding DeleteSelectedTimetablesCommand}" IsVisible="{Binding HasSelectedTimetable}"> 
+                            <StackPanel Orientation="Horizontal"> 
+                            <materialIcons:MaterialIcon Kind="Delete" Height="20" Width="20"/> <TextBlock VerticalAlignment="Center" Text="Xóa thời khóa biểu" Margin="5 0 0 0"/>
                             </StackPanel>
                         </Button>
                         <!--// total schedule tables //-->
@@ -255,17 +261,18 @@
                                                 Width="250"
                                                 Height="220">
                                                 <Grid
-                                                    RowDefinitions="auto auto auto *">
-                                                    <TextBlock Grid.Row="0"
+                                                    RowDefinitions="auto auto auto auto *">
+                                                    <CheckBox Grid.Row="0" Classes="accent" IsEnabled="{Binding IsEnabled}" IsChecked="{Binding IsSelected}" Content="Chọn!" />
+                                                    <TextBlock Grid.Row="1"
                                                                Text="{Binding Name, StringFormat=Thời khóa biểu: {0}}">
                                                     </TextBlock>
-                                                    <TextBlock Grid.Row="1"></TextBlock>
+                                                    <TextBlock Grid.Row="2"></TextBlock>
                                                     <!-- <TextBlock Grid.Row="1" -->
                                                     <!--            Text="{Binding Description,StringFormat=Mô tả: {0}}"> -->
                                                     <!-- </TextBlock> -->
-                                                    <TextBlock Grid.Row="2" Text="{Binding LastUpdated,Mode=OneWay,StringFormat=Lần cuối cập nhật: {0}}"></TextBlock>
+                                                    <TextBlock Grid.Row="3" Text="{Binding LastUpdated,Mode=OneWay,StringFormat=Lần cuối cập nhật: {0}}"></TextBlock>
 
-                                                    <Grid Grid.Row="3">
+                                                    <Grid Grid.Row="4">
                                                         <!-- // TimeTable preview // -->
                                                         <Border>
                                                             <Viewbox Stretch="Uniform">

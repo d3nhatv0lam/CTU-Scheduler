@@ -48,7 +48,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
                 .Subscribe(info => _userSessionService.UpdateServerInfo(info))
                 .DisposeWith(_disposable);
 
-            _registrationInfo = _userSessionService.RegistrationInfo
+            _registrationInfo = _userSessionService.RegistrationInfoChanged
                 .Where(x => x is not null)
                 .Select(x => x!)
                 .ToProperty(this, nameof(RegistrationInfo), scheduler: RxApp.MainThreadScheduler);
