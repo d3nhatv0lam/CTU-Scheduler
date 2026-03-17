@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Core.Models.Shared.Results;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using CTUScheduler.Core.Models.Shared.Results;
 
 namespace CTUScheduler.Infrastructure.Exel;
 
@@ -23,4 +24,6 @@ public interface IExcelExporterService  // Giao diện dịch vụ — API duy n
         IEnumerable<ExportColumnDefinition<T>>? columns = null,
         ExcelExportOptions? options = null,
         CancellationToken cancellationToken = default);
+
+    Task<OperationResult<string>> ExportTimetableAsync(ScheduleBlueprint blueprint, string filePath);
 }
