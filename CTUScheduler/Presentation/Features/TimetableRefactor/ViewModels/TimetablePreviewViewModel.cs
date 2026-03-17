@@ -119,12 +119,19 @@ public class TimetablePreviewViewModel: TimetableLayoutBaseViewModel
     {
         try
         {
-            // 1. Lấy dữ liệu 
-            var choicesCopy = _choices.ToList();
-            if (choicesCopy.Count == 0) return OperationResult<string>.Failed("Không có dữ liệu để xuất");
+            // 1. Lấy Blueprint thay vì List<SectionChoice>
+            var blueprint = this.ToScheduleBlueprint();
 
-            var wb = await Task.Run(() => TimetableExcelBuilder.BuildWorkbook(choicesCopy, "Thời Khóa Biểu"));
+            // Kiểm tra xem dữ liệu có bị lỗi/thiếu sót không
+            if (!blueprint.IsConsistent)
+            {
+                return OperationResult<string>.Failed("Dữ liệu Thời khóa biểu không nhất quán.");
+            }
 
+            // 2. Gọi Builder vẽ giao diện
+            var wb = await Task.Run(() => TimetableExcelBuilder.BuildWorkbook(blueprint, "Thời Khóa Biểu"));
+
+            // 3. Đảm bảo thư mục lưu file có tồn tại
             var dir = System.IO.Path.GetDirectoryName(filePath);
             if (!string.IsNullOrEmpty(dir) && !System.IO.Directory.Exists(dir))
             {

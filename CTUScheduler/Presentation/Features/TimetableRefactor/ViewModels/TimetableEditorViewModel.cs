@@ -44,6 +44,7 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
     {
         ArgumentNullException.ThrowIfNull(scheduleProfile);
         _scheduleProfile = scheduleProfile;
+        _courseQueryService = courseQueryService ?? throw new ArgumentNullException(nameof(courseQueryService));
         Name = _scheduleProfile.Name;
         LastUpdated = _scheduleProfile.LastUpdated;
 
@@ -120,27 +121,14 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
         {
             try
             {
-                // 1. Lấy dữ liệu gốc từ DataService và ép sang SectionChoice
-                var allCourses = _scheduleManager.GetCourseSnapshot();
-                var listToExport = new List<SectionChoice>();
+                // 1. Tận dụng hàm ToScheduleBlueprint() đã có sẵn để lấy dữ liệu 
+                var blueprint = this.ToScheduleBlueprint();
 
-                foreach (var kvp in _scheduleProfile.SavedCourseGroupKeys)
+                if (!blueprint.IsConsistent)
                 {
-                    var courseCode = kvp.Key;
-                    var groupName = kvp.Value;
-
-                    var course = allCourses.FirstOrDefault(c => c.Code == courseCode);
-                    if (course != null)
-                    {
-                        var section = course.Sections.FirstOrDefault(s => s.Group == groupName);
-                        if (section != null)
-                        {
-                            listToExport.Add(new SectionChoice(course, section));
-                        }
-                    }
+                    System.Diagnostics.Debug.WriteLine("Lỗi: Dữ liệu Blueprint không nhất quán.");
+                    return;
                 }
-
-                if (listToExport.Count == 0) return;
 
                 // 2. Định vị nơi lưu file
                 var safeName = string.IsNullOrWhiteSpace(this.Name) ? "TKB" : this.Name.Trim();
@@ -151,7 +139,8 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
                 // 3. Gọi Builder vẽ lưới Excel
                 await Task.Run(() =>
                 {
-                    var wb = CTUScheduler.Infrastructure.Exel.TimetableExcelBuilder.BuildWorkbook(listToExport, "Thời Khóa Biểu");
+                    // Vì Builder mới đã đổi sang nhận tham số ScheduleBlueprint
+                    var wb = CTUScheduler.Infrastructure.Exel.TimetableExcelBuilder.BuildWorkbook(blueprint, "Thời Khóa Biểu");
                     wb.SaveAs(fullPath);
                 });
 

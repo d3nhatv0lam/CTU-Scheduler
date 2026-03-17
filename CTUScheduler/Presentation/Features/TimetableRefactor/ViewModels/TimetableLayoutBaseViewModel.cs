@@ -25,6 +25,7 @@ public abstract class TimetableLayoutBaseViewModel: ViewModelBase, IDisposable
     
     private bool _isSelected;
     private bool _isEnabled = true;
+    private ReactiveCommand<Unit, Unit>? _exportToExcelCommand;
     public string Name 
     { 
         get => _name;

@@ -1,7 +1,6 @@
 ﻿using ClosedXML.Excel;
 using CTUScheduler.Core.Models.Shared;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace CTUScheduler.Infrastructure.Exel;
@@ -21,7 +20,6 @@ public static class TimetableExcelBuilder
         "14:20 - 15:10", // Tiết 7
         "15:20 - 16:10", // Tiết 8
         "16:10 - 17:00", // Tiết 9
-        "17:00 - 17:50"  // Tiết 10 (Tiết nghỉ dự phòng)
     };
 
     // Danh sách các màu Pastel tươi sáng, độ tương phản cao để làm nền
@@ -40,8 +38,14 @@ public static class TimetableExcelBuilder
         XLColor.FromHtml("#FFFF99")  // Vàng chanh nhạt
     };
 
-    public static XLWorkbook BuildWorkbook(IEnumerable<SectionChoice> choices, string timetableSheetName = "Thời Khóa Biểu")
+    public static XLWorkbook BuildWorkbook(ScheduleBlueprint blueprint, string timetableSheetName = "Thời Khóa Biểu")
     {
+        // 1. Lọc lớp học phần hợp lệ từ Blueprint
+        if (!blueprint.TryTrim(out var trimmedBlueprint))
+        {
+            throw new Exception("Dữ liệu Thời khóa biểu không nhất quán (IsConsistent = false).");
+        }
+
         var wb = new XLWorkbook();
         var sheet = wb.Worksheets.Add(timetableSheetName);
 
@@ -102,7 +106,7 @@ public static class TimetableExcelBuilder
 
             var periodCell = sheet.Cell(currentRow, 1);
             periodCell.Value = period;
-            // Lấy giờ học tương ứng với tiết (period - 1 vì mảng đếm từ số 0)
+            // Lấy giờ học tương ứng với tiết
             sheet.Cell(currentRow + 1, 1).Value = PeriodTimes[period - 1];
 
             var periodRange = sheet.Range(currentRow, 1, currentRow + 1, 1);
@@ -120,60 +124,56 @@ public static class TimetableExcelBuilder
 
         // --- 5. ĐỔ DỮ LIỆU THỰC TẾ VÀO LƯỚI VÀ DANH SÁCH ---
         int listRow = 3;
-        var choiceList = choices.ToList(); // Chuyển sang List để dùng chỉ số (index)
+        int colorIndex = 0;
 
-        for (int i = 0; i < choiceList.Count; i++)
+        foreach (var course in trimmedBlueprint.Courses)
         {
-            var choice = choiceList[i];
-            var course = choice.Course;
-            var section = choice.Section;
-
-            // Lấy màu xoay vòng từ mảng Pastel (nếu nhiều hơn 12 môn thì quay lại màu đầu tiên)
-            var xlBgColor = PastelColors[i % PastelColors.Length];
-
-            // 5.1 Đổ vào bảng thông tin bên phải
-            sheet.Cell(listRow, listStartCol).Value = course.Name_VN;
-            sheet.Cell(listRow, listStartCol + 1).Value = course.Credits;
-            sheet.Cell(listRow, listStartCol + 2).Value = section.Lecturer ?? "";
-            sheet.Cell(listRow, listStartCol + 3).Value = section.Group ?? "";
-
-            var listRange = sheet.Range(listRow, listStartCol, listRow, listStartCol + 3);
-            listRange.Style.Fill.BackgroundColor = xlBgColor;
-            listRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-            // Kẻ viền trong (viền dọc giữa các cột) cho bảng danh sách
-            listRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
-            listRow++;
-
-            // 5.2 Rải môn học vào lưới TKB bên trái (Thuật toán map tiết học)
-            foreach (var day in section.ClassDays)
+            foreach (var section in course.Sections)
             {
-                int colIndex = day.AttendingDay;
+                var xlBgColor = PastelColors[colorIndex % PastelColors.Length];
 
-                // Tính dòng bắt đầu
-                int rowIndex = 3 + (day.StartPeriod() - 1) * 2;
-                if (day.StartPeriod() > 5) rowIndex++; // Nhảy qua dòng nghỉ trưa
+                // 5.1 Đổ vào bảng thông tin bên phải
+                sheet.Cell(listRow, listStartCol).Value = course.Name_VN;
+                sheet.Cell(listRow, listStartCol + 1).Value = course.Credits;
+                sheet.Cell(listRow, listStartCol + 2).Value = section.Lecturer ?? "";
+                sheet.Cell(listRow, listStartCol + 3).Value = section.Group ?? "";
 
-                // Tính dòng kết thúc
-                int endRow = rowIndex + (day.PeriodCount() * 2) - 1;
+                var listRange = sheet.Range(listRow, listStartCol, listRow, listStartCol + 3);
+                listRange.Style.Fill.BackgroundColor = xlBgColor;
+                listRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                listRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+                listRow++;
 
-                var cell = sheet.Cell(rowIndex, colIndex);
-                cell.Value = $"{course.Name_VN}\n{course.Code} ({section.Group})\nPhòng: {day.Room}";
+                // 5.2 Rải môn học vào lưới TKB bên trái
+                foreach (var day in section.ClassDays)
+                {
+                    int colIndex = day.AttendingDay;
 
-                // Gộp ô, căn giữa, bọc text, tô màu
-                var classRange = sheet.Range(rowIndex, colIndex, endRow, colIndex);
-                classRange.Merge();
-                classRange.Style.Alignment.WrapText = true;
-                classRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                classRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-                classRange.Style.Fill.BackgroundColor = xlBgColor;
-                classRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thick; // Viền đậm bao quanh môn học
+                    int rowIndex = 3 + (day.StartPeriod() - 1) * 2;
+                    if (day.StartPeriod() > 5) rowIndex++;
+
+                    int endRow = rowIndex + (day.PeriodCount() * 2) - 1;
+
+                    var cell = sheet.Cell(rowIndex, colIndex);
+                    cell.Value = $"{course.Name_VN}\n{course.Code} ({section.Group})\nPhòng: {day.Room}";
+
+                    var classRange = sheet.Range(rowIndex, colIndex, endRow, colIndex);
+                    classRange.Merge();
+                    classRange.Style.Alignment.WrapText = true;
+                    classRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    classRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    classRange.Style.Fill.BackgroundColor = xlBgColor;
+                    classRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thick;
+                }
+
+                colorIndex++;
             }
         }
 
         // --- 6. Căn chỉnh UI ---
         sheet.Columns().AdjustToContents();
         sheet.Column(1).Width = 12;
-        for (int i = 2; i <= DayHeaders.Length; i++) sheet.Column(i).Width = 20; // Cột thứ rộng ra
+        for (int i = 2; i <= DayHeaders.Length; i++) sheet.Column(i).Width = 20;
 
         return wb;
     }
