@@ -8,6 +8,7 @@ using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Infrastructure.Exel;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;
 using DynamicData;
 using ReactiveUI;
@@ -27,11 +28,16 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
     public ReactiveCommand<Unit, Unit> SaveCommand { get; }
     public ReactiveCommand<Unit, Unit> CancelCommand { get; }
 
-    public TimetableEditorViewModel(ScheduleProfile scheduleProfile, ICourseQueryService courseQueryService)
+
+    public TimetableEditorViewModel(
+        ScheduleProfile scheduleProfile,
+        ICourseQueryService courseQueryService,
+        IExcelExporterService excelExporter) : base(excelExporter)
     {
         ArgumentNullException.ThrowIfNull(scheduleProfile);
         _scheduleProfile = scheduleProfile;
-        _courseQueryService = courseQueryService;
+
+        _courseQueryService = courseQueryService ?? throw new ArgumentNullException(nameof(courseQueryService));
 
         Name = _scheduleProfile.Name;
         LastUpdated = _scheduleProfile.LastUpdated;

@@ -16,6 +16,7 @@ using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Login;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Main;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
+using CTUScheduler.Infrastructure.Exel;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CTUScheduler.AppServices.Extensions;
@@ -39,6 +40,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IWebDriverService, WebDriverService>();
         services.AddSingleton<IUserSessionService, UserSessionService>();
         services.AddSingleton<IWorkspaceStore, WorkspaceStore>();
+
+        services.AddSingleton<IExcelExporterService, ExcelExporterService>();
 
         // --- Page Factories & Page Services (CTU Site) ---
         services.AddSingleton<ICtuSitePageFactory, CtuSitePageFactory>()
