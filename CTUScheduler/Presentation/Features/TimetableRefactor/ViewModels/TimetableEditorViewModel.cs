@@ -1,5 +1,6 @@
 ﻿using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.Core.Interfaces;
+using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Infrastructure.Exel;
@@ -29,7 +30,6 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
     public ReactiveCommand<Unit, Unit> SaveCommand { get; }
     public ReactiveCommand<Unit, Unit> CancelCommand { get; }
 
-    private readonly IScheduleManager _scheduleManager;
 
     public TimetableEditorViewModel(
         ScheduleProfile scheduleProfile,
@@ -42,7 +42,6 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
 
         // Gán biến bị thiếu
         _courseQueryService = courseQueryService ?? throw new ArgumentNullException(nameof(courseQueryService));
-        _scheduleManager = scheduleManager ?? throw new ArgumentNullException(nameof(scheduleManager));
 
         Name = _scheduleProfile.Name;
         LastUpdated = _scheduleProfile.LastUpdated;
@@ -120,17 +119,21 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
     {
         var savedRef = _scheduleProfile.SavedCourseGroupKeys;
 
-        var courses = _courseQueryService.GetCoursesSnapshot()
-            .Where(course => savedRef.TryGetValue(course.Code, out _))
-            .Select(course =>
+        // Performance
+        var coursesSnapshot = _courseQueryService.GetCoursesSnapshot();
+        var courses = new List<Course>();
+
+        foreach (var course in coursesSnapshot)
+        {
+            if (savedRef.TryGetValue(course.Code, out var targetGroup))
             {
-                var targetGroup = savedRef[course.Code];
                 var filteredSections = course.Sections
                     .Where(section => string.Equals(section.Group, targetGroup, StringComparison.OrdinalIgnoreCase))
                     .ToList();
-                return course.WithSections(filteredSections);
-            })
-            .ToList();
+
+                courses.Add(course.WithSections(filteredSections));
+            }
+        }
 
         return new ScheduleBlueprint(courses, _scheduleProfile);
     }
