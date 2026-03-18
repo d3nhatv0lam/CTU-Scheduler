@@ -1,7 +1,7 @@
-﻿using CTUScheduler.Core.Models.Shared;
-using CTUScheduler.Core.Models.Shared.Results;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Core.Models.Shared.Results;
 
 namespace CTUScheduler.Infrastructure.Exel;
 

@@ -1,4 +1,7 @@
-﻿using CTUScheduler.Core.Interfaces;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Disposables.Fluent;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
@@ -6,10 +9,6 @@ using CTUScheduler.Infrastructure.Exel;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
 using DynamicData;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Disposables.Fluent;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 

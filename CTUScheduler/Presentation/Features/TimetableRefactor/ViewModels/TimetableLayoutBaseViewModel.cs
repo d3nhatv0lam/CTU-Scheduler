@@ -1,16 +1,16 @@
-﻿using CTUScheduler.Core.Models.Shared;
+﻿using System;
+using System.Linq;
+using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
+using System.Reactive.Linq;
+using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Infrastructure.Exel;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Resources;
 using ReactiveUI;
-using System;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Disposables;
-using System.Reactive.Disposables.Fluent;
-using System.Reactive.Linq;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
@@ -22,7 +22,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
     private int _subjectCount = 0;
     private int _totalCredits = 0;
     private DateTimeOffset _lastUpdated = DateTimeOffset.Now;
-    private TimetableViewModel? _visualizerVM;
+    private TimetableViewModel _visualizerVM;
 
     private bool _isSelected;
     private bool _isEnabled = true;
@@ -48,7 +48,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
         get => _lastUpdated;
         protected set => this.RaiseAndSetIfChanged(ref _lastUpdated, value);
     }
-    public TimetableViewModel? VisualizerVM
+    public TimetableViewModel VisualizerVM
     {
         get => _visualizerVM;
         protected set => this.RaiseAndSetIfChanged(ref _visualizerVM, value);
@@ -75,7 +75,6 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
     // Khai báo biến service
     protected readonly IExcelExporterService ExcelExporter;
 
-    // Sửa lại hàm khởi tạo
     public TimetableLayoutBaseViewModel(IExcelExporterService excelExporter)
     {
         ExcelExporter = excelExporter ?? throw new ArgumentNullException(nameof(excelExporter));

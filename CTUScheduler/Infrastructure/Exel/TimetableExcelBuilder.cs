@@ -1,10 +1,9 @@
-﻿using ClosedXML.Excel;
-using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
-using CTUScheduler.Core.Models.Shared;
-using DynamicData;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ClosedXML.Excel;
+using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
+using CTUScheduler.Core.Models.Shared;
 
 namespace CTUScheduler.Infrastructure.Exel;
 
