@@ -1,6 +1,6 @@
 ﻿namespace CTUScheduler.Core.Interfaces;
 
-public interface IActivatable
+public interface IEnabled
 {
     public bool IsEnabled { get; set; }
 }

@@ -1,48 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reactive;
+using System.Linq;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Features.Pagination.Interfaces;
+using CTUScheduler.Presentation.Features.Pagination.Models;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using DynamicData;
-using DynamicData.Binding;
 using ReactiveUI;
 
 
 namespace CTUScheduler.Presentation.Features.Pagination.ViewModels;
 
-public class SelectablePaginationViewModel<T> : PaginationViewModel<T> , ISelectablePaginationViewModel<T>
-where T : class, ISelectable , IActivatable, INotifyPropertyChanged
+public class SelectablePaginationViewModel<T> : PaginationViewModel<T>, ISelectablePaginationViewModel<T>
+    where T : class, ISelectable, IEnabled, INotifyPropertyChanged
 {
-    private readonly ObservableAsPropertyHelper<int> _maxItemCanSelect;
+    private readonly IObservableList<T> _selectedListCache;
     private readonly ObservableAsPropertyHelper<int> _selectedItemCount;
-    
-    private readonly BehaviorSubject<IReadOnlyCollection<T>> _selectedItemsSubject;
-    
-    public int MaxItemCanSelect => _maxItemCanSelect?.Value ?? int.MaxValue;
-    public int SelectedItemCount => _selectedItemCount?.Value ?? 0;
-    
+
+    public int SelectedItemCount => _selectedItemCount.Value;
     public IObservable<IChangeSet<T>> SelectedItemChanged { get; }
     public IObservable<int> SelectedItemCountChanged { get; }
-       
-    public SelectablePaginationViewModel(int pageSize, int maxItemCanSelect) 
-        : this(pageSize, Observable.Return(maxItemCanSelect)) 
+
+    public SelectablePaginationViewModel(PaginationOptions<T>? options = null)
+        : this(new SourceList<T>(), options ?? new(), ownsData: true)
     {
     }
-    
-    public SelectablePaginationViewModel(int pageSize, IObservable<int> maxItemCanSelectObservable) : base(pageSize)
+
+    public SelectablePaginationViewModel(SourceList<T> data, PaginationOptions<T>? options = null)
+        : this(data, options ?? new(), ownsData: false)
     {
-        _selectedItemsSubject = new BehaviorSubject<IReadOnlyCollection<T>>(Array.Empty<T>())
-            .DisposeWith(Disposables);
-        
-        _maxItemCanSelect = maxItemCanSelectObservable
-            .ToProperty(this, nameof(MaxItemCanSelect), scheduler: RxApp.MainThreadScheduler)
-            .DisposeWith(Disposables);
-        
+    }
+
+    protected SelectablePaginationViewModel(SourceList<T> sourceList, PaginationOptions<T> options, bool ownsData)
+        : base(sourceList, options, ownsData)
+    {
         var selectedItemsStream = DataSharedConnection
             .AutoRefresh(x => x.IsSelected)
             .Filter(x => x.IsSelected)
@@ -50,43 +45,17 @@ where T : class, ISelectable , IActivatable, INotifyPropertyChanged
             .RefCount();
 
         SelectedItemChanged = selectedItemsStream;
-        
-        selectedItemsStream
-            .ToCollection()
-            .Subscribe(_selectedItemsSubject)
+
+        _selectedListCache = selectedItemsStream.AsObservableList()
             .DisposeWith(Disposables);
-        
-        SelectedItemCountChanged = selectedItemsStream
-            .Count()
-            .StartWith(0);
-        
+
+        SelectedItemCountChanged = _selectedListCache.CountChanged;
+
         _selectedItemCount = SelectedItemCountChanged
             .ToProperty(this, nameof(SelectedItemCount), scheduler: RxApp.MainThreadScheduler)
             .DisposeWith(Disposables);
-      
-        PagedData.ToObservableChangeSet().Select(_ => Unit.Default)
-            .Merge(SelectedItemCountChanged.Select(_ => Unit.Default))
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(_ => UpdateItemsEnableState())
-            .DisposeWith(Disposables);
     }
-    
-    private void UpdateItemsEnableState()
-    {
-        bool isMaxReached = SelectedItemCount >= MaxItemCanSelect;
-        
-        foreach (var data in PagedData)
-        {
-            if (!data.IsSelected)
-            {
-                // Nhờ có ISelectableItem, ta có thể set IsEnabled an toàn
-                data.IsEnabled = !isMaxReached;
-            }
-        }
-    }
-    
-    public IReadOnlyCollection<T> GetSelectedItems()
-    {
-        return _selectedItemsSubject.Value;
-    }
+
+
+    public IReadOnlyCollection<T> GetSelectedItems() => _selectedListCache.Items.ToList();
 }

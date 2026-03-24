@@ -5,7 +5,7 @@ using DynamicData;
 
 namespace CTUScheduler.Presentation.Features.Pagination.Interfaces;
 
-public interface IPaginationViewModel<T>: IPagination where T: class
+public interface IPaginationViewModel<T>: IPaginationInteraction where T: class
 {
     /// <summary>
     /// Data that has been added in the current time, not reactive.

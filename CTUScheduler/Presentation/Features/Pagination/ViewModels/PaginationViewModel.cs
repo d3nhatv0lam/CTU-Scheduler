@@ -7,26 +7,32 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using CTUScheduler.Presentation.Features.Pagination.Interfaces;
+using CTUScheduler.Presentation.Features.Pagination.Models;
 using DynamicData;
+using DynamicData.Aggregation;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Pagination.ViewModels;
 
-public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationBinding, IPaginationViewModel<T>
+public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationViewModel<T>
     where T : class
 {
-    protected const int DEFAULT_PAGE_SIZE = 12;
     private readonly bool _ownsData;
     private readonly ObservableAsPropertyHelper<int> _totalPages;
     private readonly ObservableAsPropertyHelper<bool> _isFirstPage;
     private readonly ObservableAsPropertyHelper<bool> _isLastPage;
     private readonly ReadOnlyObservableCollection<T> _bindablePagedData;
+
     private int _currentPage;
 
     protected CompositeDisposable Disposables { get; } = new();
     protected ISourceList<T> DataList { get; }
-    protected IObservable<IChangeSet<T>> DataSharedConnection => DataList.Connect();
     protected BehaviorSubject<IPageRequest> PageRequestSubject { get; }
+
+    /// <summary>
+    /// has sorter, filter
+    /// </summary>
+    protected readonly IObservable<IChangeSet<T>> DataSharedConnection;
 
 
     public int PageSize { get; }
@@ -47,20 +53,43 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationBi
     public ReactiveCommand<Unit, Unit> PreviousPageCommand { get; protected set; }
 
 
-    public PaginationViewModel(int pageSize = DEFAULT_PAGE_SIZE) : this(new SourceList<T>(), pageSize)
+    public PaginationViewModel(PaginationOptions<T>? options)
+        : this(new SourceList<T>(), options ?? new(), ownsData: true)
     {
-        _ownsData = true;
+    }
+
+    // Constructor 2: Public cho UI xài (Dùng chung data)
+    public PaginationViewModel(SourceList<T> data, PaginationOptions<T>? options = null)
+        : this(data, options ?? new(), ownsData: false)
+    {
     }
 
 
-    public PaginationViewModel(SourceList<T> data, int pageSize = DEFAULT_PAGE_SIZE)
+    protected PaginationViewModel(SourceList<T> data, PaginationOptions<T> options, bool ownsData)
     {
         DataList = data ?? throw new ArgumentNullException(nameof(data));
-        PageSize = pageSize > 0 ? pageSize : DEFAULT_PAGE_SIZE;
-
+        _ownsData = ownsData;
+        PageSize = options.PageSize;
         PageRequestSubject = new BehaviorSubject<IPageRequest>(new PageRequest(1, PageSize)).DisposeWith(Disposables);
+        
+        var connection = DataList.Connect()
+            .SubscribeOn(RxApp.TaskpoolScheduler);
 
-        _totalPages = DataList.CountChanged
+        if (options.FilterObservable is not null)
+        {
+            connection = connection.Filter(options.FilterObservable);
+        }
+
+        if (options.SortObservable is not null)
+        {
+            connection = connection.Sort(options.SortObservable);
+        }
+
+        DataSharedConnection = connection.Publish().RefCount();
+
+        _totalPages = DataSharedConnection
+            .Count()
+            .StartWith(0)
             .Select(count => (int)Math.Ceiling(count / (double)PageSize))
             .DistinctUntilChanged()
             .ToProperty(this, nameof(TotalPages), scheduler: RxApp.MainThreadScheduler)
@@ -82,11 +111,9 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationBi
 
         var canGoPrevious = this.WhenAnyValue(x => x.IsFirstPage, isFirstPage => !isFirstPage);
         PreviousPageCommand = ReactiveCommand.Create(GoPreviousPage, canGoPrevious).DisposeWith(Disposables);
+        
 
-        DataSharedConnection
-            .SubscribeOn(RxApp.TaskpoolScheduler)
-            .DisposeMany()
-            .Page(PageRequestSubject)
+        DataSharedConnection.Page(PageRequestSubject)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _bindablePagedData)
             .Subscribe()
@@ -108,17 +135,6 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationBi
             .DisposeWith(Disposables);
     }
 
-    protected virtual void GoNextPage()
-    {
-        CurrentPage++;
-    }
-
-    protected virtual void GoPreviousPage()
-    {
-        CurrentPage--;
-    }
-
-
     public virtual void Add(T item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -135,6 +151,16 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationBi
     public virtual void Clear()
     {
         DataList.Clear();
+    }
+
+    protected virtual void GoNextPage()
+    {
+        CurrentPage++;
+    }
+
+    protected virtual void GoPreviousPage()
+    {
+        CurrentPage--;
     }
 
     public virtual void Dispose()

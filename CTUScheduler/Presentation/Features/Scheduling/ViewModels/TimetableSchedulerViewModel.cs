@@ -38,7 +38,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
     private readonly IScheduleRegistrationService _scheduleRegistrationService;
     private readonly ITimetableDialogService _timetableDialogService;
     private readonly SchedulingCourseOptionViewModel _schedulingCourseOptionVM;
-    private readonly SelectableTimeTablesPaginationUi _paginationTimeTableViewModel;
+    private readonly TimetablePaginationViewModel _paginationTimeTableViewModel;
     private readonly CourseMapper _courseMapper = new();
     private readonly ObservableAsPropertyHelper<string> _limitTimetableSelectedDisplayedHelper;
     private readonly ObservableAsPropertyHelper<bool> _isNextStepEnabled;
@@ -54,7 +54,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
 
     public ViewModelActivator Activator { get; } = new();
     public SchedulingCourseOptionViewModel SchedulingCourseOptionVM => _schedulingCourseOptionVM;
-    public SelectableTimeTablesPaginationUi PaginationTimeTableViewModel => _paginationTimeTableViewModel;
+    public TimetablePaginationViewModel PaginationTimeTableViewModel => _paginationTimeTableViewModel;
     public string LimitTimetableSelectedDisplayed => _limitTimetableSelectedDisplayedHelper.Value;
 
     public bool IsNextStepEnabled => _isNextStepEnabled.Value;
@@ -71,20 +71,21 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
         var maxCanSelect = profileQueryService.ProfileUsageState
             .Select(x => x.Limit - x.Current)
             .DistinctUntilChanged();
-        _paginationTimeTableViewModel = new(12, maxCanSelect);
+        _paginationTimeTableViewModel = new(maxCanSelect);
 
-        _limitTimetableSelectedDisplayedHelper = this.WhenAnyValue(
-                x => x.PaginationTimeTableViewModel.SelectedTimetableCount,
-                x => x.PaginationTimeTableViewModel.MaxItemCanSelect)
-            .Select(tuple =>
-            {
-                var (selectedPageCount, maxPageCanSelect) = tuple;
-                return $"{selectedPageCount}/{maxPageCanSelect}";
-            })
-            .ToProperty(this, nameof(LimitTimetableSelectedDisplayed))
-            .DisposeWith(_disposables);
+        _limitTimetableSelectedDisplayedHelper =
+            this.WhenAnyValue(
+                    x => x.PaginationTimeTableViewModel.SelectedItemCount,
+                    x => x.PaginationTimeTableViewModel.MaxItemCanSelect)
+                .Select(tuple =>
+                {
+                    var (selectedPageCount, maxPageCanSelect) = tuple;
+                    return $"{selectedPageCount}/{maxPageCanSelect}";
+                })
+                .ToProperty(this, nameof(LimitTimetableSelectedDisplayed))
+                .DisposeWith(_disposables);
 
-        _isNextStepEnabled = PaginationTimeTableViewModel.SelectedTimetableCountChanged
+        _isNextStepEnabled = PaginationTimeTableViewModel.SelectedItemCountChanged
             .Select(count => count > 0)
             .ToProperty(this, nameof(IsNextStepEnabled), scheduler: RxApp.MainThreadScheduler)
             .DisposeWith(_disposables);
@@ -179,12 +180,12 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
 
     public void Cleanup()
     {
-        var blueprints = PaginationTimeTableViewModel.GetSelectedTimetables()
+        var blueprints = PaginationTimeTableViewModel.GetSelectedItems()
             .Select(x => x.Item.ToScheduleBlueprint());
         _scheduleRegistrationService.RegisterBlueprint(blueprints);
         PaginationTimeTableViewModel.Clear();
     }
-    
+
 
     public void Dispose()
     {

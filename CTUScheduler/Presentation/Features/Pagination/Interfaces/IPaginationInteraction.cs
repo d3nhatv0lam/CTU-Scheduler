@@ -1,12 +1,11 @@
 ﻿using System.Reactive;
+using CTUScheduler.Core.Interfaces;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Pagination.Interfaces;
 
-public interface IPaginationBinding
+public interface IPaginationInteraction: IPagination
 {
-    public int CurrentPage { get; }
-    public int TotalPages { get; }
     public ReactiveCommand<Unit, Unit> NextPageCommand { get; }
     public ReactiveCommand<Unit, Unit> PreviousPageCommand { get; }
 }
