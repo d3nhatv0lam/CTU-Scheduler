@@ -5,7 +5,7 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Shared.Models;
 
-public class SelectableTimetableLayout: SelectableItem<TimetablePreviewViewModel>, IEnableable, IDisposable
+public class SelectableTimetableLayout: SelectableItem<TimetablePreviewViewModel>, IActivatable, IDisposable
 {
     private bool _isEnabled = true;
 

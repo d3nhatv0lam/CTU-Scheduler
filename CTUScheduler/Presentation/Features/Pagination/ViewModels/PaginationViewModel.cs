@@ -12,173 +12,134 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Pagination.ViewModels;
 
-public class PaginationViewModel<T>: ReactiveObject, IDisposable, IPaginationBinding, IPaginationViewModel<T> where T : class
+public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationBinding, IPaginationViewModel<T>
+    where T : class
 {
     protected const int DEFAULT_PAGE_SIZE = 12;
-    private readonly bool _ownsData; 
-    private readonly CompositeDisposable _disposables = new();
-    private readonly SourceList<T> _data;
-    private readonly BehaviorSubject<PageRequest> _pageRequest;
-    private ReadOnlyObservableCollection<T> _bindablePagedData;
-    private int _totalPages;
+    private readonly bool _ownsData;
+    private readonly ObservableAsPropertyHelper<int> _totalPages;
+    private readonly ObservableAsPropertyHelper<bool> _isFirstPage;
+    private readonly ObservableAsPropertyHelper<bool> _isLastPage;
+    private readonly ReadOnlyObservableCollection<T> _bindablePagedData;
     private int _currentPage;
-    private bool _isFirstPage;
-    private bool _isLastPage;
-    
-    protected CompositeDisposable Disposables => _disposables;
-    protected ISourceList<T> Data => _data;
-    protected IObservable<IChangeSet<T>> DataSharedConnection => _data.Connect().Publish().RefCount();
-    protected IObservable<PageRequest> PageRequest => _pageRequest.AsObservable();
-    public IEnumerable<T> CurrentData => _data.Items;
-    public ReadOnlyObservableCollection<T> PagedData => _bindablePagedData;
 
-    public int TotalPages
-    {
-        get => _totalPages;
-        private set => this.RaiseAndSetIfChanged(ref _totalPages, value);
-    }
+    protected CompositeDisposable Disposables { get; } = new();
+    protected ISourceList<T> DataList { get; }
+    protected IObservable<IChangeSet<T>> DataSharedConnection => DataList.Connect();
+    protected BehaviorSubject<IPageRequest> PageRequestSubject { get; }
+
+
     public int PageSize { get; }
+    public int TotalPages => _totalPages.Value;
+    public bool IsFirstPage => _isFirstPage.Value;
+    public bool IsLastPage => _isLastPage.Value;
+    public IEnumerable<T> CurrentData => DataList.Items;
+    public ReadOnlyObservableCollection<T> PagedData => _bindablePagedData;
 
     public int CurrentPage
     {
         get => _currentPage;
-        private set => this.RaiseAndSetIfChanged(ref _currentPage, value);
+        protected set => this.RaiseAndSetIfChanged(ref _currentPage, value);
     }
-    
-    public bool IsFirstPage
-    {
-        get => _isFirstPage;
-        private set => this.RaiseAndSetIfChanged(ref _isFirstPage, value);
-    }
-    
-    public bool IsLastPage
-    {
-        get => _isLastPage;
-        private set => this.RaiseAndSetIfChanged(ref _isLastPage, value);
-    }
-    
-    public ReactiveCommand<Unit, Unit> NextPageCommand { get; private set; }
-    public ReactiveCommand<Unit, Unit> PreviousPageCommand { get; private set; }
 
-    public PaginationViewModel() : this(new SourceList<T>(), DEFAULT_PAGE_SIZE)
+
+    public ReactiveCommand<Unit, Unit> NextPageCommand { get; protected set; }
+    public ReactiveCommand<Unit, Unit> PreviousPageCommand { get; protected set; }
+
+
+    public PaginationViewModel(int pageSize = DEFAULT_PAGE_SIZE) : this(new SourceList<T>(), pageSize)
     {
         _ownsData = true;
     }
-    public PaginationViewModel(int pageSize) : this(new SourceList<T>(), pageSize)
-    {
-        
-    }
-    
-    public PaginationViewModel(SourceList<T> data) : this(data, DEFAULT_PAGE_SIZE)
-    {
-        
-    }
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-    public PaginationViewModel(SourceList<T> data,int pageSize)
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+
+    public PaginationViewModel(SourceList<T> data, int pageSize = DEFAULT_PAGE_SIZE)
     {
-        _data = data ?? throw new ArgumentNullException(nameof(data));
+        DataList = data ?? throw new ArgumentNullException(nameof(data));
         PageSize = pageSize > 0 ? pageSize : DEFAULT_PAGE_SIZE;
-        _currentPage = 0;
-        _pageRequest = new BehaviorSubject<PageRequest>(new PageRequest(CurrentPage, PageSize));
-        Initialize();
-    }
-    
-    private void Initialize()
-    {
-        OnObservableInit();
-        OnCommandInit();
-    }
 
-    protected virtual void OnObservableInit()
-    {
-        _data.CountChanged
-            .Throttle(TimeSpan.FromMilliseconds(500))
+        PageRequestSubject = new BehaviorSubject<IPageRequest>(new PageRequest(1, PageSize)).DisposeWith(Disposables);
+
+        _totalPages = DataList.CountChanged
             .Select(count => (int)Math.Ceiling(count / (double)PageSize))
             .DistinctUntilChanged()
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(totalPages =>
-            {
-                TotalPages = totalPages;
-            });
-        
+            .ToProperty(this, nameof(TotalPages), scheduler: RxApp.MainThreadScheduler)
+            .DisposeWith(Disposables);
+
+        _isFirstPage = this.WhenAnyValue(x => x.CurrentPage)
+            .Select(page => page <= 1)
+            .ToProperty(this, nameof(IsFirstPage), scheduler: RxApp.MainThreadScheduler)
+            .DisposeWith(Disposables);
+
+        _isLastPage = this.WhenAnyValue(x => x.CurrentPage, x => x.TotalPages)
+            .Select(tuple => tuple.Item1 >= tuple.Item2)
+            .ToProperty(this, nameof(IsLastPage), scheduler: RxApp.MainThreadScheduler)
+            .DisposeWith(Disposables);
+
+
+        var canGoNext = this.WhenAnyValue(x => x.IsLastPage, isLastPage => !isLastPage);
+        NextPageCommand = ReactiveCommand.Create(GoNextPage, canGoNext).DisposeWith(Disposables);
+
+        var canGoPrevious = this.WhenAnyValue(x => x.IsFirstPage, isFirstPage => !isFirstPage);
+        PreviousPageCommand = ReactiveCommand.Create(GoPreviousPage, canGoPrevious).DisposeWith(Disposables);
+
         DataSharedConnection
+            .SubscribeOn(RxApp.TaskpoolScheduler)
             .DisposeMany()
-            .ObserveOn(RxApp.TaskpoolScheduler)
-            .Page(_pageRequest)
+            .Page(PageRequestSubject)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _bindablePagedData)
             .Subscribe()
-            .DisposeWith(_disposables);
-        
+            .DisposeWith(Disposables);
+
         this.WhenAnyValue(x => x.CurrentPage)
-            .Where(page => page >= 0)
+            .Where(page => page > 0)
             .DistinctUntilChanged()
-            .Subscribe(newPage => _pageRequest.OnNext(new PageRequest(newPage,PageSize)))
-            .DisposeWith(_disposables);
+            .Subscribe(newPage => PageRequestSubject.OnNext(new PageRequest(newPage, PageSize)))
+            .DisposeWith(Disposables);
 
         this.WhenAnyValue(x => x.TotalPages)
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(totalPage =>
+            .Subscribe(total =>
             {
-                CurrentPage = totalPage > 0 ? 1 : 0;
+                if (total == 0) CurrentPage = 0;
+                else if (CurrentPage == 0) CurrentPage = 1;
+                else if (CurrentPage > total) CurrentPage = total;
             })
-            .DisposeWith(_disposables);
-        
-        this.WhenAnyValue(x => x.CurrentPage, x => x.TotalPages)
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(tuple =>
-            {
-                var (currentPage, totalPages) = tuple;
-                IsFirstPage = currentPage <= 1;
-                IsLastPage = currentPage >= totalPages;
-            })
-            .DisposeWith(_disposables);
+            .DisposeWith(Disposables);
     }
 
-    protected virtual void OnCommandInit()
+    protected virtual void GoNextPage()
     {
-        var canGoNext = this.WhenAnyValue(x => x.IsLastPage, isLastPage => !isLastPage);
-        NextPageCommand = ReactiveCommand.Create(GoNextPage,canGoNext);
-        
-        var canGoPrevious = this.WhenAnyValue(x => x.IsFirstPage, isFirstPage => !isFirstPage);
-        PreviousPageCommand = ReactiveCommand.Create(GoPreviousPage,canGoPrevious);
+        CurrentPage++;
     }
 
-    public virtual void GoNextPage()
+    protected virtual void GoPreviousPage()
     {
-        if (!IsLastPage)
-            CurrentPage++;
+        CurrentPage--;
     }
 
-    public virtual void GoPreviousPage()
-    {
-        if (!IsFirstPage)
-            CurrentPage--;
-    }
-    
-    public virtual void AddItem(T item)
-    {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
-        _data.Add(item);
-    }
-   
 
-    public virtual void AddAll(IEnumerable<T> items)
+    public virtual void Add(T item)
     {
-        _data.AddRange(items);
+        ArgumentNullException.ThrowIfNull(item);
+        DataList.Add(item);
+    }
+
+
+    public virtual void AddRange(IEnumerable<T> items)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        DataList.AddRange(items);
     }
 
     public virtual void Clear()
     {
-        _data.Clear();
+        DataList.Clear();
     }
 
-    public void Dispose()
+    public virtual void Dispose()
     {
-        if (_ownsData) _data.Dispose();
-        _disposables.Dispose();
+        if (_ownsData) DataList.Dispose();
+        Disposables.Dispose();
     }
-    
 }

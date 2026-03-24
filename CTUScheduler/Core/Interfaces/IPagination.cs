@@ -10,6 +10,4 @@ public interface IPagination
     public int CurrentPage { get; }
     public bool IsFirstPage { get; }
     public bool IsLastPage { get; }
-    public void GoNextPage();
-    public void GoPreviousPage();
 }

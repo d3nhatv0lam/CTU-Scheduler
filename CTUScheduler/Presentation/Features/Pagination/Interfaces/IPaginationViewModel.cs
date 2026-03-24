@@ -15,6 +15,7 @@ public interface IPaginationViewModel<T>: IPagination where T: class
     /// Reactive data that has been added and paged.
     /// </summary>
     public ReadOnlyObservableCollection<T> PagedData { get; }
-    public void AddItem(T item);
+    public void Add(T item);
+    public void AddRange(IEnumerable<T> items);
     public void Clear();
 }
