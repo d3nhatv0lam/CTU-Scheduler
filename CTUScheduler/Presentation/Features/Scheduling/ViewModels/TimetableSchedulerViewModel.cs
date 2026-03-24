@@ -32,13 +32,13 @@ using CTUScheduler.Infrastructure.Exel;
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 
 public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDisposable, IActivatableViewModel,
-    INextStepCondition, ICleanupAsync
+    INextStepCondition, ICleanup
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
     private readonly IScheduleRegistrationService _scheduleRegistrationService;
     private readonly ITimetableDialogService _timetableDialogService;
     private readonly SchedulingCourseOptionViewModel _schedulingCourseOptionVM;
-    private readonly SelectableTimeTablesPaginationUi _paginationTimeTableViewModel;
+    private readonly TimetablePaginationViewModel _paginationTimeTableViewModel;
     private readonly CourseMapper _courseMapper = new();
     private readonly ObservableAsPropertyHelper<string> _limitTimetableSelectedDisplayedHelper;
     private readonly ObservableAsPropertyHelper<bool> _isNextStepEnabled;
@@ -52,9 +52,9 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
         set => this.RaiseAndSetIfChanged(ref _isGeneratingTimeTable, value);
     }
 
-    public ViewModelActivator Activator { get; } = new ();
+    public ViewModelActivator Activator { get; } = new();
     public SchedulingCourseOptionViewModel SchedulingCourseOptionVM => _schedulingCourseOptionVM;
-    public SelectableTimeTablesPaginationUi PaginationTimeTableViewModel => _paginationTimeTableViewModel;
+    public TimetablePaginationViewModel PaginationTimeTableViewModel => _paginationTimeTableViewModel;
     public string LimitTimetableSelectedDisplayed => _limitTimetableSelectedDisplayedHelper.Value;
 
     public bool IsNextStepEnabled => _isNextStepEnabled.Value;
@@ -71,20 +71,21 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
         var maxCanSelect = profileQueryService.ProfileUsageState
             .Select(x => x.Limit - x.Current)
             .DistinctUntilChanged();
-        _paginationTimeTableViewModel = new(12, maxCanSelect);
+        _paginationTimeTableViewModel = new(maxCanSelect);
 
-        _limitTimetableSelectedDisplayedHelper = this.WhenAnyValue(
-                x => x.PaginationTimeTableViewModel.SelectedTimetableCount,
-                x => x.PaginationTimeTableViewModel.MaxPageCanSelect)
-            .Select(tuple =>
-            {
-                var (selectedPageCount, maxPageCanSelect) = tuple;
-                return $"{selectedPageCount}/{maxPageCanSelect}";
-            })
-            .ToProperty(this, nameof(LimitTimetableSelectedDisplayed))
-            .DisposeWith(_disposables);
+        _limitTimetableSelectedDisplayedHelper =
+            this.WhenAnyValue(
+                    x => x.PaginationTimeTableViewModel.SelectedItemCount,
+                    x => x.PaginationTimeTableViewModel.MaxItemCanSelect)
+                .Select(tuple =>
+                {
+                    var (selectedPageCount, maxPageCanSelect) = tuple;
+                    return $"{selectedPageCount}/{maxPageCanSelect}";
+                })
+                .ToProperty(this, nameof(LimitTimetableSelectedDisplayed))
+                .DisposeWith(_disposables);
 
-        _isNextStepEnabled = PaginationTimeTableViewModel.SelectedTimetableCountChanged
+        _isNextStepEnabled = PaginationTimeTableViewModel.SelectedItemCountChanged
             .Select(count => count > 0)
             .ToProperty(this, nameof(IsNextStepEnabled), scheduler: RxApp.MainThreadScheduler)
             .DisposeWith(_disposables);
@@ -96,6 +97,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
                     StopGenerateTimeTable();
                     return;
                 }
+
                 IsGeneratingTimeTable = true;
                 var courseSectionFlatten = CourseSectionsTrackerFlatten(SchedulingCourseOptionVM.GetGroupedCourses());
                 await GenerateTimeTable(courseSectionFlatten);
@@ -103,8 +105,9 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
             })
             .DisposeWith(_disposables);
 
-        ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<SelectableTimetableLayout>(async selectableTimetableLayout =>
-               await _timetableDialogService.ShowTimetableDetails(selectableTimetableLayout.Item))
+        ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<SelectableTimetableLayout>(async
+                selectableTimetableLayout =>
+                await _timetableDialogService.ShowTimetableDetails(selectableTimetableLayout.Item))
             .DisposeWith(_disposables);
 
         this.WhenActivated(disposable =>
@@ -116,7 +119,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
                 .DisposeWith(disposable);
         });
     }
-    
+
 
     private void StopGenerateTimeTable()
     {
@@ -139,7 +142,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
             var batch = new List<SelectableTimetableLayout>();
             foreach (var tableData in Combinatorics.CartesianProduct(
                          sets,
-                     (currentPath, next) => ScheduleValidator.ValidateStep(currentPath, next),
+                         (currentPath, next) => ScheduleValidator.ValidateStep(currentPath, next),
                          _ => true,
                          _cts.Token))
             {
@@ -153,7 +156,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
                     var copyList = batch.ToList();
                     batch.Clear();
 
-                    RxApp.MainThreadScheduler.Schedule(() => PaginationTimeTableViewModel.AddAll(copyList));
+                    RxApp.MainThreadScheduler.Schedule(() => PaginationTimeTableViewModel.AddRange(copyList));
                 }
             }
 
@@ -161,7 +164,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
             {
                 var copyList = batch.ToList();
                 batch.Clear();
-                RxApp.MainThreadScheduler.Schedule(() => PaginationTimeTableViewModel.AddAll(copyList));
+                RxApp.MainThreadScheduler.Schedule(() => PaginationTimeTableViewModel.AddRange(copyList));
             }
         });
     }
@@ -175,13 +178,14 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
             );
     }
 
-    public async Task CleanupAsync()
+    public void Cleanup()
     {
-        var blueprints = (await PaginationTimeTableViewModel.GetSelectedTimetables())
+        var blueprints = PaginationTimeTableViewModel.GetSelectedItems()
             .Select(x => x.Item.ToScheduleBlueprint());
         _scheduleRegistrationService.RegisterBlueprint(blueprints);
         PaginationTimeTableViewModel.Clear();
     }
+
 
     public void Dispose()
     {
