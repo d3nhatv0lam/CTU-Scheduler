@@ -10,10 +10,7 @@ using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
 using CTUScheduler.Core.Models.Contributors;
 using CTUScheduler.Core.Models.Settings;
-using CTUScheduler.Infrastructure.Services.Registration;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Services.UserInteractionService;
-using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using Serilog;
 
@@ -37,12 +34,14 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
         public ReactiveCommand<Unit, Unit> OpenGithubCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenCTUHTQLCommand { get; }
 
-        public HomeViewModel(IScreen hostScreen)
+        public HomeViewModel(IScreen hostScreen,
+            IUserSessionService userSessionService,
+            IRegistrationRulesService registrationRulesService)
         {
             HostScreen = hostScreen;
 
-            _userSessionService = App.ServiceProvider.GetRequiredService<IUserSessionService>();
-            _registrationRulesService = App.ServiceProvider.GetRequiredService<IRegistrationRulesService>();
+            _userSessionService = userSessionService;
+            _registrationRulesService = registrationRulesService;
 
             _registrationRulesService.RegistrationInfoChanges
                 .Subscribe(info => _userSessionService.UpdateServerInfo(info))
@@ -91,7 +90,6 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
 
         public void Dispose()
         {
-            (_registrationRulesService as IDisposable)?.Dispose();
             _disposable.Dispose();
             Log.Debug(nameof(HomeViewModel) + ": Disposed");
         }
