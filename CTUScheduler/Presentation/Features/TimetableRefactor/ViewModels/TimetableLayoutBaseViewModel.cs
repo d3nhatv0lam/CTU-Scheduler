@@ -65,12 +65,9 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
         get => _isEnabled;
         set => this.RaiseAndSetIfChanged(ref _isEnabled, value);
     }
+    
     public ReactiveCommand<object, Unit> ExportToImageCommand { get; protected set; }
-    public ReactiveCommand<Unit, Unit>? ExportToExcelCommand
-    {
-        get => _exportToExcelCommand;
-        set => this.RaiseAndSetIfChanged(ref _exportToExcelCommand, value);
-    }
+    public ReactiveCommand<Unit, Unit> ExportToExcelCommand { get; protected set; }
 
     // Khai báo biến service
     protected readonly IExcelExporterService ExcelExporter;
@@ -96,8 +93,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
 
             await ExcelExporter.ExportTimetableAsync(blueprint, fullPath);
         }).DisposeWith(Disposables);
-
-        VisualizerVM?.DisposeWith(Disposables);
+        
     }
 
     protected TimetableRenderItem CreateRenderItem(ICourseDisplaySource dataSource)

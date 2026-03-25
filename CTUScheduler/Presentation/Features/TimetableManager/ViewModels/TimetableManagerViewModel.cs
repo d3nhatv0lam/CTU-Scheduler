@@ -42,7 +42,9 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly IProfileQueryService _profileQueryService;
         private readonly IScheduleSyncService _scheduleSyncService;
         private readonly IScheduleRegistrationService _scheduleRegistrationService;
-        
+        private readonly IUserSessionService _userSessionService;
+        private readonly IWorkspaceStore _workspaceStore;
+        private readonly IViewModelFactory _viewModelFactory;
 
         private readonly ReadOnlyObservableCollection<TimetableEditorViewModel> _bindableTimetableLayouts =
             ReadOnlyObservableCollection<TimetableEditorViewModel>.Empty;
@@ -71,28 +73,40 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         
         
 
-        public TimetableManagerViewModel(IScreen hostScreen)
+        public TimetableManagerViewModel(
+            IScreen hostScreen,
+            IConnectivityService connectivityService,
+            ICourseCatalogService courseCatalogService,
+            IUserSessionService userSessionService,
+            IWorkspaceStore workspaceStore,
+            IProfileQueryService profileQueryService,
+            IScheduleSyncService scheduleSyncService,
+            IScheduleRegistrationService scheduleRegistrationService,
+            IViewModelFactory viewModelFactory)
         {
             HostScreen = hostScreen;
+            
             _dialogHostService = App.ServiceProvider.GetRequiredService<IDialogHostService>();
             _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
-            _connectivityService = App.ServiceProvider.GetRequiredService<IConnectivityService>();
-            _courseCatalogService = App.ServiceProvider.GetRequiredService<ICourseCatalogService>();
+            _connectivityService = connectivityService;
+            _courseCatalogService = courseCatalogService;
+            _userSessionService = userSessionService;
+            _workspaceStore = workspaceStore;
+            _profileQueryService =  profileQueryService;
+            _scheduleSyncService = scheduleSyncService;
+            _scheduleRegistrationService = scheduleRegistrationService;
+            _viewModelFactory = viewModelFactory;
             
-            var userSessionService = App.ServiceProvider.GetRequiredService<IUserSessionService>();
-            var workspaceStore = App.ServiceProvider.GetRequiredService<IWorkspaceStore>();
-            _profileQueryService =  App.ServiceProvider.GetRequiredService<IProfileQueryService>();
-            _scheduleSyncService = App.ServiceProvider.GetRequiredService<IScheduleSyncService>();
-            _scheduleRegistrationService = App.ServiceProvider.GetRequiredService<IScheduleRegistrationService>();
-            var viewModelFactory = App.ServiceProvider.GetRequiredService<IViewModelFactory>();
+            
             _profileQueryService.ConnectProfiles()
                 .ObserveOn(RxApp.TaskpoolScheduler)
-                .Transform(profile => viewModelFactory.Create<TimetableEditorViewModel,ScheduleProfile>(profile))
+                .Transform(viewModelFactory.Create<TimetableEditorViewModel,ScheduleProfile>)
                 .DisposeMany()
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _bindableTimetableLayouts)
                 .Subscribe()
                 .DisposeWith(_disposables);
+            
             _hasSelectedTimetable = TimetableLayouts.ToObservableChangeSet()
                 .AutoRefresh(x => x.IsSelected)
                 .ToCollection()
@@ -191,7 +205,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 
         private async Task OpenAddCourseDialog()
         {
-            var viewModel = new DialogShellViewModel();
+            var viewModel = _viewModelFactory.Create<DialogShellViewModel>();
             await _dialogHostService.ShowDialogAsync<DialogShellViewModel, Unit>(viewModel,
                 DialogIdentifier.MainLayout);
         }

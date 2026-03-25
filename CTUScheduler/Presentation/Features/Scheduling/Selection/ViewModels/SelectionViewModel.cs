@@ -4,7 +4,6 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels;
-using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels

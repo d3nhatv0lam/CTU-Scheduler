@@ -2,13 +2,10 @@
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels;
-using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 using CTUScheduler.Presentation.Services.Viewport;
 using CTUScheduler.Presentation.Shared.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
@@ -41,9 +38,9 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
         public ReactiveCommand<Unit, Unit> CloseDialogCommand { get; protected set; }
         
 
-        public DialogShellViewModel()
+        public DialogShellViewModel(IViewportService viewportService)
         {
-            _viewportService = App.ServiceProvider.GetRequiredService<IViewportService>();
+            _viewportService = viewportService;
             
             CloseDialogCommand = ReactiveCommand.Create(() => Close())
                 .DisposeWith(_disposables);

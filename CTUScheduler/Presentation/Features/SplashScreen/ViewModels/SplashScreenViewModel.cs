@@ -69,6 +69,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
         _connectivityService = connectivityService;
         _webDriverService = webDriverService;
         _appLifetime = appLifetime;
+        
         _installationViewModel = new InstallationViewModel(_webDriverService.InstallationProgress)
             .DisposeWith(_disposables);
 
