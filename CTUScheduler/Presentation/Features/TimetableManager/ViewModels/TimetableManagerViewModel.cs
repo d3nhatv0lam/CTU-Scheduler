@@ -82,12 +82,13 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             IProfileQueryService profileQueryService,
             IScheduleSyncService scheduleSyncService,
             IScheduleRegistrationService scheduleRegistrationService,
-            IViewModelFactory viewModelFactory)
+            IViewModelFactory viewModelFactory,
+            IDialogHostService dialogHostService,
+            ITimetableDialogService timetableDialogService)
         {
             HostScreen = hostScreen;
-            
-            _dialogHostService = App.ServiceProvider.GetRequiredService<IDialogHostService>();
-            _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
+            _dialogHostService = dialogHostService;
+            _timetableDialogService = timetableDialogService;
             _connectivityService = connectivityService;
             _courseCatalogService = courseCatalogService;
             _userSessionService = userSessionService;
