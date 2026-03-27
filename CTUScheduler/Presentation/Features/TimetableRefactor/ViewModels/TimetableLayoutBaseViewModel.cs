@@ -32,6 +32,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
         get => _name;
         protected set => this.RaiseAndSetIfChanged(ref _name, value);
     }
+
     public int SubjectsCount
     {
         get => _subjectCount;
@@ -111,7 +112,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
             StartPeriod = day.StartPeriod(),
             NumberOfPeriods = day.PeriodCount()
         });
-
+        
         return new TimetableRenderItem(shared, cells);
     }
 
