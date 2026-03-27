@@ -29,10 +29,12 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
             get => _currentStepIndex;
             set => this.RaiseAndSetIfChanged(ref _currentStepIndex, value);
         }
+
         public IStepViewModel CurrentStep => _currentStep.Value;
 
         public string? UrlPathSegment => "Find_Course_Shell";
         public IScreen HostScreen { get; }
+
         public string BtnNextContent
         {
             get => _btnNextContent;
@@ -45,19 +47,18 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
 
         public SchedulingShellViewModel()
         {
-
         }
 
         public SchedulingShellViewModel(IScreen hostScreen, SelectionViewModel.SelectionType selectionType)
         {
             HostScreen = hostScreen;
             InitWizard(selectionType);
-            
+
             _currentStep = this.WhenAnyValue(x => x.CurrentStepIndex)
-                    .Select(index => _stepsVM[index])
-                    .ToProperty(this, nameof(CurrentStep), scheduler: RxApp.MainThreadScheduler)
-                    .DisposeWith(_disposables);
-            
+                .Select(index => _stepsVM[index])
+                .ToProperty(this, nameof(CurrentStep), scheduler: RxApp.MainThreadScheduler)
+                .DisposeWith(_disposables);
+
             CurrentStepIndex = 0;
 
             this.WhenAnyValue(x => x._stepsVM, x => x.CurrentStepIndex)
@@ -66,7 +67,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
                     var (steps, index) = tuple;
                     BtnNextContent = index == steps.Length - 1 ? "Hoàn thành" : "Tiếp theo";
                 });
-            
+
             NavigateBackCommand = ReactiveCommand.Create(NavigateBack).DisposeWith(_disposables);
             var canNavigateNext = this.WhenAnyValue(x => x.CurrentStep)
                 .Select(currentStep =>
@@ -76,10 +77,9 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
                     return Observable.Return(true);
                 })
                 .Switch();
-            NavigateNextCommand = ReactiveCommand.CreateFromTask(async () => await NavigateNext()
-                    ,canNavigateNext)
+            NavigateNextCommand = ReactiveCommand.Create(NavigateNext, canNavigateNext)
                 .DisposeWith(_disposables);
-            
+
             this.WhenActivated((CompositeDisposable disposables) =>
             {
                 Disposable.Create(() =>
@@ -87,14 +87,13 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
                     Dispose();
                     Log.Information("SchedulingShellViewModel: Disposed");
                 }).DisposeWith(disposables);
-               
             });
         }
 
         private void InitWizard(SelectionViewModel.SelectionType selectionType)
         {
-            _stepsVM = selectionType switch 
-            { 
+            _stepsVM = selectionType switch
+            {
                 SelectionViewModel.SelectionType.Manual => CreateManualSteps(),
                 //SelectionViewModel.SelectionType.Quick => new IStepViewModel[] { new QuickSelectionViewModel() },
                 _ => throw new ArgumentOutOfRangeException(nameof(selectionType), selectionType, null)
@@ -107,7 +106,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
             var step2 = new TimetableSchedulerViewModel(step1.CoursesSourceList);
             _disposables.Add(step1);
             _disposables.Add(step2);
-            
+
             IStepViewModel[] steps =
             [
                 step1,
@@ -116,21 +115,20 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
             return steps;
         }
 
-        private async Task NavigateNext()
+        private void NavigateNext()
         {
             // await OnNavigate();
             if (CurrentStepIndex == _stepsVM.Length - 1)
             {
                 if (HostScreen is ICloseableDialog closeableDialog)
                 {
-                    if (CurrentStep is ICleanupAsync cleanupAsync)
-                        await cleanupAsync.CleanupAsync();
+                    if (CurrentStep is ICleanup cleanup)
+                        cleanup.Cleanup();
                     closeableDialog.Close();
                 }
                 else Log.Warning("SchedulingShellViewModel: CurrentStepIndex reach step but can't close dialog");
             }
-            else
-            if (CurrentStepIndex < _stepsVM.Length - 1)
+            else if (CurrentStepIndex < _stepsVM.Length - 1)
             {
                 CurrentStepIndex++;
             }

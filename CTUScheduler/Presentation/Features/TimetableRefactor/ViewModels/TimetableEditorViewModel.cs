@@ -36,7 +36,6 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
     {
         ArgumentNullException.ThrowIfNull(scheduleProfile);
         _scheduleProfile = scheduleProfile;
-
         _courseQueryService = courseQueryService ?? throw new ArgumentNullException(nameof(courseQueryService));
 
         Name = _scheduleProfile.Name;

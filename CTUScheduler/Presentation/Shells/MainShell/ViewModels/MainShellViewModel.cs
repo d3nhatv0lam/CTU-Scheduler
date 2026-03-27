@@ -66,10 +66,13 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 
         }
 
-        public MainShellViewModel(IScreen hostScreen,IMainHomeService mainHomeService, INavigationRegionManager navigationRegionManager)
+        public MainShellViewModel(IScreen hostScreen,
+            IMainHomeService mainHomeService,
+            INavigationRegionManager navigationRegionManager
+            ,IDialogHostService dialogHostService)
         {
             HostScreen = hostScreen;
-            _dialogHostService = App.ServiceProvider.GetRequiredService<IDialogHostService>();
+            _dialogHostService = dialogHostService;
             _mainHomeService = mainHomeService;
             _navigationRegionManager = navigationRegionManager;
 

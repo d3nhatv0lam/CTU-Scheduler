@@ -32,6 +32,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
         get => _name;
         protected set => this.RaiseAndSetIfChanged(ref _name, value);
     }
+
     public int SubjectsCount
     {
         get => _subjectCount;
@@ -65,12 +66,9 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
         get => _isEnabled;
         set => this.RaiseAndSetIfChanged(ref _isEnabled, value);
     }
+    
     public ReactiveCommand<object, Unit> ExportToImageCommand { get; protected set; }
-    public ReactiveCommand<Unit, Unit>? ExportToExcelCommand
-    {
-        get => _exportToExcelCommand;
-        set => this.RaiseAndSetIfChanged(ref _exportToExcelCommand, value);
-    }
+    public ReactiveCommand<Unit, Unit> ExportToExcelCommand { get; protected set; }
 
     // Khai báo biến service
     protected readonly IExcelExporterService ExcelExporter;
@@ -96,8 +94,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
 
             await ExcelExporter.ExportTimetableAsync(blueprint, fullPath);
         }).DisposeWith(Disposables);
-
-        VisualizerVM?.DisposeWith(Disposables);
+        
     }
 
     protected TimetableRenderItem CreateRenderItem(ICourseDisplaySource dataSource)
@@ -115,7 +112,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
             StartPeriod = day.StartPeriod(),
             NumberOfPeriods = day.PeriodCount()
         });
-
+        
         return new TimetableRenderItem(shared, cells);
     }
 
