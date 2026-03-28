@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Base;
+using CTUScheduler.Presentation.Features.Scheduling.Models;
 using CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
@@ -44,6 +45,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
         public ViewModelActivator Activator { get; } = new();
         public ReactiveCommand<Unit, Unit> NavigateNextCommand { get; protected set; }
         public ReactiveCommand<Unit, Unit> NavigateBackCommand { get; protected set; }
+        private readonly SchedulingWizardContext _context = new();
 
         public SchedulingShellViewModel()
         {
@@ -102,8 +104,8 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
 
         private IStepViewModel[] CreateManualSteps()
         {
-            var step1 = new HandmadeFindCourseViewModel();
-            var step2 = new TimetableSchedulerViewModel(step1.CoursesSourceList);
+            var step1 = new HandmadeFindCourseViewModel(_context);
+            var step2 = new TimetableSchedulerViewModel(_context.SelectedCourses);
             _disposables.Add(step1);
             _disposables.Add(step2);
 

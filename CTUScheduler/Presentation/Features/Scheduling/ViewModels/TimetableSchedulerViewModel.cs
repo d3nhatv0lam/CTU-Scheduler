@@ -19,9 +19,7 @@ using CTUScheduler.Presentation.Features.Scheduling.Models;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Services.TimetableDialog;
-using CTUScheduler.Presentation.Shared.Mappers;
 using CTUScheduler.Presentation.Shared.Models;
-using CTUScheduler.Presentation.Shared.Models.Academic;
 using DynamicData;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
@@ -38,7 +36,6 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
     private readonly ITimetableDialogService _timetableDialogService;
     private readonly SchedulingCourseOptionViewModel _schedulingCourseOptionVM;
     private readonly TimetablePaginationViewModel _paginationTimeTableViewModel;
-    private readonly CourseMapper _courseMapper = new();
     private readonly ObservableAsPropertyHelper<string> _limitTimetableSelectedDisplayedHelper;
     private readonly ObservableAsPropertyHelper<bool> _isNextStepEnabled;
 
@@ -60,7 +57,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
     public ReactiveCommand<Unit, Unit> GenerateTimeTableCommand { get; }
     public ReactiveCommand<SelectableTimetableLayout, Unit> ShowTimetableDetailsCommand { get; }
 
-    public TimetableSchedulerViewModel(SourceList<CourseUi> courses)
+    public TimetableSchedulerViewModel(SourceList<SelectedCourseNode> courses)
     {
         _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
         _schedulingCourseOptionVM = new SchedulingCourseOptionViewModel();
@@ -112,7 +109,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
         this.WhenActivated(disposable =>
         {
             courses.Connect()
-                .Transform(courseUi => _courseMapper.ToCourse(courseUi))
+                .Transform(node => node.CoreCourse.WithSections(node.Sections))
                 .Bind(out var courseBindable)
                 .Subscribe(_ => SchedulingCourseOptionVM.MapToSchedulingCourses(courseBindable))
                 .DisposeWith(disposable);
