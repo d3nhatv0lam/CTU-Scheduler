@@ -166,10 +166,10 @@ public static class TimetableExcelBuilder
                     foreach (var day in section.ClassDays)
                     {
                         int colIndex = day.AttendingDay;
-                        int rowIndex = 3 + (day.StartPeriod() - 1) * 2;
-                        if (day.StartPeriod() > 5) rowIndex++;
+                        int rowIndex = 3 + (day.StartPeriod - 1) * 2;
+                        if (day.StartPeriod > 5) rowIndex++;
 
-                        int endRow = rowIndex + (day.PeriodCount() * 2) - 1;
+                        int endRow = rowIndex + (day.PeriodCount * 2) - 1;
 
                         var cell = sheet.Cell(rowIndex, colIndex);
                         cell.Value = $"{course.Name_VN}\n{course.Code} ({section.Group})\nPhòng: {day.Room}";
