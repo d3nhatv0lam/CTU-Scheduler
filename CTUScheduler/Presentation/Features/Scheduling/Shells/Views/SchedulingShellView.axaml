@@ -23,7 +23,7 @@
         <Grid RowDefinitions="* 35">
             <!--// main View //-->
             <rxui:ViewModelViewHost Grid.Row="0"
-                                    ViewModel="{Binding CurrentStep}"
+                                    ViewModel="{Binding CurrentWizardStep}"
                                     x:Name="vmRounter" />
             <!--// Button navigate //-->
             <DockPanel Grid.Row="1" LastChildFill="False">

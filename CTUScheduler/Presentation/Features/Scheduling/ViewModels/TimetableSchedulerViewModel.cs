@@ -19,9 +19,7 @@ using CTUScheduler.Presentation.Features.Scheduling.Models;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Services.TimetableDialog;
-using CTUScheduler.Presentation.Shared.Mappers;
 using CTUScheduler.Presentation.Shared.Models;
-using CTUScheduler.Presentation.Shared.Models.Academic;
 using DynamicData;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
@@ -30,15 +28,13 @@ using CTUScheduler.Infrastructure.Exel;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 
-public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDisposable, IActivatableViewModel,
-    INextStepCondition, ICleanup
+public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposable, IActivatableViewModel, ICleanup, INeedArgs<SchedulingWizardContext>
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
     private readonly IScheduleRegistrationService _scheduleRegistrationService;
     private readonly ITimetableDialogService _timetableDialogService;
     private readonly SchedulingCourseOptionViewModel _schedulingCourseOptionVM;
     private readonly TimetablePaginationViewModel _paginationTimeTableViewModel;
-    private readonly CourseMapper _courseMapper = new();
     private readonly ObservableAsPropertyHelper<string> _limitTimetableSelectedDisplayedHelper;
     private readonly ObservableAsPropertyHelper<bool> _isNextStepEnabled;
 
@@ -60,7 +56,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
     public ReactiveCommand<Unit, Unit> GenerateTimeTableCommand { get; }
     public ReactiveCommand<SelectableTimetableLayout, Unit> ShowTimetableDetailsCommand { get; }
 
-    public TimetableSchedulerViewModel(SourceList<CourseUi> courses)
+    public TimetableSchedulerViewModel(SchedulingWizardContext context)
     {
         _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
         _schedulingCourseOptionVM = new SchedulingCourseOptionViewModel();
@@ -111,8 +107,8 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
 
         this.WhenActivated(disposable =>
         {
-            courses.Connect()
-                .Transform(courseUi => _courseMapper.ToCourse(courseUi))
+            context.SelectedCourses.Connect()
+                .Transform(node => node.CoreCourse.WithSections(node.Sections))
                 .Bind(out var courseBindable)
                 .Subscribe(_ => SchedulingCourseOptionVM.MapToSchedulingCourses(courseBindable))
                 .DisposeWith(disposable);

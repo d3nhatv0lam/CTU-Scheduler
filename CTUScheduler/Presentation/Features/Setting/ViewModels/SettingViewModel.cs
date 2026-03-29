@@ -4,7 +4,7 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Setting.ViewModels
 {
-    public class SettingViewModel: ViewModelBase, IRoutableViewModel, INeedArgs<IScreen>
+    public class SettingViewModel: ViewModelBase, IRoutableViewModel
     {
         public string? UrlPathSegment => "SettingViewModel";
         public IScreen HostScreen { get; }

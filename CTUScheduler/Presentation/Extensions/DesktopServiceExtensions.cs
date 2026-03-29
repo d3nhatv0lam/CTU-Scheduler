@@ -1,4 +1,5 @@
-﻿using CTUScheduler.Presentation.Features.SplashScreen.Views;
+﻿using CTUScheduler.Presentation.Features.Scheduling.Models;
+using CTUScheduler.Presentation.Features.SplashScreen.Views;
 using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.Factories;
 using CTUScheduler.Presentation.Services.Navigation;
@@ -55,6 +56,9 @@ public static class DesktopServiceExtensions
         services.AddSingleton<ITimetableDialogService, TimetableDialogService>();
         
 
+        // selection strategy
+        services.AddTransient<ManualSchedulingStrategy>();
+        services.AddTransient<QuickSchedulingStrategy>();
         
         
         // SplashScreenWindow: Cần khởi tạo ToplevelService

@@ -4,8 +4,10 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels;
+using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.Viewport;
 using CTUScheduler.Presentation.Shared.Interfaces;
+using CTUScheduler.Presentation.Shared.Models.Regions;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
@@ -13,6 +15,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
     public class DialogShellViewModel: ViewModelBase, IScreen, IDisposable, ICloseableDialog
     {
         private readonly IViewportService _viewportService;
+        private readonly INavigationRegionManager _navigationRegionManager;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private double _height;
         private double _width;
@@ -38,9 +41,13 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
         public ReactiveCommand<Unit, Unit> CloseDialogCommand { get; protected set; }
         
 
-        public DialogShellViewModel(IViewportService viewportService)
+        public DialogShellViewModel(IViewportService viewportService, INavigationRegionManager navigationRegionManager)
         {
             _viewportService = viewportService;
+            _navigationRegionManager = navigationRegionManager;
+
+            _navigationRegionManager.Register(RegionIds.Scheduling, this)
+                .DisposeWith(_disposables);
             
             CloseDialogCommand = ReactiveCommand.Create(() => Close())
                 .DisposeWith(_disposables);
@@ -50,8 +57,8 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
                     Height = size.Height;
                     Width = size.Width;
                 }) .DisposeWith(_disposables);
-            
-            Router.Navigate.Execute(new SelectionViewModel(this));
+
+            _navigationRegionManager.NavigateTo<SelectionViewModel>(RegionIds.Scheduling);
         }
         
         public void Dispose()

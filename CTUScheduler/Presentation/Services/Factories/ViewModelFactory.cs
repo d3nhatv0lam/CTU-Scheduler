@@ -58,6 +58,32 @@ public class ViewModelFactory : IViewModelFactory
         
         return (IViewModel)_sp.GetRequiredService(vmType);
     }
+    
+    public IViewModel Create(Type vmType, params object[] inputs)
+    {
+        EnsureIsViewModel(vmType);
+        
+        var requiredArgsType = _cache.GetOrAdd(vmType, type =>
+            type.GetInterfaces()
+                .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(INeedArgs<>))
+                ?.GetGenericArguments()[0]
+        );
+
+        if (requiredArgsType is not null)
+        {
+          
+            bool hasRequiredArg = inputs.Any(x => x != null && requiredArgsType.IsInstanceOfType(x));
+
+            if (!hasRequiredArg)
+            {
+                throw new InvalidOperationException(
+                    $"ViewModel '{vmType.Name}' yêu cầu tham số nghiệp vụ kiểu '{requiredArgsType.Name}', " +
+                    "nhưng bạn chưa truyền nó vào lệnh Navigate.");
+            }
+        }
+        
+        return (IViewModel)ActivatorUtilities.CreateInstance(_sp, vmType, inputs);
+    }
 
 
     private void EnsureIsViewModel(Type type)
