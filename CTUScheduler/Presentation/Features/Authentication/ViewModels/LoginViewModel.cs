@@ -22,7 +22,7 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
 {
-    public class LoginViewModel : ViewModelBase, IDisposable, IRoutableViewModel, INeedArgs<IScreen>
+    public class LoginViewModel : ViewModelBase, IDisposable, IRoutableViewModel
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly ILoginService _loginService;

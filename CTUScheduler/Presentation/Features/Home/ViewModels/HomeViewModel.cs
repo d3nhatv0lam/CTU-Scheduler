@@ -16,8 +16,7 @@ using Serilog;
 
 namespace CTUScheduler.Presentation.Features.Home.ViewModels
 {
-    public class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivatableViewModel, IDisposable,
-        INeedArgs<IScreen>
+    public class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivatableViewModel, IDisposable
     {
         private readonly CompositeDisposable _disposable = new CompositeDisposable();
         private readonly IUserSessionService _userSessionService;

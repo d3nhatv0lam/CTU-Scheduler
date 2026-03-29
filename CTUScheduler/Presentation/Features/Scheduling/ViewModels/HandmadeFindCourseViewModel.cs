@@ -20,7 +20,7 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
 {
-    public class HandmadeFindCourseViewModel : ViewModelBase, IDisposable, IStepViewModel,
+    public class HandmadeFindCourseViewModel : ViewModelBase, IDisposable, IWizardStep,
         INeedArgs<SchedulingWizardContext>
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();

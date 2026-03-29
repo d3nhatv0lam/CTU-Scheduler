@@ -32,7 +32,7 @@ using System.Linq;
 
 namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 {
-    public class TimetableManagerViewModel : ViewModelBase, IRoutableViewModel, IDisposable, INeedArgs<IScreen>
+    public class TimetableManagerViewModel : ViewModelBase, IRoutableViewModel, IDisposable
     {
         private readonly CompositeDisposable _disposables = new ();
         private readonly IDialogHostService _dialogHostService;

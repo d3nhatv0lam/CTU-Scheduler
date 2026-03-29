@@ -28,8 +28,7 @@ using CTUScheduler.Infrastructure.Exel;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 
-public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDisposable, IActivatableViewModel,
-    INextStepCondition, ICleanup
+public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposable, IActivatableViewModel, ICleanup, INeedArgs<SchedulingWizardContext>
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
     private readonly IScheduleRegistrationService _scheduleRegistrationService;
@@ -57,7 +56,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
     public ReactiveCommand<Unit, Unit> GenerateTimeTableCommand { get; }
     public ReactiveCommand<SelectableTimetableLayout, Unit> ShowTimetableDetailsCommand { get; }
 
-    public TimetableSchedulerViewModel(SourceList<SelectedCourseNode> courses)
+    public TimetableSchedulerViewModel(SchedulingWizardContext context)
     {
         _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
         _schedulingCourseOptionVM = new SchedulingCourseOptionViewModel();
@@ -108,7 +107,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IStepViewModel, IDispo
 
         this.WhenActivated(disposable =>
         {
-            courses.Connect()
+            context.SelectedCourses.Connect()
                 .Transform(node => node.CoreCourse.WithSections(node.Sections))
                 .Bind(out var courseBindable)
                 .Subscribe(_ => SchedulingCourseOptionVM.MapToSchedulingCourses(courseBindable))
