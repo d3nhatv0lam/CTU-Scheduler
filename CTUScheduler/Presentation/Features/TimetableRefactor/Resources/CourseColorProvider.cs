@@ -7,7 +7,7 @@ namespace CTUScheduler.Presentation.Features.TimetableRefactor.Resources;
 
 public class CourseColorProvider
 {
-    private static readonly Lazy<IReadOnlyList<IBrush>> _palette = new(() =>
+    private static readonly Lazy<IReadOnlyList<IBrush>> Palette = new(() =>
     [
         new ImmutableSolidColorBrush(Color.Parse("#ffd1dc")), 
         new ImmutableSolidColorBrush(Color.Parse("#add8e6")), 
@@ -27,7 +27,7 @@ public class CourseColorProvider
     public IBrush GetColorForCourse(string courseCode)
     {
         if (_assignedColors.TryGetValue(courseCode, out var color)) return color;
-        var palette = _palette.Value;
+        var palette = Palette.Value;
         int nextIndex = _assignedColors.Count % palette.Count;
         var newColor = palette[nextIndex];
         _assignedColors[courseCode] = newColor;

@@ -2,10 +2,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
-using System.Threading.Tasks;
 using CTUScheduler.Presentation.Services.Factories;
 using CTUScheduler.Presentation.Services.Navigation.Models;
-using CTUScheduler.Presentation.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 
