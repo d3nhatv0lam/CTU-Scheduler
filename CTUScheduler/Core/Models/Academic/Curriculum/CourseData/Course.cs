@@ -11,14 +11,16 @@ public class Course
     public int TheorySessions { get; set; }
     public int PracticalSessions { get; set; }
     public List<CourseSection> Sections { get; set; } = new();
-    
+
     /// <summary>
     /// Create a new course with a single filled section (Optimized overload)
     /// </summary>
+    /// <param name="section">Section from this course</param>
+    /// <returns>New course with sections</returns>
+    /// <exception cref="ArgumentException">Section is null or Section not from this Course</exception>
     public Course WithSection(CourseSection section)
     {
-        if (section is null) 
-            throw new ArgumentNullException(nameof(section));
+        ArgumentNullException.ThrowIfNull(section);
 
         if (section.Code != this.Code)
         {
@@ -27,11 +29,12 @@ public class Course
                 $"but found section from course {section.Code}"
             );
         }
+
         var newCourse = (Course)this.MemberwiseClone();
         newCourse.Sections = new List<CourseSection>(1) { section };
         return newCourse;
     }
-    
+
     /// <summary>
     ///  Create a new course with filled sections
     /// </summary>
@@ -40,7 +43,8 @@ public class Course
     /// <exception cref="ArgumentException">Section is null or Section not from this Course</exception>
     public Course WithSections(IReadOnlyList<CourseSection> sections)
     {
-        if (sections is null) throw new ArgumentNullException(nameof(sections));
+        ArgumentNullException.ThrowIfNull(sections);
+
         foreach (var section in sections)
         {
             if (section.Code != this.Code)
@@ -48,7 +52,10 @@ public class Course
         }
 
         var newCourse = (Course)this.MemberwiseClone();
-        newCourse.Sections = new List<CourseSection>(sections);
+
+        newCourse.Sections = new List<CourseSection>(sections.Count);
+        newCourse.Sections.AddRange(sections);
+
         return newCourse;
     }
 }
