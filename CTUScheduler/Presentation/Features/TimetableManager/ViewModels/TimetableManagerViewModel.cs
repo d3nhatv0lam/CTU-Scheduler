@@ -24,13 +24,15 @@ using CTUScheduler.Presentation.Services.Factories;
 using CTUScheduler.Presentation.Services.TimetableDialog;
 using DynamicData;
 using DynamicData.Aggregation;
+using DynamicData.Binding;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
+using System.Linq;
 
 namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 {
-    public class TimetableManagerViewModel : ViewModelBase, IRoutableViewModel, IDisposable, INeedArgs<IScreen>
+    public class TimetableManagerViewModel : ViewModelBase, IRoutableViewModel, IDisposable
     {
         private readonly CompositeDisposable _disposables = new ();
         private readonly IDialogHostService _dialogHostService;
@@ -39,7 +41,10 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly ICourseCatalogService _courseCatalogService;
         private readonly IProfileQueryService _profileQueryService;
         private readonly IScheduleSyncService _scheduleSyncService;
-        
+        private readonly IScheduleRegistrationService _scheduleRegistrationService;
+        private readonly IUserSessionService _userSessionService;
+        private readonly IWorkspaceStore _workspaceStore;
+        private readonly IViewModelFactory _viewModelFactory;
 
         private readonly ReadOnlyObservableCollection<TimetableEditorViewModel> _bindableTimetableLayouts =
             ReadOnlyObservableCollection<TimetableEditorViewModel>.Empty;
@@ -48,6 +53,8 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly ObservableAsPropertyHelper<bool> _isEmptyTimetableLayouts;
         private readonly ObservableAsPropertyHelper<bool> _isExpiredSaved;
         private readonly ObservableAsPropertyHelper<string> _lastSavedText;
+        private readonly ObservableAsPropertyHelper<bool> _hasSelectedTimetable;
+        public bool HasSelectedTimetable => _hasSelectedTimetable.Value;
         public string? UrlPathSegment => "TimetableManagerViewModel";
         public IScreen HostScreen { get; }
         public ReadOnlyObservableCollection<TimetableEditorViewModel> TimetableLayouts => _bindableTimetableLayouts;
@@ -60,31 +67,53 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         public ReactiveCommand<IReadOnlyList<IStorageFile>, Unit> LoadScheduleCommand { get; }
         public ReactiveCommand<IStorageFile, Unit> SaveScheduleCommand { get; }
         public ReactiveCommand<Unit, Unit> ReloadAllTimetableCommand { get; }
+
+        public ReactiveCommand<Unit, Unit> DeleteSelectedTimetablesCommand { get;}
         public ReactiveCommand<TimetableLayoutBaseViewModel, Unit> ShowTimetableDetailsCommand { get; }
         
         
 
-        public TimetableManagerViewModel(IScreen hostScreen)
+        public TimetableManagerViewModel(
+            IScreen hostScreen,
+            IConnectivityService connectivityService,
+            ICourseCatalogService courseCatalogService,
+            IUserSessionService userSessionService,
+            IWorkspaceStore workspaceStore,
+            IProfileQueryService profileQueryService,
+            IScheduleSyncService scheduleSyncService,
+            IScheduleRegistrationService scheduleRegistrationService,
+            IViewModelFactory viewModelFactory,
+            IDialogHostService dialogHostService,
+            ITimetableDialogService timetableDialogService)
         {
             HostScreen = hostScreen;
-            _dialogHostService = App.ServiceProvider.GetRequiredService<IDialogHostService>();
-            _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
-            _connectivityService = App.ServiceProvider.GetRequiredService<IConnectivityService>();
-            _courseCatalogService = App.ServiceProvider.GetRequiredService<ICourseCatalogService>();
+            _dialogHostService = dialogHostService;
+            _timetableDialogService = timetableDialogService;
+            _connectivityService = connectivityService;
+            _courseCatalogService = courseCatalogService;
+            _userSessionService = userSessionService;
+            _workspaceStore = workspaceStore;
+            _profileQueryService =  profileQueryService;
+            _scheduleSyncService = scheduleSyncService;
+            _scheduleRegistrationService = scheduleRegistrationService;
+            _viewModelFactory = viewModelFactory;
             
-            var userSessionService = App.ServiceProvider.GetRequiredService<IUserSessionService>();
-            var workspaceStore = App.ServiceProvider.GetRequiredService<IWorkspaceStore>();
-            _profileQueryService =  App.ServiceProvider.GetRequiredService<IProfileQueryService>();
-            _scheduleSyncService = App.ServiceProvider.GetRequiredService<IScheduleSyncService>();
             
-            var viewModelFactory = App.ServiceProvider.GetRequiredService<IViewModelFactory>();
             _profileQueryService.ConnectProfiles()
                 .ObserveOn(RxApp.TaskpoolScheduler)
-                .Transform(profile => viewModelFactory.Create<TimetableEditorViewModel,ScheduleProfile>(profile))
+                .Transform(viewModelFactory.Create<TimetableEditorViewModel,ScheduleProfile>)
                 .DisposeMany()
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _bindableTimetableLayouts)
                 .Subscribe()
+                .DisposeWith(_disposables);
+            
+            _hasSelectedTimetable = TimetableLayouts.ToObservableChangeSet()
+                .AutoRefresh(x => x.IsSelected)
+                .ToCollection()
+                .Select(items => items.Any(x => x.IsSelected))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .ToProperty(this, nameof(HasSelectedTimetable))
                 .DisposeWith(_disposables);
             
             _timetableLayoutsCount = _profileQueryService.ConnectProfiles()
@@ -128,6 +157,14 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 if (IsEmptyTimetableLayouts) return;
                 await _scheduleSyncService.RefreshCoursesAsync();
             },canReloadAllTimetable).DisposeWith(_disposables);
+            
+            DeleteSelectedTimetablesCommand = ReactiveCommand.Create(() =>
+            {
+                foreach (var timetable in TimetableLayouts.Where(x => x.IsSelected)){
+                    _scheduleRegistrationService.UnregisterProfile(timetable.ScheduleProfile);
+                }
+            }, this.WhenAnyValue(x => x.HasSelectedTimetable))
+            .DisposeWith(_disposables);
 
             ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<TimetableLayoutBaseViewModel>(async
                     timetableLayoutViewModel =>
@@ -169,7 +206,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 
         private async Task OpenAddCourseDialog()
         {
-            var viewModel = new DialogShellViewModel();
+            var viewModel = _viewModelFactory.Create<DialogShellViewModel>();
             await _dialogHostService.ShowDialogAsync<DialogShellViewModel, Unit>(viewModel,
                 DialogIdentifier.MainLayout);
         }

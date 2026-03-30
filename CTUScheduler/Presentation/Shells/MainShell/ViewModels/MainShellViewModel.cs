@@ -7,7 +7,6 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Interfaces;
-using CTUScheduler.Infrastructure.Services.MainHomeService;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Features.Home.ViewModels;
@@ -18,13 +17,11 @@ using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Shared.Models.Regions;
 using CTUScheduler.Presentation.Shells.MainShell.Models;
 using Material.Icons;
-using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
-using DialogOptions = CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs.DialogOptions;
 
 namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 {
-    public class MainShellViewModel: ViewModelBase, IScreen , IRoutableViewModel, IDisposable, INeedArgs<IScreen>
+    public class MainShellViewModel: ViewModelBase, IScreen , IRoutableViewModel, IDisposable
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly IDialogHostService _dialogHostService;
@@ -66,10 +63,13 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 
         }
 
-        public MainShellViewModel(IScreen hostScreen,IMainHomeService mainHomeService, INavigationRegionManager navigationRegionManager)
+        public MainShellViewModel(IScreen hostScreen,
+            IMainHomeService mainHomeService,
+            INavigationRegionManager navigationRegionManager
+            ,IDialogHostService dialogHostService)
         {
             HostScreen = hostScreen;
-            _dialogHostService = App.ServiceProvider.GetRequiredService<IDialogHostService>();
+            _dialogHostService = dialogHostService;
             _mainHomeService = mainHomeService;
             _navigationRegionManager = navigationRegionManager;
 

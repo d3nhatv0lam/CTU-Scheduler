@@ -10,7 +10,7 @@ namespace CTUScheduler.Presentation.Features.SplashScreen.Components.Installatio
 
 public class InstallationViewModel : ViewModelBase, IDisposable
 {
-    private readonly CompositeDisposable _disposables = new();
+    private readonly IDisposable _subcription;
     
     private string _consoleLog = "> Khởi tạo môi trường...\n";
 
@@ -33,13 +33,12 @@ public class InstallationViewModel : ViewModelBase, IDisposable
 
     public InstallationViewModel(IObservable<string> consoleLogObservable)
     {
-        consoleLogObservable
+        _subcription = consoleLogObservable
             .Buffer(TimeSpan.FromMilliseconds(50))
             .Where(x => x.Count > 0)
             .Select(x => string.Concat(x))
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(ProcessLogChunk)
-            .DisposeWith(_disposables);
+            .Subscribe(ProcessLogChunk);
     }
 
     private void ProcessLogChunk(string chunk)
@@ -158,6 +157,6 @@ public class InstallationViewModel : ViewModelBase, IDisposable
 
     public void Dispose()
     {
-        _disposables.Dispose();
+        _subcription.Dispose();
     }
 }

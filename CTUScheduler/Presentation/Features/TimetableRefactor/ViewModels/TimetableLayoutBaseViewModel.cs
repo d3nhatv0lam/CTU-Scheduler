@@ -5,6 +5,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Infrastructure.Exel;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
@@ -13,7 +14,7 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
-public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable, IActivatableViewModel
+public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
 {
     protected readonly CompositeDisposable Disposables = new();
     private readonly CourseColorProvider _colorProvider = new();
@@ -23,6 +24,9 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable,
     private DateTimeOffset _lastUpdated = DateTimeOffset.Now;
     private TimetableViewModel _visualizerVM;
 
+    private bool _isSelected;
+    private bool _isEnabled = true;
+    private ReactiveCommand<Unit, Unit>? _exportToExcelCommand;
     public string Name
     {
         get => _name;
@@ -34,7 +38,6 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable,
         get => _subjectCount;
         protected set => this.RaiseAndSetIfChanged(ref _subjectCount, value);
     }
-
     public int TotalCredits
     {
         get => _totalCredits;
@@ -46,25 +49,51 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable,
         get => _lastUpdated;
         protected set => this.RaiseAndSetIfChanged(ref _lastUpdated, value);
     }
-
     public TimetableViewModel VisualizerVM
     {
         get => _visualizerVM;
         protected set => this.RaiseAndSetIfChanged(ref _visualizerVM, value);
     }
 
-    public ViewModelActivator Activator { get; } = new();
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => this.RaiseAndSetIfChanged(ref _isSelected, value);
+    }
 
+    public bool IsEnabled
+    {
+        get => _isEnabled;
+        set => this.RaiseAndSetIfChanged(ref _isEnabled, value);
+    }
+    
     public ReactiveCommand<object, Unit> ExportToImageCommand { get; protected set; }
     public ReactiveCommand<Unit, Unit> ExportToExcelCommand { get; protected set; }
 
-    protected TimetableLayoutBaseViewModel()
-    {
-        ExportToImageCommand = ReactiveCommand.CreateFromTask<object>(async (view) => { })
-            .DisposeWith(Disposables);
+    // Khai báo biến service
+    protected readonly IExcelExporterService ExcelExporter;
 
-        ExportToExcelCommand = ReactiveCommand.CreateFromTask(async () => { })
-            .DisposeWith(Disposables);
+    public TimetableLayoutBaseViewModel(IExcelExporterService excelExporter)
+    {
+        ExcelExporter = excelExporter ?? throw new ArgumentNullException(nameof(excelExporter));
+
+        ExportToImageCommand = ReactiveCommand.CreateFromTask<object>(async (view) =>
+        {
+            System.Diagnostics.Debug.WriteLine("DEBUG: Lệnh rỗng");
+        }).DisposeWith(Disposables);
+
+        ExportToExcelCommand = ReactiveCommand.CreateFromTask(async () =>
+        {
+            var blueprint = ToScheduleBlueprint();
+            if (!blueprint.IsConsistent) return;
+
+            var safeName = string.IsNullOrWhiteSpace(this.Name) ? "TKB" : this.Name.Trim();
+            string fileName = $"{safeName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            string fullPath = System.IO.Path.Combine(desktopPath, fileName);
+
+            await ExcelExporter.ExportTimetableAsync(blueprint, fullPath);
+        }).DisposeWith(Disposables);
         
     }
 
@@ -88,6 +117,6 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable,
     }
 
     public abstract ScheduleBlueprint ToScheduleBlueprint();
-    
+
     public virtual void Dispose() => Disposables.Dispose();
 }
