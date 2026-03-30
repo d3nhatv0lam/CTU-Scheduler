@@ -39,7 +39,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels
             ManualSelectionCommand = ReactiveCommand.Create(() => NavigateToSelection(_manualStrategy)).DisposeWith(_disposables);
             
             var disabledQuickSelection = Observable.Return(false);
-            QuickSelectionCommand = ReactiveCommand.Create(() => NavigateToSelection(_quickStrategy),disabledQuickSelection).DisposeWith(_disposables);
+            // QuickSelectionCommand = ReactiveCommand.Create(() => NavigateToSelection(_quickStrategy),disabledQuickSelection).DisposeWith(_disposables);
         }
 
         private void NavigateToSelection(SchedulingStrategy strategy)

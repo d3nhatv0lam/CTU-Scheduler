@@ -74,7 +74,7 @@
 			<TextBlock Classes="Text" Text="Chọn các thời khóa biểu bạn muốn"/>
 			
 			<Border Padding="10">
-				<Button Content="Chọn"/>
+				<Button Content="Chọn" Command="{Binding QuickSelectionCommand}"/>
 			</Border> 
 		</StackPanel>
 	</Grid>

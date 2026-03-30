@@ -32,7 +32,7 @@
 			<RowDefinition Height="*" MinHeight="350"/>
 		</Grid.RowDefinitions>
 		<!--// Top - Title //-->
-		<Border Padding="15">
+		<Border>
 				<Border.Styles>
 					<Style Selector="TextBlock.Title">
 						<Setter Property="VerticalAlignment" Value="Center"/>

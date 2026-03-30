@@ -257,7 +257,7 @@
                             </Grid>
                         </Border>
                         <!--// Navigation content //-->
-                        <rxui:RoutedViewHost Grid.Row="1" x:Name="PageRounter" Router="{Binding Router}" />
+                        <Border  Grid.Row="1" Padding="16"><rxui:RoutedViewHost x:Name="PageRounter" Router="{Binding Router}" /></Border>
                     </Grid>
                 </Border>
             </Grid>

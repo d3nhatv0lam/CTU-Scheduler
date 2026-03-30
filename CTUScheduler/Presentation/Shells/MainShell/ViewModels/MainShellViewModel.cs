@@ -89,7 +89,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             {
                 new NavigationItem("Trang chủ",MaterialIconKind.HomeOutline,typeof(HomeViewModel)),
                 new NavigationItem("Học phần", MaterialIconKind.TableCog,typeof(TimetableManagerViewModel)),
-                new NavigationItem("Cài đặt", MaterialIconKind.CogOutline,typeof(SettingViewModel))
+                // new NavigationItem("Cài đặt", MaterialIconKind.CogOutline,typeof(SettingViewModel))
             };
 
             this.WhenAnyValue(x => x.SelectedItem)
