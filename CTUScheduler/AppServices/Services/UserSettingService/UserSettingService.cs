@@ -6,8 +6,9 @@ using CTUScheduler.Core.Models.Settings;
 
 namespace CTUScheduler.AppServices.Services.UserSettingService;
 
-public class UserSettingService: IUserSettingService
+public class UserSettingService: IUserSettingService, IDisposable
 {
+    private readonly IDisposable _saveSubscription;
     private readonly BehaviorSubject<UserSettings> _settingsSubject;
     
     public UserSettingService(AppState appState)
@@ -34,5 +35,11 @@ public class UserSettingService: IUserSettingService
     {
         ArgumentNullException.ThrowIfNull(updater);
         _settingsSubject.OnNext(updater(_settingsSubject.Value));
+    }
+
+    public void Dispose()
+    {
+        _settingsSubject.Dispose();
+        _saveSubscription.Dispose();
     }
 }

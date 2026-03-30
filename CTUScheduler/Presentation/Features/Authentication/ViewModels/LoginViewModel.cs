@@ -105,7 +105,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         private void SaveSignInData()
         {
             var pwd = AppDomain.CurrentDomain.BaseDirectory;
-            string path = string.Concat(pwd, "/", AppConstants.Files.UserConfig);
+            string path = string.Concat(pwd, "/", AppConstants.Files.UserSettings);
             using (FileStream fs = new FileStream(path, FileMode.Create))
             using (BinaryWriter writer = new BinaryWriter(fs))
             {
@@ -117,7 +117,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         private void LoadSignInData()
         {
             var pwd = AppDomain.CurrentDomain.BaseDirectory;
-            string path = string.Concat(pwd, "/", AppConstants.Files.UserConfig);
+            string path = string.Concat(pwd, "/", AppConstants.Files.UserSettings);
             if (!File.Exists(path))
                 return;
             using (FileStream fs = new FileStream(path, FileMode.Open))
