@@ -1,5 +1,0 @@
- 
-Tiêu đề: "Validation request"  
-ảnh captcha: img[src*='captcha']
-ô điền thông tin: input[name='captcha_resp_txt']
-ô submit: "form[name='input'] input[type='submit']"
