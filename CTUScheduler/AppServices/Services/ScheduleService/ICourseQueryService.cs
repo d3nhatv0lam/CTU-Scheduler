@@ -10,4 +10,5 @@ public interface ICourseQueryService
 {
     IObservable<IChangeSet<RuntimeCourse, string>> ConnectCourses();
     IEnumerable<Course> GetCoursesSnapshot();
+    Course? GetCourseSnapshot(string courseCode);
 }
