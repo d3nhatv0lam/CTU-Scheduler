@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/Tests/" />
+  <Project Path="CTUScheduler.Desktop/CTUScheduler.Desktop.csproj" />
+  <Project Path="CTUScheduler/CTUScheduler.csproj" />
+</Solution>
