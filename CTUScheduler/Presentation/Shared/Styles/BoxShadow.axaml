@@ -1,0 +1,19 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:assists="using:CTUScheduler.Presentation.Shared.Styles.Assists">
+
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <Border Classes="ShadowCard" Width="100" Height="100" />
+        </Border>
+    </Design.PreviewWith>
+
+    <Style Selector="Border.ShadowCard">
+        <Setter Property="assists:ShadowAssist.ShadowDepth" Value="Depth1"/>
+    </Style>
+
+    <Style Selector="Border.ShadowCard:pointerover">
+        <Setter Property="assists:ShadowAssist.ShadowDepth" Value="Depth3"/>
+    </Style>
+
+</Styles>

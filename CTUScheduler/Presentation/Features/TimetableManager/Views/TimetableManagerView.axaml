@@ -141,55 +141,9 @@
                             </Style>
 
                             <!--// fake radio button //-->
-                            <Style Selector="ListBox.RadioGroup">
-                                <Setter Property="ItemsPanel">
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal" />
-                                    </ItemsPanelTemplate>
-                                </Setter>
-                                <Setter Property="Background" Value="Transparent" />
-                                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
-                                <!--  SelectionMode determines the selection mode, Single allow single selection  -->
-                                <Setter Property="SelectionMode" Value="Single" />
-                            </Style>
-                            <!--  UniformSize make all items be same size  -->
-                            <Style Selector="ListBox.RadioGroup.UniformSize">
-                                <Setter Property="ItemsPanel">
-                                    <ItemsPanelTemplate>
-                                        <UniformGrid Rows="1" />
-                                    </ItemsPanelTemplate>
-                                </Setter>
-                            </Style>
-                            <Style Selector="ListBox.RadioGroup > ListBoxItem">
-                                <Setter Property="Template">
-                                    <ControlTemplate TargetType="ListBoxItem">
-                                        <ToggleButton HorizontalAlignment="Stretch"
-                                                      VerticalAlignment="Stretch"
-                                                      HorizontalContentAlignment="Center"
-                                                      Padding="4"
-                                                      Content="{TemplateBinding Content}"
-                                                      ContentTemplate="{TemplateBinding ContentTemplate}"
-                                                      IsChecked="{TemplateBinding IsSelected,
-                                                        Mode=TwoWay}"
-                                                      IsHitTestVisible="{Binding !IsChecked,
-                                                        RelativeSource={RelativeSource Self}}" />
-                                        <!--  IsHitTestVisible Binding to reverse IsChecked make it cannot uncheck, if you need uncheck then remove it  -->
-                                    </ControlTemplate>
-                                </Setter>
-                            </Style>
 
-                            <Style Selector="ListBox.RadioGroup > ListBoxItem /template/ ToggleButton">
-                                <Setter Property="BorderThickness" Value="1" />
-                                <Setter Property="CornerRadius" Value="0" />
-                            </Style>
-                            <Style Selector="ListBox.RadioGroup > ListBoxItem:nth-child(1) /template/ ToggleButton">
-                                <Setter Property="CornerRadius" Value="3,0,0,3" />
-                            </Style>
-                            <Style
-                                Selector="ListBox.RadioGroup > ListBoxItem:nth-last-child(1) /template/ ToggleButton">
-                                <Setter Property="CornerRadius" Value="0,3,3,0" />
-                            </Style>
-                        </DockPanel.Styles>
+                            <!--  UniformSize make all items be same size  -->
+                            </DockPanel.Styles>
 
                         <!--// add schedule tables //-->
                         <Button DockPanel.Dock="Left"
@@ -225,19 +179,6 @@
                                    Text="{Binding TimetableLayoutsCount
                                    ,Mode=OneWay
                                    ,StringFormat={}{0} Thời khóa biểu}" />
-
-
-                        <!--// list //-->
-                        <ListBox Classes="RadioGroup" Height="30" DockPanel.Dock="Right">
-                            <ListBox.Items>
-                                <ListBoxItem>
-                                    <materialIcons:MaterialIcon Kind="FormatListText" Height="20" Width="20" />
-                                </ListBoxItem>
-                                <ListBoxItem>
-                                    <materialIcons:MaterialIcon Kind="ViewGridOutline" Height="20" Width="20" />
-                                </ListBoxItem>
-                            </ListBox.Items>
-                        </ListBox>
                     </DockPanel>
 
                     <!--// Schedule area //-->

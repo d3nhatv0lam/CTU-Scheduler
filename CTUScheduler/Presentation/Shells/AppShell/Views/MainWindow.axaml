@@ -36,8 +36,8 @@
                 Theme="{StaticResource BorderlessIconButton}"
                 Classes="Tertiary"
                 Icon="{StaticResource SemiIconGithubLogo}" />
-            <u:ThemeToggleButton
-                Mode="Controller" />
+            <!-- <u:ThemeToggleButton -->
+            <!--     Mode="Controller" /> -->
         </StackPanel>
     </u:ReactiveUrsaWindow.RightContent>
 
