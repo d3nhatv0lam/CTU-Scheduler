@@ -19,22 +19,26 @@ public class TimetablePreviewViewModel : TimetableLayoutBaseViewModel
     public TimetablePreviewViewModel(IEnumerable<SectionChoice> choices, IExcelExporterService excelExporter)
         : base(excelExporter)
     {
-
-        if (choices is null) return;
-
+        if (choices is null) 
+        {
+            SubjectsCount = 0;
+            TotalCredits = 0;
+            return;
+        }
         _choices.AddRange(choices);
 
         var sourceList = new SourceList<TimetableRenderItem>()
             .DisposeWith(Disposables);
-
-        foreach (var choice in _choices)
+        
+        var items = _choices.Select(choice =>
         {
             var adapter = new StaticCourseAdapter(choice.Course, choice.Section);
-            var item = CreateRenderItem(adapter);
-            sourceList.Add(item);
-        }
-
-        VisualizerVM = new TimetableViewModel(sourceList.Connect())
+            return CreateRenderItem(adapter);
+        }).ToList();
+        
+        sourceList.AddRange(items);
+        
+        VisualizerVM = new TimetableViewModel(sourceList)
             .DisposeWith(Disposables);
 
         SubjectsCount = sourceList.Count;
@@ -54,7 +58,6 @@ public class TimetablePreviewViewModel : TimetableLayoutBaseViewModel
         }
         var profile = new ScheduleProfile()
         {
-            Id = Guid.NewGuid(),
             Name = this.Name,
             SavedCourseGroupKeys = groupKeys,
             LastUpdated = this.LastUpdated
