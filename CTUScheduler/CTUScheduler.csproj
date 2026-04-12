@@ -139,4 +139,8 @@
     <AdditionalFiles Include="Presentation\Shared\Styles\Controls.axaml" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Infrastructure\DriverCore\Refactor\Page\factory\" />
+  </ItemGroup>
+
 </Project>

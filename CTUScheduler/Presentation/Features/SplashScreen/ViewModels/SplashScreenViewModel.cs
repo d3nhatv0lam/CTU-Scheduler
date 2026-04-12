@@ -26,6 +26,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     private readonly CompositeDisposable _disposables = new();
     private readonly IConnectivityService _connectivityService;
     private readonly IWebDriverService _webDriverService;
+    private readonly Infrastructure.DriverCore.Refactor.IWebDriverService _webDriverServiceRefactor;
     private readonly IApplicationLifetime _appLifetime;
     private readonly CancellationTokenSource _localCts = new();
     
@@ -64,11 +65,15 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     public SplashScreenViewModel(
         IConnectivityService connectivityService,
         IWebDriverService webDriverService,
+        Infrastructure.DriverCore.Refactor.IWebDriverService webDriverServiceRefactor,
         IApplicationLifetime appLifetime)
     {
         _connectivityService = connectivityService;
         _webDriverService = webDriverService;
+        _webDriverServiceRefactor = webDriverServiceRefactor;
+        
         _appLifetime = appLifetime;
+        
         
         _installationViewModel = new InstallationViewModel(_webDriverService.InstallationProgress)
             .DisposeWith(_disposables);
@@ -131,7 +136,8 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
 
                 try 
                 {
-                    await _webDriverService.InitWebDriverService(linkedTokenSource.Token);
+                    // await _webDriverService.InitWebDriverService(linkedTokenSource.Token);
+                    await _webDriverServiceRefactor.InitBrowserAsync();
                 }
                 catch (OperationCanceledException)
                 {

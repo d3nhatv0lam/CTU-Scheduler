@@ -7,6 +7,7 @@ using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.AppServices.Services.UserSettingService;
 using CTUScheduler.AppServices.State;
 using CTUScheduler.Infrastructure.DriverCore;
+using CTUScheduler.Infrastructure.DriverCore.Refactor;
 using CTUScheduler.Infrastructure.Services.Auth;
 using CTUScheduler.Infrastructure.Services.MainHomeService;
 using CTUScheduler.Infrastructure.Services.Network;
@@ -18,6 +19,7 @@ using CTUScheduler.Infrastructure.Sites.CTU.Pages.Main;
 using CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 using CTUScheduler.Infrastructure.Exel;
 using Microsoft.Extensions.DependencyInjection;
+using IWebDriverService = CTUScheduler.Infrastructure.DriverCore.IWebDriverService;
 
 namespace CTUScheduler.AppServices.Extensions;
 
@@ -44,7 +46,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IExcelExporterService, ExcelExporterService>();
 
         // --- Page Factories & Page Services (CTU Site) ---
-        services.AddSingleton<ICtuSitePageFactory, CtuSitePageFactory>()
+        services.AddSingleton<IWebDriverInstallerService, PlaywrightInstallerService>();
+        services.AddSingleton<CTUScheduler.Infrastructure.DriverCore.Refactor.IWebDriverService, PlaywrightService>();
+        
+        services.AddSingleton<ICtuPageFactory, CtuPageFactory>()
+            .AddSingleton<IWebSessionManager,CtuSessionManager>()
             .AddTransient<ILoginPage, LoginPage>()
             .AddTransient<ILoginService, LoginService>()
             .AddTransient<IMainPage, MainPage>()

@@ -3,7 +3,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Infrastructure.DriverCore;
-using CTUScheduler.Infrastructure.Sites.CTU.Pages.Login;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Base;
@@ -42,7 +41,7 @@ public abstract class CtuBasePage : BaseWebPage
     /// <returns>bool</returns>
     private Task<bool> IsSsrSessionInvalidOnPage()
     {
-        return Task.FromResult(IsLoginPage() && this is not LoginPage);
+        return Task.FromResult(IsLoginPage());
     }
     /// <summary>
     ///  Check if the session is invalid on the current page. <br/>

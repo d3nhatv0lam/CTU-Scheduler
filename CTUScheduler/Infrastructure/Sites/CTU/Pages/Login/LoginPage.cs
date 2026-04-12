@@ -1,19 +1,17 @@
 ﻿using System;
-using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Models.Shared;
-using CTUScheduler.Infrastructure.DriverCore;
+using CTUScheduler.Core.Models.Shared.Results;
+using CTUScheduler.Infrastructure.DriverCore.Refactor;
+using CTUScheduler.Infrastructure.DriverCore.Refactor.Page;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
-using CTUScheduler.Infrastructure.Sites.CTU.Pages.Base;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Login;
 
-public class LoginPage : CtuBasePage, ILoginPage
+public class LoginPage : AppPage, ILoginPage
 {
     private const string UsernameInputSelector = "#usernameUserInput";
     private const string PasswordInputSelector = "#password";
@@ -21,97 +19,78 @@ public class LoginPage : CtuBasePage, ILoginPage
     private const string UsernameErrorSelector = "#usernameError";
     private const string PasswordErrorSelector = "#passwordError";
     private const string LoginFailSelector = "#error-msg";
-    protected override string PageUrl => LOGIN_PAGE_URL;
-    protected override string UriHost => "accounts.ctu.edu.vn";
-    protected override string PathRegexPattern => LOGIN_URL_PATTERN;
-    
-    public LoginPage(IWebDriverService webDriverService, ILoggerFactory logger) :
-        base(webDriverService, logger)
+
+    public LoginPage(IWebTab tab, ILoggerFactory logger) : base(tab, logger)
     {
     }
-    
-    public override async Task NavigateToAsync(bool allowRedirection = true, CancellationToken cancellationToken = default)
+
+    public override string PageUrl => "https://htql.ctu.edu.vn/";
+    protected override string PageReadySelector => UsernameInputSelector;
+
+    public async Task FillCredentialsAsync(string username, string password)
     {
-        if (await IsActive.FirstAsync())
-            return;
+        await CleanUpPageAsync();
+
+        await Tab.FillAsync(UsernameInputSelector, username);
+        await Tab.FillAsync(PasswordInputSelector, password);
+    }
+
+    public async Task SubmitAsync()
+    {
+        await Tab.ClickNavigateElementAsync(LoginButtonSelector, loadState: LoadState.NetworkIdle);
+    }
+
+    public async Task<bool> HasErrorVisibleAsync()
+    {
+        string jsCheck = @"(selectors) => {
+            return selectors.some(s => {
+                const el = document.querySelector(s);
+                return el && el.offsetWidth > 0 && el.offsetHeight > 0;
+            });
+         }";
+
+        return await Tab.EvaluateAsync<bool>(jsCheck,
+            new[] { UsernameErrorSelector, PasswordErrorSelector, LoginFailSelector });
+    }
+
+    public async Task<string> GetErrorMessageAsync()
+    {
+        if (await Tab.IsVisibleAsync(UsernameErrorSelector)) return await Tab.GetTextAsync(UsernameErrorSelector);
+        if (await Tab.IsVisibleAsync(PasswordErrorSelector)) return await Tab.GetTextAsync(PasswordErrorSelector);
+        if (await Tab.IsVisibleAsync(LoginFailSelector)) return await Tab.GetTextAsync(LoginFailSelector);
+
+        return "Lỗi đăng nhập không xác định.";
+    }
+
+    public bool IsLoginSuccess()
+    {
+        return !CurrentUrl.Contains("authenticationendpoint/login.do", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public async Task<OperationResult> PerformLoginActionAsync(string username, string password)
+    {
+        await FillCredentialsAsync(username, password);
+        await SubmitAsync();
         
-        await WebDriverService.GoToPageAsync(PageUrl);
+        //TODO
+        
+        if (IsLoginSuccess()) return OperationResult.Success();
+    
+        return OperationResult.Failed("Hệ thống không phản hồi.");
     }
+    
 
-    public async Task LoginAsync(string username, string password,
-        CancellationToken cancelLoginToken = default)
+    private async Task CleanUpPageAsync()
     {
-        using var internalCts = CancellationTokenSource.CreateLinkedTokenSource(cancelLoginToken);
-        try
-        {
-            if (!await IsActive.FirstAsync())
-                throw new InvalidOperationException("Page is not active");
+        string jsCode = $@"(selectors) => {{
+            selectors.forEach(sel => {{
+                const el = document.querySelector(sel);
+                if (el) el.style.display = 'none';
+            }});
+        }}";
 
-            await CleanUpPage().ConfigureAwait(false);
-
-            var userLocator = WebDriverService.GetLocator(UsernameInputSelector);
-            var passwordLocator = WebDriverService.GetLocator(PasswordInputSelector);
-            var loginButtonLocator = WebDriverService.GetLocator(LoginButtonSelector);
-            
-            await userLocator.FillAsync(username);
-            await passwordLocator.FillAsync(password);
-            await WebDriverService.ClickNavigateElementAsync(loginButtonLocator);
-
-            var successTask = WebDriverService.CurrentPage!.WaitForFunctionAsync(
-                $"() => location.hostname !== '{UriHost}' || !location.pathname.includes('{PathRegexPattern}')",
-                null,
-                new() { Timeout = 60000 }
-            ).WaitAsync(internalCts.Token);
-
-            var errorOption = new PageWaitForSelectorOptions()
-            {
-                Timeout = 60000,
-                State = WaitForSelectorState.Visible,
-            };
-
-            var errorTask = Task.WhenAny(
-                WebDriverService.CurrentPage.WaitForSelectorAsync(UsernameErrorSelector, errorOption),
-                WebDriverService.CurrentPage.WaitForSelectorAsync(PasswordErrorSelector, errorOption),
-                WebDriverService.CurrentPage.WaitForSelectorAsync(LoginFailSelector, errorOption)
-            ).WaitAsync(internalCts.Token);
-
-            var winnerTask = await Task.WhenAny(successTask, errorTask).ConfigureAwait(false);
-
-            if (winnerTask == successTask)
-            {
-                errorTask.FireAndForgetSafe();
-                
-                await successTask;
-                return;
-            }
-
-            successTask.FireAndForgetSafe();
-            
-            var completedErrorTask = await errorTask.ConfigureAwait(false);
-            var element = await completedErrorTask.ConfigureAwait(false);
-            var errorMessage = element != null 
-                ? await element.InnerTextAsync().ConfigureAwait(false) 
-                : throw new Exception("element.InnerTextAsync() fail");
-
-            throw new InvalidCredentialsException(errorMessage);
-        }
-        finally
-        {
-            await internalCts.CancelAsync();
-        }
-    }
-
-    /// <summary>
-    /// ẩn các thông báo lỗi giúp trạng thái trang về như ban đầu
-    /// </summary>
-    private async Task CleanUpPage()
-    {
-        await WebDriverService.CurrentPage!.EvaluateAsync(@"(selectors) => {
-        selectors.forEach(sel => {
-            const el = document.querySelector(sel);
-            if (el) el.style.display = 'none';
-        });
-        }",
+        // Gọi JS qua cổng EvaluateActionAsync an toàn của IWebTab
+        await Tab.EvaluateActionAsync(jsCode,
             new[] { UsernameErrorSelector, PasswordErrorSelector, LoginFailSelector });
     }
 }
