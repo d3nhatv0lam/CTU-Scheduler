@@ -34,7 +34,7 @@ public class ScheduleGroupCellShared: ReactiveObject, IDisposable
         _courseNameVn = source.Name.ToProperty(this, x => x.CourseName_VN).DisposeWith(_disposables);
         _group = source.Group.ToProperty(this, x => x.Group).DisposeWith(_disposables);
         _lecturer = source.Lecturer.ToProperty(this, x => x.Lecturer).DisposeWith(_disposables);
-        _credit = source.Credits.ToProperty(this, x => x.Credits).DisposeWith(_disposables);
+        _credit = source.Credits.ToProperty(this, x => x.Credits, deferSubscription: false).DisposeWith(_disposables);
         
         var statusStream = source.RemainingStudents.CombineLatest(source.TotalStudents, 
             (rem, total) => new { rem, total })

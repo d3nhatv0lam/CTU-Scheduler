@@ -14,6 +14,7 @@ using CTUScheduler.Infrastructure.Exel;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;
 using DynamicData;
 using ReactiveUI;
+using DynamicData.Aggregation;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
@@ -56,34 +57,32 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
                     {
                         var adapter = new LiveCourseAdapter(runtimeCourse, section);
                         return CreateRenderItem(adapter);
-                    })
-                    .ChangeKey(_ => Guid.NewGuid());
+                    });
             })
             .DisposeMany()
             .RemoveKey()
             .AsObservableList()
             .DisposeWith(Disposables);
 
-        VisualizerVM = new TimetableViewModel(sharedCourse.Connect())
+        VisualizerVM = new TimetableViewModel(sharedCourse)
             .DisposeWith(Disposables);
-
+        
         sharedCourse.Connect()
-            .Transform(item => item.SharedData.Credits)
-            .QueryWhenChanged(items => new
-            {
-                items.Count,
-                Sum = items.Sum()
-            })
+            .Transform(item => item.SharedData) 
+            .AutoRefresh(shared => shared.Credits)
+            .Transform(shared => shared.Credits ,transformOnRefresh:true)
+            .Sum(credit => credit) 
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x =>
-            {
-                SubjectsCount = x.Count;
-                TotalCredits = x.Sum;
-            })
+            .Subscribe(sum => TotalCredits = sum)
+            .DisposeWith(Disposables);
+        
+        sharedCourse.CountChanged
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(count => SubjectsCount = count)
             .DisposeWith(Disposables);
 
         sharedCourse.Connect()
-            .Throttle(TimeSpan.FromSeconds(1.2))
+            .Throttle(TimeSpan.FromSeconds(1))
             .Skip(1)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(_ =>

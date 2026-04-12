@@ -23,8 +23,10 @@ public class TimetableViewModel: ViewModelBase, IDisposable
     // private readonly ReadOnlyObservableCollection<ScheduleGroupCellShared> _courseList;
     // public ReadOnlyObservableCollection<ScheduleGroupCellShared> CourseList => _courseList;
 
-    public TimetableViewModel(IObservable<IChangeSet<TimetableRenderItem>> renderStream)
+    public TimetableViewModel(IObservableList<TimetableRenderItem> renderList)
     {
+        var renderStream = renderList.Connect();
+        
         renderStream
             .TransformMany(item => item.Cells)
             .ObserveOn(RxApp.MainThreadScheduler)
