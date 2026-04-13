@@ -1,75 +1,61 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using CTUScheduler.Core.Extensions;
-using CTUScheduler.Infrastructure.DriverCore;
 using CTUScheduler.Infrastructure.DriverCore.Extensions;
-using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
+using CTUScheduler.Infrastructure.DriverCore.Refactor;
 using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
 using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.CourseData;
-using CTUScheduler.Infrastructure.Sites.CTU.Response;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 
-public class CourseCatalogPage: RegistrationSpa, ICourseCatalogPage
+public class CourseCatalogPageRefactor : DkmhSpaPage
 {
-    protected override string PageUrl => "https://dkmhfe.ctu.edu.vn/dangkyhocphan/sinhvien/danhmuchocphan";
-    protected override string PathRegexPattern => "/danhmuchocphan";
+    public override string PageUrl => "https://dkmhfe.ctu.edu.vn/dangkyhocphan/sinhvien/danhmuchocphan";
+    protected override string PageReadySelector => SearchButtonSelector;
+
     private const string AutoCompleteQueryPattern = "/getdatafilter";
     private const string AutoCompleteKey = "dkmh_tu_dien_hoc_phan_ma_auto_complete";
     private const string SearchBoxLabel = "Mã học phần";
     private const string SearchBoxSelector = $"//p[normalize-space()='{SearchBoxLabel}']/..//input";
     private const string SearchButtonSelector = "span[aria-label='search']";
-    public IObservable<CtuApiBody<List<QuickSelectCourse>>> AutoCompleteQueryResponse { get; } 
-    public IObservable<CtuApiBody<RawCourse>> CourseCatalogResponse { get; }
-    
-    public CourseCatalogPage(IWebDriverService webDriverService,
-        ILoggerFactory loggerFactory)
-        :base(webDriverService, loggerFactory)
+
+    public IObservable<List<QuickSelectCourse>> AutoCompleteQueryResponse { get; }
+    public IObservable<RawCourse> CourseCatalogResponse { get; }
+
+    public CourseCatalogPageRefactor(IWebTab tab, ILoggerFactory loggerFactory) : base(tab, loggerFactory)
     {
-        AutoCompleteQueryResponse = WebDriverService.JsonResponse
+        AutoCompleteQueryResponse = Tab.JsonResponse
             .Where(packet => packet.Url.Contains(AutoCompleteQueryPattern))
             .FilterPacketJson(node => node["data"]?[AutoCompleteKey] is not null)
             .ParseCtuResponse<List<QuickSelectCourse>>(node => node["data"]?[AutoCompleteKey])
-            .Where(res => res.IsSuccess)
-            .OfType<CtuApiBody<List<QuickSelectCourse>>>();
-        
-        CourseCatalogResponse = WebDriverService.JsonResponse
-            .Where(packet => packet.Url.Contains(PathRegexPattern))
-            .FilterPacketJson(node => node["data"].HasFields<RawCourse>(
-                x => x.hoc_phan_info,
-                x => x.data,
-                x => x.tuan_max))
+            .Where(res => res is { IsSuccess: true, Content: not null })
+            .Select(x => x.Content!);
+
+
+        CourseCatalogResponse = Tab.JsonResponse
+            .Where(packet => packet.Url.Contains("/danhmuchocphan"))
+            .FilterPacketJson(node =>
+                node["data"].HasFields<RawCourse>(x => x.hoc_phan_info, x => x.data, x => x.tuan_max))
             .ParseCtuResponse<RawCourse>()
-            .Where(res => res.IsSuccess)
-            .OfType<CtuApiBody<RawCourse>>();
-    }
-    
-    protected override async Task NavigateToViaSidebarAsync(CancellationToken cancellationToken = default)
-    {
-        await Sidebar.NavigateToCatalogPageAsync(WebDriverService);
+            .Where(res => res is { IsSuccess: true, Content: not null })
+            .Select(x => x.Content!);
     }
 
-    public async Task FillQueryAsync(string query, CancellationToken cancellationToken = default)
+    public async Task FillQueryAsync(string query)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        if (string.IsNullOrEmpty(query) || !await IsActive.FirstAsync())
-            return;
-        var searchBox = WebDriverService.GetLocator(SearchBoxSelector);
-        await searchBox.FillAsync(query);
-        cancellationToken.ThrowIfCancellationRequested();
+        if (string.IsNullOrEmpty(query)) return;
+        await Tab.NativePage.FillAsync(SearchBoxSelector, query);
     }
 
-    public async Task SearchAsync(CancellationToken cancellationToken = default)
+    public async Task SearchAsync()
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        if (!await IsActive.FirstAsync())
-            return;
-        var searchButton = WebDriverService.GetLocator(SearchButtonSelector);
-        await searchButton.ClickAsync();
-        cancellationToken.ThrowIfCancellationRequested();
+        await Tab.NativePage.ClickAsync(SearchButtonSelector);
+    }
+
+    protected override async Task NavigateToFormSideBarAsync()
+    {
+        await this.Sidebar.NavigateToCatalogAsync();
     }
 }

@@ -6,20 +6,15 @@ using CTUScheduler.AppServices.Services.TimetableGeneratorService;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.AppServices.Services.UserSettingService;
 using CTUScheduler.AppServices.State;
-using CTUScheduler.Infrastructure.DriverCore;
 using CTUScheduler.Infrastructure.DriverCore.Refactor;
 using CTUScheduler.Infrastructure.Services.Auth;
 using CTUScheduler.Infrastructure.Services.MainHomeService;
 using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Infrastructure.Services.Registration;
-using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
-using CTUScheduler.Infrastructure.Sites.CTU.Pages.Login;
-using CTUScheduler.Infrastructure.Sites.CTU.Pages.Main;
-using CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 using CTUScheduler.Infrastructure.Exel;
+using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
-using IWebDriverService = CTUScheduler.Infrastructure.DriverCore.IWebDriverService;
 
 namespace CTUScheduler.AppServices.Extensions;
 
@@ -39,26 +34,22 @@ public static class ServiceCollectionExtensions
 
         // --- Infrastructure / External Services ---
         services.AddSingleton<IConnectivityService, ConnectivityService>();
-        services.AddSingleton<IWebDriverService, WebDriverService>();
         services.AddSingleton<IUserSessionService, UserSessionService>();
         services.AddSingleton<IWorkspaceStore, WorkspaceStore>();
-
         services.AddSingleton<IExcelExporterService, ExcelExporterService>();
 
-        // --- Page Factories & Page Services (CTU Site) ---
+        // --- WebDriver Services (New Architecture Only) ---
         services.AddSingleton<IWebDriverInstallerService, PlaywrightInstallerService>();
-        services.AddSingleton<CTUScheduler.Infrastructure.DriverCore.Refactor.IWebDriverService, PlaywrightService>();
-        
-        services.AddSingleton<ICtuPageFactory, CtuPageFactory>()
-            .AddSingleton<IWebSessionManager,CtuSessionManager>()
-            .AddTransient<ILoginPage, LoginPage>()
-            .AddTransient<ILoginService, LoginService>()
-            .AddTransient<IMainPage, MainPage>()
-            .AddTransient<IMainHomeService, MainHomeService>()
-            .AddTransient<IRegistrationRulesPage, RegistrationRulesPage>()
-            .AddTransient<IRegistrationRulesService, RegistrationRulesService>()
-            .AddTransient<ICourseCatalogPage, CourseCatalogPage>()
-            .AddTransient<ICourseCatalogService, CourseCatalogService>();
+        services.AddSingleton<IWebDriverService, PlaywrightService>();
+
+        // --- Page Factory & Session Manager ---
+        services.AddSingleton<ICtuPageFactory, CtuPageFactory>();
+
+        // --- Application Services ---
+        services.AddTransient<ILoginService, LoginService>();
+        services.AddTransient<IMainHomeService, MainHomeService>();
+        services.AddTransient<IRegistrationRulesService, RegistrationRulesService>();
+        services.AddTransient<ICourseCatalogService, CourseCatalogService>();
 
         // --- Schedule Manager  ---
         // Đây là pattern quan trọng để đảm bảo tất cả interface đều trỏ về cùng 1 object ScheduleManager

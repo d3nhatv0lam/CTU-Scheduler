@@ -1,27 +1,29 @@
 ﻿using System;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Abstractions;
+using CTUScheduler.Infrastructure.DriverCore.Refactor;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
-using CTUScheduler.Infrastructure.Sites.CTU.Factory;
+using CTUScheduler.Infrastructure.Sites.CTU.Pages.Main;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Services.MainHomeService;
 
 public class MainHomeService: IMainHomeService
 {
-    private readonly ICtuSitePageFactory _ctuSitePageFactory;
     private readonly ILogger<MainHomeService> _logger;
-    private readonly IMainPage _mainPage;
+    private readonly MainPage _mainPage;
 
-    public IObservable<string> StudentIdChanges { get; } 
-    public MainHomeService(ICtuSitePageFactory ctuSitePageFactory, ILogger<MainHomeService> logger)
+    public IObservable<string> StudentIdChanges { get; }
+
+    public MainHomeService(
+        IWebDriverService webDriverService,
+        ICtuPageFactory pageFactory,
+        ILogger<MainHomeService> logger)
     {
-        _ctuSitePageFactory = ctuSitePageFactory;
         _logger = logger;
-        _mainPage = _ctuSitePageFactory.GetPage<IMainPage>();
-        
+        _mainPage = pageFactory.GetPage<MainPage>(webDriverService.MainTab);
+
         StudentIdChanges = _mainPage.UserInfoChanges
             .Where(x => !string.IsNullOrWhiteSpace(x));
     }
-    
 }

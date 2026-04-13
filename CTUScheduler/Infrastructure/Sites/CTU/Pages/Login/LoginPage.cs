@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
-using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Shared.Results;
+using CTUScheduler.Infrastructure.DriverCore.Extensions;
 using CTUScheduler.Infrastructure.DriverCore.Refactor;
-using CTUScheduler.Infrastructure.DriverCore.Refactor.Page;
+using CTUScheduler.Infrastructure.Sites.Base;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
@@ -26,18 +27,18 @@ public class LoginPage : AppPage, ILoginPage
 
     public override string PageUrl => "https://htql.ctu.edu.vn/";
     protected override string PageReadySelector => UsernameInputSelector;
-
+    
     public async Task FillCredentialsAsync(string username, string password)
     {
-        await CleanUpPageAsync();
-
-        await Tab.FillAsync(UsernameInputSelector, username);
-        await Tab.FillAsync(PasswordInputSelector, password);
+        await Tab.NativePage.FillAsync(UsernameInputSelector, username);
+        await Tab.NativePage.FillAsync(PasswordInputSelector, password);
     }
 
     public async Task SubmitAsync()
     {
-        await Tab.ClickNavigateElementAsync(LoginButtonSelector, loadState: LoadState.NetworkIdle);
+        await Tab.NativePage
+            .Locator(LoginButtonSelector)
+            .ClickAndWaitForLoadStateAsync(LoadState.Load);
     }
 
     public async Task<bool> HasErrorVisibleAsync()
@@ -49,15 +50,20 @@ public class LoginPage : AppPage, ILoginPage
             });
          }";
 
-        return await Tab.EvaluateAsync<bool>(jsCheck,
+        return await Tab.NativePage.EvaluateAsync<bool>(jsCheck,
             new[] { UsernameErrorSelector, PasswordErrorSelector, LoginFailSelector });
     }
 
     public async Task<string> GetErrorMessageAsync()
     {
-        if (await Tab.IsVisibleAsync(UsernameErrorSelector)) return await Tab.GetTextAsync(UsernameErrorSelector);
-        if (await Tab.IsVisibleAsync(PasswordErrorSelector)) return await Tab.GetTextAsync(PasswordErrorSelector);
-        if (await Tab.IsVisibleAsync(LoginFailSelector)) return await Tab.GetTextAsync(LoginFailSelector);
+        var page = Tab.NativePage;
+        var usernameErrorLocator = page.Locator(UsernameErrorSelector);
+        var passwordErrorLocator = page.Locator(PasswordErrorSelector);
+        var loginFailLocator = page.Locator(LoginFailSelector);
+
+        if (await usernameErrorLocator.IsVisibleAsync()) return await usernameErrorLocator.InnerTextAsync();
+        if (await passwordErrorLocator.IsVisibleAsync()) return await passwordErrorLocator.InnerTextAsync();
+        if (await loginFailLocator.IsVisibleAsync()) return await loginFailLocator.InnerTextAsync();
 
         return "Lỗi đăng nhập không xác định.";
     }
@@ -67,18 +73,76 @@ public class LoginPage : AppPage, ILoginPage
         return !CurrentUrl.Contains("authenticationendpoint/login.do", StringComparison.OrdinalIgnoreCase);
     }
 
-    public async Task<OperationResult> PerformLoginActionAsync(string username, string password)
+    public async Task<OperationResult> PerformLoginActionAsync(string username, string password,
+        CancellationToken cancellationToken = default)
     {
+        using var internalCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+        await CleanUpPageAsync();
         await FillCredentialsAsync(username, password);
-        await SubmitAsync();
-        
-        //TODO
-        
-        if (IsLoginSuccess()) return OperationResult.Success();
-    
-        return OperationResult.Failed("Hệ thống không phản hồi.");
+
+        var (successTask, errorTask, timeoutTask) = CreateLoginRaceTasks(internalCts.Token);
+
+        await Tab.NativePage.Locator(LoginButtonSelector).ClickAsync();
+
+        try
+        {
+            return await WaitForLoginResultAsync(successTask, errorTask, timeoutTask);
+        }
+        finally
+        {
+            await internalCts.CancelAsync();
+        }
     }
-    
+
+    private (Task waitForSuccessTask, Task waitForErrorTask, Task timeoutTask) CreateLoginRaceTasks(
+        CancellationToken cancellationToken)
+    {
+        string successJs = @"() => {
+            const currentHost = window.location.hostname;
+            const currentPath = window.location.pathname;
+            return currentHost !== 'accounts.ctu.edu.vn' || !currentPath.includes('login.do');
+        }";
+
+        var waitForSuccessTask = Tab.NativePage.WaitForFunctionAsync(
+            successJs, null, new PageWaitForFunctionOptions { Timeout = 0 }
+        ).WaitAsync(cancellationToken);
+
+        var errorOption = new PageWaitForSelectorOptions { State = WaitForSelectorState.Visible, Timeout = 0 };
+        var waitForErrorTask = Task.WhenAny(
+            Tab.NativePage.WaitForSelectorAsync(UsernameErrorSelector, errorOption),
+            Tab.NativePage.WaitForSelectorAsync(PasswordErrorSelector, errorOption),
+            Tab.NativePage.WaitForSelectorAsync(LoginFailSelector, errorOption)
+        ).WaitAsync(cancellationToken);
+
+        var timeoutTask = Task.Delay(15000, cancellationToken);
+
+        return (waitForSuccessTask, waitForErrorTask, timeoutTask);
+    }
+
+    private async Task<OperationResult> WaitForLoginResultAsync(
+        Task successTask, Task errorTask, Task timeoutTask)
+    {
+        var completedTask = await Task.WhenAny(successTask, errorTask, timeoutTask);
+
+        if (completedTask == successTask)
+        {
+            return OperationResult.Success();
+        }
+
+        if (completedTask == errorTask)
+        {
+            await errorTask;
+            var msg = await GetErrorMessageAsync();
+            return OperationResult.Failed(msg, "Auth.Failed", OperationFailureReason.Validation);
+        }
+
+        return OperationResult.Failed(
+            "Quá thời gian chờ (15s) phản hồi từ hệ thống CTU.",
+            "Auth.Timeout",
+            OperationFailureReason.System);
+    }
+
 
     private async Task CleanUpPageAsync()
     {
@@ -89,8 +153,7 @@ public class LoginPage : AppPage, ILoginPage
             }});
         }}";
 
-        // Gọi JS qua cổng EvaluateActionAsync an toàn của IWebTab
-        await Tab.EvaluateActionAsync(jsCode,
+        await Tab.NativePage.EvaluateAsync(jsCode,
             new[] { UsernameErrorSelector, PasswordErrorSelector, LoginFailSelector });
     }
 }

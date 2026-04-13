@@ -23,6 +23,10 @@ namespace CTUScheduler.Infrastructure.DriverCore;
 
 public record DialogInfo(string Message, string DefaultValue = "");
 
+/// <summary>
+/// DEPRECATED: Use PlaywrightService with WebDriverServiceAdapter instead
+/// </summary>
+[Obsolete("Use PlaywrightService from CTUScheduler.Infrastructure.DriverCore.Refactor namespace")]
 public class WebDriverService : IWebDriverService, IAsyncDisposable
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();

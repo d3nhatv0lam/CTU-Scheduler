@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using CTUScheduler.Infrastructure.DriverCore.Refactor;
-using CTUScheduler.Infrastructure.DriverCore.Refactor.Page;
 using CTUScheduler.Infrastructure.Sites.Base;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,7 +22,7 @@ public class CtuPageFactory: ICtuPageFactory
         {
             var assembly = typeof(AppPage).Assembly;
             var implementations = assembly.GetTypes()
-                .Where(t => typeof(ISitePageRefactor).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract);
+                .Where(t => typeof(ISitePageRefactor).IsAssignableFrom(t) && t is { IsClass: true, IsAbstract: false });
 
             foreach (var impl in implementations)
             {
@@ -33,7 +32,6 @@ public class CtuPageFactory: ICtuPageFactory
                 if (serviceInterface != null)
                     _pageMappings[serviceInterface] = impl;
                 
-                // Đăng ký cả chính nó
                 _pageMappings[impl] = impl;
             }
         }

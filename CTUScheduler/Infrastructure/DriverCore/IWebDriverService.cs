@@ -7,6 +7,11 @@ using Microsoft.Playwright;
 
 namespace CTUScheduler.Infrastructure.DriverCore;
 
+/// <summary>
+/// DEPRECATED: Use CTUScheduler.Infrastructure.DriverCore.Refactor.IWebDriverService instead
+/// This interface is kept for backward compatibility and will be removed in future versions
+/// </summary>
+[Obsolete("Use CTUScheduler.Infrastructure.DriverCore.Refactor.IWebDriverService with WebDriverServiceAdapter instead")]
 public interface IWebDriverService
 {
     IPage? CurrentPage { get; }

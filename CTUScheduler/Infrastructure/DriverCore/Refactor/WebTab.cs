@@ -18,12 +18,10 @@ public class WebTab : IWebTab
     private readonly Subject<DialogInfo> _alertSubject = new();
     private readonly Subject<DialogInfo> _confirmSubject = new();
     private readonly Subject<DialogInfo> _promptSubject = new();
-
-
+    
     public WebTab(IPage page)
     {
         ArgumentNullException.ThrowIfNull(page);
-
         _page = page;
         _urlSubject = new BehaviorSubject<string>(page.Url);
 
@@ -32,7 +30,7 @@ public class WebTab : IWebTab
         AlertReceived = _alertSubject.AsObservable();
         ConfirmReceived = _confirmSubject.AsObservable();
         PromptReceived = _promptSubject.AsObservable();
-        
+
         _jsonResponseSubject.DisposeWith(_disposables);
         _urlSubject.DisposeWith(_disposables);
         _alertSubject.DisposeWith(_disposables);
@@ -44,75 +42,19 @@ public class WebTab : IWebTab
         OptimizePageLoad();
     }
 
+    public IPage NativePage => _page;
     public string CurrentUrl => _page.Url;
     public IObservable<NetworkPacket> JsonResponse { get; }
     public IObservable<string> UrlChanges { get; }
-
     public IObservable<DialogInfo> AlertReceived { get; }
     public IObservable<DialogInfo> ConfirmReceived { get; }
     public IObservable<DialogInfo> PromptReceived { get; }
-
-    public ILocator GetLocator(string selector) => _page.Locator(selector);
-
-    public async Task GoToAsync(string url)
-    {
-        await _page.GotoAsync(url, new() { Timeout = 10000, WaitUntil = WaitUntilState.NetworkIdle });
-        await _page.WaitForLoadStateAsync(LoadState.Load);
-    }
-
-    public async Task<bool> IsVisibleAsync(string selector)
-    {
-        return await _page.IsVisibleAsync(selector);
-    }
-
-    public async Task FillAsync(string selector, string value)
-    {
-        await _page.FillAsync(selector, value);
-    }
-
-    public async Task ClickAsync(string selector)
-    {
-        await _page.ClickAsync(selector);
-    }
-
-    public async Task RefreshAsync() => await _page.ReloadAsync(new() { WaitUntil = WaitUntilState.NetworkIdle });
-
-    public async Task ClickNavigateElementAsync(
-        ILocator element,
-        LocatorClickOptions? options = null,
-        LoadState loadState = LoadState.NetworkIdle)
-    {
-        var waitTask = _page.WaitForLoadStateAsync(loadState);
-        await element.ClickAsync(options);
-        await waitTask;
-    }
-    
-    public async Task ClickNavigateElementAsync(
-        string selector,
-        LocatorClickOptions? options = null,
-        LoadState loadState = LoadState.NetworkIdle)
-    {
-        var waitTask = _page.WaitForLoadStateAsync(loadState);
-        await ClickAsync(selector);
-        await waitTask;
-    }
-
-    public async Task<string> GetTextAsync(string selector)
-    {
-        return await _page.Locator(selector).InnerTextAsync();
-    }
-
-    public async Task<T> EvaluateAsync<T>(string script, object? args = null) =>
-        await _page.EvaluateAsync<T>(script, args);
-
-    public async Task EvaluateActionAsync(string script, object? args = null) =>
-        await _page.EvaluateAsync(script, args);
 
     private void OptimizePageLoad()
     {
         _page.RouteAsync("**/*", async route =>
         {
-            if (route.Request.ResourceType is "stylesheet" or "font" or "image")
+            if (route.Request.ResourceType is "font" or "image")
                 await route.AbortAsync();
             else
                 await route.ContinueAsync();
@@ -200,38 +142,21 @@ public class WebTab : IWebTab
             .Subscribe()
             .DisposeWith(_disposables);
     }
-    
-    public async Task WaitForUrlAsync(Func<string, bool> predicate, int timeoutMs = 10000)
-    {
-        await _page.WaitForURLAsync(predicate, new() { Timeout = timeoutMs});
-    }
-
-    public async Task WaitForSelectorAsync(string selector, int timeoutMs = 10000)
-    {
-        await _page.WaitForSelectorAsync(selector, new() { 
-            State = WaitForSelectorState.Visible, 
-            Timeout = timeoutMs 
-        });
-    }
-
-    public async Task<bool> WaitForFunctionAsync(string jsExpression, int timeoutMs = 10000)
-    {
-        try {
-            await _page.WaitForFunctionAsync(jsExpression, null, new() { Timeout = timeoutMs });
-            return true;
-        } catch { return false; }
-    }
 
     public async ValueTask DisposeAsync()
     {
         _jsonResponseSubject.OnCompleted();
         _urlSubject.OnCompleted();
-        
         _alertSubject.OnCompleted();
         _confirmSubject.OnCompleted();
         _promptSubject.OnCompleted();
-            
+
         _disposables.Dispose();
-        if (!_page.IsClosed) await _page.CloseAsync();
+
+        if (!_page.IsClosed)
+        {
+            await _page.UnrouteAsync("**/*");
+            await _page.CloseAsync();
+        }
     }
 }
