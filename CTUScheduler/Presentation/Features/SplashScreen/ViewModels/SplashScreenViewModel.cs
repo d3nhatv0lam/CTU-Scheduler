@@ -11,6 +11,7 @@ using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Infrastructure.DriverCore;
+using CTUScheduler.Infrastructure.DriverCore.Refactor;
 using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.SplashScreen.Components.Installation.ViewModels;
@@ -25,7 +26,6 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
 {
     private readonly CompositeDisposable _disposables = new();
     private readonly IConnectivityService _connectivityService;
-    private readonly IWebDriverService _webDriverService;
     private readonly Infrastructure.DriverCore.Refactor.IWebDriverService _webDriverServiceRefactor;
     private readonly IApplicationLifetime _appLifetime;
     private readonly CancellationTokenSource _localCts = new();
@@ -64,21 +64,20 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
 
     public SplashScreenViewModel(
         IConnectivityService connectivityService,
-        IWebDriverService webDriverService,
         Infrastructure.DriverCore.Refactor.IWebDriverService webDriverServiceRefactor,
+        IWebDriverInstallerService webDriverInstallerService,
         IApplicationLifetime appLifetime)
     {
         _connectivityService = connectivityService;
-        _webDriverService = webDriverService;
         _webDriverServiceRefactor = webDriverServiceRefactor;
         
         _appLifetime = appLifetime;
         
         
-        _installationViewModel = new InstallationViewModel(_webDriverService.InstallationProgress)
+        _installationViewModel = new InstallationViewModel(webDriverInstallerService.LogStream)
             .DisposeWith(_disposables);
 
-        _isDownloadingHelper = _webDriverService.IsInstalling
+        _isDownloadingHelper = webDriverInstallerService.IsBusy
             .ToProperty(this, nameof(IsDownloading), scheduler: RxApp.MainThreadScheduler)
             .DisposeWith(_disposables);
 
@@ -86,7 +85,8 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
         CloseAppCommand = ReactiveCommand.Create(CloseApplication).DisposeWith(_disposables);
         ToggleConsoleCommand = ReactiveCommand.Create(ToggleConsole).DisposeWith(_disposables);
 
-        _webDriverService.InstallationStatus
+        webDriverInstallerService.StatusMessage
+            .Skip(1)
             .Delay(TimeSpan.FromSeconds(1d), RxApp.MainThreadScheduler)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(message => Message = message)
@@ -111,11 +111,6 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     /// </summary>
     private void InitializeStartup()
     {
-        var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
-            _appLifetime.ApplicationStopping,
-            _localCts.Token
-        );
-
         _connectivityService.IsInternetAvailable
             .Where(status => status)
             .Take(1)
@@ -136,7 +131,6 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
 
                 try 
                 {
-                    // await _webDriverService.InitWebDriverService(linkedTokenSource.Token);
                     await _webDriverServiceRefactor.InitBrowserAsync();
                 }
                 catch (OperationCanceledException)

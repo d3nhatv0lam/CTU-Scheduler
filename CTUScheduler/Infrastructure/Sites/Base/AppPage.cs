@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Infrastructure.DriverCore.Refactor;
 using CTUScheduler.Infrastructure.Sites.CTU.Routes;
@@ -13,6 +13,7 @@ namespace CTUScheduler.Infrastructure.Sites.Base;
 public abstract class AppPage : ISitePageRefactor
 {
     protected readonly IWebTab Tab;
+    protected readonly IConnectivityService ConnectivityService;
     protected readonly ILogger Logger;
 
     public abstract string PageUrl { get; }
@@ -35,14 +36,19 @@ public abstract class AppPage : ISitePageRefactor
         }
     }
 
-    protected AppPage(IWebTab tab, ILoggerFactory loggerFactory)
+    protected AppPage(IWebTab tab, IConnectivityService connectivityService, ILoggerFactory loggerFactory)
     {
         Tab = tab;
+        ConnectivityService = connectivityService;
         Logger = loggerFactory.CreateLogger(GetType());
     }
 
-    public virtual async Task NavigateToAsync(PageGotoOptions? options = null) =>
+    public virtual async Task NavigateToAsync(PageGotoOptions? options = null)
+    {
+        EnsureInternetConnection();
         await Tab.NativePage.GotoAsync(PageUrl, options);
+    }
+    
 
     public virtual async Task WaitForReadyAsync(int timeoutMs = 10000)
     {
@@ -81,11 +87,17 @@ public abstract class AppPage : ISitePageRefactor
     public virtual async Task CheckSessionAndThrowAsync()
     {
         if (this is not IRequireSession) return;
-        
+
         if (await IsSessionExpiredAsync())
         {
             throw new UnauthorizedAccessException($"Session chết tại {GetType().Name}");
         }
+    }
+    
+    protected async Task SecureClickAsync(string selector)
+    {
+        EnsureInternetConnection();
+        await Tab.NativePage.ClickAsync(selector);
     }
 
     protected virtual Task<bool> IsSessionExpiredAsync()
@@ -96,5 +108,11 @@ public abstract class AppPage : ISitePageRefactor
             .Any(signature => url.Contains(signature, StringComparison.OrdinalIgnoreCase));
 
         return Task.FromResult(isExpired);
+    }
+
+    private void EnsureInternetConnection()
+    {
+        if (!ConnectivityService.HasInternetAccess)
+            throw new NoInternetException("Không có kết nối mạng!");
     }
 }

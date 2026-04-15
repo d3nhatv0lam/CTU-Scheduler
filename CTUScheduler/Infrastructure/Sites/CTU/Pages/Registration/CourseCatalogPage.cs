@@ -4,6 +4,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.Infrastructure.DriverCore.Extensions;
 using CTUScheduler.Infrastructure.DriverCore.Refactor;
+using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
 using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.CourseData;
 using Microsoft.Extensions.Logging;
@@ -24,7 +25,8 @@ public class CourseCatalogPageRefactor : DkmhSpaPage
     public IObservable<List<QuickSelectCourse>> AutoCompleteQueryResponse { get; }
     public IObservable<RawCourse> CourseCatalogResponse { get; }
 
-    public CourseCatalogPageRefactor(IWebTab tab, ILoggerFactory loggerFactory) : base(tab, loggerFactory)
+    public CourseCatalogPageRefactor(IWebTab tab, ConnectivityService connectivityService, ILoggerFactory loggerFactory)
+        : base(tab, connectivityService, loggerFactory)
     {
         AutoCompleteQueryResponse = Tab.JsonResponse
             .Where(packet => packet.Url.Contains(AutoCompleteQueryPattern))

@@ -6,6 +6,7 @@ using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Infrastructure.DriverCore.Refactor;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Playwright;
 
 namespace CTUScheduler.Infrastructure.Services.Auth;
 
@@ -28,7 +29,11 @@ public class LoginService: ILoginService
         try
         {
             var page = _ctuSitePageFactory.GetPage<ILoginPage>(tab);
-            //TODO
+            await page.NavigateToAsync(new ()
+            {
+                Timeout = 5000,
+                WaitUntil = WaitUntilState.DOMContentLoaded
+            });
             return OperationResult.Success();
         }
         catch (Exception e)
@@ -42,8 +47,6 @@ public class LoginService: ILoginService
     {
         var tab = _playwrightService.MainTab;
         var page = _ctuSitePageFactory.GetPage<ILoginPage>(tab);
-        //TODO
-        
         return await page.PerformLoginActionAsync(username, password);
     }
     

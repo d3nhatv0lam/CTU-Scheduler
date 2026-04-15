@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.Infrastructure.DriverCore.Extensions;
 using CTUScheduler.Infrastructure.DriverCore.Refactor;
+using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
 using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.Registration;
 using Microsoft.Extensions.Logging;
@@ -19,10 +20,11 @@ public class RegistrationRulesPageRefactor : DkmhSpaPage
     private const string UserInfoButtonSelector = ".anticon-user";
     private const string UserSettingButtonSelector = ".anticon-setting";
 
-    
+
     public IObservable<RawRegistrationInformation> RawRegistrationInformationResponse { get; }
 
-    public RegistrationRulesPageRefactor(IWebTab tab, ILoggerFactory logger) : base(tab, logger)
+    public RegistrationRulesPageRefactor(IWebTab tab, ConnectivityService connectivityService, ILoggerFactory logger) :
+        base(tab, connectivityService, logger)
     {
         RawRegistrationInformationResponse = Tab.JsonResponse
             .Where(packet => packet.Url.Contains("/quydinhdangky"))
@@ -40,7 +42,7 @@ public class RegistrationRulesPageRefactor : DkmhSpaPage
         {
             await Tab.NativePage.ClickAsync(UserInfoButtonSelector);
             await Tab.NativePage.ClickAsync(UserSettingButtonSelector);
-            
+
             string jsCode = @"(args) => {
                 const getVal = (label) => {
                     const li = Array.from(document.querySelectorAll('li')).find(el => el.textContent.includes(label));

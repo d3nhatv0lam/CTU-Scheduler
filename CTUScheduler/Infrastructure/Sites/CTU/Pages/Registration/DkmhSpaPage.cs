@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Infrastructure.DriverCore.Refactor;
 using CTUScheduler.Infrastructure.Sites.Base;
@@ -15,7 +16,8 @@ public abstract class DkmhSpaPage : AppPage, IRequireSession
     private const string InvalidSessionSelector = "text='Bạn hiện không có quyền truy cập vào hệ thống'";
     protected Sidebar Sidebar { get; }
 
-    protected DkmhSpaPage(IWebTab tab, ILoggerFactory loggerFactory) : base(tab, loggerFactory)
+    protected DkmhSpaPage(IWebTab tab, IConnectivityService connectivityService, ILoggerFactory loggerFactory) : base(
+        tab, connectivityService, loggerFactory)
     {
         Sidebar = new Sidebar(tab);
     }

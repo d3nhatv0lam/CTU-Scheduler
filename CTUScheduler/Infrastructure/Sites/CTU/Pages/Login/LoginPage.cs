@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Abstractions;
+using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Infrastructure.DriverCore.Extensions;
@@ -21,13 +23,14 @@ public class LoginPage : AppPage, ILoginPage
     private const string PasswordErrorSelector = "#passwordError";
     private const string LoginFailSelector = "#error-msg";
 
-    public LoginPage(IWebTab tab, ILoggerFactory logger) : base(tab, logger)
+    public LoginPage(IWebTab tab, IConnectivityService connectivityService, ILoggerFactory logger) : base(tab,
+        connectivityService, logger)
     {
     }
 
     public override string PageUrl => "https://htql.ctu.edu.vn/";
     protected override string PageReadySelector => UsernameInputSelector;
-    
+
     public async Task FillCredentialsAsync(string username, string password)
     {
         await Tab.NativePage.FillAsync(UsernameInputSelector, username);
@@ -83,11 +86,14 @@ public class LoginPage : AppPage, ILoginPage
 
         var (successTask, errorTask, timeoutTask) = CreateLoginRaceTasks(internalCts.Token);
 
-        await Tab.NativePage.Locator(LoginButtonSelector).ClickAsync();
-
         try
         {
+            await SecureClickAsync(LoginButtonSelector);
             return await WaitForLoginResultAsync(successTask, errorTask, timeoutTask);
+        }
+        catch (NoInternetException ex)
+        {
+            return OperationResult.Failed(ex.Message, "Internet", OperationFailureReason.Network);
         }
         finally
         {
@@ -140,7 +146,7 @@ public class LoginPage : AppPage, ILoginPage
         return OperationResult.Failed(
             "Quá thời gian chờ (15s) phản hồi từ hệ thống CTU.",
             "Auth.Timeout",
-            OperationFailureReason.System);
+            OperationFailureReason.Network);
     }
 
 

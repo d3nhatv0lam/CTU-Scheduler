@@ -14,7 +14,7 @@ namespace CTUScheduler.Infrastructure.DriverCore.Refactor;
 public class PlaywrightInstallerService: IWebDriverInstallerService, IDisposable
 {
     private readonly ILogger<PlaywrightInstallerService> _logger;
-    private readonly BehaviorSubject<string> _statusMessageSubject = new("...");
+    private readonly BehaviorSubject<string> _statusMessageSubject = new("");
     private readonly BehaviorSubject<double?> _progressPercentageSubject = new(null);
     private readonly BehaviorSubject<bool> _isBusySubject = new(false);
     private readonly ReplaySubject<string> _logStreamSubject = new();
