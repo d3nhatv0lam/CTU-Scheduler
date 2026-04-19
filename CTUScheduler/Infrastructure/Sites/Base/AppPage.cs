@@ -45,6 +45,7 @@ public abstract class AppPage : ISitePageRefactor
 
     public virtual async Task NavigateToAsync(PageGotoOptions? options = null)
     {
+        if (await IsActiveAsync()) return;
         EnsureInternetConnection();
         await Tab.NativePage.GotoAsync(PageUrl, options);
     }

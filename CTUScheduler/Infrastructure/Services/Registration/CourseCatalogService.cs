@@ -1,17 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
-using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Shared.Results;
+using CTUScheduler.Infrastructure.DriverCore.Refactor;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
-using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.CourseData;
 using Microsoft.Extensions.Logging;
 
@@ -23,26 +22,27 @@ public class CourseCatalogService : ICourseCatalogService
     private static readonly TimeSpan DefaultStreamTimeout = TimeSpan.FromSeconds(10);
     
     private readonly ILogger<CourseCatalogService> _logger;
-    private readonly ICtuSitePageFactory _factory;
+    private readonly ICtuPageFactory _factory;
+    private readonly IWebDriverService _webDriver;
     private readonly ICourseCatalogPage _catalogPage;
     
     public CourseCatalogService(
         ILogger<CourseCatalogService> logger, 
-        ICtuSitePageFactory factory)
+        ICtuPageFactory factory,
+        IWebDriverService webDriver)
     {
         _logger = logger;
         _factory = factory;
-        _catalogPage = factory.GetPage<ICourseCatalogPage>();
+        _webDriver = webDriver;
+        _catalogPage = _factory.GetPage<ICourseCatalogPage>(webDriver.MainTab);
     }
 
     public async Task<OperationResult> EnsureReadyAsync()
     {
         try
         {
-            if (await _catalogPage.IsActive.FirstAsync())
-                return OperationResult.Success();
-
             await _catalogPage.NavigateToAsync();
+            await _catalogPage.WaitForReadyAsync();
             return OperationResult.Success();
         }
         catch (Exception ex)
@@ -58,14 +58,12 @@ public class CourseCatalogService : ICourseCatalogService
         return Observable.Create<List<QuickSelectCourse>>(async (observer, ct) =>
         {
             var subscription = _catalogPage.AutoCompleteQueryResponse
-                .Where(x => x is { IsSuccess: true, Content: not null })
-                .Select(x => x.Content!)
                 .Timeout(finalTimeout)
                 .Subscribe(observer);
 
             try
             {
-                await _catalogPage.FillQueryAsync(query, ct);
+                await _catalogPage.FillQueryAsync(query);
             }
             catch (OperationCanceledException)
             {
@@ -88,8 +86,7 @@ public class CourseCatalogService : ICourseCatalogService
         return Observable.Create<Course>(async (observer, ct) =>
         {
             var subscription = _catalogPage.CourseCatalogResponse
-                .Where(x => x is { IsSuccess: true, Content: not null })
-                .Select(x => x.Content?.ToCourse())
+                .Select(course => course.ToCourse())
                 .Where(course => course is not null && 
                                  course.Code.Equals(query, StringComparison.OrdinalIgnoreCase))
                 .Select(x => x!)
@@ -99,8 +96,8 @@ public class CourseCatalogService : ICourseCatalogService
 
             try
             {
-                await _catalogPage.FillQueryAsync(query, ct);
-                await _catalogPage.SearchAsync(ct);
+                await _catalogPage.FillQueryAsync(query);
+                await _catalogPage.SearchAsync();
             }
             catch (OperationCanceledException)
             {
@@ -118,21 +115,36 @@ public class CourseCatalogService : ICourseCatalogService
     
     public async Task<Course> FetchCourseAsync(string courseCode, CancellationToken cancellationToken = default, TimeSpan? timeout = null)
     {
-        if (!await _catalogPage.IsActive.FirstAsync())
-            throw new InvalidOperationException("Course catalog page is not active");
-        
         var finalTimeout = timeout ?? DefaultFetchTimeout;
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutCts.CancelAfter(finalTimeout);
+        
+        await using var workerTab = await _webDriver.CreateTabAsync();
         
         try
         {
-            return await RequestCourseStream(courseCode,finalTimeout)
-                .FirstAsync() 
-                .ToTask(cancellationToken);
+            var workerPage = _factory.GetPage<ICourseCatalogPage>(workerTab);
+            
+            // Lắng nghe tín hiệu kết quả trên tab phụ (chỉ bắt Data đầu tiên hợp lệ)
+            var getCourseTask = workerPage.CourseCatalogResponse
+                .Select(raw => raw.ToCourse())
+                .Where(course => course is not null && 
+                                 course.Code.Equals(courseCode, StringComparison.OrdinalIgnoreCase))
+                .Select(x => x!)
+                .FirstAsync()
+                .ToTask(timeoutCts.Token);
+
+            // Điều khiển tab phụ Navigate và bấm tìm kiếm
+            await workerPage.NavigateToAsync();
+            await workerPage.FillQueryAsync(courseCode);
+            await workerPage.SearchAsync();
+
+            return await getCourseTask;
         }
-        catch (TimeoutException)
+        catch (OperationCanceledException)
         {
-            _logger.LogWarning("Search for course {Code} timed out.", courseCode);
-            throw;
+            _logger.LogWarning("Search for course {Code} timed out or cancelled.", courseCode);
+            throw new TimeoutException($"Quá thời gian đáp ứng khi tìm môn học {courseCode}.");
         }
         catch (Exception ex)
         {

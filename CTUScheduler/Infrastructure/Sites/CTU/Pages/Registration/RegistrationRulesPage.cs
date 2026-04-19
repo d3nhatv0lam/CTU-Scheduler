@@ -1,18 +1,24 @@
-﻿using System;
+using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Infrastructure.DriverCore.Extensions;
 using CTUScheduler.Infrastructure.DriverCore.Refactor;
 using CTUScheduler.Infrastructure.Services.Network;
+using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
 using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.Registration;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 
-internal record UserInfoResult(string k, string u);
+internal class UserInfoResult
+{
+    public string k { get; set; } = string.Empty;
+    public string u { get; set; } = string.Empty;
+}
 
-public class RegistrationRulesPageRefactor : DkmhSpaPage
+public class RegistrationRulesPage : DkmhSpaPage, IRegistrationRulesPage
 {
     public override string PageUrl => "https://dkmhfe.ctu.edu.vn/dangkyhocphan/sinhvien/quydinhdangky";
     protected override string PageReadySelector => UserInfoButtonSelector;
@@ -23,7 +29,7 @@ public class RegistrationRulesPageRefactor : DkmhSpaPage
 
     public IObservable<RawRegistrationInformation> RawRegistrationInformationResponse { get; }
 
-    public RegistrationRulesPageRefactor(IWebTab tab, ConnectivityService connectivityService, ILoggerFactory logger) :
+    public RegistrationRulesPage(IWebTab tab, IConnectivityService connectivityService, ILoggerFactory logger) :
         base(tab, connectivityService, logger)
     {
         RawRegistrationInformationResponse = Tab.JsonResponse

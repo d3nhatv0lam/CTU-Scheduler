@@ -38,11 +38,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IWorkspaceStore, WorkspaceStore>();
         services.AddSingleton<IExcelExporterService, ExcelExporterService>();
 
-        // --- WebDriver Services (New Architecture Only) ---
+        // --- WebDriver Services ---
         services.AddSingleton<IWebDriverInstallerService, PlaywrightInstallerService>();
         services.AddSingleton<IWebDriverService, PlaywrightService>();
 
-        // --- Page Factory & Session Manager ---
+        // --- Page Factory ---
         services.AddSingleton<ICtuPageFactory, CtuPageFactory>();
 
         // --- Application Services ---

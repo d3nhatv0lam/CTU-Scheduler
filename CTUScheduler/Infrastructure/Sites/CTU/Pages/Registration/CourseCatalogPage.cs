@@ -1,17 +1,20 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Infrastructure.DriverCore.Extensions;
 using CTUScheduler.Infrastructure.DriverCore.Refactor;
 using CTUScheduler.Infrastructure.Services.Network;
+using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
 using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.CourseData;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 
-public class CourseCatalogPageRefactor : DkmhSpaPage
+public class CourseCatalogPage : DkmhSpaPage, ICourseCatalogPage
 {
     public override string PageUrl => "https://dkmhfe.ctu.edu.vn/dangkyhocphan/sinhvien/danhmuchocphan";
     protected override string PageReadySelector => SearchButtonSelector;
@@ -25,7 +28,7 @@ public class CourseCatalogPageRefactor : DkmhSpaPage
     public IObservable<List<QuickSelectCourse>> AutoCompleteQueryResponse { get; }
     public IObservable<RawCourse> CourseCatalogResponse { get; }
 
-    public CourseCatalogPageRefactor(IWebTab tab, ConnectivityService connectivityService, ILoggerFactory loggerFactory)
+    public CourseCatalogPage(IWebTab tab, IConnectivityService connectivityService, ILoggerFactory loggerFactory)
         : base(tab, connectivityService, loggerFactory)
     {
         AutoCompleteQueryResponse = Tab.JsonResponse
@@ -44,7 +47,7 @@ public class CourseCatalogPageRefactor : DkmhSpaPage
             .Where(res => res is { IsSuccess: true, Content: not null })
             .Select(x => x.Content!);
     }
-
+    
     public async Task FillQueryAsync(string query)
     {
         if (string.IsNullOrEmpty(query)) return;
@@ -55,7 +58,7 @@ public class CourseCatalogPageRefactor : DkmhSpaPage
     {
         await Tab.NativePage.ClickAsync(SearchButtonSelector);
     }
-
+    
     protected override async Task NavigateToFormSideBarAsync()
     {
         await this.Sidebar.NavigateToCatalogAsync();

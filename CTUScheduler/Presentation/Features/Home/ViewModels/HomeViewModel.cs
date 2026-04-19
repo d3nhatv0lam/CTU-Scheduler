@@ -6,7 +6,6 @@ using System.Reactive.Linq;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.UserSessionService;
-using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
 using CTUScheduler.Core.Models.Contributors;
 using CTUScheduler.Core.Models.Settings;
@@ -38,11 +37,13 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
             IRegistrationRulesService registrationRulesService)
         {
             HostScreen = hostScreen;
-
             _userSessionService = userSessionService;
             _registrationRulesService = registrationRulesService;
 
-            _registrationRulesService.RegistrationInfoChanges
+
+            Observable.StartAsync(async _ => await _registrationRulesService.EnsureReadyAsync())
+                .Where(x => x.IsSuccess)
+                .SelectMany(async _ => await registrationRulesService.FetchRegistrationInfoAsync())
                 .Subscribe(info => _userSessionService.UpdateServerInfo(info))
                 .DisposeWith(_disposable);
 
@@ -67,7 +68,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
                 disposable.Add(_disposable);
             });
 
-            LoadPage();
+            // LoadPage();
         }
 
         private void OpenUrl(string url)
