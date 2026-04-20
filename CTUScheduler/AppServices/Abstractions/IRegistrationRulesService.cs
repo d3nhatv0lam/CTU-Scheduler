@@ -8,6 +8,8 @@ namespace CTUScheduler.AppServices.Abstractions;
 
 public interface IRegistrationRulesService
 {
+    IObservable<RegistrationInformation> RegistrationInfoChanged { get; }
+    
     Task<OperationResult> EnsureReadyAsync();
 
     Task<RegistrationInformation> FetchRegistrationInfoAsync(

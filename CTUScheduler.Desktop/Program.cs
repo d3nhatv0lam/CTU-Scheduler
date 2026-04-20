@@ -6,7 +6,6 @@ using Avalonia;
 using Avalonia.Dialogs;
 using CTUScheduler.AppServices.Extensions;
 using CTUScheduler.Desktop.Configs;
-using CTUScheduler.Infrastructure.Exel;
 using CTUScheduler.Presentation.Extensions;
 using CTUScheduler.Presentation.Services.ApplicationLifetime;
 using Microsoft.Extensions.DependencyInjection;

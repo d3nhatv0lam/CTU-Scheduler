@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace CTUScheduler.Infrastructure.DriverCore.Refactor;
+namespace CTUScheduler.Infrastructure.DriverCore.Abstractions;
 
 public interface IWebDriverService
 {

@@ -10,7 +10,7 @@ using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
-using CTUScheduler.Infrastructure.Exel;
+using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;
 using DynamicData;
 using ReactiveUI;

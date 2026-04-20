@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Exceptions;
-using CTUScheduler.Infrastructure.DriverCore.Refactor;
+using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.Sites.Base;
 using CTUScheduler.Infrastructure.Sites.CTU.Routes;
 using Microsoft.Extensions.Logging;

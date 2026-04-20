@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading;
@@ -8,7 +10,7 @@ using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Shared.Results;
-using CTUScheduler.Infrastructure.DriverCore.Refactor;
+using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
 using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.CourseData;
@@ -20,14 +22,14 @@ public class CourseCatalogService : ICourseCatalogService
 {
     private static readonly TimeSpan DefaultFetchTimeout = TimeSpan.FromSeconds(3);
     private static readonly TimeSpan DefaultStreamTimeout = TimeSpan.FromSeconds(10);
-    
+
     private readonly ILogger<CourseCatalogService> _logger;
     private readonly ICtuPageFactory _factory;
     private readonly IWebDriverService _webDriver;
     private readonly ICourseCatalogPage _catalogPage;
-    
+
     public CourseCatalogService(
-        ILogger<CourseCatalogService> logger, 
+        ILogger<CourseCatalogService> logger,
         ICtuPageFactory factory,
         IWebDriverService webDriver)
     {
@@ -60,15 +62,9 @@ public class CourseCatalogService : ICourseCatalogService
             var subscription = _catalogPage.AutoCompleteQueryResponse
                 .Timeout(finalTimeout)
                 .Subscribe(observer);
-
             try
             {
                 await _catalogPage.FillQueryAsync(query);
-            }
-            catch (OperationCanceledException)
-            {
-                /* ignore */
-                _logger.LogDebug("suggestions stream cancelled by User");
             }
             catch (Exception ex)
             {
@@ -87,7 +83,7 @@ public class CourseCatalogService : ICourseCatalogService
         {
             var subscription = _catalogPage.CourseCatalogResponse
                 .Select(course => course.ToCourse())
-                .Where(course => course is not null && 
+                .Where(course => course is not null &&
                                  course.Code.Equals(query, StringComparison.OrdinalIgnoreCase))
                 .Select(x => x!)
                 .Take(1)
@@ -112,32 +108,28 @@ public class CourseCatalogService : ICourseCatalogService
             return subscription;
         });
     }
-    
-    public async Task<Course> FetchCourseAsync(string courseCode, CancellationToken cancellationToken = default, TimeSpan? timeout = null)
+
+    public async Task<Course> FetchCourseAsync(string courseCode, CancellationToken cancellationToken = default,
+        TimeSpan? timeout = null)
     {
         var finalTimeout = timeout ?? DefaultFetchTimeout;
         using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeoutCts.CancelAfter(finalTimeout);
         
-        await using var workerTab = await _webDriver.CreateTabAsync();
-        
         try
         {
-            var workerPage = _factory.GetPage<ICourseCatalogPage>(workerTab);
-            
-            // Lắng nghe tín hiệu kết quả trên tab phụ (chỉ bắt Data đầu tiên hợp lệ)
-            var getCourseTask = workerPage.CourseCatalogResponse
+            var getCourseTask = _catalogPage.CourseCatalogResponse
                 .Select(raw => raw.ToCourse())
-                .Where(course => course is not null && 
+                .Where(course => course is not null &&
                                  course.Code.Equals(courseCode, StringComparison.OrdinalIgnoreCase))
                 .Select(x => x!)
                 .FirstAsync()
                 .ToTask(timeoutCts.Token);
 
-            // Điều khiển tab phụ Navigate và bấm tìm kiếm
-            await workerPage.NavigateToAsync();
-            await workerPage.FillQueryAsync(courseCode);
-            await workerPage.SearchAsync();
+            await _catalogPage.NavigateToAsync();
+            await _catalogPage.WaitForReadyAsync();
+            await _catalogPage.FillQueryAsync(courseCode);
+            await _catalogPage.SearchAsync();
 
             return await getCourseTask;
         }
@@ -151,5 +143,68 @@ public class CourseCatalogService : ICourseCatalogService
             _logger.LogError(ex, "Fail to fetch course {Code}", courseCode);
             throw;
         }
+    }
+
+    public async Task<List<Course>> FetchCoursesBatchAsync(
+        IEnumerable<string> courseCodes,
+        int maxWorkers = 3,
+        CancellationToken cancellationToken = default,
+        TimeSpan? timeoutPerItem = null)
+    {
+        var results = new ConcurrentBag<Course>();
+        var codesList = courseCodes.Distinct().ToList();
+
+        if (!codesList.Any()) return new List<Course>();
+
+        var parallelOptions = new ParallelOptions
+        {
+            MaxDegreeOfParallelism = maxWorkers,
+            CancellationToken = cancellationToken
+        };
+
+        _logger.LogInformation("Bắt đầu cào {Count} môn học với {Workers} worker tabs...", codesList.Count, maxWorkers);
+
+        await Parallel.ForEachAsync(codesList, parallelOptions, async (courseCode, ct) =>
+        {
+            try
+            {
+                var course = await FetchSingleCourseWithWorkerAsync(courseCode, ct, timeoutPerItem);
+                results.Add(course);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Worker thất bại khi lấy mã {Code}. Sẽ bỏ qua mã này.", courseCode);
+            }
+        });
+
+        return results.ToList();
+    }
+
+
+    private async Task<Course> FetchSingleCourseWithWorkerAsync(string courseCode, CancellationToken ct,
+        TimeSpan? timeout)
+    {
+        var finalTimeout = timeout ?? DefaultFetchTimeout;
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeoutCts.CancelAfter(finalTimeout);
+
+        await using var workerTab = await _webDriver.CreateTabAsync();
+
+        var workerPage = _factory.GetPage<ICourseCatalogPage>(workerTab);
+
+        var getCourseTask = workerPage.CourseCatalogResponse
+            .Select(raw => raw.ToCourse())
+            .Where(course => course is not null &&
+                             course.Code.Equals(courseCode, StringComparison.OrdinalIgnoreCase))
+            .Select(x => x!)
+            .FirstAsync()
+            .ToTask(timeoutCts.Token);
+
+        await workerPage.NavigateToAsync();
+        await workerPage.WaitForReadyAsync();
+        await workerPage.FillQueryAsync(courseCode);
+        await workerPage.SearchAsync();
+
+        return await getCourseTask;
     }
 }

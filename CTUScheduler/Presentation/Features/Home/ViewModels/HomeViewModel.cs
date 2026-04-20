@@ -40,11 +40,13 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
             _userSessionService = userSessionService;
             _registrationRulesService = registrationRulesService;
 
-
+            _registrationRulesService.RegistrationInfoChanged
+                .Subscribe(info => _userSessionService.UpdateServerInfo(info))
+                .DisposeWith(_disposable);
+            
             Observable.StartAsync(async _ => await _registrationRulesService.EnsureReadyAsync())
                 .Where(x => x.IsSuccess)
-                .SelectMany(async _ => await registrationRulesService.FetchRegistrationInfoAsync())
-                .Subscribe(info => _userSessionService.UpdateServerInfo(info))
+                .Subscribe()
                 .DisposeWith(_disposable);
 
             _registrationInfo = _userSessionService.RegistrationInfoChanged

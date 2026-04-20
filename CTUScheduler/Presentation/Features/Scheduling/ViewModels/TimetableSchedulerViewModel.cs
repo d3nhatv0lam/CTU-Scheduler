@@ -14,6 +14,7 @@ using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Validators;
+using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
@@ -23,7 +24,6 @@ using CTUScheduler.Presentation.Shared.Models;
 using DynamicData;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
-using CTUScheduler.Infrastructure.Exel;
 
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels;

@@ -2,11 +2,11 @@ using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
-using CTUScheduler.Infrastructure.DriverCore.Refactor;
 using CTUScheduler.Infrastructure.Sites.Base;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using Microsoft.Extensions.Logging;
 using System.Threading;
+using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Main;
 

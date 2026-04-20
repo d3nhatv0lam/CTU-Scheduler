@@ -5,7 +5,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.Core.Models.Shared;
-using CTUScheduler.Infrastructure.Exel;
+using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Models;

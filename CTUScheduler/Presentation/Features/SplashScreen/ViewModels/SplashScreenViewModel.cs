@@ -11,7 +11,7 @@ using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Infrastructure.DriverCore;
-using CTUScheduler.Infrastructure.DriverCore.Refactor;
+using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.SplashScreen.Components.Installation.ViewModels;
@@ -26,7 +26,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
 {
     private readonly CompositeDisposable _disposables = new();
     private readonly IConnectivityService _connectivityService;
-    private readonly Infrastructure.DriverCore.Refactor.IWebDriverService _webDriverServiceRefactor;
+    private readonly IWebDriverService _webDriverServiceRefactor;
     private readonly IApplicationLifetime _appLifetime;
     private readonly CancellationTokenSource _localCts = new();
     
@@ -64,7 +64,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
 
     public SplashScreenViewModel(
         IConnectivityService connectivityService,
-        Infrastructure.DriverCore.Refactor.IWebDriverService webDriverServiceRefactor,
+        IWebDriverService webDriverServiceRefactor,
         IWebDriverInstallerService webDriverInstallerService,
         IApplicationLifetime appLifetime)
     {

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Shared.Results;
-using CTUScheduler.Infrastructure.DriverCore.Refactor;
+using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;

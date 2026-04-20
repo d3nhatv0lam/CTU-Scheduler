@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 
-namespace CTUScheduler.Infrastructure.DriverCore.Refactor;
+namespace CTUScheduler.Infrastructure.DriverCore;
 
 public class PlaywrightService : IWebDriverService, IAsyncDisposable
 {
     private readonly SemaphoreSlim _lock = new(1, 1);
     private readonly ILogger<PlaywrightService> _logger;
     private readonly IWebDriverInstallerService _installer;
+    private bool _isDisposed;
     private bool _isInitialized;
     private IPlaywright? _playwright;
     private IBrowser? _browser;
@@ -23,7 +25,6 @@ public class PlaywrightService : IWebDriverService, IAsyncDisposable
                throw new InvalidOperationException("Browser chưa được khởi tạo. Hãy gọi InitBrowserAsync trước!");
         private set => _mainPage = value;
     }
-
 
     public PlaywrightService(IWebDriverInstallerService installer, ILogger<PlaywrightService> logger)
     {
@@ -75,16 +76,8 @@ public class PlaywrightService : IWebDriverService, IAsyncDisposable
 
     public async Task<IWebTab> CreateTabAsync()
     {
-        await _lock.WaitAsync();
-        try
-        {
-            if (_context is null) throw new InvalidOperationException("Browser Context not ready.");
-            return await CreateTabInternalAsync();
-        }
-        finally
-        {
-            _lock.Release();
-        }
+        if (_context is null) throw new InvalidOperationException("Browser Context not ready.");
+        return await CreateTabInternalAsync();
     }
 
     private async Task InitInternalAsync()
@@ -99,20 +92,26 @@ public class PlaywrightService : IWebDriverService, IAsyncDisposable
 
     private async Task<IWebTab> CreateTabInternalAsync()
     {
-        return new WebTab(await _context!.NewPageAsync());
+        return await WebTab.CreateAsync(await _context!.NewPageAsync());
     }
 
     public async ValueTask DisposeAsync()
     {
+        if (_isDisposed) return;
+
         await _lock.WaitAsync();
         try
         {
+            if (_isDisposed) return;
+
             if (_mainPage is not null) await MainTab.DisposeAsync();
             if (_context is not null) await _context.DisposeAsync();
             if (_browser is not null) await _browser.DisposeAsync();
 
             _playwright?.Dispose();
+
             _isInitialized = false;
+            _isDisposed = true;
             _logger.LogInformation("PlaywrightService Disposed!");
         }
         finally

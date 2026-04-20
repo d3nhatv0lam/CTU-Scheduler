@@ -4,10 +4,12 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using CTUScheduler.Infrastructure.DriverCore.Abstractions;
+using CTUScheduler.Infrastructure.DriverCore.Models;
 using CTUScheduler.Infrastructure.DriverCore.Response;
 using Microsoft.Playwright;
 
-namespace CTUScheduler.Infrastructure.DriverCore.Refactor;
+namespace CTUScheduler.Infrastructure.DriverCore;
 
 public class WebTab : IWebTab
 {
@@ -19,7 +21,7 @@ public class WebTab : IWebTab
     private readonly Subject<DialogInfo> _confirmSubject = new();
     private readonly Subject<DialogInfo> _promptSubject = new();
     
-    public WebTab(IPage page)
+    private WebTab(IPage page)
     {
         ArgumentNullException.ThrowIfNull(page);
         _page = page;
@@ -39,7 +41,6 @@ public class WebTab : IWebTab
 
         SetupReactiveEvents();
         SetupDialogEvents();
-        OptimizePageLoad();
     }
 
     public IPage NativePage => _page;
@@ -49,16 +50,32 @@ public class WebTab : IWebTab
     public IObservable<DialogInfo> AlertReceived { get; }
     public IObservable<DialogInfo> ConfirmReceived { get; }
     public IObservable<DialogInfo> PromptReceived { get; }
-
-    private void OptimizePageLoad()
+    
+    public static async Task<WebTab> CreateAsync(IPage page)
     {
-        _page.RouteAsync("**/*", async route =>
+        var tab = new WebTab(page);
+        
+        await tab.OptimizePageLoadAsync();
+        
+        return tab;
+    }
+
+    private async Task OptimizePageLoadAsync()
+    {
+        var routeTask = _page.RouteAsync("**/*", async route =>
         {
             if (route.Request.ResourceType is "font" or "image")
                 await route.AbortAsync();
             else
                 await route.ContinueAsync();
         });
+        
+        var mediaTask = NativePage.EmulateMediaAsync(new PageEmulateMediaOptions 
+        { 
+            ReducedMotion = ReducedMotion.Reduce 
+        });
+
+        await Task.WhenAll(routeTask, mediaTask);
     }
 
     private void SetupReactiveEvents()
@@ -142,7 +159,8 @@ public class WebTab : IWebTab
             .Subscribe()
             .DisposeWith(_disposables);
     }
-
+    
+    
     public async ValueTask DisposeAsync()
     {
         _jsonResponseSubject.OnCompleted();

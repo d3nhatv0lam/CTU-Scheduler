@@ -5,7 +5,7 @@ using CTUScheduler.Infrastructure.Sites.Base;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 
-public interface ILoginPage : ISitePageRefactor
+public interface ILoginPage : ISitePage
 {
     Task FillCredentialsAsync(string username, string password);
     Task SubmitAsync();

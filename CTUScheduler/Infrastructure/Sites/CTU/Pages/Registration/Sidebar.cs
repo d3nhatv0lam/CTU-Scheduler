@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using CTUScheduler.Infrastructure.DriverCore.Refactor;
+using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 

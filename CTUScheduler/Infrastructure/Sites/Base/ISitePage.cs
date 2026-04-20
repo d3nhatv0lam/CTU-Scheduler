@@ -6,7 +6,7 @@ namespace CTUScheduler.Infrastructure.Sites.Base;
 /// <summary>
 /// Interface cho các page objects trong kiến trúc mới
 /// </summary>
-public interface ISitePageRefactor
+public interface ISitePage
 {
     string PageUrl { get; }
     string CurrentUrl { get; }

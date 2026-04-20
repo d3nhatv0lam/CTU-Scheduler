@@ -2,8 +2,8 @@ using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
+using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.DriverCore.Extensions;
-using CTUScheduler.Infrastructure.DriverCore.Refactor;
 using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
@@ -48,6 +48,8 @@ public class RegistrationRulesPage : DkmhSpaPage, IRegistrationRulesPage
         {
             await Tab.NativePage.ClickAsync(UserInfoButtonSelector);
             await Tab.NativePage.ClickAsync(UserSettingButtonSelector);
+            
+            await Tab.NativePage.WaitForSelectorAsync(".ant-modal-close");
 
             string jsCode = @"(args) => {
                 const getVal = (label) => {

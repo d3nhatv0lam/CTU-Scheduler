@@ -6,10 +6,11 @@ using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Helpers;
+using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 
-namespace CTUScheduler.Infrastructure.DriverCore.Refactor;
+namespace CTUScheduler.Infrastructure.DriverCore;
 
 public class PlaywrightInstallerService: IWebDriverInstallerService, IDisposable
 {

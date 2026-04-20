@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using CTUScheduler.Infrastructure.DriverCore.Refactor;
+using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.Sites.Base;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +22,7 @@ public class CtuPageFactory: ICtuPageFactory
         {
             var assembly = typeof(AppPage).Assembly;
             var implementations = assembly.GetTypes()
-                .Where(t => typeof(ISitePageRefactor).IsAssignableFrom(t) && t is { IsClass: true, IsAbstract: false });
+                .Where(t => typeof(ISitePage).IsAssignableFrom(t) && t is { IsClass: true, IsAbstract: false });
 
             foreach (var impl in implementations)
             {
@@ -37,7 +37,7 @@ public class CtuPageFactory: ICtuPageFactory
         }
     }
 
-    public T GetPage<T>(IWebTab tab) where T : class, ISitePageRefactor
+    public T GetPage<T>(IWebTab tab) where T : class, ISitePage
     {
         var interfaceType = typeof(T);
 

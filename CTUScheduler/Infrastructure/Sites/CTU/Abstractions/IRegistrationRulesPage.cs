@@ -5,7 +5,7 @@ using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.Registration;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 
-public interface IRegistrationRulesPage: ISitePageRefactor
+public interface IRegistrationRulesPage: ISitePage
 {
     IObservable<RawRegistrationInformation> RawRegistrationInformationResponse { get; }
 

@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Threading.Tasks;
+using CTUScheduler.Infrastructure.DriverCore.Models;
 using CTUScheduler.Infrastructure.DriverCore.Response;
 using Microsoft.Playwright;
 
-namespace CTUScheduler.Infrastructure.DriverCore.Refactor;
+namespace CTUScheduler.Infrastructure.DriverCore.Abstractions;
 
 public interface IWebTab : IAsyncDisposable
 {

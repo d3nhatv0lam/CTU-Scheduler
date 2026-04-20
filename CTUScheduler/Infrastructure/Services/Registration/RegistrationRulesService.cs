@@ -8,10 +8,9 @@ using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Shared.Results;
-using CTUScheduler.Infrastructure.DriverCore.Refactor;
+using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
-using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.Registration;
 using Microsoft.Extensions.Logging;
 
@@ -24,7 +23,6 @@ public class RegistrationRulesService : IRegistrationRulesService
     private readonly ICtuPageFactory _factory;
     private readonly IWebDriverService _webDriverService;
     private readonly IRegistrationRulesPage _rulesPage;
-    private readonly IObservable<RegistrationInformation> _registrationInfoChanges;
 
     public RegistrationRulesService(
         ICtuPageFactory factory,
@@ -36,8 +34,15 @@ public class RegistrationRulesService : IRegistrationRulesService
         _webDriverService = webDriverService;
         _rulesPage = _factory.GetPage<IRegistrationRulesPage>(webDriverService.MainTab);
 
-        //TODO
+        RegistrationInfoChanged = _rulesPage.RawRegistrationInformationResponse
+                .SelectMany(async (x, ct) => await ProcessRegistrationInfoAsync(x, ct))
+                .Where(x => x is not null)
+                .Select(x => x!)
+                .Replay(1)
+                .RefCount();
     }
+
+    public IObservable<RegistrationInformation> RegistrationInfoChanged { get; }
 
     public async Task<OperationResult> EnsureReadyAsync()
     {
@@ -77,7 +82,7 @@ public class RegistrationRulesService : IRegistrationRulesService
     {
         var finalTimeout = timeout ?? DefaultFetchTimeout;
 
-        return await _registrationInfoChanges
+        return await RegistrationInfoChanged
             .Timeout(finalTimeout)
             .FirstAsync()
             .ToTask(cancellationToken);

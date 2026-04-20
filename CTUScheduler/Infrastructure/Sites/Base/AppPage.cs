@@ -3,14 +3,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Exceptions;
-using CTUScheduler.Infrastructure.DriverCore.Refactor;
+using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Routes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 
 namespace CTUScheduler.Infrastructure.Sites.Base;
 
-public abstract class AppPage : ISitePageRefactor
+public abstract class AppPage : ISitePage
 {
     protected readonly IWebTab Tab;
     protected readonly IConnectivityService ConnectivityService;

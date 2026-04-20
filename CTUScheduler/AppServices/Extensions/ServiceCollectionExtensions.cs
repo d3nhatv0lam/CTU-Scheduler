@@ -6,13 +6,14 @@ using CTUScheduler.AppServices.Services.TimetableGeneratorService;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.AppServices.Services.UserSettingService;
 using CTUScheduler.AppServices.State;
-using CTUScheduler.Infrastructure.DriverCore.Refactor;
+using CTUScheduler.Infrastructure.DriverCore;
+using CTUScheduler.Infrastructure.DriverCore.Abstractions;
+using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Infrastructure.Services.Auth;
 using CTUScheduler.Infrastructure.Services.MainHomeService;
 using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Infrastructure.Services.Registration;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
-using CTUScheduler.Infrastructure.Exel;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
