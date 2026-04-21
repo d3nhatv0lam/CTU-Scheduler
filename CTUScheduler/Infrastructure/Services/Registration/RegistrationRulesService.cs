@@ -1,92 +1,98 @@
-﻿using System;
+using System;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
-using CTUScheduler.Core.Extensions;
+using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Shared.Results;
+using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
-using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.Registration;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Services.Registration;
 
-public class RegistrationRulesService: IRegistrationRulesService
+public class RegistrationRulesService : IRegistrationRulesService
 {
     private static readonly TimeSpan DefaultFetchTimeout = TimeSpan.FromSeconds(10);
     private readonly ILogger<RegistrationRulesService> _logger;
-    private readonly ICtuSitePageFactory _factory;
+    private readonly ICtuPageFactory _factory;
+    private readonly IWebDriverService _webDriverService;
     private readonly IRegistrationRulesPage _rulesPage;
-    
-    public IObservable<RegistrationInformation> RegistrationInfoChanges { get; }
+
     public RegistrationRulesService(
-        ICtuSitePageFactory factory,
+        ICtuPageFactory factory,
+        IWebDriverService webDriverService,
         ILogger<RegistrationRulesService> logger)
     {
         _factory = factory;
         _logger = logger;
-        _rulesPage = factory.GetPage<IRegistrationRulesPage>();
-        
-        RegistrationInfoChanges = _rulesPage.RawRegistrationInformationResponse
-            .Where(x => x is {IsSuccess:true, Content: not null})
-            .Select(x => x.Content!)
-            .SelectMany(async (x, ct) => await ProcessRegistrationInfoAsync(x, ct))
-            .Where(x => x is not null)
-            .Select(x => x!)
-            .Publish()
-            .RefCount();
+        _webDriverService = webDriverService;
+        _rulesPage = _factory.GetPage<IRegistrationRulesPage>(webDriverService.MainTab);
+
+        RegistrationInfoChanged = _rulesPage.RawRegistrationInformationResponse
+                .SelectMany(async (x, ct) => await ProcessRegistrationInfoAsync(x, ct))
+                .Where(x => x is not null)
+                .Select(x => x!)
+                .Replay(1)
+                .RefCount();
     }
+
+    public IObservable<RegistrationInformation> RegistrationInfoChanged { get; }
 
     public async Task<OperationResult> EnsureReadyAsync()
     {
         try
         {
-            if (await _rulesPage.IsActive.FirstAsync())
-                return OperationResult.Success();
-            
-            await _rulesPage.NavigateToAsync(allowRedirection:false);
-            
-            var homePage = _factory.GetPage<IMainPage>();
-            if (await homePage.TryWaitForActiveAsync( stabilityMs:1000,timeout:10000))
+            var mainPage = _factory.GetPage<IMainPage>(_webDriverService.MainTab);
+            if (await mainPage.IsActiveAsync())
             {
-                await homePage.NavigateToDkmhAsync();
-                if (!await _rulesPage.TryWaitForActiveAsync()) 
-                    throw new InvalidOperationException("Trang dkmh chưa được load xong");
+                await mainPage.NavigateToDkmhAsync();
+                await _rulesPage.WaitForReadyAsync();
+                return OperationResult.Success();
             }
+
+            await _rulesPage.NavigateToAsync();
+            await _rulesPage.WaitForReadyAsync();
+
             return OperationResult.Success();
         }
         catch (InvalidOperationException ex)
         {
-            return OperationResult.Failed(ex.Message, kind:OperationFailureReason.Network);
+            return OperationResult.Failed(ex.Message, kind: OperationFailureReason.Network);
+        }
+        catch (SessionExpiredException ex)
+        {
+            return OperationResult.Failed(ex.Message, kind: OperationFailureReason.Unauthorized);
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to navigate to registration rules page");
-            return OperationResult.Failed("Hệ thống truy cập trang dkmh không thành công!", kind:OperationFailureReason.Unauthorized);
+            return OperationResult.Failed("Hệ thống truy cập trang dkmh không thành công!",
+                kind: OperationFailureReason.Unauthorized);
         }
     }
-    
+
     public async Task<RegistrationInformation> FetchRegistrationInfoAsync(CancellationToken cancellationToken = default
         , TimeSpan? timeout = null)
     {
-        await EnsureReadyAsync();
-        
         var finalTimeout = timeout ?? DefaultFetchTimeout;
-        
-        return await RegistrationInfoChanges
+
+        return await RegistrationInfoChanged
             .Timeout(finalTimeout)
             .FirstAsync()
+            .Timeout(finalTimeout)
             .ToTask(cancellationToken);
     }
-    
-    private async Task<RegistrationInformation?> ProcessRegistrationInfoAsync(RawRegistrationInformation rawContent, CancellationToken token)
+
+    private async Task<RegistrationInformation?> ProcessRegistrationInfoAsync(RawRegistrationInformation rawContent,
+        CancellationToken token)
     {
-        try 
+        try
         {
             var userInfo = await _rulesPage.TryGetUserKeyAndUnitAsync();
             return rawContent.ToRegistrationInformation(userInfo.userKey, userInfo.userUnit);
@@ -94,7 +100,7 @@ public class RegistrationRulesService: IRegistrationRulesService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to parse registration info or get user key.");
-            return null; 
+            return null;
         }
     }
 }

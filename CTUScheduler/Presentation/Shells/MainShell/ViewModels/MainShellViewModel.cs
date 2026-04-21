@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -76,10 +76,13 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             _navigationRegionManager.Register(RegionIds.Main, this)
                 .DisposeWith(_disposables);
 
-            _mainHomeService.StudentIdChanges
+            Observable.Defer(() => Observable.StartAsync(_ => _mainHomeService.EnsureReadyAsync())
+                    .Where(x => x.IsSuccess))
+                .SelectMany(_ =>_mainHomeService.GetStudentIdAsync())
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(userText =>
                 {
+                    if (string.IsNullOrWhiteSpace(userText)) return;
                     string[] userInfoArray = userText.Split(" ");
                     UserName = string.Join(' ', userInfoArray[..^1]);
                     UserMSSV = userInfoArray[^1];

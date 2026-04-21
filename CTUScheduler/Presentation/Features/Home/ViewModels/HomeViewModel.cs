@@ -6,7 +6,6 @@ using System.Reactive.Linq;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.UserSessionService;
-using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
 using CTUScheduler.Core.Models.Contributors;
 using CTUScheduler.Core.Models.Settings;
@@ -26,8 +25,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
         public IScreen HostScreen { get; }
         public ViewModelActivator Activator { get; } = new();
         public RegistrationInformation RegistrationInfo => _registrationInfo.Value;
-
-
+        
         public ReactiveCommand<Unit, Unit> OpenFacebookCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenYoutubeCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenGithubCommand { get; }
@@ -38,12 +36,16 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
             IRegistrationRulesService registrationRulesService)
         {
             HostScreen = hostScreen;
-
             _userSessionService = userSessionService;
             _registrationRulesService = registrationRulesService;
 
-            _registrationRulesService.RegistrationInfoChanges
+            _registrationRulesService.RegistrationInfoChanged
                 .Subscribe(info => _userSessionService.UpdateServerInfo(info))
+                .DisposeWith(_disposable);
+            
+            Observable.StartAsync(async _ => await _registrationRulesService.EnsureReadyAsync())
+                .Where(x => x.IsSuccess)
+                .Subscribe()
                 .DisposeWith(_disposable);
 
             _registrationInfo = _userSessionService.RegistrationInfoChanged
@@ -67,7 +69,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
                 disposable.Add(_disposable);
             });
 
-            LoadPage();
+            // LoadPage();
         }
 
         private void OpenUrl(string url)

@@ -5,7 +5,7 @@ using ClosedXML.Excel;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Shared;
 
-namespace CTUScheduler.Infrastructure.Exel;
+namespace CTUScheduler.Infrastructure.Excel;
 
 public static class TimetableExcelBuilder
 {

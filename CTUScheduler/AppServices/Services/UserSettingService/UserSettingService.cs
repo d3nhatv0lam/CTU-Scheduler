@@ -40,6 +40,6 @@ public class UserSettingService: IUserSettingService, IDisposable
     public void Dispose()
     {
         _settingsSubject.Dispose();
-        _saveSubscription.Dispose();
+        // _saveSubscription.Dispose();
     }
 }

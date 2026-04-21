@@ -1,8 +1,8 @@
-﻿using CTUScheduler.Core.Models.Shared;
+﻿using System.Threading.Tasks;
+using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Shared.Results;
-using System.Threading.Tasks;
 
-namespace CTUScheduler.Infrastructure.Exel;
+namespace CTUScheduler.Infrastructure.Excel;
 
 public interface IExcelExporterService
 {

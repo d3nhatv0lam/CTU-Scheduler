@@ -25,7 +25,9 @@ public class ConnectivityService: IConnectivityService, IDisposable
     private readonly BehaviorSubject<bool> _internetSubject;
     private readonly HttpClient _httpClient;
     private readonly TimeSpan _checkInterval = TimeSpan.FromSeconds(5);
+    
     public IObservable<bool> IsInternetAvailable { get; }
+    public bool HasInternetAccess => _internetSubject.Value;
 
     public ConnectivityService(ILogger<ConnectivityService> logger, IScheduler? scheduler = null)
     {
@@ -70,7 +72,6 @@ public class ConnectivityService: IConnectivityService, IDisposable
             }, ex =>
             {
                 _logger.LogCritical(ex, "ConnectivityService CRASHED - Timer stopped!");
-                // nếu lỗi thì coi như mất mạng
                 _internetSubject.OnNext(false);
             })
             .DisposeWith(_disposables);

@@ -1,27 +1,58 @@
-﻿using System;
-using System.Reactive.Linq;
+using System;
+using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
+using System.Threading;
+using CTUScheduler.Core.Exceptions;
+using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Core.Models.Shared.Results;
+using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
-using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Services.MainHomeService;
 
 public class MainHomeService: IMainHomeService
 {
-    private readonly ICtuSitePageFactory _ctuSitePageFactory;
     private readonly ILogger<MainHomeService> _logger;
-    private readonly IMainPage _mainPage;
-
-    public IObservable<string> StudentIdChanges { get; } 
-    public MainHomeService(ICtuSitePageFactory ctuSitePageFactory, ILogger<MainHomeService> logger)
+    private readonly IWebDriverService _webDriverService;
+    private readonly ICtuPageFactory _pageFactory;
+    
+    public MainHomeService(
+        IWebDriverService webDriverService,
+        ICtuPageFactory pageFactory,
+        ILogger<MainHomeService> logger)
     {
-        _ctuSitePageFactory = ctuSitePageFactory;
         _logger = logger;
-        _mainPage = _ctuSitePageFactory.GetPage<IMainPage>();
-        
-        StudentIdChanges = _mainPage.UserInfoChanges
-            .Where(x => !string.IsNullOrWhiteSpace(x));
+        _webDriverService = webDriverService;
+        _pageFactory = pageFactory;
     }
     
+    public async Task<OperationResult> EnsureReadyAsync()
+    {
+        var mainPage = _pageFactory.GetPage<IMainPage>(_webDriverService.MainTab);
+        try
+        {
+            await mainPage.NavigateToAsync();
+            await mainPage.WaitForReadyAsync();
+            await mainPage.CheckSessionAndThrowAsync();
+            return OperationResult.Success();
+        }
+        catch (SessionExpiredException ex)
+        {
+            _logger.LogDebug(ex, "Session expired");
+            return OperationResult.Failed(ex.Message, kind: OperationFailureReason.Unauthorized);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex,"Lỗi không xác định");
+            return  OperationResult.Failed("Lỗi hệ thống!", kind: OperationFailureReason.System);
+        }
+    }
+    
+    public async Task<string> GetStudentIdAsync(CancellationToken cancellationToken = default)
+    {
+        var mainPage = _pageFactory.GetPage<IMainPage>(_webDriverService.MainTab);
+        if (!await mainPage.IsActiveAsync()) return string.Empty;
+        return await mainPage.GetUserInfoAsync(cancellationToken);
+    }
 }

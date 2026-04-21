@@ -52,6 +52,7 @@ public static class AppConstants
     // ====================================================
     public static class Urls
     {
+        public const string GithubRepo = "https://github.com/d3nhatv0lam/CTU-Scheduler";
         public const string CtuSignIn = "https://htql.ctu.edu.vn/";
     }
 

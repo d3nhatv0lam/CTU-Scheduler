@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Shared.Results;
 
-namespace CTUScheduler.Infrastructure.Exel;
+namespace CTUScheduler.Infrastructure.Excel;
 
 public class ExcelExporterService : IExcelExporterService
 {
@@ -14,7 +14,7 @@ public class ExcelExporterService : IExcelExporterService
             if (!blueprint.IsConsistent)
                 return OperationResult<string>.Failed("Dữ liệu Thời khóa biểu không nhất quán.");
 
-            var wb = await Task.Run(() => CTUScheduler.Infrastructure.Exel.TimetableExcelBuilder.BuildWorkbook(blueprint, "Thời Khóa Biểu"));
+            var wb = await Task.Run(() => TimetableExcelBuilder.BuildWorkbook(blueprint, "Thời Khóa Biểu"));
 
             var dir = System.IO.Path.GetDirectoryName(filePath);
             if (!string.IsNullOrEmpty(dir) && !System.IO.Directory.Exists(dir))

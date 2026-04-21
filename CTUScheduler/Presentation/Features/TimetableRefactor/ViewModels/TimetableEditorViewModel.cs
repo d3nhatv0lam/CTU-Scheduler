@@ -10,7 +10,7 @@ using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
-using CTUScheduler.Infrastructure.Exel;
+using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;
 using DynamicData;
 using ReactiveUI;
@@ -20,13 +20,12 @@ namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
 public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<ScheduleProfile>
 {
-    public readonly ScheduleProfile _scheduleProfile;
-
-    public ScheduleProfile ScheduleProfile => _scheduleProfile;
+    private readonly ScheduleProfile _scheduleProfile;
     private readonly ObservableAsPropertyHelper<bool> _isEditing;
     private readonly ICourseQueryService _courseQueryService;
+    
+    public ScheduleProfile ScheduleProfile => _scheduleProfile;
     public bool IsEditing => _isEditing.Value;
-
     public ReactiveCommand<Unit, Unit> StartEditCommand { get; }
     public ReactiveCommand<Unit, Unit> SaveCommand { get; }
     public ReactiveCommand<Unit, Unit> CancelCommand { get; }
@@ -38,8 +37,9 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
         IExcelExporterService excelExporter) : base(excelExporter)
     {
         ArgumentNullException.ThrowIfNull(scheduleProfile);
+        
         _scheduleProfile = scheduleProfile;
-        _courseQueryService = courseQueryService ?? throw new ArgumentNullException(nameof(courseQueryService));
+        _courseQueryService = courseQueryService;
 
         Name = _scheduleProfile.Name;
         LastUpdated = _scheduleProfile.LastUpdated;
@@ -134,6 +134,6 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
     public override void Dispose()
     {
         base.Dispose();
-        Debug.WriteLine($"TimetableEditorViewModel ID: {_scheduleProfile.Id}, Name: {Name} disposed");
+        Debug.WriteLine($"TimetableEditorViewModel ID: {_scheduleProfile.Id}, Name: {Name} has been disposed");
     }
 }
