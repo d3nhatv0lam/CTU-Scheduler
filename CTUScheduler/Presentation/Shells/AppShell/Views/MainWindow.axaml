@@ -35,7 +35,8 @@
             <u:IconButton
                 Theme="{StaticResource BorderlessIconButton}"
                 Classes="Tertiary"
-                Icon="{StaticResource SemiIconGithubLogo}" />
+                Icon="{StaticResource SemiIconGithubLogo}" 
+                Command="{Binding OpenGithubRepo}"/>
             <!-- <u:ThemeToggleButton -->
             <!--     Mode="Controller" /> -->
         </StackPanel>

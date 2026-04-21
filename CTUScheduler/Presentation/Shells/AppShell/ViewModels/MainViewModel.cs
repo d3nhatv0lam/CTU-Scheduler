@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Abstractions;
+using CTUScheduler.AppServices.Helpers;
+using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Services.Navigation;
@@ -33,6 +36,8 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
     
     [Reactive(SetModifier = AccessModifier.Private)]
     private string _windowTitle = "CTU Scheduler";
+    
+    public ReactiveCommand<Unit, Unit> OpenGithubRepo { get; }
 
 
     public MainViewModel(
@@ -47,6 +52,9 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
         ViewContext = viewContextService;
 
         _navigationRegionManager.Register(_regionId, this)
+            .DisposeWith(_disposables);
+        
+        OpenGithubRepo = ReactiveCommand.Create(() => ProcessHelper.OpenUrl(AppConstants.Urls.GithubRepo))
             .DisposeWith(_disposables);
 
         _navigationRegionManager.NavigateAndResetTo<LoginViewModel>(_regionId);
@@ -71,6 +79,9 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
                     }
 
                 }).DisposeWith(disposables);
+
+            Disposable.Create(this.Dispose)
+                .DisposeWith(disposables);
         });
     }
 
