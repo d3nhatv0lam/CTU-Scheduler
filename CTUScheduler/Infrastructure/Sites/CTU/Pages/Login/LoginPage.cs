@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Exceptions;
+using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
@@ -115,11 +116,12 @@ public class LoginPage : AppPage, ILoginPage
         ).WaitAsync(cancellationToken);
 
         var errorOption = new PageWaitForSelectorOptions { State = WaitForSelectorState.Visible, Timeout = 0 };
-        var waitForErrorTask = Task.WhenAny(
-            Tab.NativePage.WaitForSelectorAsync(UsernameErrorSelector, errorOption),
-            Tab.NativePage.WaitForSelectorAsync(PasswordErrorSelector, errorOption),
-            Tab.NativePage.WaitForSelectorAsync(LoginFailSelector, errorOption)
-        ).WaitAsync(cancellationToken);
+        
+        var t1 = Tab.NativePage.WaitForSelectorAsync(UsernameErrorSelector, errorOption);
+        var t2 = Tab.NativePage.WaitForSelectorAsync(PasswordErrorSelector, errorOption);
+        var t3 = Tab.NativePage.WaitForSelectorAsync(LoginFailSelector, errorOption);
+        
+        var waitForErrorTask = Task.WhenAny(t1, t2, t3).WaitAsync(cancellationToken);
 
         var timeoutTask = Task.Delay(15000, cancellationToken);
 
@@ -131,8 +133,13 @@ public class LoginPage : AppPage, ILoginPage
     {
         var completedTask = await Task.WhenAny(successTask, errorTask, timeoutTask);
 
+        successTask.FireAndForgetSafe();
+        errorTask.FireAndForgetSafe();
+        timeoutTask.FireAndForgetSafe();
+        
         if (completedTask == successTask)
         {
+            await successTask;
             return OperationResult.Success();
         }
 

@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
@@ -20,6 +22,7 @@ namespace CTUScheduler.Infrastructure.Services.Registration;
 
 public class CourseCatalogService : ICourseCatalogService
 {
+    private static readonly int SequentialThreshold = 15;
     private static readonly TimeSpan DefaultFetchTimeout = TimeSpan.FromSeconds(3);
     private static readonly TimeSpan DefaultStreamTimeout = TimeSpan.FromSeconds(10);
 
@@ -112,30 +115,202 @@ public class CourseCatalogService : ICourseCatalogService
     public async Task<Course> FetchCourseAsync(string courseCode, CancellationToken cancellationToken = default,
         TimeSpan? timeout = null)
     {
-        var finalTimeout = timeout ?? DefaultFetchTimeout;
-        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeoutCts.CancelAfter(finalTimeout);
-        
+        return await ExecuteCourseFetchCoreAsync(_catalogPage, courseCode, cancellationToken, timeout);
+    }
+
+    public async IAsyncEnumerable<Course> FetchCoursesBatchAsync(
+        IEnumerable<string> courseCodes,
+        int maxWorkers = 2,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default,
+        TimeSpan? timeoutPerItem = null)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxWorkers, 1);
+
+        var codesList = courseCodes.Distinct().ToList();
+
+        if (codesList.Count == 0)
+            yield break;
+
+        if (maxWorkers == 1 || codesList.Count <= SequentialThreshold)
+        {
+            _logger.LogDebug("Has {courses} courses. Fetching courses in sequential mode", codesList.Count);
+            await foreach (var course in FetchCoursesSequentiallyAsyncEnumerable(codesList, cancellationToken,
+                               timeoutPerItem))
+            {
+                yield return course;
+            }
+
+            yield break;
+        }
+
+        // chạy đa tab
+        var queue = new ConcurrentQueue<string>(codesList);
+        var channel = Channel.CreateUnbounded<Course>(new UnboundedChannelOptions
+        {
+            SingleReader = true,
+            SingleWriter = false
+        });
+
+        var actualWorkers = Math.Min(codesList.Count, maxWorkers);
+
+        _logger.LogInformation("Bắt đầu cào {Count} môn học với {Workers} worker tabs...", codesList.Count,
+            actualWorkers);
+
+        var workerTasks = new List<Task>(actualWorkers);
+
+        for (int i = 0; i < actualWorkers; i++)
+        {
+            var workerId = i + 1;
+            var existingPage = i == 0 ? _catalogPage : null;
+
+            workerTasks.Add(ProcessQueueWithWorkerAsync(
+                workerId,
+                queue,
+                channel.Writer,
+                cancellationToken,
+                timeoutPerItem,
+                existingPage: existingPage));
+        }
+
+        _ = Task.WhenAll(workerTasks).ContinueWith(t =>
+        {
+            Exception? ex = null;
+            if (t.IsFaulted)
+                ex = t.Exception!.Flatten().InnerException ?? t.Exception;
+            else if (t.IsCanceled)
+                ex = new OperationCanceledException("Fetch courses cancelled");
+
+            channel.Writer.TryComplete(ex);
+        }, TaskContinuationOptions.ExecuteSynchronously);
+
+        // Đẩy từng Course ra ngay khi có
+        await foreach (var course in channel.Reader.ReadAllAsync(cancellationToken))
+        {
+            yield return course;
+        }
+    }
+
+    private async IAsyncEnumerable<Course> FetchCoursesSequentiallyAsyncEnumerable(
+        List<string> courseCodes,
+        [EnumeratorCancellation] CancellationToken cancellationToken,
+        TimeSpan? timeout)
+    {
+        foreach (var courseCode in courseCodes)
+        {
+            if (cancellationToken.IsCancellationRequested) yield break;
+
+            Course? course = null;
+
+            try
+            {
+                course = await FetchCourseAsync(courseCode, cancellationToken, timeout);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Thất bại khi lấy mã {Code} (tuần tự). Sẽ bỏ qua mã này.", courseCode);
+            }
+
+            if (course is not null)
+            {
+                _logger.LogDebug("Cào thành công mã {Code}", course.Code);
+                yield return course;
+            }
+        }
+    }
+
+    private async Task ProcessQueueWithWorkerAsync(
+        int workerId,
+        ConcurrentQueue<string> queue,
+        ChannelWriter<Course> writer,
+        CancellationToken cancellationToken,
+        TimeSpan? timeoutPerItem,
+        ICourseCatalogPage? existingPage = null)
+    {
+        IAsyncDisposable? tabToDispose = null;
+        ICourseCatalogPage workerPage;
+
+        if (existingPage is not null)
+        {
+            workerPage = existingPage;
+            _logger.LogDebug("[Worker {Id}] Đang sử dụng Main Tab tái sử dụng.", workerId);
+        }
+        else
+        {
+            var workerTab = await _webDriver.CreateTabAsync();
+            tabToDispose = workerTab;
+            workerPage = _factory.GetPage<ICourseCatalogPage>(workerTab);
+            _logger.LogDebug("[Worker {Id}] Đã tạo Tab mới thành công.", workerId);
+        }
+
         try
         {
-            var getCourseTask = _catalogPage.CourseCatalogResponse
+            while (queue.TryDequeue(out var courseCode))
+            {
+                if (cancellationToken.IsCancellationRequested) break;
+                try
+                {
+                    var course = await ExecuteCourseFetchCoreAsync(
+                        workerPage,
+                        courseCode,
+                        cancellationToken,
+                        timeoutPerItem);
+
+                    await writer.WriteAsync(course, cancellationToken);
+
+                    _logger.LogDebug("[Worker {Id}] Cào thành công mã {Code}", workerId, courseCode);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "[Worker {Id}] Thất bại khi lấy mã {Code}. Sẽ bỏ qua mã này.", workerId,
+                        courseCode);
+                }
+            }
+        }
+        finally
+        {
+            if (tabToDispose is not null)
+            {
+                await tabToDispose.DisposeAsync();
+                _logger.LogDebug("[Worker {Id}] Đã đóng tab và giải phóng tài nguyên.", workerId);
+            }
+            else
+            {
+                _logger.LogDebug("[Worker {Id}] Trả lại Main Tab.", workerId);
+            }
+        }
+    }
+
+    private async Task<Course> ExecuteCourseFetchCoreAsync(
+        ICourseCatalogPage page,
+        string courseCode,
+        CancellationToken cancellationToken,
+        TimeSpan? timeout)
+    {
+        var finalTimeout = timeout ?? DefaultFetchTimeout;
+
+        try
+        {
+            await page.NavigateToAsync();
+            await page.WaitForReadyAsync();
+            await page.CheckSessionAndThrowAsync();
+
+            var getCourseTask = page.CourseCatalogResponse
                 .Select(raw => raw.ToCourse())
                 .Where(course => course is not null &&
                                  course.Code.Equals(courseCode, StringComparison.OrdinalIgnoreCase))
                 .Select(x => x!)
                 .FirstAsync()
-                .ToTask(timeoutCts.Token);
+                .Timeout(finalTimeout)
+                .ToTask(cancellationToken);
 
-            await _catalogPage.NavigateToAsync();
-            await _catalogPage.WaitForReadyAsync();
-            await _catalogPage.FillQueryAsync(courseCode);
-            await _catalogPage.SearchAsync();
+            await page.FillQueryAsync(courseCode);
+            await page.SearchAsync();
 
             return await getCourseTask;
         }
         catch (OperationCanceledException)
         {
-            _logger.LogWarning("Search for course {Code} timed out or cancelled.", courseCode);
+            _logger.LogWarning("Search for course {Code} timed out or cancelled on page/tab.", courseCode);
             throw new TimeoutException($"Quá thời gian đáp ứng khi tìm môn học {courseCode}.");
         }
         catch (Exception ex)
@@ -143,68 +318,5 @@ public class CourseCatalogService : ICourseCatalogService
             _logger.LogError(ex, "Fail to fetch course {Code}", courseCode);
             throw;
         }
-    }
-
-    public async Task<List<Course>> FetchCoursesBatchAsync(
-        IEnumerable<string> courseCodes,
-        int maxWorkers = 3,
-        CancellationToken cancellationToken = default,
-        TimeSpan? timeoutPerItem = null)
-    {
-        var results = new ConcurrentBag<Course>();
-        var codesList = courseCodes.Distinct().ToList();
-
-        if (!codesList.Any()) return new List<Course>();
-
-        var parallelOptions = new ParallelOptions
-        {
-            MaxDegreeOfParallelism = maxWorkers,
-            CancellationToken = cancellationToken
-        };
-
-        _logger.LogInformation("Bắt đầu cào {Count} môn học với {Workers} worker tabs...", codesList.Count, maxWorkers);
-
-        await Parallel.ForEachAsync(codesList, parallelOptions, async (courseCode, ct) =>
-        {
-            try
-            {
-                var course = await FetchSingleCourseWithWorkerAsync(courseCode, ct, timeoutPerItem);
-                results.Add(course);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Worker thất bại khi lấy mã {Code}. Sẽ bỏ qua mã này.", courseCode);
-            }
-        });
-
-        return results.ToList();
-    }
-
-
-    private async Task<Course> FetchSingleCourseWithWorkerAsync(string courseCode, CancellationToken ct,
-        TimeSpan? timeout)
-    {
-        var finalTimeout = timeout ?? DefaultFetchTimeout;
-        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeoutCts.CancelAfter(finalTimeout);
-
-        await using var workerTab = await _webDriver.CreateTabAsync();
-
-        var workerPage = _factory.GetPage<ICourseCatalogPage>(workerTab);
-
-        var getCourseTask = workerPage.CourseCatalogResponse
-            .Select(raw => raw.ToCourse())
-            .Where(course => course is not null &&
-                             course.Code.Equals(courseCode, StringComparison.OrdinalIgnoreCase))
-            .Select(x => x!)
-            .FirstAsync()
-            .ToTask(timeoutCts.Token);
-
-        await workerPage.NavigateToAsync();
-        await workerPage.WaitForReadyAsync();
-        await workerPage.FillQueryAsync(courseCode);
-        await workerPage.SearchAsync();
-
-        return await getCourseTask;
     }
 }

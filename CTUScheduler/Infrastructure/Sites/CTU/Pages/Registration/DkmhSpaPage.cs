@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Exceptions;
+using CTUScheduler.Core.Extensions;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.Sites.Base;
 using CTUScheduler.Infrastructure.Sites.CTU.Routes;
@@ -25,9 +27,6 @@ public abstract class DkmhSpaPage : AppPage, IRequireSession
 
     public override async Task NavigateToAsync(PageGotoOptions? options = null)
     {
-        if (await IsActiveAsync())
-            return;
-
         if (IsInsideSpaHost())
         {
             await NavigateToFormSideBarAsync();
@@ -39,77 +38,55 @@ public abstract class DkmhSpaPage : AppPage, IRequireSession
 
     public override async Task WaitForReadyAsync(int timeoutMs = 10000)
     {
-        //  Trang đích xuất hiện DOM thành công
-        async Task<string> WaitReady()
+        using var cts = new CancellationTokenSource(timeoutMs);
+        
+        var opt = new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 0 };
+        var urlOpt = new PageWaitForURLOptions { Timeout = 0 };
+
+        var pReadyTask = Tab.NativePage.Locator(PageReadySelector).WaitForAsync(opt);
+        var pUrlDeadTask = Tab.NativePage.WaitForURLAsync(CtuRoutes.AuthRedirectRegex, urlOpt);
+        var pPopupDeadTask = string.IsNullOrEmpty(InvalidSessionSelector)
+            ? Task.Delay(Timeout.Infinite)
+            : Tab.NativePage.Locator(InvalidSessionSelector).WaitForAsync(opt);
+        
+        pReadyTask.FireAndForgetSafe();
+        pUrlDeadTask.FireAndForgetSafe();
+        pPopupDeadTask.FireAndForgetSafe();
+        
+        var readyTask = pReadyTask.WaitAsync(cts.Token);
+        var urlDeadTask = pUrlDeadTask.WaitAsync(cts.Token);
+        var popupDeadTask = pPopupDeadTask.WaitAsync(cts.Token);
+        
+        try
         {
-            try
-            {
-                await Tab.NativePage.Locator(PageReadySelector)
-                    .WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = timeoutMs });
-                return "READY";
-            }
-            catch
-            {
-                return null!;
-            }
-        }
+            var winner = await Task.WhenAny(readyTask, urlDeadTask, popupDeadTask);
 
-        // Bị Server đá về URL đăng nhập
-        async Task<string> WaitUrlDead()
+            await winner;
+            
+            if (winner == urlDeadTask)
+            {
+                throw new SessionExpiredException($"Mất session tại {GetType().Name} (UrlRedirect)");
+            }
+        
+            if (winner == popupDeadTask)
+            {
+                throw new SessionExpiredException($"Mất session tại {GetType().Name} (BPopup)");
+            }
+
+            // winner == readyTask, (Thành công!)
+        }
+        catch (OperationCanceledException)
         {
-            try
-            {
-                await Tab.NativePage.WaitForURLAsync(CtuRoutes.AuthRedirectRegex, new() { Timeout = timeoutMs });
-                return "URL_DEAD";
-            }
-            catch
-            {
-                return null!;
-            }
+            throw new TimeoutException($"Quá {timeoutMs}ms không thể tải được trang {GetType().Name}.");
         }
-
-        // Luồng 3: Trang SPA nhảy bềnh Popup mất Session
-        async Task<string> WaitPopupDead()
-        {
-            if (string.IsNullOrEmpty(InvalidSessionSelector))
-            {
-                await Task.Delay(timeoutMs);
-                return null!;
-            }
-
-            try
-            {
-                await Tab.NativePage.Locator(InvalidSessionSelector)
-                    .WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = timeoutMs });
-                return "POPUP_DEAD";
-            }
-            catch
-            {
-                return null!;
-            }
+        finally
+        { 
+            await cts.CancelAsync();
+        
+            readyTask.FireAndForgetSafe();
+            urlDeadTask.FireAndForgetSafe();
+            popupDeadTask.FireAndForgetSafe();
         }
-
-        // Ném cả 3 luồng vào chạy song song
-        var tasks = new List<Task<string>> { WaitReady(), WaitUrlDead(), WaitPopupDead() };
-        while (tasks.Count > 0)
-        {
-            // Bắt đền thằng nào chạy xong đầu tiên
-            var finishedTask = await Task.WhenAny(tasks);
-            tasks.Remove(finishedTask);
-            var result = await finishedTask;
-            if (result == "URL_DEAD" || result == "POPUP_DEAD")
-            {
-                throw new SessionExpiredException(
-                    $"Mất session tại {GetType().Name} ({(result == "POPUP_DEAD" ? "BPopup" : "UrlRedirect")})");
-            }
-
-            if (result == "READY")
-            {
-                return;
-            }
-        }
-
-        throw new TimeoutException($"Quá {timeoutMs}ms không thể tải được trang {GetType().Name}.");
     }
 
     protected override async Task<bool> IsSessionExpiredAsync()

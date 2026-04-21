@@ -16,17 +16,17 @@ namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
 public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
 {
-    protected readonly CompositeDisposable Disposables = new();
     private readonly CourseColorProvider _colorProvider = new();
+    protected readonly CompositeDisposable Disposables = new();
+    protected readonly IExcelExporterService ExcelExporter;
     private string _name = "New Schedule";
     private int _subjectCount = 0;
     private int _totalCredits = 0;
     private DateTimeOffset _lastUpdated = DateTimeOffset.Now;
     private TimetableViewModel _visualizerVM;
-
     private bool _isSelected;
     private bool _isEnabled = true;
-    private ReactiveCommand<Unit, Unit>? _exportToExcelCommand;
+
     public string Name
     {
         get => _name;
@@ -38,6 +38,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
         get => _subjectCount;
         protected set => this.RaiseAndSetIfChanged(ref _subjectCount, value);
     }
+
     public int TotalCredits
     {
         get => _totalCredits;
@@ -49,6 +50,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
         get => _lastUpdated;
         protected set => this.RaiseAndSetIfChanged(ref _lastUpdated, value);
     }
+
     public TimetableViewModel VisualizerVM
     {
         get => _visualizerVM;
@@ -66,12 +68,10 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
         get => _isEnabled;
         set => this.RaiseAndSetIfChanged(ref _isEnabled, value);
     }
-    
+
     public ReactiveCommand<object, Unit> ExportToImageCommand { get; protected set; }
     public ReactiveCommand<Unit, Unit> ExportToExcelCommand { get; protected set; }
 
-    // Khai báo biến service
-    protected readonly IExcelExporterService ExcelExporter;
 
     public TimetableLayoutBaseViewModel(IExcelExporterService excelExporter)
     {
@@ -94,7 +94,6 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
 
             await ExcelExporter.ExportTimetableAsync(blueprint, fullPath);
         }).DisposeWith(Disposables);
-        
     }
 
     protected TimetableRenderItem CreateRenderItem(ICourseDisplaySource dataSource)
@@ -112,7 +111,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
             StartPeriod = day.StartPeriod(),
             NumberOfPeriods = day.PeriodCount()
         });
-        
+
         return new TimetableRenderItem(shared, cells);
     }
 

@@ -18,10 +18,10 @@ public class TimetableDialogService : ITimetableDialogService
 
     public async Task ShowTimetableDetails<TViewModel>(TViewModel viewModel) where TViewModel : class
     {
-        _logger.LogInformation("Opening timetable details");
+        _logger.LogDebug("Opening timetable details");
         await _dialogHostService.ShowDialogAsync<TViewModel, Unit>(viewModel,
             DialogIdentifier.Timetable,
             false);
-        _logger.LogInformation("Closed timetable details");
+        _logger.LogDebug("Closed timetable details");
     }
 }

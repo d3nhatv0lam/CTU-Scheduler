@@ -23,7 +23,7 @@ public class RegistrationRulesPage : DkmhSpaPage, IRegistrationRulesPage
     public override string PageUrl => "https://dkmhfe.ctu.edu.vn/dangkyhocphan/sinhvien/quydinhdangky";
     protected override string PageReadySelector => UserInfoButtonSelector;
 
-    private const string UserInfoButtonSelector = ".anticon-user";
+    private const string UserInfoButtonSelector = "#root .anticon-user";
     private const string UserSettingButtonSelector = ".anticon-setting";
 
 

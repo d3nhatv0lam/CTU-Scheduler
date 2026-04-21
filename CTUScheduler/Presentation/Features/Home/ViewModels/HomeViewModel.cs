@@ -25,8 +25,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
         public IScreen HostScreen { get; }
         public ViewModelActivator Activator { get; } = new();
         public RegistrationInformation RegistrationInfo => _registrationInfo.Value;
-
-
+        
         public ReactiveCommand<Unit, Unit> OpenFacebookCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenYoutubeCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenGithubCommand { get; }

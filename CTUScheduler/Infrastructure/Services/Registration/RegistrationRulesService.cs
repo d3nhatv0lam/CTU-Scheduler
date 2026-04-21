@@ -85,6 +85,7 @@ public class RegistrationRulesService : IRegistrationRulesService
         return await RegistrationInfoChanged
             .Timeout(finalTimeout)
             .FirstAsync()
+            .Timeout(finalTimeout)
             .ToTask(cancellationToken);
     }
 

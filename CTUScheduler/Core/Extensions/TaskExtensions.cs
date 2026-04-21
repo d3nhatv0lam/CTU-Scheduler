@@ -20,4 +20,11 @@ public static class TaskExtensions
             TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
             TaskScheduler.Default);
     }
+    
+    public static Task Observe(this Task task)
+    {
+        task.ContinueWith(t => { var _ = t.Exception; }, 
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+        return task;
+    }
 }

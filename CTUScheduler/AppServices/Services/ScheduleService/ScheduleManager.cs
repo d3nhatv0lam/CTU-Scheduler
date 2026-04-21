@@ -163,32 +163,60 @@ public class ScheduleManager : IScheduleManager, IDisposable
     public async Task RefreshCoursesAsync(CancellationToken token = default)
     {
         if (_isRefreshingSubject.Value) return;
-
         _isRefreshingSubject.OnNext(true);
+        
         try
         {
-            var allCourses = _coursesSource.Items.ToList();
-            _logger.LogInformation("Starting refresh for {Count} courses...", allCourses.Count);
-            foreach (var runtimeCourse in allCourses)
+            var coursesDict = _coursesSource.Items.ToDictionary(x => x.Code);
+            _logger.LogInformation("Starting refresh for {Count} courses...", coursesDict.Count);
+
+            try
             {
-                token.ThrowIfCancellationRequested();
-                try
+                var serverCourses = _catalogService.FetchCoursesBatchAsync(
+                    coursesDict.Keys,
+                    maxWorkers: 2,
+                    cancellationToken: token);
+
+                await foreach (var course in serverCourses.ConfigureAwait(false))
                 {
-                    var serverCourse = await _catalogService
-                        .FetchCourseAsync(runtimeCourse.Code, token)
-                        .ConfigureAwait(false);
-                    runtimeCourse.Merge(serverCourse);
-                }
-                catch (OperationCanceledException)
-                {
-                    _logger.LogInformation("Refresh operation cancelled.");
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to refresh course: {Code}", runtimeCourse.Code);
+                    if (coursesDict.TryGetValue(course.Code, out var runtimeCourse))
+                    {
+                        runtimeCourse.Merge(course);
+                    }
                 }
             }
+            catch (OperationCanceledException)
+            {
+                _logger.LogDebug("Refresh operation cancelled.");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to refresh courses batch.");
+            }
+            
+            // cách cũ chạy từng course
+            // var allCourses = _coursesSource.Items.ToList();
+            // foreach (var runtimeCourse in allCourses)
+            // {
+            //     token.ThrowIfCancellationRequested();
+            //     try
+            //     {
+            //         var serverCourse = await _catalogService
+            //             .FetchCourseAsync(runtimeCourse.Code, token)
+            //             .ConfigureAwait(false);
+            //         runtimeCourse.Merge(serverCourse);
+            //     }
+            //     catch (OperationCanceledException)
+            //     {
+            //         _logger.LogDebug("Refresh operation cancelled.");
+            //         throw;
+            //     }
+            //     catch (Exception ex)
+            //     {
+            //         _logger.LogError(ex, "Failed to refresh course: {Code}", runtimeCourse.Code);
+            //     }
+            // }
         }
         finally
         {

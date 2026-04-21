@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
@@ -38,17 +39,18 @@ public interface ICourseCatalogService
     Task<Course> FetchCourseAsync(string courseCode, CancellationToken cancellationToken = default,
         TimeSpan? timeout = null);
 
+
     /// <summary>
-    /// Fetch multiple courses in parallel.
+    /// Fetch multiple courses in parallel. 
     /// </summary>
     /// <param name="courseCodes"></param>
     /// <param name="maxWorkers"></param>
     /// <param name="cancellationToken"></param>
     /// <param name="timeoutPerItem"></param>
     /// <returns></returns>
-    Task<List<Course>> FetchCoursesBatchAsync(
+    IAsyncEnumerable<Course> FetchCoursesBatchAsync(
         IEnumerable<string> courseCodes,
-        int maxWorkers = 3,
+        int maxWorkers = 2,
         CancellationToken cancellationToken = default,
         TimeSpan? timeoutPerItem = null);
 }

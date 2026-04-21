@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Exceptions;
+using CTUScheduler.Core.Extensions;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Routes;
 using Microsoft.Extensions.Logging;
@@ -58,6 +59,9 @@ public abstract class AppPage : ISitePage
 
         var waitSessionDeadTask =
             Tab.NativePage.WaitForURLAsync(CtuRoutes.AuthRedirectRegex, new() { Timeout = timeoutMs });
+
+        waitReadyTask.FireAndForgetSafe();
+        waitSessionDeadTask.FireAndForgetSafe();
 
         var finishedTask = await Task.WhenAny(waitReadyTask, waitSessionDeadTask);
 
