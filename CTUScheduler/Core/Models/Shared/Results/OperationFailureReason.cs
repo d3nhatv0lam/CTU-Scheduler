@@ -1,4 +1,4 @@
-﻿namespace CTUScheduler.Core.Models.Shared;
+﻿namespace CTUScheduler.Core.Models.Shared.Results;
 
 public enum OperationFailureReason
 {

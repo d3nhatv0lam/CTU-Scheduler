@@ -25,7 +25,7 @@ public static class AppConstants
     // ====================================================
     public static class Files
     {
-        public const string UserSettings = "UserConfig.bin";
+        public const string UserPreferences = "UserPreferences.json";
         public const string AppLog = "app_log.log";
     }
 
@@ -41,7 +41,7 @@ public static class AppConstants
         // public static string BaseLocalPath =>
         //     StandardPathBuilder.GetLocalCachePath(PublisherConstants.Name, AppNameWindows, AppNameUnix);
 
-        public static string UserSettingsFilePath => Path.Combine(BaseRoamingPath, Files.UserSettings);
+        public static string UserPreferencesFilePath => Path.Combine(BaseRoamingPath, Files.UserPreferences);
 
         public static string AppLogFilePath => Path.Combine(BaseRoamingPath, Files.AppLog);
     }

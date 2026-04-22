@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
 
@@ -28,20 +29,16 @@ public record OperationResult
     }
 
     public bool IsSuccess { get; }
-    public bool IsFailed => !IsSuccess;
+    [JsonIgnore] public bool IsFailed => !IsSuccess;
+    [JsonIgnore] public bool HasException => IsFailed && this.Exception is not null;
     public IReadOnlyList<OperationError> Errors { get; init; }
     public string? FirstErrorMessage => Errors.FirstOrDefault()?.FormattedMessage;
     public OperationFailureReason Kind { get; }
-    [JsonIgnore] 
-    public Exception? Exception { get; }
+    [JsonIgnore] public Exception? Exception { get; }
 
 
     public static OperationResult Success()
         => new(true, OperationFailureReason.None, null, null);
-
-    // public static OperationResult Failed(string errorMessage,
-    //     OperationFailureReason kind = OperationFailureReason.System, Exception? ex = null)
-    //     => new(false, errorMessage, kind, ex);
 
     public static OperationResult Failed(OperationError error,
         OperationFailureReason kind = OperationFailureReason.System)
@@ -58,6 +55,12 @@ public record OperationResult
     public static OperationResult FromException(Exception ex,
         OperationFailureReason kind = OperationFailureReason.System)
         => new(false, kind, [new OperationError("System.Exception", ex.Message)], ex);
+
+    public static OperationResult FromException(Exception ex,
+        string message,
+        string code = "System.Error",
+        OperationFailureReason kind = OperationFailureReason.System)
+        => new(false, kind, [new OperationError(code, message)], ex);
 
     public static OperationResult Combine(params OperationResult[] results)
     {
@@ -79,15 +82,15 @@ public record OperationResult
         if (finalKind == OperationFailureReason.None)
         {
             finalKind = failedResults[0].Kind;
-            
-            if (finalKind == OperationFailureReason.None) 
+
+            if (finalKind == OperationFailureReason.None)
                 finalKind = OperationFailureReason.System;
         }
 
         var errors = failedResults.SelectMany(x => x.Errors).ToList();
 
         var firstException = failedResults.FirstOrDefault(r => r.Exception != null)?.Exception;
-        
+
         return new OperationResult(false, finalKind, errors, firstException);
     }
 }
@@ -109,6 +112,12 @@ public record OperationResult<T> : OperationResult
         kind = Kind;
         errors = Errors;
     }
+
+    [MemberNotNullWhen(true, nameof(Content))]
+    public new bool IsSuccess => base.IsSuccess;
+
+    [MemberNotNullWhen(false, nameof(Content))]
+    public new bool IsFailed => base.IsFailed;
 
     public T? Content { get; }
 
@@ -136,4 +145,10 @@ public record OperationResult<T> : OperationResult
     public new static OperationResult<T> FromException(Exception ex,
         OperationFailureReason kind = OperationFailureReason.System)
         => new(false, default, kind, [new OperationError("System.Exception", ex.Message)], ex);
+
+    public new static OperationResult<T> FromException(Exception ex,
+        string message,
+        string code = "System.Error",
+        OperationFailureReason kind = OperationFailureReason.System)
+        => new(false, default, kind, [new OperationError(code, message)], ex);
 }

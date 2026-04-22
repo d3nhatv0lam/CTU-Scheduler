@@ -9,7 +9,7 @@ namespace CTUScheduler.AppServices.Services.UserSettingService;
 public class UserSettingService: IUserSettingService, IDisposable
 {
     private readonly IDisposable _saveSubscription;
-    private readonly BehaviorSubject<UserSettings> _settingsSubject;
+    private readonly BehaviorSubject<UserPreferences> _settingsSubject;
     
     public UserSettingService(AppState appState)
     {
@@ -18,20 +18,20 @@ public class UserSettingService: IUserSettingService, IDisposable
         SettingsChanged = _settingsSubject.AsObservable();
         AppearanceSettingsChanged = SettingsChanged.Select(settings => settings.Appearance).DistinctUntilChanged();
         AuthSettingsChanged = SettingsChanged.Select(settings => settings.Auth).DistinctUntilChanged();
-        GeneralSettingsChanged = SettingsChanged.Select(settings => settings.General).DistinctUntilChanged();
+        GeneralSettingsChanged = SettingsChanged.Select(settings => settings.Schedule).DistinctUntilChanged();
     }
     
-    public IObservable<UserSettings> SettingsChanged { get; }
+    public IObservable<UserPreferences> SettingsChanged { get; }
     public IObservable<AppearanceSettings> AppearanceSettingsChanged { get; }
     public IObservable<AuthSettings> AuthSettingsChanged { get; }
-    public IObservable<GeneralSettings> GeneralSettingsChanged { get; }
+    public IObservable<ScheduleSettings> GeneralSettingsChanged { get; }
     
-    public UserSettings CurrentSettings => _settingsSubject.Value;
-    public AppearanceSettings CurrentAppearanceSettings => CurrentSettings.Appearance;
-    public AuthSettings CurrentAuthSettings => CurrentSettings.Auth;
+    public UserPreferences CurrentPreferences => _settingsSubject.Value;
+    public AppearanceSettings CurrentAppearanceSettings => CurrentPreferences.Appearance;
+    public AuthSettings CurrentAuthSettings => CurrentPreferences.Auth;
 
 
-    public void UpdateSettings(Func<UserSettings, UserSettings> updater)
+    public void UpdateSettings(Func<UserPreferences, UserPreferences> updater)
     {
         ArgumentNullException.ThrowIfNull(updater);
         _settingsSubject.OnNext(updater(_settingsSubject.Value));

@@ -5,14 +5,14 @@ namespace CTUScheduler.AppServices.Services.UserSettingService;
 
 public interface IUserSettingService
 {
-    IObservable<UserSettings> SettingsChanged { get; }
+    IObservable<UserPreferences> SettingsChanged { get; }
     IObservable<AppearanceSettings> AppearanceSettingsChanged { get; }
     IObservable<AuthSettings> AuthSettingsChanged { get; }
-    IObservable<GeneralSettings> GeneralSettingsChanged { get; }
+    IObservable<ScheduleSettings> GeneralSettingsChanged { get; }
     
-    UserSettings CurrentSettings { get; }
+    UserPreferences CurrentPreferences { get; }
     AppearanceSettings CurrentAppearanceSettings { get; }
     AuthSettings CurrentAuthSettings { get; }
     
-    void UpdateSettings(Func<UserSettings, UserSettings> updater);
+    void UpdateSettings(Func<UserPreferences, UserPreferences> updater);
 }

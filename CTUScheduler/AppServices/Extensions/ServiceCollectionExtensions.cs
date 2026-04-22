@@ -6,9 +6,11 @@ using CTUScheduler.AppServices.Services.TimetableGeneratorService;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.AppServices.Services.UserSettingService;
 using CTUScheduler.AppServices.State;
+using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Infrastructure.DriverCore;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.Excel;
+using CTUScheduler.Infrastructure.Repositories;
 using CTUScheduler.Infrastructure.Services.Auth;
 using CTUScheduler.Infrastructure.Services.MainHomeService;
 using CTUScheduler.Infrastructure.Services.Network;
@@ -32,28 +34,16 @@ public static class ServiceCollectionExtensions
         // --- State Management ---
         services.AddSingleton<AppState>();
         services.AddSingleton<IUserSettingService, UserSettingService>();
-
-        // --- Infrastructure / External Services ---
-        services.AddSingleton<IConnectivityService, ConnectivityService>();
         services.AddSingleton<IUserSessionService, UserSessionService>();
-        services.AddSingleton<IWorkspaceStore, WorkspaceStore>();
-        services.AddSingleton<IExcelExporterService, ExcelExporterService>();
 
-        // --- WebDriver Services ---
-        services.AddSingleton<IWebDriverInstallerService, PlaywrightInstallerService>();
-        services.AddSingleton<IWebDriverService, PlaywrightService>();
-
-        // --- Page Factory ---
-        services.AddSingleton<ICtuPageFactory, CtuPageFactory>();
-
-        // --- Application Services ---
+        // --- App Services / Use Cases ---
         services.AddTransient<ILoginService, LoginService>();
         services.AddTransient<IMainHomeService, MainHomeService>();
         services.AddTransient<IRegistrationRulesService, RegistrationRulesService>();
-        services.AddTransient<ICourseCatalogService, CourseCatalogService>();
+        services.AddTransient<ICourseCatalogService, CourseCatalogService>();   
+        services.AddSingleton<ITimetableGeneratorService, TimetableGeneratorService>();
 
-        // --- Schedule Manager  ---
-        // Đây là pattern quan trọng để đảm bảo tất cả interface đều trỏ về cùng 1 object ScheduleManager
+        // --- Schedule Manager Pattern ---
         services.AddSingleton<ScheduleManager>()
             .AddSingleton<IScheduleManager>(sp => sp.GetRequiredService<ScheduleManager>())
             .AddSingleton<IScheduleRegistrationService>(sp => sp.GetRequiredService<ScheduleManager>())
@@ -61,7 +51,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IProfileQueryService>(sp => sp.GetRequiredService<ScheduleManager>())
             .AddSingleton<IScheduleSyncService>(sp => sp.GetRequiredService<ScheduleManager>());
         
-        services.AddSingleton<ITimetableGeneratorService, TimetableGeneratorService>();
+      
 
         return services;
     }

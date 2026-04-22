@@ -14,8 +14,8 @@ public class AppState : IAppState, IDisposable
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
-    private readonly BehaviorSubject<UserSettings> _userSettingsSubject = new (
-        new UserSettings()
+    private readonly BehaviorSubject<UserPreferences> _userSettingsSubject = new (
+        new UserPreferences()
     );
 
     private readonly SourceCache<RuntimeCourse, string> _runtimeCoursesSource = new(x => x.Code);
@@ -23,7 +23,7 @@ public class AppState : IAppState, IDisposable
 
     internal SourceCache<RuntimeCourse, string> RuntimeCoursesSource => _runtimeCoursesSource;
     internal SourceCache<ScheduleProfile, Guid> ScheduleProfilesSource => _scheduleProfilesSource;
-    internal BehaviorSubject<UserSettings> UserSettingsSubject => _userSettingsSubject;
+    internal BehaviorSubject<UserPreferences> UserSettingsSubject => _userSettingsSubject;
 
     public AppState()
     {

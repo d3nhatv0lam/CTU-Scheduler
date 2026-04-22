@@ -113,10 +113,11 @@ public static class OperationResultExtensions
 
     public static OperationResult ToResult<T>(this OperationResult<T> result)
     {
-        return result.IsSuccess 
-            ? OperationResult.Success() 
+        return result.IsSuccess
+            ? OperationResult.Success()
             : OperationResult.Failed(result.Errors, result.Kind);
     }
+
     // --- MATCH (SYNC) ---
     public static void Match<T>(this OperationResult<T> result,
         Action<T> onSuccess,
@@ -258,8 +259,8 @@ public static class OperationResultExtensions
         if (result.IsFailed) return OperationResult<T>.Failed(result.Errors, result.Kind);
         return OperationResult<T>.Success(await selector());
     }
-    
-    public static async Task<OperationResult> SelectMany(this Task<OperationResult> resultTask, 
+
+    public static async Task<OperationResult> SelectMany(this Task<OperationResult> resultTask,
         Func<OperationResult> nextSelector)
     {
         var result = await resultTask;
@@ -267,7 +268,7 @@ public static class OperationResultExtensions
         return nextSelector();
     }
 
-    public static async Task<OperationResult> SelectManyAsync(this Task<OperationResult> resultTask, 
+    public static async Task<OperationResult> SelectManyAsync(this Task<OperationResult> resultTask,
         Func<Task<OperationResult>> nextSelector)
     {
         var result = await resultTask;
@@ -304,8 +305,8 @@ public static class OperationResultExtensions
         if (result.IsFailed) await action(result.Errors);
         return result;
     }
-    
-    public static OperationResult<T> Compensate<T>(this OperationResult<T> result, 
+
+    public static OperationResult<T> Compensate<T>(this OperationResult<T> result,
         Func<IReadOnlyList<OperationError>, OperationResult<T>> recoveryFunc)
     {
         if (result.IsSuccess) return result;
@@ -319,11 +320,11 @@ public static class OperationResultExtensions
     public static async Task<OperationResult> ToResult<T>(this Task<OperationResult<T>> resultTask)
     {
         var result = await resultTask;
-        return result.IsSuccess 
-            ? OperationResult.Success() 
+        return result.IsSuccess
+            ? OperationResult.Success()
             : OperationResult.Failed(result.Errors, result.Kind);
     }
-    
+
     public static async Task<OperationResult<T>> Tap<T>(
         this Task<OperationResult<T>> resultTask,
         Action<T> action)
@@ -407,7 +408,7 @@ public static class OperationResultExtensions
         var result = await resultTask;
         result.Match(onSuccess, onFailure);
     }
-    
+
     public static async Task MatchAsync<T>(this Task<OperationResult<T>> resultTask,
         Func<T, Task> onSuccess,
         Func<IReadOnlyList<OperationError>, OperationFailureReason, Task> onFailure)
@@ -416,7 +417,7 @@ public static class OperationResultExtensions
         if (result.IsSuccess) await onSuccess(result.Content!);
         else await onFailure(result.Errors, result.Kind);
     }
-    
+
     public static async Task<R> MatchAsync<T, R>(this Task<OperationResult<T>> resultTask,
         Func<T, R> onSuccess,
         Func<IReadOnlyList<OperationError>, OperationFailureReason, R> onFailure)
@@ -424,7 +425,7 @@ public static class OperationResultExtensions
         var result = await resultTask;
         return result.Match(onSuccess, onFailure);
     }
-    
+
     public static async Task<R> MatchAsync<T, R>(this Task<OperationResult<T>> resultTask,
         Func<T, Task<R>> onSuccess,
         Func<IReadOnlyList<OperationError>, OperationFailureReason, Task<R>> onFailure)
