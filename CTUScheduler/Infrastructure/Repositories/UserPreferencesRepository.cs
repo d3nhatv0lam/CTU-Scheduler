@@ -66,7 +66,7 @@ public class UserPreferencesRepository : IUserPreferencesRepository
                 return OperationResult<UserPreferences>.Failed(
                     "Dữ liệu cài đặt đã bị hỏng",
                     "Storage.FormatError",
-                    OperationFailureReason.System);
+                    OperationFailureReason.Validation);
             }
 
             return preferences;

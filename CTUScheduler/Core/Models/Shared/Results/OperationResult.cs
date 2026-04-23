@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -32,7 +32,7 @@ public record OperationResult
     [JsonIgnore] public bool IsFailed => !IsSuccess;
     [JsonIgnore] public bool HasException => IsFailed && this.Exception is not null;
     public IReadOnlyList<OperationError> Errors { get; init; }
-    public string? FirstErrorMessage => Errors.FirstOrDefault()?.FormattedMessage;
+    [JsonIgnore] public string? FirstErrorMessage => Errors.FirstOrDefault()?.FormattedMessage;
     public OperationFailureReason Kind { get; }
     [JsonIgnore] public Exception? Exception { get; }
 
@@ -93,6 +93,18 @@ public record OperationResult
 
         return new OperationResult(false, finalKind, errors, firstException);
     }
+    
+    public static OperationResult FailureFrom(OperationResult existingResult)
+    {
+        if (existingResult.IsSuccess)
+            throw new InvalidOperationException("Cannot create a failed result from a successful result.");
+        
+        return new OperationResult(
+            false, 
+            existingResult.Kind, 
+            existingResult.Errors, 
+            existingResult.Exception);
+    }
 }
 
 public record OperationResult<T> : OperationResult
@@ -151,4 +163,17 @@ public record OperationResult<T> : OperationResult
         string code = "System.Error",
         OperationFailureReason kind = OperationFailureReason.System)
         => new(false, default, kind, [new OperationError(code, message)], ex);
+    
+    public new static OperationResult<T> FailureFrom(OperationResult existingResult)
+    {
+        if (existingResult.IsSuccess)
+            throw new InvalidOperationException("Cannot create a failed result from a successful result.");
+        
+        return new OperationResult<T>(
+            false, 
+            default, 
+            existingResult.Kind, 
+            existingResult.Errors, 
+            existingResult.Exception);
+    }
 }
