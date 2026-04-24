@@ -116,7 +116,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                 };
 
                 bool isAcceptLogout = await _dialogHostService
-                    .ShowDialogAsync<ConfirmDialogViewModel, bool>(confirmViewModel, DialogIdentifier.MainLayout);
+                    .ShowDialogAsync<ConfirmDialogViewModel, bool>(confirmViewModel, DialogIdentifier.MainLayout, false);
                 
                 if (isAcceptLogout)
                 {

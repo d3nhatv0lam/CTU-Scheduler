@@ -171,7 +171,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 };
 
                 var result = await _dialogHostService.ShowDialogAsync<ConfirmDialogViewModel, bool>(
-                    confirmViewModel, DialogIdentifier.MainLayout);
+                    confirmViewModel, DialogIdentifier.MainLayout, false);
 
                 if (result)
                 {
@@ -227,7 +227,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         {
             using var viewModel = _viewModelFactory.Create<DialogShellViewModel>();
             await _dialogHostService.ShowDialogAsync<DialogShellViewModel, Unit>(viewModel,
-                DialogIdentifier.MainLayout);
+                DialogIdentifier.MainLayout, false);
         }
 
         private async void GoToCourseCatalogPage()

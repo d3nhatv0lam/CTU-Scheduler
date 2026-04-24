@@ -9,13 +9,11 @@
              x:DataType="vm:ConfirmDialogViewModel"
              x:CompileBindings="True"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-             xmlns:interaction="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
-             xmlns:behaviors="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
-             xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
              xmlns:vm="clr-namespace:CTUScheduler.Presentation.Shared.Dialogs.ViewModels"
              x:Class="CTUScheduler.Presentation.Shared.Dialogs.Views.ConfirmDialogView">
 
-    <controls:Card
+    <Border
+            Background="{StaticResource BaseBackgroundColor}"
             MinHeight="180"
             CornerRadius="0"
             MinWidth="450"
@@ -77,6 +75,7 @@
                             Content="{Binding ConfirmText}"
                             Command="{Binding AcceptCommand}"
                             Classes="Raised"
+                            Classes.destructive="{Binding IsDestructive}"
                             MinWidth="100"
                             Height="36"
                             CornerRadius="0">
@@ -85,21 +84,13 @@
                                 <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Style>
-                            <Style Selector="Button[Tag=True]">
+                            <Style Selector="Button.destructive">
                                 <Setter Property="Background" Value="{StaticResource RedColor}"/>
                             </Style>
                         </Button.Styles>
-                        <interaction:Interaction.Behaviors>
-                            <behaviors:DataTriggerBehavior Binding="{Binding IsDestructive}" Value="True">
-                                <behaviors:ChangePropertyAction TargetObject="{Binding #ConfirmButton}" PropertyName="Tag" Value="True"/>
-                            </behaviors:DataTriggerBehavior>
-                            <behaviors:DataTriggerBehavior Binding="{Binding IsDestructive}" Value="False">
-                                <behaviors:ChangePropertyAction TargetObject="{Binding #ConfirmButton}" PropertyName="Tag" Value="False"/>
-                            </behaviors:DataTriggerBehavior>
-                        </interaction:Interaction.Behaviors>
                     </Button>
                 </StackPanel>
             </Border>
         </Grid>
-    </controls:Card>
+    </Border>
 </rxui:ReactiveUserControl>
