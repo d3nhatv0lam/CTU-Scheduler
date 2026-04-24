@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -22,6 +22,7 @@ using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.Factories;
 using CTUScheduler.Presentation.Services.TimetableDialog;
+using CTUScheduler.Presentation.Shared.Dialogs.ViewModels;
 using DynamicData;
 using DynamicData.Aggregation;
 using DynamicData.Binding;
@@ -68,7 +69,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         public ReactiveCommand<IStorageFile, Unit> SaveScheduleCommand { get; }
         public ReactiveCommand<Unit, Unit> ReloadAllTimetableCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> DeleteSelectedTimetablesCommand { get;}
+        public ReactiveCommand<Unit, bool> DeleteSelectedTimetablesCommand { get;}
         public ReactiveCommand<TimetableLayoutBaseViewModel, Unit> ShowTimetableDetailsCommand { get; }
         
         
@@ -158,11 +159,29 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 await _scheduleSyncService.RefreshCoursesAsync();
             },canReloadAllTimetable).DisposeWith(_disposables);
             
-            DeleteSelectedTimetablesCommand = ReactiveCommand.Create(() =>
+            DeleteSelectedTimetablesCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                foreach (var timetable in TimetableLayouts.Where(x => x.IsSelected)){
-                    _scheduleRegistrationService.UnregisterProfile(timetable.ScheduleProfile);
+                using var confirmViewModel = new ConfirmDialogViewModel
+                {
+                    Title = "Xóa thời khóa biểu",
+                    Message = "Bạn có chắc chắn xóa các thời khóa biểu đã chọn ?",
+                    ConfirmText = "Xóa",
+                    CancelText = "Không",
+                    IsDestructive = true
+                };
+
+                var result = await _dialogHostService.ShowDialogAsync<ConfirmDialogViewModel, bool>(
+                    confirmViewModel, DialogIdentifier.MainLayout, false);
+
+                if (result)
+                {
+                    foreach (var timetable in TimetableLayouts.Where(x => x.IsSelected))
+                    {
+                        _scheduleRegistrationService.UnregisterProfile(timetable.ScheduleProfile);
+                    }
                 }
+                
+                return result;
             }, this.WhenAnyValue(x => x.HasSelectedTimetable))
             .DisposeWith(_disposables);
 
@@ -206,9 +225,9 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 
         private async Task OpenAddCourseDialog()
         {
-            var viewModel = _viewModelFactory.Create<DialogShellViewModel>();
+            using var viewModel = _viewModelFactory.Create<DialogShellViewModel>();
             await _dialogHostService.ShowDialogAsync<DialogShellViewModel, Unit>(viewModel,
-                DialogIdentifier.MainLayout);
+                DialogIdentifier.MainLayout, false);
         }
 
         private async void GoToCourseCatalogPage()

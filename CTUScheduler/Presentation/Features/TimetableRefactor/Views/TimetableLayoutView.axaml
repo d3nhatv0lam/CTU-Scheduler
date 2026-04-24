@@ -1,4 +1,4 @@
-﻿<rxui:ReactiveUserControl
+<rxui:ReactiveUserControl
     x:Name="MainTimetableLayout"
     x:TypeArguments="vm:TimetableLayoutBaseViewModel"
     xmlns="https://github.com/avaloniaui"
