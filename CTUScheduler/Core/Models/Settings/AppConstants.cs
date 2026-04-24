@@ -38,10 +38,12 @@ public static class AppConstants
         public static string BaseRoamingPath =>
             StandardPathBuilder.GetRoamingPath(PublisherConstants.Name, AppNameWindows, AppNameUnix);
 
+        public static string BaseAppContext => StandardPathBuilder.GetAppBaseDirectory();
+        
         // public static string BaseLocalPath =>
         //     StandardPathBuilder.GetLocalCachePath(PublisherConstants.Name, AppNameWindows, AppNameUnix);
 
-        public static string UserPreferencesFilePath => Path.Combine(BaseRoamingPath, Files.UserPreferences);
+        public static string UserPreferencesFilePath => Path.Combine(BaseAppContext, Files.UserPreferences);
 
         public static string AppLogFilePath => Path.Combine(BaseRoamingPath, Files.AppLog);
     }

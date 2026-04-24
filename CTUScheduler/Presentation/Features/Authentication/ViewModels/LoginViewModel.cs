@@ -7,7 +7,10 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Abstractions;
+using CTUScheduler.AppServices.Services.UserSettingService;
+using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Core.Models.Shared.Results;
+using CTUScheduler.Infrastructure.Repositories;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
@@ -23,6 +26,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         private readonly ILoginService _loginService;
         private readonly IUserInteractionService _userInteractionService;
         private readonly INavigationRegionManager _navigationRegionManager;
+        private readonly IUserSettingService _userSettingService;
 
         private string _userName = string.Empty;
         private string _password = string.Empty;
@@ -54,14 +58,24 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         public LoginViewModel(IScreen hostScreen,
             ILoginService loginService,
             IUserInteractionService userInteractionService,
-            INavigationRegionManager navigationRegionManager)
+            INavigationRegionManager navigationRegionManager,
+            IUserSettingService userSettingService)
         {
             HostScreen = hostScreen;
             _userInteractionService = userInteractionService;
             _navigationRegionManager = navigationRegionManager;
-
             _loginService = loginService;
-            LoadSignInData();
+            _userSettingService = userSettingService;
+
+            _userSettingService.AuthSettingsChanged
+                .Subscribe(authSettings =>
+                {
+                    IsSaveUsername = authSettings.IsSaveUsername;
+                    if (IsSaveUsername && !string.IsNullOrEmpty(authSettings.SavedUserName))
+                        UserName = authSettings.SavedUserName;
+                })
+                .DisposeWith(_disposables);
+
 
             Observable.StartAsync(loginService.EnsureReadyAsync);
 
@@ -86,7 +100,11 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
 
         private void OnLoggedIn()
         {
-            SaveSignInData();
+            // SaveSignInData();
+            _userSettingService.UpdateSettings(preferences => preferences with
+            {
+                Auth = new AuthSettings { IsSaveUsername = IsSaveUsername, SavedUserName = UserName }
+            });
             Password = string.Empty;
             RxApp.MainThreadScheduler.Schedule(NavigateToHome);
             Dispose();
@@ -96,33 +114,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         {
             _navigationRegionManager.NavigateAndResetTo<MainShellViewModel>(RegionIds.Root);
         }
-
-        private void SaveSignInData()
-        {
-            var pwd = AppDomain.CurrentDomain.BaseDirectory;
-            string path = string.Concat(pwd, "/", "UserConfig.bin");
-            using (FileStream fs = new FileStream(path, FileMode.Create))
-            using (BinaryWriter writer = new BinaryWriter(fs))
-            {
-                writer.Write(IsSaveUsername);
-                writer.Write(UserName);
-            }
-        }
-
-        private void LoadSignInData()
-        {
-            var pwd = AppDomain.CurrentDomain.BaseDirectory;
-            string path = string.Concat(pwd, "/", "UserConfig.bin");
-            if (!File.Exists(path))
-                return;
-            using (FileStream fs = new FileStream(path, FileMode.Open))
-            using (BinaryReader reader = new BinaryReader(fs))
-            {
-                IsSaveUsername = reader.ReadBoolean();
-                if (IsSaveUsername)
-                    UserName = reader.ReadString();
-            }
-        }
+        
 
         public void Dispose()
         {

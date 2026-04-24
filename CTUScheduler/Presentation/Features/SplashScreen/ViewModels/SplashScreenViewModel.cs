@@ -8,6 +8,7 @@ using System.Threading;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using CTUScheduler.AppServices.Abstractions;
+using CTUScheduler.AppServices.Services.UserSettingService;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Infrastructure.DriverCore;
@@ -28,6 +29,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     private readonly CompositeDisposable _disposables = new();
     private readonly IConnectivityService _connectivityService;
     private readonly IWebDriverService _webDriverServiceRefactor;
+    private readonly IUserSettingService _userSettingService;
     private readonly CancellationTokenSource _localCts;
     
     private bool _isDisposed;
@@ -66,10 +68,12 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
         IConnectivityService connectivityService,
         IWebDriverService webDriverServiceRefactor,
         IWebDriverInstallerService webDriverInstallerService,
+        IUserSettingService userSettingService,
         IApplicationLifetime appLifetime)
     {
         _connectivityService = connectivityService;
         _webDriverServiceRefactor = webDriverServiceRefactor;
+        _userSettingService = userSettingService;
         
         _localCts = CancellationTokenSource.CreateLinkedTokenSource(appLifetime.ApplicationStopping);
         
@@ -125,6 +129,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
                 
                 try 
                 {
+                    await _userSettingService.InitializeAsync();
                     await _webDriverServiceRefactor.InitBrowserAsync();
                 }
                 catch (OperationCanceledException)

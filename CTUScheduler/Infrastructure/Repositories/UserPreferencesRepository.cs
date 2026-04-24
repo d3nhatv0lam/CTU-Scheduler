@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Helpers.Json;
 using CTUScheduler.Core.Models.Settings;
@@ -14,6 +15,7 @@ public class UserPreferencesRepository : IUserPreferencesRepository
 {
     private readonly ILogger<UserPreferencesRepository> _logger;
     private readonly UserPreferencesOptions _options;
+    private readonly SemaphoreSlim _lock = new(1, 1);
 
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
@@ -28,26 +30,38 @@ public class UserPreferencesRepository : IUserPreferencesRepository
         ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.FilePath);
         _logger = logger;
         _options = options.Value;
-        _logger.LogDebug("UserPreferencesRepository initialized with options: {Options}", _options);
+        _logger.LogDebug("{this} initialized with options: {Options}", nameof(UserPreferencesRepository), _options);
     }
 
-    public async Task<OperationResult> SaveAsync(UserPreferences preferences)
+    public async Task<OperationResult> SaveAsync(UserPreferences preferences,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(preferences);
+        await _lock.WaitAsync(cancellationToken);
         try
         {
-            await JsonHelper.SerializeToFileAsync(_options.FilePath, preferences, _jsonSerializerOptions)
+            await JsonHelper.SerializeToSafeFileAsync(
+                    _options.FilePath,
+                    preferences,
+                    _jsonSerializerOptions,
+                    cancellationToken)
                 .ConfigureAwait(false);
+
             return OperationResult.Success();
         }
         catch (Exception ex)
         {
             return MapException<UserPreferences>(ex);
         }
+        finally
+        {
+            _lock.Release();
+        }
     }
 
-    public async Task<OperationResult<UserPreferences>> LoadAsync()
+    public async Task<OperationResult<UserPreferences>> LoadAsync(CancellationToken cancellationToken = default)
     {
+        await _lock.WaitAsync(cancellationToken);
         try
         {
             var filePath = _options.FilePath;
@@ -57,7 +71,8 @@ public class UserPreferencesRepository : IUserPreferencesRepository
                 return new UserPreferences();
             }
 
-            var preferences = await JsonHelper.DeserializeFromFileAsync<UserPreferences>(filePath)
+            var preferences = await JsonHelper
+                .DeserializeFromFileAsync<UserPreferences>(filePath, token: cancellationToken)
                 .ConfigureAwait(false);
 
             if (preferences is null)
@@ -74,6 +89,10 @@ public class UserPreferencesRepository : IUserPreferencesRepository
         catch (Exception ex)
         {
             return MapException<UserPreferences>(ex);
+        }
+        finally
+        {
+            _lock.Release();
         }
     }
 
