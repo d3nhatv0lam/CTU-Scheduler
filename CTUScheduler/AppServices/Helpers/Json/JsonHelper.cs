@@ -1,75 +1,124 @@
 ﻿using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 
-namespace CTUScheduler.AppServices.Helpers.Json
+namespace CTUScheduler.AppServices.Helpers.Json;
+
+public static class JsonHelper
 {
-    public static class JsonHelper
+    public static JsonSerializerOptions ScheduleLoadOptions { get; } = new()
     {
-        public static JsonSerializerOptions ScheduleLoadOptions { get; } = new ()
+        PropertyNameCaseInsensitive = true,
+        ReadCommentHandling = JsonCommentHandling.Skip,
+        UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip
+    };
+
+    // Buffer 32KB cho luồng file để tối ưu I/O với file lớn
+    private const int DefaultBufferSize = 32768; // 1 << 15
+
+    #region Serialize (Ghi File)
+
+    public static async Task SerializeToFileAsync<T>(
+        string filePath,
+        T obj,
+        JsonSerializerOptions? options = null,
+        CancellationToken token = default)
+    {
+        var fileOptions = new FileStreamOptions
         {
-            PropertyNameCaseInsensitive = true,
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip
+            Mode = FileMode.Create,
+            Access = FileAccess.Write,
+            Share = FileShare.None,
+            Options = FileOptions.Asynchronous,
+            BufferSize = DefaultBufferSize
         };
-        
-        public static JsonElement ChangeRoot(JsonElement json, string propertyName)
+
+        await using var stream = new FileStream(filePath, fileOptions);
+        await JsonSerializer.SerializeAsync(stream, obj, options, token).ConfigureAwait(false);
+    }
+
+    public static async Task SerializeToSafeFileAsync<T>(
+        string filePath,
+        T obj,
+        JsonSerializerOptions? options = null,
+        CancellationToken token = default)
+    {
+        var directory = Path.GetDirectoryName(filePath);
+        if (!string.IsNullOrWhiteSpace(directory))
         {
-            return json.GetProperty(propertyName);
+            Directory.CreateDirectory(directory);
         }
 
-        // ---- Serialization ----
-        public static string Serialize<T>(T obj, JsonSerializerOptions? options = null)
+        var tempFilePath = filePath + ".tmp";
+        var fileOptions = new FileStreamOptions
         {
-            return JsonSerializer.Serialize(obj, options);
-        }
+            Mode = FileMode.Create,
+            Access = FileAccess.Write,
+            Share = FileShare.None,
+            Options = FileOptions.Asynchronous,
+            BufferSize = DefaultBufferSize
+        };
 
-        // ---- Deserialization ----
-        public static T? Deserialize<T>(string jsonString, JsonSerializerOptions? options = null)
-        {
-            return JsonSerializer.Deserialize<T>(jsonString, options);
-        }
+        bool serializationSuccess = false;
 
-        public static T? Deserialize<T>(Stream jsonStream, JsonSerializerOptions? options = null)
+        try
         {
-            return JsonSerializer.Deserialize<T>(jsonStream, options);
-        }
+            await using (var stream = new FileStream(tempFilePath, fileOptions))
+            {
+                await JsonSerializer.SerializeAsync(stream, obj, options, token).ConfigureAwait(false);
+            }
 
-        public static T? Deserialize<T>(JsonElement jsonData, JsonSerializerOptions? options = null)
-        {
-            return jsonData.Deserialize<T>(options);
+            serializationSuccess = true;
         }
-
-        // ---- File Operations ----
-        public static T? DeserializeFromFile<T>(string filePath, JsonSerializerOptions? options = null)
+        finally
         {
-            using var stream = File.OpenRead(filePath);
-            return Deserialize<T>(stream, options);
-        }
-        
-        // ---- Serialization (Async) ----
-        public static async Task SerializeAsync<T>(Stream stream, T obj, JsonSerializerOptions? options = null)
-        {
-            await JsonSerializer.SerializeAsync(stream, obj, options);
-        }
-
-        public static async Task SerializeToFileAsync<T>(string filePath, T obj, JsonSerializerOptions? options = null)
-        {
-            await using var stream = File.Create(filePath);
-            await SerializeAsync(stream, obj, options);
-        }
-
-        // ---- Deserialization (Async) ----
-        public static async Task<T?> DeserializeAsync<T>(Stream jsonStream, JsonSerializerOptions? options = null)
-        {
-            return await JsonSerializer.DeserializeAsync<T>(jsonStream, options);
-        }
-
-        public static async Task<T?> DeserializeFromFileAsync<T>(string filePath, JsonSerializerOptions? options = null)
-        {
-            await using var stream = File.OpenRead(filePath);
-            return await DeserializeAsync<T>(stream, options);
+            if (serializationSuccess)
+            {
+                File.Move(tempFilePath, filePath, overwrite: true);
+            }
+            else
+            {
+                if (File.Exists(tempFilePath))
+                {
+                    File.Delete(tempFilePath);
+                }
+            }
         }
     }
+
+    #endregion
+    
+    #region Deserialize (Đọc File)
+    
+    public static T? DeserializeFromFile<T>(string filePath, JsonSerializerOptions? options = null)
+    {
+        if (!File.Exists(filePath)) return default;
+
+        // Đọc đồng bộ (Sync) chỉ nên dùng cho file rất nhỏ hoặc lúc khởi động app.
+        using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, DefaultBufferSize, FileOptions.SequentialScan);
+        return JsonSerializer.Deserialize<T>(stream, options);
+    }
+    
+    public static async Task<T?> DeserializeFromFileAsync<T>(
+        string filePath, 
+        JsonSerializerOptions? options = null,
+        CancellationToken token = default)
+    {
+        if (!File.Exists(filePath)) return default;
+
+        var fileOptions = new FileStreamOptions
+        {
+            Mode = FileMode.Open,
+            Access = FileAccess.Read,
+            Share = FileShare.Read,
+            Options = FileOptions.Asynchronous | FileOptions.SequentialScan, // Gợi ý cho OS biết file sẽ đọc tuần tự
+            BufferSize = DefaultBufferSize
+        };
+
+        await using var stream = new FileStream(filePath, fileOptions);
+        return await JsonSerializer.DeserializeAsync<T>(stream, options, token).ConfigureAwait(false);
+    }
+    #endregion
 }

@@ -8,10 +8,12 @@ using System.Threading;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using CTUScheduler.AppServices.Abstractions;
+using CTUScheduler.AppServices.Services.UserSettingService;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Infrastructure.DriverCore;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
+using CTUScheduler.Infrastructure.Repositories;
 using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.SplashScreen.Components.Installation.ViewModels;
@@ -27,8 +29,8 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     private readonly CompositeDisposable _disposables = new();
     private readonly IConnectivityService _connectivityService;
     private readonly IWebDriverService _webDriverServiceRefactor;
-    private readonly IApplicationLifetime _appLifetime;
-    private readonly CancellationTokenSource _localCts = new();
+    private readonly IUserSettingService _userSettingService;
+    private readonly CancellationTokenSource _localCts;
     
     private bool _isDisposed;
 
@@ -66,13 +68,14 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
         IConnectivityService connectivityService,
         IWebDriverService webDriverServiceRefactor,
         IWebDriverInstallerService webDriverInstallerService,
+        IUserSettingService userSettingService,
         IApplicationLifetime appLifetime)
     {
         _connectivityService = connectivityService;
         _webDriverServiceRefactor = webDriverServiceRefactor;
+        _userSettingService = userSettingService;
         
-        _appLifetime = appLifetime;
-        
+        _localCts = CancellationTokenSource.CreateLinkedTokenSource(appLifetime.ApplicationStopping);
         
         _installationViewModel = new InstallationViewModel(webDriverInstallerService.LogStream)
             .DisposeWith(_disposables);
@@ -123,14 +126,10 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
             .SelectMany(async _ =>
             {
                 if (_localCts.IsCancellationRequested) return Unit.Default;
-
-                using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
-                    _appLifetime.ApplicationStopping,
-                    _localCts.Token
-                );
-
+                
                 try 
                 {
+                    await _userSettingService.InitializeAsync();
                     await _webDriverServiceRefactor.InitBrowserAsync();
                 }
                 catch (OperationCanceledException)
