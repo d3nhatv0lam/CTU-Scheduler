@@ -161,7 +161,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             
             DeleteSelectedTimetablesCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                var confirmViewModel = new ConfirmDialogViewModel
+                using var confirmViewModel = new ConfirmDialogViewModel
                 {
                     Title = "Xóa thời khóa biểu",
                     Message = "Bạn có chắc chắn xóa các thời khóa biểu đã chọn ?",
@@ -225,7 +225,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 
         private async Task OpenAddCourseDialog()
         {
-            var viewModel = _viewModelFactory.Create<DialogShellViewModel>();
+            using var viewModel = _viewModelFactory.Create<DialogShellViewModel>();
             await _dialogHostService.ShowDialogAsync<DialogShellViewModel, Unit>(viewModel,
                 DialogIdentifier.MainLayout);
         }

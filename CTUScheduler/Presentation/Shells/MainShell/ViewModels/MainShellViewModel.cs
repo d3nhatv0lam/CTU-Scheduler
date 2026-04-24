@@ -106,7 +106,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 
             LogoutCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                var confirmViewModel = new ConfirmDialogViewModel
+                using var confirmViewModel = new ConfirmDialogViewModel
                 {
                     Title = "Đăng xuất",
                     Message = "Bạn có chắc chắn muốn đăng xuất ?",
