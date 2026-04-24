@@ -1,0 +1,105 @@
+<rxui:ReactiveUserControl 
+             x:TypeArguments="vm:ConfirmDialogViewModel" 
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" 
+             xmlns:rxui="http://reactiveui.net"
+             x:DataType="vm:ConfirmDialogViewModel"
+             x:CompileBindings="True"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:interaction="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+             xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+             xmlns:vm="clr-namespace:CTUScheduler.Presentation.Shared.Dialogs.ViewModels"
+             x:Class="CTUScheduler.Presentation.Shared.Dialogs.Views.ConfirmDialogView">
+
+    <controls:Card
+            MinHeight="180"
+            CornerRadius="0"
+            MinWidth="450"
+            Padding="0"
+            ClipToBounds="True"
+            BorderThickness="1"
+            BorderBrush="{StaticResource BorderColor}">
+        <Grid RowDefinitions="Auto, *, Auto">
+            <!--// Header //-->
+            <Border Grid.Row="0" 
+                    Background="{StaticResource CtuGradient}" 
+                    Padding="20,15">
+                <Grid ColumnDefinitions="Auto, *">
+                    <materialIcons:MaterialIcon Kind="InformationOutline" 
+                                                Foreground="White" 
+                                                Width="24" Height="24" 
+                                                Margin="0,0,12,0"
+                                                IsVisible="{Binding !IsDestructive}"/>
+                    <materialIcons:MaterialIcon Kind="AlertOutline" 
+                                                Foreground="White" 
+                                                Width="24" Height="24" 
+                                                Margin="0,0,12,0"
+                                                IsVisible="{Binding IsDestructive}"/>
+                    <TextBlock Grid.Column="1" 
+                               Text="{Binding Title}" 
+                               Foreground="White" 
+                               FontSize="18" 
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!--// Content //-->
+            <Border Grid.Row="1" Padding="25,20">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="{Binding Message}" 
+                               FontSize="16" 
+                               TextWrapping="Wrap"
+                               Foreground="{StaticResource Grey}"/>
+                </StackPanel>
+            </Border>
+
+            <!--// Buttons //-->
+            <Border Grid.Row="2" 
+                    Background="{StaticResource BaseBackgroundColor}" 
+                    Padding="20,15"
+                    BorderBrush="{StaticResource BorderColor}"
+                    BorderThickness="0,1,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+                    <Button Content="{Binding CancelText}"
+                            Command="{Binding CancelCommand}"
+                            Classes="Flat"
+                            Foreground="{StaticResource Grey}"
+                            MinWidth="100"
+                            Height="36"
+                            CornerRadius="0"/>
+                    
+                    <Button x:Name="ConfirmButton"
+                            Content="{Binding ConfirmText}"
+                            Command="{Binding AcceptCommand}"
+                            Classes="Raised"
+                            MinWidth="100"
+                            Height="36"
+                            CornerRadius="0">
+                        <Button.Styles>
+                            <Style Selector="Button">
+                                <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Style>
+                            <Style Selector="Button[Tag=True]">
+                                <Setter Property="Background" Value="{StaticResource RedColor}"/>
+                            </Style>
+                        </Button.Styles>
+                        <interaction:Interaction.Behaviors>
+                            <behaviors:DataTriggerBehavior Binding="{Binding IsDestructive}" Value="True">
+                                <behaviors:ChangePropertyAction TargetObject="{Binding #ConfirmButton}" PropertyName="Tag" Value="True"/>
+                            </behaviors:DataTriggerBehavior>
+                            <behaviors:DataTriggerBehavior Binding="{Binding IsDestructive}" Value="False">
+                                <behaviors:ChangePropertyAction TargetObject="{Binding #ConfirmButton}" PropertyName="Tag" Value="False"/>
+                            </behaviors:DataTriggerBehavior>
+                        </interaction:Interaction.Behaviors>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </controls:Card>
+</rxui:ReactiveUserControl>

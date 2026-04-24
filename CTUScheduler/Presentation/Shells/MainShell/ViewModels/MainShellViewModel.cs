@@ -14,6 +14,7 @@ using CTUScheduler.Presentation.Features.Setting.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableManager.ViewModels;
 using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.Navigation;
+using CTUScheduler.Presentation.Shared.Dialogs.ViewModels;
 using CTUScheduler.Presentation.Shared.Models.Regions;
 using CTUScheduler.Presentation.Shells.MainShell.Models;
 using Material.Icons;
@@ -105,8 +106,18 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 
             LogoutCommand = ReactiveCommand.CreateFromTask(async () =>
             {
+                var confirmViewModel = new ConfirmDialogViewModel
+                {
+                    Title = "Đăng xuất",
+                    Message = "Bạn có chắc chắn muốn đăng xuất ?",
+                    ConfirmText = "Đăng xuất",
+                    CancelText = "Không",
+                    IsDestructive = true
+                };
+
                 bool isAcceptLogout = await _dialogHostService
-                    .ShowDialogAsync<LogoutDialogViewModel,bool>(new LogoutDialogViewModel(), DialogIdentifier.MainLayout);
+                    .ShowDialogAsync<ConfirmDialogViewModel, bool>(confirmViewModel, DialogIdentifier.MainLayout);
+                
                 if (isAcceptLogout)
                 {
                     var currentStack = Router.NavigationStack.ToList();

@@ -20,6 +20,8 @@
     xmlns:views="clr-namespace:CTUScheduler.Presentation.Shells.MainShell.Views"
     xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels"
     xmlns:views2="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Shells.Views"
+    xmlns:sharedVm="clr-namespace:CTUScheduler.Presentation.Shared.Dialogs.ViewModels"
+    xmlns:sharedViews="clr-namespace:CTUScheduler.Presentation.Shared.Dialogs.Views"
     x:Class="CTUScheduler.Presentation.Shells.MainShell.Views.MainShellView">
 
     <rxui:ReactiveUserControl.Styles>
@@ -38,6 +40,9 @@
                 </DataTemplate>
                 <DataTemplate x:DataType="{x:Type viewModels:DialogShellViewModel}">
                     <views2:DialogShellView />
+                </DataTemplate>
+                <DataTemplate x:DataType="{x:Type sharedVm:ConfirmDialogViewModel}">
+                    <sharedViews:ConfirmDialogView />
                 </DataTemplate>
             </dialogHostAvalonia:DialogHost.DataTemplates>
             <!-- // Main Content // -->
