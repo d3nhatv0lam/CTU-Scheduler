@@ -96,7 +96,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
 
         private void OnLoggedIn()
         {
-            // SaveSignInData();
+            _userInteractionService.Notification.Light.Success("Đăng nhập thành công");
             _userSettingService.UpdateSettings(preferences => preferences with
             {
                 Auth = new AuthSettings { IsSaveUsername = IsSaveUsername, SavedUserName = UserName }

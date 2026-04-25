@@ -59,7 +59,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
                 .Subscribe(result =>
                 {
                     result.Match(
-                        () => { _userInteractionService.Notification.Light.Success("Đăng nhập thành công"); },
+                        () => {  },
                         (errors, _) =>
                         {
                             var errorsString = String.Join('\n', errors.Select(x => x.FormattedMessage));
