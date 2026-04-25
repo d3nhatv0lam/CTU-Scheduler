@@ -83,12 +83,8 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                 {
                     var result = await loginService.LoginAsync(UserName, Password);
 
-                    result.Match(() =>
-                        {
-                            _userInteractionService.Notification.Light.Success("Đăng nhập thành công");
-                            OnLoggedIn();
-                        }
-                        , (errors, reason) =>
+                    result.Match(OnLoggedIn
+                        , (errors, _) =>
                         {
                             var errorTexts = errors.Select(e => e.FormattedMessage);
                             _userInteractionService.Notification.Light.Error($"{string.Join('\n', errorTexts)}");

@@ -44,7 +44,7 @@ public class MainHomeService: IMainHomeService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex,"Lỗi không xác định");
+            _logger.LogError(ex,"Lỗi không xác định");
             return  OperationResult.Failed("Lỗi hệ thống!", kind: OperationFailureReason.System);
         }
     }
