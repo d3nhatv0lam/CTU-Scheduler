@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
@@ -15,7 +16,9 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 
 public abstract class DkmhSpaPage : AppPage, IRequireSession
 {
-    private const string InvalidSessionSelector = "text='Bạn hiện không có quyền truy cập vào hệ thống'";
+    private const string InvalidSessionSelector =
+        ".ant-modal-confirm-content:has-text('Bạn hiện không có quyền truy cập vào hệ thống')";
+
     protected Sidebar Sidebar { get; }
 
     protected DkmhSpaPage(IWebTab tab, IConnectivityService connectivityService, ILoggerFactory loggerFactory) : base(
@@ -39,7 +42,7 @@ public abstract class DkmhSpaPage : AppPage, IRequireSession
     public override async Task WaitForReadyAsync(int timeoutMs = 10000)
     {
         using var cts = new CancellationTokenSource(timeoutMs);
-        
+
         var opt = new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 0 };
         var urlOpt = new PageWaitForURLOptions { Timeout = 0 };
 
@@ -48,31 +51,31 @@ public abstract class DkmhSpaPage : AppPage, IRequireSession
         var pPopupDeadTask = string.IsNullOrEmpty(InvalidSessionSelector)
             ? Task.Delay(Timeout.Infinite)
             : Tab.NativePage.Locator(InvalidSessionSelector).WaitForAsync(opt);
-        
+
         pReadyTask.FireAndForgetSafe();
         pUrlDeadTask.FireAndForgetSafe();
         pPopupDeadTask.FireAndForgetSafe();
-        
+
         var readyTask = pReadyTask.WaitAsync(cts.Token);
         var urlDeadTask = pUrlDeadTask.WaitAsync(cts.Token);
         var popupDeadTask = pPopupDeadTask.WaitAsync(cts.Token);
-        
+
         try
         {
             var winner = await Task.WhenAny(readyTask, urlDeadTask, popupDeadTask);
 
             await winner;
-            
+
             if (winner == urlDeadTask)
             {
-                throw new SessionExpiredException($"Mất session tại {GetType().Name} (UrlRedirect)");
-            }
-        
-            if (winner == popupDeadTask)
-            {
-                throw new SessionExpiredException($"Mất session tại {GetType().Name} (BPopup)");
+                throw new SessionExpiredException($"Mất session tại {GetType().Name}");
             }
 
+            if (winner == popupDeadTask)
+            {
+                throw new SessionExpiredException($"Mất session tại {GetType().Name}");
+            }
+            
             // winner == readyTask, (Thành công!)
         }
         catch (OperationCanceledException)
@@ -80,9 +83,9 @@ public abstract class DkmhSpaPage : AppPage, IRequireSession
             throw new TimeoutException($"Quá {timeoutMs}ms không thể tải được trang {GetType().Name}.");
         }
         finally
-        { 
+        {
             await cts.CancelAsync();
-        
+
             readyTask.FireAndForgetSafe();
             urlDeadTask.FireAndForgetSafe();
             popupDeadTask.FireAndForgetSafe();

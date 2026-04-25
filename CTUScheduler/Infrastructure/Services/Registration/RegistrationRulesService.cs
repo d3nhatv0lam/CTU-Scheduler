@@ -51,14 +51,17 @@ public class RegistrationRulesService : IRegistrationRulesService
             var mainPage = _factory.GetPage<IMainPage>(_webDriverService.MainTab);
             if (await mainPage.IsActiveAsync())
             {
+                await mainPage.WaitForReadyAsync();
                 await mainPage.NavigateToDkmhAsync();
                 await _rulesPage.WaitForReadyAsync();
+                await _rulesPage.CheckSessionAndThrowAsync();
                 return OperationResult.Success();
             }
 
             await _rulesPage.NavigateToAsync();
             await _rulesPage.WaitForReadyAsync();
-
+            await _rulesPage.CheckSessionAndThrowAsync();
+            
             return OperationResult.Success();
         }
         catch (InvalidOperationException ex)

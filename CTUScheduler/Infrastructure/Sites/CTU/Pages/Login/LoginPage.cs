@@ -116,11 +116,11 @@ public class LoginPage : AppPage, ILoginPage
         ).WaitAsync(cancellationToken);
 
         var errorOption = new PageWaitForSelectorOptions { State = WaitForSelectorState.Visible, Timeout = 0 };
-        
+
         var t1 = Tab.NativePage.WaitForSelectorAsync(UsernameErrorSelector, errorOption);
         var t2 = Tab.NativePage.WaitForSelectorAsync(PasswordErrorSelector, errorOption);
         var t3 = Tab.NativePage.WaitForSelectorAsync(LoginFailSelector, errorOption);
-        
+
         var waitForErrorTask = Task.WhenAny(t1, t2, t3).WaitAsync(cancellationToken);
 
         var timeoutTask = Task.Delay(15000, cancellationToken);
@@ -136,7 +136,7 @@ public class LoginPage : AppPage, ILoginPage
         successTask.FireAndForgetSafe();
         errorTask.FireAndForgetSafe();
         timeoutTask.FireAndForgetSafe();
-        
+
         if (completedTask == successTask)
         {
             await successTask;
@@ -159,12 +159,12 @@ public class LoginPage : AppPage, ILoginPage
 
     private async Task CleanUpPageAsync()
     {
-        string jsCode = $@"(selectors) => {{
-            selectors.forEach(sel => {{
+        string jsCode = @"(selectors) => {
+            selectors.forEach(sel => {
                 const el = document.querySelector(sel);
                 if (el) el.style.display = 'none';
-            }});
-        }}";
+            });
+        }";
 
         await Tab.NativePage.EvaluateAsync(jsCode,
             new[] { UsernameErrorSelector, PasswordErrorSelector, LoginFailSelector });
