@@ -5,38 +5,46 @@ using System.Reactive.Disposables.Fluent;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
 using DynamicData;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
-public class TimetablePreviewViewModel: TimetableLayoutBaseViewModel
+public class TimetablePreviewViewModel : TimetableLayoutBaseViewModel
 {
     private readonly List<SectionChoice> _choices = new();
-    public TimetablePreviewViewModel(IEnumerable<SectionChoice> choices)
+
+    public TimetablePreviewViewModel(IEnumerable<SectionChoice> choices, IExcelExporterService excelExporter)
+        : base(excelExporter)
     {
-        if (choices is null) return;
+        if (choices is null) 
+        {
+            SubjectsCount = 0;
+            TotalCredits = 0;
+            return;
+        }
         _choices.AddRange(choices);
-        
+
         var sourceList = new SourceList<TimetableRenderItem>()
             .DisposeWith(Disposables);
         
-        foreach (var choice in _choices)
+        var items = _choices.Select(choice =>
         {
             var adapter = new StaticCourseAdapter(choice.Course, choice.Section);
-            var item = CreateRenderItem(adapter);
-            sourceList.Add(item);
-        }
-
-        VisualizerVM = new TimetableViewModel(sourceList.Connect())
+            return CreateRenderItem(adapter);
+        }).ToList();
+        
+        sourceList.AddRange(items);
+        
+        VisualizerVM = new TimetableViewModel(sourceList)
             .DisposeWith(Disposables);
 
         SubjectsCount = sourceList.Count;
-        TotalCredits = sourceList.Items
-            .Sum(x => x.SharedData.Credits);
+        TotalCredits = sourceList.Items.Sum(x => x.SharedData.Credits);
     }
-    
+
     public override ScheduleBlueprint ToScheduleBlueprint()
     {
         int count = _choices.Count;
@@ -49,8 +57,7 @@ public class TimetablePreviewViewModel: TimetableLayoutBaseViewModel
             groupKeys.TryAdd(courseCode, choice.Section.Group);
         }
         var profile = new ScheduleProfile()
-        {   
-            Id = Guid.NewGuid(),
+        {
             Name = this.Name,
             SavedCourseGroupKeys = groupKeys,
             LastUpdated = this.LastUpdated

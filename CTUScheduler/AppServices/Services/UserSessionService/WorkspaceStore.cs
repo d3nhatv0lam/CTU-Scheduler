@@ -51,7 +51,7 @@ public class WorkspaceStore : IWorkspaceStore
         };
         try
         {
-            await JsonHelper.SerializeToFileAsync(filePath, workspace);
+            await JsonHelper.SerializeToSafeFileAsync(filePath, workspace);
             _userSessionService.NotifyModified();
             return true;
         }

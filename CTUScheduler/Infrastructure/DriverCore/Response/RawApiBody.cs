@@ -1,4 +1,6 @@
-﻿namespace CTUScheduler.Infrastructure.DriverCore.Response;
+﻿using CTUScheduler.Infrastructure.DriverCore.Interfaces;
+
+namespace CTUScheduler.Infrastructure.DriverCore.Response;
 
 public record RawApiBody<T> : IApiBody<T>
 {

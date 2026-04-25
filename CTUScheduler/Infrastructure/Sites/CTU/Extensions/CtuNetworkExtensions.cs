@@ -17,7 +17,7 @@ public static class CtuNetworkExtensions
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException">source is null</exception>
-    public static IObservable<IApiBody<T>> ParseCtuResponse<T>(this IObservable<NetworkPacket> source,
+    public static IObservable<CtuApiBody<T>> ParseCtuResponse<T>(this IObservable<NetworkPacket> source,
         Func<JsonNode, JsonNode?>? nodeSelector = null)
     {
         return source.Select(packet =>
@@ -26,7 +26,7 @@ public static class CtuNetworkExtensions
             {
                 Code = 500, 
                 Message = "Internal Server Error",
-                Data = default
+                Data = default(T)
             };
             if (packet is null || string.IsNullOrWhiteSpace(packet.RawBody))
                 return failResult;

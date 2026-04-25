@@ -6,6 +6,7 @@ using Avalonia;
 using Avalonia.Dialogs;
 using CTUScheduler.AppServices.Extensions;
 using CTUScheduler.Desktop.Configs;
+using CTUScheduler.Infrastructure.Extensions;
 using CTUScheduler.Presentation.Extensions;
 using CTUScheduler.Presentation.Services.ApplicationLifetime;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,8 +44,9 @@ class Program
                 resolver.InitializeReactiveUI();
                 
                 services.AddSingleton<IApplicationLifetime, DesktopApplicationLifetime>();
-                
-                // app services
+
+                // Services injector
+                services.AddInfrastructureServices();
                 services.AddApplicationServices();
                 services.AddPresentationServices();
             })

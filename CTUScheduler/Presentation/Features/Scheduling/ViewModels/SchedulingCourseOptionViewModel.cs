@@ -1,25 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using System.Reactive.Linq;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
-using CTUScheduler.Presentation.Shared.Models.Academic;
 using DynamicData;
 using DynamicData.Binding;
-using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 
 public class SchedulingCourseOptionViewModel : ViewModelBase, IDisposable
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
-    public ObservableCollection<SchedulingCourse> SchedulingCourses { get; set; } = new ();
+    public ObservableCollection<SchedulingCourse> SchedulingCourses { get; set; } = new();
 
     public SchedulingCourseOptionViewModel()
     {
@@ -30,7 +26,7 @@ public class SchedulingCourseOptionViewModel : ViewModelBase, IDisposable
                 PartitionCourses(SchedulingCourses,
                     out var mainCourses,
                     out var alternativeCourses);
-                
+
                 foreach (var schedulingCourse in alternativeCourses)
                 {
                     schedulingCourse.ReplacementOptions = mainCourses;
@@ -38,14 +34,16 @@ public class SchedulingCourseOptionViewModel : ViewModelBase, IDisposable
             })
             .DisposeWith(_disposables);
     }
-    
+
     private void ClearSchedulingCourses()
     {
         if (SchedulingCourses.Any())
             SchedulingCourses.Clear();
     }
 
-    private void PartitionCourses(ObservableCollection<SchedulingCourse> schedulingCourses,out List<SchedulingCourse> mainCourses, out List<SchedulingCourse> alternativeCourses)
+    private void PartitionCourses(ObservableCollection<SchedulingCourse> schedulingCourses,
+        out List<SchedulingCourse> mainCourses,
+        out List<SchedulingCourse> alternativeCourses)
     {
         mainCourses = new List<SchedulingCourse>();
         alternativeCourses = new List<SchedulingCourse>();
@@ -58,7 +56,7 @@ public class SchedulingCourseOptionViewModel : ViewModelBase, IDisposable
         }
     }
 
-    public void MapToSchedulingCourses(ReadOnlyObservableCollection<Course> courses) 
+    public void MapToSchedulingCourses(ReadOnlyObservableCollection<Course> courses)
     {
         ClearSchedulingCourses();
         foreach (var course in courses)
@@ -73,8 +71,8 @@ public class SchedulingCourseOptionViewModel : ViewModelBase, IDisposable
         PartitionCourses(SchedulingCourses,
             out var mainCourses,
             out var alternativeCourses);
-        
-        List<List<Course>> sets = new ();
+
+        List<List<Course>> sets = new();
         var map = new Dictionary<Course, List<Course>>();
 
         // tạo group cho mainCourses
@@ -93,14 +91,13 @@ public class SchedulingCourseOptionViewModel : ViewModelBase, IDisposable
                 list.Add(schedulingCourse.Item);
             }
         }
+
         return sets;
     }
-    
-    
+
+
     public void Dispose()
     {
         _disposables.Dispose();
     }
-
-    
 }

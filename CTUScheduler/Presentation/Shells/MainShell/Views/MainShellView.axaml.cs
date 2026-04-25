@@ -7,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using ReactiveUI.Avalonia;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
+using Material.Styles.Controls;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Shells.MainShell.Views;
@@ -38,7 +39,6 @@ public partial class MainShellView : ReactiveUserControl<MainShellViewModel>
             {
                 if (!lBoxNavigation.IsFocused && !lBoxNavigation.IsKeyboardFocusWithin)
                     return;
-                LeftDrawer.OptionalCloseLeftDrawer();
             }).DisposeWith(disposables);
 
             // Command

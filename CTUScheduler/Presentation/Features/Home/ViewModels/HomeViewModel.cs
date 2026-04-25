@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
@@ -6,24 +8,25 @@ using System.Reactive.Linq;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.UserSessionService;
-using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
 using CTUScheduler.Core.Models.Contributors;
 using CTUScheduler.Core.Models.Settings;
-using CTUScheduler.Infrastructure.Services.Registration;
+using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Services.UserInteractionService;
-using Microsoft.Extensions.DependencyInjection;
+using CTUScheduler.Presentation.Features.Authentication.ViewModels;
+using CTUScheduler.Presentation.Services.Navigation;
+using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
+using CTUScheduler.Presentation.Shared.Models.Regions;
 using ReactiveUI;
 using Serilog;
 
 namespace CTUScheduler.Presentation.Features.Home.ViewModels
 {
-    public class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivatableViewModel, IDisposable,
-        INeedArgs<IScreen>
+    public class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivatableViewModel, IDisposable
     {
         private readonly CompositeDisposable _disposable = new CompositeDisposable();
         private readonly IUserSessionService _userSessionService;
+        private readonly IUserInteractionService _userInteractionService;
         private readonly IRegistrationRulesService _registrationRulesService;
         private readonly ObservableAsPropertyHelper<RegistrationInformation> _registrationInfo;
         public string? UrlPathSegment => "HomeViewModel";
@@ -31,21 +34,41 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
         public ViewModelActivator Activator { get; } = new();
         public RegistrationInformation RegistrationInfo => _registrationInfo.Value;
 
-
         public ReactiveCommand<Unit, Unit> OpenFacebookCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenYoutubeCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenGithubCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenCTUHTQLCommand { get; }
 
-        public HomeViewModel(IScreen hostScreen)
+        public HomeViewModel(IScreen hostScreen,
+            IUserSessionService userSessionService,
+            IRegistrationRulesService registrationRulesService,
+            IUserInteractionService userInteractionService,
+            INavigationRegionManager navigationRegionManager)
         {
             HostScreen = hostScreen;
+            _userSessionService = userSessionService;
+            _registrationRulesService = registrationRulesService;
+            _userInteractionService = userInteractionService;
 
-            _userSessionService = App.ServiceProvider.GetRequiredService<IUserSessionService>();
-            _registrationRulesService = App.ServiceProvider.GetRequiredService<IRegistrationRulesService>();
-
-            _registrationRulesService.RegistrationInfoChanges
+            _registrationRulesService.RegistrationInfoChanged
                 .Subscribe(info => _userSessionService.UpdateServerInfo(info))
+                .DisposeWith(_disposable);
+
+            Observable.StartAsync(async _ => await _registrationRulesService.EnsureReadyAsync())
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(result =>
+                {
+                    result.Match(
+                        () => { _userInteractionService.Notification.Light.Success("Đăng nhập thành công"); },
+                        (errors, _) =>
+                        {
+                            var errorsString = String.Join('\n', errors.Select(x => x.FormattedMessage));
+                            _userInteractionService.Notification.Light.Error(errorsString);
+                            navigationRegionManager.NavigateAndResetTo<LoginViewModel>(RegionIds.Root);
+                        },
+                        ex => { Debug.WriteLine(ex, "Lỗi khi _registrationRulesService.EnsureReadyAsync"); }
+                    );
+                })
                 .DisposeWith(_disposable);
 
             _registrationInfo = _userSessionService.RegistrationInfoChanged
@@ -69,7 +92,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
                 disposable.Add(_disposable);
             });
 
-            LoadPage();
+            // LoadPage();
         }
 
         private void OpenUrl(string url)
@@ -91,7 +114,6 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
 
         public void Dispose()
         {
-            (_registrationRulesService as IDisposable)?.Dispose();
             _disposable.Dispose();
             Log.Debug(nameof(HomeViewModel) + ": Disposed");
         }

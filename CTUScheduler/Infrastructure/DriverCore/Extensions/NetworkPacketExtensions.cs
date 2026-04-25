@@ -2,6 +2,7 @@
 using System.Reactive.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using CTUScheduler.Infrastructure.DriverCore.Interfaces;
 using CTUScheduler.Infrastructure.DriverCore.Response;
 
 namespace CTUScheduler.Infrastructure.DriverCore.Extensions;

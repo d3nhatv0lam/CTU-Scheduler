@@ -22,19 +22,20 @@ namespace CTUScheduler.Presentation.Services.Navigation
         public CachingNavigationService(IScreen hostScreen, IViewModelFactory vmFactory,
             ILogger<CachingNavigationService> logger)
         {
-            _hostScreen = hostScreen ?? throw new ArgumentNullException(nameof(hostScreen));
-            _vmFactory = vmFactory ?? throw new ArgumentNullException(nameof(vmFactory));
+            ArgumentNullException.ThrowIfNull(hostScreen);
+            ArgumentNullException.ThrowIfNull(vmFactory);
+            ArgumentNullException.ThrowIfNull(logger);
+            _hostScreen = hostScreen ;
+            _vmFactory = vmFactory;
             _logger = logger;
             _logger.LogDebug("CachingNavigationService initialized for Screen: {ScreenType}",
                 hostScreen.GetType().Name);
         }
-        
+
         public Task NavigateTo(Type vmType, object? args = null) => ExecuteNavigation(vmType, args, false);
         public Task NavigateAndResetTo(Type vmType, object? args = null) => ExecuteNavigation(vmType, args, true);
-        public void ClearCache(Type vmType) => ClearCacheInternal(t => t == vmType);
-        public void ClearAllCache() => ClearCacheInternal();
-        
-        private async Task ExecuteNavigation(Type vmType, object? args , bool reset)
+
+        private async Task ExecuteNavigation(Type vmType, object? args, bool reset)
         {
             if (!typeof(IRoutableViewModel).IsAssignableFrom(vmType))
                 throw new ArgumentException($"{vmType.Name} must implement IRoutableViewModel");
@@ -45,7 +46,7 @@ namespace CTUScheduler.Presentation.Services.Navigation
                 ClearCacheInternal(t => t != vmType);
             }
 
-            var viewModel = GetOrCreateViewModel(vmType);
+            var viewModel = GetOrCreateViewModel(vmType, args);
 
             if (args != null)
             {
@@ -59,9 +60,13 @@ namespace CTUScheduler.Presentation.Services.Navigation
                 await _hostScreen.Router.Navigate.Execute(viewModel).ToTask();
         }
 
-        private IRoutableViewModel GetOrCreateViewModel(Type vmType)
+        private IRoutableViewModel GetOrCreateViewModel(Type vmType, object? args = null)
         {
             bool skipCache = typeof(INonCacheable).IsAssignableFrom(vmType);
+
+            object[] inputs = args != null
+                ? [_hostScreen, args]
+                : [_hostScreen];
 
             if (skipCache)
             {
@@ -70,13 +75,14 @@ namespace CTUScheduler.Presentation.Services.Navigation
                 {
                     (oldLazy.Value as IDisposable)?.Dispose();
                 }
-                return (IRoutableViewModel)_vmFactory.Create(vmType, _hostScreen);
+
+                return (IRoutableViewModel)_vmFactory.Create(vmType, inputs);
             }
-            
+
             return _cache.GetOrAdd(vmType, type => new Lazy<IRoutableViewModel>(() =>
             {
                 _logger.LogTrace("Creating new instance for {Type}", type.Name);
-                return (IRoutableViewModel)_vmFactory.Create(type, _hostScreen);
+                return (IRoutableViewModel)_vmFactory.Create(type, inputs);
             })).Value;
         }
 
@@ -89,12 +95,21 @@ namespace CTUScheduler.Presentation.Services.Navigation
                 {
                     if (lazy.Value is IDisposable d)
                     {
-                        try { d.Dispose(); } 
-                        catch (Exception ex) { _logger.LogError(ex, "Dispose error {Type}", key.Name); }
+                        try
+                        {
+                            d.Dispose();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Dispose error {Type}", key.Name);
+                        }
                     }
                 }
             }
         }
+
+        public void ClearCache(Type vmType) => ClearCacheInternal(t => t == vmType);
+        public void ClearAllCache() => ClearCacheInternal();
         public void Dispose() => ClearAllCache();
     }
 }

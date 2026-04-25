@@ -7,7 +7,7 @@ using CTUScheduler.Presentation.Features.Pagination.ViewModels;
 
 namespace CTUScheduler.Presentation.Features.Pagination.Views;
 
-public partial class PaginationView : ReactiveUserControl<IPaginationBinding>{
+public partial class PaginationView : ReactiveUserControl<IPaginationInteraction>{
     public PaginationView()
     {
         InitializeComponent();

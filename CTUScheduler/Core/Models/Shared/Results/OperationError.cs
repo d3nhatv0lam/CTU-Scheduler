@@ -8,9 +8,9 @@ public record OperationError(
     string? Property = null,
     object[]? Args = null)
 {
-    public string FormattedMessage => Args is { Length: > 0} 
-        ? string.Format(DefaultMessage, Args) 
-        : DefaultMessage; 
+    public string FormattedMessage => Args is { Length: > 0 }
+        ? string.Format(DefaultMessage, Args)
+        : DefaultMessage;
     
     public override string ToString() => $"[{Code}] {FormattedMessage} (Property: {Property})";
 }

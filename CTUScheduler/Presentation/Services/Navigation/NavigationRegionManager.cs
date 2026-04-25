@@ -25,7 +25,7 @@ public class NavigationRegionManager : INavigationRegionManager
 
     public IDisposable Register(RegionId regionId, IScreen screen)
     {
-        _logger.LogInformation("Registering region: {RegionId}", regionId.Value);
+        _logger.LogDebug("Registering region: {RegionId}", regionId.Value);
         if (_regions.ContainsKey(regionId))
         {
             throw new InvalidOperationException($"Region '{regionId.Value}' is already registered.");
@@ -42,7 +42,7 @@ public class NavigationRegionManager : INavigationRegionManager
         {
             if (_regions.TryRemove(id, out var s))
             {
-                _logger.LogInformation("Unregistering region: {RegionId}", id.Value);
+                _logger.LogDebug("Unregistering region: {RegionId}", id.Value);
                 if (s is IDisposable disposable) disposable.Dispose();
             }
         });

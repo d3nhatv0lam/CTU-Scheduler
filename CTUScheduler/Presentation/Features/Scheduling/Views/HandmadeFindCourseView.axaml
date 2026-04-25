@@ -13,10 +13,10 @@
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:viewModels1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels"
     xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Views"
-    xmlns:courseUiModels="using:CTUScheduler.Presentation.Shared.Models.Academic"
     Focusable="True"
     xmlns:behaviors="clr-namespace:CTUScheduler.Presentation.Shared.Behaviors"
-    xmlns:selectableCourseData="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Models"
+    xmlns:models="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Models"
+    xmlns:curriculumModel="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.CourseData"
     xmlns:qSelectCourse="clr-namespace:CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.CourseData"
     x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.HandmadeFindCourseView">
 
@@ -187,7 +187,7 @@
                                 <DataGridTemplateColumn Header="Chọn" Width="69" CanUserResize="False">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate
-                                            x:DataType="{x:Type selectableCourseData:SelectableCourseSectionUi}">
+                                            x:DataType="{x:Type models:SelectableCourseSection}">
                                             <CheckBox
                                                 VerticalAlignment="Center"
                                                 HorizontalAlignment="Center"
@@ -213,11 +213,11 @@
                                 <DataGridTemplateColumn Header="Lịch học" Width="180">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate
-                                            x:DataType="{x:Type selectableCourseData:SelectableCourseSectionUi}">
+                                            x:DataType="{x:Type models:SelectableCourseSection}">
                                             <ItemsRepeater VerticalAlignment="Center"
                                                            ItemsSource="{Binding Item.ClassDays,Mode=OneTime}">
                                                 <ItemsRepeater.ItemTemplate>
-                                                    <DataTemplate DataType="{x:Type courseUiModels:ClassDayUi}">
+                                                    <DataTemplate DataType="{x:Type curriculumModel:ClassDay}">
                                                         <Grid>
                                                             <Grid.Styles>
                                                                 <Style Selector="TextBlock">
@@ -257,7 +257,7 @@
                                     Width="*">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate
-                                            x:DataType="{x:Type selectableCourseData:SelectableCourseSectionUi}">
+                                            x:DataType="{x:Type models:SelectableCourseSection}">
                                             <Grid>
                                                 <TextBlock Text="{Binding Item.Lecturer, Mode=OneTime}" />
                                             </Grid>
@@ -294,17 +294,18 @@
 
                             <TreeView.ItemTemplate>
                                 <TreeDataTemplate ItemsSource="{Binding Sections}"
-                                                  x:DataType="{x:Type courseUiModels:CourseUi}">
+                                                  x:DataType="{x:Type models:SelectedCourseNode}">
                                     <Grid ColumnDefinitions="* auto">
                                         <TextBlock Grid.Column="0"
                                                    HorizontalAlignment="Left">
-                                            <Run Text="{Binding Code,Mode=OneTime}" />
+                                            <Run Text="{Binding CoreCourse.Code,Mode=OneTime}" />
                                             <Run Text=" - " />
-                                            <Run Text="{Binding Name_VN,Mode=OneTime}" />
+                                            <Run Text="{Binding CoreCourse.Name_VN,Mode=OneTime}" />
                                             <Run Text="(" />
                                             <Run Text="{Binding Sections.Count,Mode=OneWay}" />
                                             <Run Text=")" />
                                         </TextBlock>
+                                        
                                         <Button Grid.Column="1"
                                                 Classes="BtnRemove"
                                                 Content="{materialIcons:MaterialIconExt Kind=CloseBoxOutline,Size=20}"
@@ -315,7 +316,7 @@
                             </TreeView.ItemTemplate>
 
                             <TreeView.DataTemplates>
-                                <DataTemplate x:DataType="{x:Type courseUiModels:CourseSectionUi}">
+                                <DataTemplate x:DataType="{x:Type curriculumModel:CourseSection}">
                                     <Grid RowDefinitions="auto auto"
                                           ColumnDefinitions="auto * auto">
 
@@ -324,7 +325,7 @@
                                             Grid.Column="1"
                                             ItemsSource="{Binding ClassDays}">
                                             <ItemsRepeater.ItemTemplate>
-                                                <DataTemplate x:DataType="{x:Type courseUiModels:ClassDayUi}">
+                                                <DataTemplate x:DataType="{x:Type curriculumModel:ClassDay}">
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="auto" MinWidth="30" />

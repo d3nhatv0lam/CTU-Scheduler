@@ -1,4 +1,4 @@
-﻿<rxui:ReactiveUserControl x:TypeArguments="viewModels:IPaginationBinding"
+﻿<rxui:ReactiveUserControl x:TypeArguments="viewModels:IPaginationInteraction"
                           xmlns="https://github.com/avaloniaui"
                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -8,7 +8,7 @@
                           xmlns:rxui="http://reactiveui.net"
                           Background="Transparent"
                           xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.Pagination.Views"
-                          x:DataType="viewModels:IPaginationBinding"
+                          x:DataType="viewModels:IPaginationInteraction"
                           x:CompileBindings="True"
                           x:Class="CTUScheduler.Presentation.Features.Pagination.Views.PaginationView">
     <rxui:ReactiveUserControl.Styles>

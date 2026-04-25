@@ -1,4 +1,4 @@
-﻿<rxui:ReactiveUserControl
+<rxui:ReactiveUserControl
     x:Name="MainTimetableLayout"
     x:TypeArguments="vm:TimetableLayoutBaseViewModel"
     xmlns="https://github.com/avaloniaui"
@@ -146,7 +146,8 @@
                                 </Button>
                                 <Button
                                     Classes="export"
-                                    ToolTip.Tip="Xuất thời khóa biểu dưới dạng file Excel">
+                                    ToolTip.Tip="Xuất thời khóa biểu dưới dạng file Excel"
+                                    Command="{Binding ExportToExcelCommand}">
                                     <StackPanel Orientation="Horizontal">
                                         <icon:MaterialIcon Kind="DownloadOutline" />
                                         <TextBlock Text="Excel"></TextBlock>

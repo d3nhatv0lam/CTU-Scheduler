@@ -6,12 +6,19 @@
         </Border>
     </Design.PreviewWith>
 
-     <!-- Border -->
+    <!-- Border -->
     <Style Selector="Border.CornerBorder">
-        <Setter Property="BorderBrush" Value="#a3a3a3"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="BorderBrush" Value="#a3a3a3" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Background" Value="White" />
+        <Setter Property="CornerRadius" Value="10" />
     </Style>
-     
+
+    <!-- header bar -->
+    <Style Selector="Border.header-bar">
+        <Setter Property="Height" Value="70" />
+        <Setter Property="Background" Value="{StaticResource CtuGradient}" />
+        <Setter Property="Padding" Value="10,0" />
+    </Style>
+
 </Styles>

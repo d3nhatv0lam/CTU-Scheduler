@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using CTUScheduler.Core.Models.Contributors;
+using CTUScheduler.Core.Shared;
+using CTUScheduler.Core.Shared.Helpers;
 
 namespace CTUScheduler.Core.Models.Settings;
 
@@ -10,6 +14,9 @@ public static class AppConstants
     // Những cái này dùng chung cho toàn app, không thuộc nhóm cụ thể nào
     // ====================================================
     public const string AppVersion = "0.1";
+    public const string AppNameWindows = "CTUScheduler";
+    public const string AppNameUnix = "ctu-scheduler";
+
     public const int DefaultMaxScheduleProfiles = 10;
 
     // ====================================================
@@ -18,7 +25,27 @@ public static class AppConstants
     // ====================================================
     public static class Files
     {
-        public const string UserConfig = "UserConfig.bin";
+        public const string UserPreferences = "UserPreferences.json";
+        public const string AppLog = "app_log.log";
+    }
+
+    // ====================================================
+    // NHÓM PATHS (Đường dẫn vật lý trên máy)
+    // Dùng static property để evaluate lúc runtime
+    // ====================================================
+    public static class Paths
+    {
+        public static string BaseRoamingPath =>
+            StandardPathBuilder.GetRoamingPath(PublisherConstants.Name, AppNameWindows, AppNameUnix);
+
+        public static string BaseAppContext => StandardPathBuilder.GetAppBaseDirectory();
+        
+        // public static string BaseLocalPath =>
+        //     StandardPathBuilder.GetLocalCachePath(PublisherConstants.Name, AppNameWindows, AppNameUnix);
+
+        public static string UserPreferencesFilePath => Path.Combine(BaseAppContext, Files.UserPreferences);
+
+        public static string AppLogFilePath => Path.Combine(BaseRoamingPath, Files.AppLog);
     }
 
     // ====================================================
@@ -27,6 +54,7 @@ public static class AppConstants
     // ====================================================
     public static class Urls
     {
+        public const string GithubRepo = "https://github.com/d3nhatv0lam/CTU-Scheduler";
         public const string CtuSignIn = "https://htql.ctu.edu.vn/";
     }
 

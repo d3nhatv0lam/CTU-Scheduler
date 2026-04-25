@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -7,7 +7,6 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Interfaces;
-using CTUScheduler.Infrastructure.Services.MainHomeService;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Features.Home.ViewModels;
@@ -15,16 +14,15 @@ using CTUScheduler.Presentation.Features.Setting.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableManager.ViewModels;
 using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.Navigation;
+using CTUScheduler.Presentation.Shared.Dialogs.ViewModels;
 using CTUScheduler.Presentation.Shared.Models.Regions;
 using CTUScheduler.Presentation.Shells.MainShell.Models;
 using Material.Icons;
-using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
-using DialogOptions = CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs.DialogOptions;
 
 namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 {
-    public class MainShellViewModel: ViewModelBase, IScreen , IRoutableViewModel, IDisposable, INeedArgs<IScreen>
+    public class MainShellViewModel: ViewModelBase, IScreen , IRoutableViewModel, IDisposable
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly IDialogHostService _dialogHostService;
@@ -66,20 +64,26 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 
         }
 
-        public MainShellViewModel(IScreen hostScreen,IMainHomeService mainHomeService, INavigationRegionManager navigationRegionManager)
+        public MainShellViewModel(IScreen hostScreen,
+            IMainHomeService mainHomeService,
+            INavigationRegionManager navigationRegionManager
+            ,IDialogHostService dialogHostService)
         {
             HostScreen = hostScreen;
-            _dialogHostService = App.ServiceProvider.GetRequiredService<IDialogHostService>();
+            _dialogHostService = dialogHostService;
             _mainHomeService = mainHomeService;
             _navigationRegionManager = navigationRegionManager;
 
             _navigationRegionManager.Register(RegionIds.Main, this)
                 .DisposeWith(_disposables);
 
-            _mainHomeService.StudentIdChanges
+            Observable.Defer(() => Observable.StartAsync(_ => _mainHomeService.EnsureReadyAsync())
+                    .Where(x => x.IsSuccess))
+                .SelectMany(_ =>_mainHomeService.GetStudentIdAsync())
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(userText =>
                 {
+                    if (string.IsNullOrWhiteSpace(userText)) return;
                     string[] userInfoArray = userText.Split(" ");
                     UserName = string.Join(' ', userInfoArray[..^1]);
                     UserMSSV = userInfoArray[^1];
@@ -89,7 +93,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             {
                 new NavigationItem("Trang chủ",MaterialIconKind.HomeOutline,typeof(HomeViewModel)),
                 new NavigationItem("Học phần", MaterialIconKind.TableCog,typeof(TimetableManagerViewModel)),
-                new NavigationItem("Cài đặt", MaterialIconKind.CogOutline,typeof(SettingViewModel))
+                // new NavigationItem("Cài đặt", MaterialIconKind.CogOutline,typeof(SettingViewModel))
             };
 
             this.WhenAnyValue(x => x.SelectedItem)
@@ -102,8 +106,18 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 
             LogoutCommand = ReactiveCommand.CreateFromTask(async () =>
             {
+                using var confirmViewModel = new ConfirmDialogViewModel
+                {
+                    Title = "Đăng xuất",
+                    Message = "Bạn có chắc chắn muốn đăng xuất ?",
+                    ConfirmText = "Đăng xuất",
+                    CancelText = "Không",
+                    IsDestructive = true
+                };
+
                 bool isAcceptLogout = await _dialogHostService
-                    .ShowDialogAsync<LogoutDialogViewModel,bool>(new LogoutDialogViewModel(), DialogIdentifier.MainLayout);
+                    .ShowDialogAsync<ConfirmDialogViewModel, bool>(confirmViewModel, DialogIdentifier.MainLayout, false);
+                
                 if (isAcceptLogout)
                 {
                     var currentStack = Router.NavigationStack.ToList();

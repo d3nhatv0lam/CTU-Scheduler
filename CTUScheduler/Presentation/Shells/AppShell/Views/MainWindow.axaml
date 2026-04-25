@@ -35,9 +35,10 @@
             <u:IconButton
                 Theme="{StaticResource BorderlessIconButton}"
                 Classes="Tertiary"
-                Icon="{StaticResource SemiIconGithubLogo}" />
-            <u:ThemeToggleButton
-                Mode="Controller" />
+                Icon="{StaticResource SemiIconGithubLogo}" 
+                Command="{Binding OpenGithubRepo}"/>
+            <!-- <u:ThemeToggleButton -->
+            <!--     Mode="Controller" /> -->
         </StackPanel>
     </u:ReactiveUrsaWindow.RightContent>
 
