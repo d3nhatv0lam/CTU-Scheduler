@@ -13,7 +13,7 @@ using CTUScheduler.Presentation.Services.Navigation.Models;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models;
 using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
-using CTUScheduler.Presentation.Shared.Models.Regions;
+using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
@@ -57,8 +57,8 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
         OpenGithubRepo = ReactiveCommand.Create(() => ProcessHelper.OpenUrl(AppConstants.Urls.GithubRepo))
             .DisposeWith(_disposables);
 
-        _navigationRegionManager.NavigateAndResetTo<LoginViewModel>(_regionId);
-        // _navigationRegionManager.NavigateAndResetTo<MainShellViewModel>(_regionId);
+        // _navigationRegionManager.NavigateAndResetTo<LoginViewModel>(_regionId);
+        _navigationRegionManager.NavigateAndResetTo<MainShellViewModel>(_regionId);
         
         this.WhenActivated((CompositeDisposable disposables) =>
         {

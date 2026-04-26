@@ -7,7 +7,7 @@ using CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.Viewport;
 using CTUScheduler.Presentation.Shared.Interfaces;
-using CTUScheduler.Presentation.Shared.Models.Regions;
+using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels

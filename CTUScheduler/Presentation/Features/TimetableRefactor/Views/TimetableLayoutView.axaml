@@ -1,4 +1,4 @@
-<rxui:ReactiveUserControl
+﻿<rxui:ReactiveUserControl
     x:Name="MainTimetableLayout"
     x:TypeArguments="vm:TimetableLayoutBaseViewModel"
     xmlns="https://github.com/avaloniaui"
@@ -108,9 +108,7 @@
                             </Grid>
                         </Grid>
                         
-                        
-
-                        <Grid Grid.Row="1" RowDefinitions="* * * auto" ShowGridLines="True">
+                        <Grid Grid.Row="1" RowDefinitions="* * * auto">
                             <TextBlock Grid.Row="0"
                                        x:Name="SubjectsCountTextBlock"
                                        Text="{Binding SubjectsCount

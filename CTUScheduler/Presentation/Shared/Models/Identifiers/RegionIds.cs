@@ -1,6 +1,6 @@
 ﻿using CTUScheduler.Presentation.Services.Navigation.Models;
 
-namespace CTUScheduler.Presentation.Shared.Models.Regions;
+namespace CTUScheduler.Presentation.Shared.Models.Identifiers;
 
 public static class RegionIds
 {

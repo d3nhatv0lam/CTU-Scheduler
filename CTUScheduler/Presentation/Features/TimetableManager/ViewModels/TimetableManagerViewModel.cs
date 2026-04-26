@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -30,6 +30,8 @@ using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using System.Linq;
+using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
+using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
 
 namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 {
@@ -43,6 +45,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly IProfileQueryService _profileQueryService;
         private readonly IScheduleSyncService _scheduleSyncService;
         private readonly IScheduleRegistrationService _scheduleRegistrationService;
+        private readonly IUserInteractionService _userInteractionService;
         private readonly IUserSessionService _userSessionService;
         private readonly IWorkspaceStore _workspaceStore;
         private readonly IViewModelFactory _viewModelFactory;
@@ -85,6 +88,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             IScheduleRegistrationService scheduleRegistrationService,
             IViewModelFactory viewModelFactory,
             IDialogHostService dialogHostService,
+            IUserInteractionService userInteractionService,
             ITimetableDialogService timetableDialogService)
         {
             HostScreen = hostScreen;
@@ -98,6 +102,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             _scheduleSyncService = scheduleSyncService;
             _scheduleRegistrationService = scheduleRegistrationService;
             _viewModelFactory = viewModelFactory;
+            _userInteractionService = userInteractionService;
             
             
             _profileQueryService.ConnectProfiles()
@@ -170,6 +175,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     IsDestructive = true
                 };
 
+                
                 var result = await _dialogHostService.ShowDialogAsync<ConfirmDialogViewModel, bool>(
                     confirmViewModel, DialogIdentifier.MainLayout, false);
 
@@ -185,9 +191,24 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             }, this.WhenAnyValue(x => x.HasSelectedTimetable))
             .DisposeWith(_disposables);
 
-            ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<TimetableLayoutBaseViewModel>(async
+            // ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<TimetableLayoutBaseViewModel>(async
+            //     timetableLayoutViewModel =>
+            //     {
+            //         await _timetableDialogService.ShowTimetableDetails(timetableLayoutViewModel);
+            //     })
+            //     .DisposeWith(_disposables);
+            
+            ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<TimetableLayoutBaseViewModel>(async 
                     timetableLayoutViewModel =>
-                    await _timetableDialogService.ShowTimetableDetails(timetableLayoutViewModel))
+                {
+                    var options = new DialogOptions()
+                    {
+                        SizeMode = DialogSizeMode.Responsive,
+                        CanLightDismiss = true,
+                        HostId = "root"
+                    };
+                    await _userInteractionService.Dialog.ShowModal<TimetableLayoutBaseViewModel, Unit>(timetableLayoutViewModel,options);
+                })
                 .DisposeWith(_disposables);
 
             SaveScheduleCommand = ReactiveCommand.CreateFromTask<IStorageFile>(async file =>

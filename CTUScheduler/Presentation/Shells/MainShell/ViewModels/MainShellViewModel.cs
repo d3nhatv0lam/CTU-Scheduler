@@ -15,7 +15,7 @@ using CTUScheduler.Presentation.Features.TimetableManager.ViewModels;
 using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Shared.Dialogs.ViewModels;
-using CTUScheduler.Presentation.Shared.Models.Regions;
+using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using CTUScheduler.Presentation.Shells.MainShell.Models;
 using Material.Icons;
 using ReactiveUI;

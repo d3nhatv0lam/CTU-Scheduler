@@ -1,6 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Data.Converters;
+using Avalonia.Layout;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
 using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
@@ -39,15 +44,15 @@ public class UrsaDialogService : IDialogService
 
     public void Show<TViewModel>(TViewModel viewModel, in DialogOptions options = default) where TViewModel : class
     {
-        var view = _viewLocator.ResolveView(viewModel);
+        var control = GetControl(viewModel, options);
 
-        if (view is not Control control)
+        if (control is null)
             throw new InvalidOperationException($"Không tìm thấy View cho {typeof(TViewModel).Name}");
 
         var action = options.OnClosed;
         if (action is not null)
         {
-            control.Unloaded += (sender, args) => action();
+            control.Unloaded += (_, _) => action();
         }
 
         OverlayDialog.Show(control, viewModel, hostId: options.HostId, options: MapOptions(in options));
@@ -56,20 +61,76 @@ public class UrsaDialogService : IDialogService
     public Task<TResult?> ShowModal<TViewModel, TResult>(TViewModel viewModel, in DialogOptions options = default)
         where TViewModel : class
     {
-        var view = _viewLocator.ResolveView(viewModel);
-        if (view is not Control control)
-            throw new InvalidOperationException($"Không tìm thấy View cho {typeof(TViewModel).Name}");
-        
+        var control = GetControl(viewModel, options);
+
+        if (control is null)
+            return Task.FromException<TResult?>(
+                new InvalidOperationException($"Không tìm thấy View cho {typeof(TViewModel).Name}"));
+
+
         var action = options.OnClosed;
         if (action is not null)
         {
-            control.Unloaded += (sender, args) => action();
+            control.Unloaded += (_, _) => action();
         }
 
         return OverlayDialog.ShowCustomModal<TResult>(control, viewModel, hostId: options.HostId,
             options: MapOptions(in options));
     }
 
+
+    private Control? GetControl<TViewModel>(TViewModel viewModel, in DialogOptions options)
+    {
+        var dataTemplate = Application.Current?.DataTemplates.FirstOrDefault(t => t.Match(viewModel));
+
+        var control = dataTemplate is not null
+            ? dataTemplate.Build(viewModel) as Control
+            : _viewLocator.ResolveView(viewModel) as Control;
+
+        if (control is null) return null;
+
+        if (options.SizeMode == DialogSizeMode.Absolute)
+        {
+            return new Border
+            {
+                Child = control,
+                Width = options.Width ?? double.NaN,
+                Height = options.Height ?? double.NaN
+            };
+        }
+
+        if (options.SizeMode == DialogSizeMode.Responsive)
+        {
+            var horizontalMargin = options.ResponsiveHorizontalMargin;
+            var verticalMargin = options.ResponsiveVerticalMargin;
+            var percentage = options.ResponsivePercentage;
+
+            return new Border
+            {
+                Child = control,
+                [!Layoutable.HeightProperty] = new Binding("Bounds.Height")
+                {
+                    RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor)
+                    {
+                        AncestorType = typeof(OverlayDialogHost)
+                    },
+                    Converter = new FuncValueConverter<double, double>(h =>
+                        Math.Max(0, (h * percentage) - verticalMargin))
+                },
+                [!Layoutable.WidthProperty] = new Binding("Bounds.Width")
+                {
+                    RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor)
+                    {
+                        AncestorType = typeof(OverlayDialogHost)
+                    },
+                    Converter = new FuncValueConverter<double, double>(w =>
+                        Math.Max(0, (w * percentage) - horizontalMargin))
+                }
+            };
+        }
+
+        return control;
+    }
 
     private OverlayDialogOptions MapOptions(in DialogOptions options)
     {
