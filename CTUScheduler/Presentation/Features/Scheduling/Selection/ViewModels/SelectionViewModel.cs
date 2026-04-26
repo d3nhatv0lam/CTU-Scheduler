@@ -23,10 +23,10 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels
 
         public IScreen HostScreen { get; }
 
-        public ReactiveCommand<Unit,Unit> ManualSelectionCommand { get; protected set; }
-        public ReactiveCommand<Unit,Unit> QuickSelectionCommand { get; protected set; }
-        
-        public SelectionViewModel(IScreen hostScreen, 
+        public ReactiveCommand<Unit, Unit> ManualSelectionCommand { get; protected set; }
+        public ReactiveCommand<Unit, Unit> QuickSelectionCommand { get; protected set; }
+
+        public SelectionViewModel(IScreen hostScreen,
             INavigationRegionManager navigationRegionManager,
             ManualSchedulingStrategy manualStrategy,
             QuickSchedulingStrategy quickStrategy)
@@ -36,8 +36,9 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels
             _manualStrategy = manualStrategy;
             _quickStrategy = quickStrategy;
 
-            ManualSelectionCommand = ReactiveCommand.Create(() => NavigateToSelection(_manualStrategy)).DisposeWith(_disposables);
-            
+            ManualSelectionCommand = ReactiveCommand.Create(() => NavigateToSelection(_manualStrategy))
+                .DisposeWith(_disposables);
+
             var disabledQuickSelection = Observable.Return(false);
             // QuickSelectionCommand = ReactiveCommand.Create(() => NavigateToSelection(_quickStrategy),disabledQuickSelection).DisposeWith(_disposables);
         }

@@ -139,4 +139,8 @@
     <AdditionalFiles Include="Presentation\Shared\Styles\Controls.axaml" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Presentation\Shared\Styles\Ripple\" />
+  </ItemGroup>
+
 </Project>
