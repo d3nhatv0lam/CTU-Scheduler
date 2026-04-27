@@ -11,6 +11,7 @@ public class ViewContextService: IViewContextService, IDisposable
 {
     private readonly BehaviorSubject<TopLevel?> _toplevelSubject = new(null);
     private readonly ILogger<ViewContextService> _logger;
+    private bool _isDisposed;
     
     public TopLevel? CurrentTopLevel => _toplevelSubject.Value;
     public IObservable<TopLevel?> WhenTopLevelChanged { get; }
@@ -29,7 +30,9 @@ public class ViewContextService: IViewContextService, IDisposable
 
     public void Dispose()
     {
+        if (_isDisposed) return;
         _toplevelSubject.Dispose();
         _logger.LogInformation("ViewContextService disposed");
+        _isDisposed = true;
     }
 }

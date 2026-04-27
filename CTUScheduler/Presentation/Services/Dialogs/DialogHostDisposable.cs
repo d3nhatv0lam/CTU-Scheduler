@@ -7,7 +7,7 @@ using DialogHostAvalonia;
 
 namespace CTUScheduler.Presentation.Services.Dialogs
 {
-    public partial class DialogHostService: IDialogHostService
+    public partial class DialogHostDisposable: IDialogHostService
     {
         public async Task<TResult?> ShowDialogAsync<TViewModel, TResult>(
             TViewModel viewModel, 

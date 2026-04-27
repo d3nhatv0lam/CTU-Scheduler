@@ -6,16 +6,18 @@ using CTUScheduler.Presentation.Services.UserInteractionService.Implementations.
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models;
 using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
+using CTUScheduler.Presentation.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Presentation.Services.UserInteractionService.Implementations.Ursa.Notifications.Base;
 
-public abstract class UrsaInteractionManagerBase<TManager> : INotificationPopup, IDisposable
+public abstract class UrsaInteractionManagerBase<TManager> : INotificationPopup, IUiDisposable
     where TManager : class
 {
     protected readonly ILogger Logger;
     protected TManager? Manager;
     private readonly IDisposable _viewContextSubscription;
+    private bool _isDisposed;
 
     public INotificationTypeAccessor Light { get; }
 
@@ -70,6 +72,7 @@ public abstract class UrsaInteractionManagerBase<TManager> : INotificationPopup,
 
     protected abstract TManager CreateManager(TopLevel context);
     protected abstract void UninstallManager(TManager manager);
+
     protected abstract void InvokeShow(TManager manager, NotificationType type, object content,
         in NotificationOptions opt);
 
@@ -91,8 +94,10 @@ public abstract class UrsaInteractionManagerBase<TManager> : INotificationPopup,
 
     public virtual void Dispose()
     {
+        if (_isDisposed) return;
         _viewContextSubscription.Dispose();
-        CleanupManager();
-        Logger.LogInformation("{Service} disposed", GetType().Name);
+        CleanupManager(); 
+        Logger.LogDebug("{Service} disposed", GetType().Name);
+        _isDisposed = true;
     }
 }

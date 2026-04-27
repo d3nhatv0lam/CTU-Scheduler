@@ -34,11 +34,19 @@ public static class DesktopServiceExtensions
             .AddClasses(c => c.AssignableTo<ISingletonViewModel>())
             .AsSelf()
             .WithSingletonLifetime()
-
+            
             .AddClasses(c => c.AssignableTo<IViewModel>()
                 .Where(t => !typeof(ISingletonViewModel).IsAssignableFrom(t)))
             .AsSelf()
             .WithTransientLifetime()
+        );
+        
+        // scan all classes that implement IUiDisposable to dispose when the app is closed
+        services.Scan(scan => scan
+            .FromAssemblyOf<UrsaInteractionToast>() 
+            .AddClasses(c => c.AssignableTo<IUiDisposable>())
+            .AsImplementedInterfaces()
+            .WithSingletonLifetime()
         );
 
         services.AddSingleton<IViewModelFactory, ViewModelFactory>();
@@ -46,13 +54,11 @@ public static class DesktopServiceExtensions
         
         // --- UI Helper Services ---
         services.AddSingleton<IViewContextService, ViewContextService>()
-            .AddSingleton<IToastService, UrsaInteractionToast>()
-            .AddSingleton<INotificationService, UrsaInteractionNotification>()
             .AddSingleton<IDialogService, UrsaDialogService>()
             .AddSingleton<IUserInteractionService, UserInteractionService>()
             .AddSingleton<IViewportService, ViewportService>();
         
-        services.AddSingleton<IDialogHostService, DialogHostService>();
+        services.AddSingleton<IDialogHostService, DialogHostDisposable>();
         services.AddSingleton<ITimetableDialogService, TimetableDialogService>();
         
 
@@ -60,20 +66,10 @@ public static class DesktopServiceExtensions
         services.AddTransient<ManualSchedulingStrategy>();
         services.AddTransient<QuickSchedulingStrategy>();
         
+        // startup window
+        services.AddTransient<SplashScreenWindow>(provider => new SplashScreenWindow());
+        services.AddTransient<MainWindow>(provider => new MainWindow());
         
-        // SplashScreenWindow: Cần khởi tạo ToplevelService
-        services.AddTransient<SplashScreenWindow>(provider =>
-        {
-            var window = new SplashScreenWindow();
-            return window;
-        });
-        
-        // MainWindow: Cần khởi tạo ToplevelService & ViewportService
-        services.AddTransient<MainWindow>(provider =>
-        {
-            var window = new MainWindow();
-            return window;
-        });
         return services;
     }
 }
