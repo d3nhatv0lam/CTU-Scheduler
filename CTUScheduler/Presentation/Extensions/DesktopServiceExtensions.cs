@@ -41,7 +41,7 @@ public static class DesktopServiceExtensions
         
         // scan all classes that implement IUiDisposable to dispose when the app is closed
         services.Scan(scan => scan
-            .FromAssemblyOf<UrsaInteractionToast>() 
+            .FromAssemblyOf<UrsaToast>() 
             .AddClasses(c => c.AssignableTo<IUiDisposable>())
             .AsImplementedInterfaces()
             .WithSingletonLifetime()
