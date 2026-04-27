@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Presentation.Services.Navigation;
 using System.Collections.Generic;
