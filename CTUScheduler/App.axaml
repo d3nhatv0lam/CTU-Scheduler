@@ -3,7 +3,6 @@
              x:Class="CTUScheduler.App"
              xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-             xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
              xmlns:semi="https://irihi.tech/semi"
              xmlns:u-Semi="https://irihi.tech/ursa/themes/semi"
              xmlns:u="https://irihi.tech/ursa"
@@ -26,7 +25,6 @@
     <Application.Styles>
         <!--       <FluentTheme /> -->
         <themes:CustomMaterialTheme PrimaryColor="Blue" SecondaryColor="#1f5ca9" />
-        <dialogHostAvalonia:DialogHostStyles />
         <materialIcons:MaterialIconStyles />
 
         <semi:SemiTheme Locale="vi-VN" />

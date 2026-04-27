@@ -19,7 +19,6 @@ using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
-using CTUScheduler.Presentation.Services.TimetableDialog;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
 using CTUScheduler.Presentation.Shared.Models;
@@ -36,7 +35,6 @@ public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposab
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
     private readonly IScheduleRegistrationService _scheduleRegistrationService;
-    private readonly ITimetableDialogService _timetableDialogService;
     private readonly SchedulingCourseOptionViewModel _schedulingCourseOptionVM;
     private readonly TimetablePaginationViewModel _paginationTimeTableViewModel;
     private readonly IUserInteractionService _userInteractionService;
@@ -63,7 +61,6 @@ public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposab
 
     public TimetableSchedulerViewModel(SchedulingWizardContext context)
     {
-        _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
         _schedulingCourseOptionVM = new SchedulingCourseOptionViewModel();
         _scheduleRegistrationService = App.ServiceProvider.GetRequiredService<IScheduleRegistrationService>();
         _userInteractionService = App.ServiceProvider.GetRequiredService<IUserInteractionService>();

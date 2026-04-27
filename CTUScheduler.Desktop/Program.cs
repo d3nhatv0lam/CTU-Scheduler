@@ -88,6 +88,16 @@ class Program
             LoggingConfig.CloseAndFlush();
         }
     }
+    
+    public static AppBuilder BuildAvaloniaApp()
+    {
+        // chế độ Design
+        return AppBuilder.Configure<App>()
+            .UsePlatformDetect()
+            .WithInterFont()
+            .LogToTrace()
+            .UseReactiveUI();
+    }
 
     // Avalonia configuration
     public static AppBuilder BuildAvaloniaApp(ServiceProvider serviceProvider, AppLifetimeManager appLifetime)

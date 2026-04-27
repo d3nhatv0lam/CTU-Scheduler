@@ -6,5 +6,5 @@ public static class RegionIds
 {
     public static readonly RegionId Root = new("root");
     public static readonly RegionId Main = new("main");
-    public static readonly RegionId Scheduling = new("sidebar");
+    public static readonly RegionId Scheduling = new("scheduling");
 }

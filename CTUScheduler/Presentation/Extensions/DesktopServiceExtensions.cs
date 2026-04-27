@@ -1,9 +1,7 @@
 ﻿using CTUScheduler.Presentation.Features.Scheduling.Models;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
-using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.Factories;
 using CTUScheduler.Presentation.Services.Navigation;
-using CTUScheduler.Presentation.Services.TimetableDialog;
 using CTUScheduler.Presentation.Services.UserInteractionService;
 using CTUScheduler.Presentation.Services.UserInteractionService.Implementations.Ursa.Dialogs;
 using CTUScheduler.Presentation.Services.UserInteractionService.Implementations.Ursa.Notifications;
@@ -57,10 +55,6 @@ public static class DesktopServiceExtensions
             .AddSingleton<IDialogService, UrsaDialogService>()
             .AddSingleton<IUserInteractionService, UserInteractionService>()
             .AddSingleton<IViewportService, ViewportService>();
-        
-        services.AddSingleton<IDialogHostService, DialogHostDisposable>();
-        services.AddSingleton<ITimetableDialogService, TimetableDialogService>();
-        
 
         // selection strategy
         services.AddTransient<ManualSchedulingStrategy>();

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -12,22 +11,16 @@ using Avalonia.Platform.Storage;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.AppServices.Services.UserSessionService;
-using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
-using CTUScheduler.Infrastructure.Services.Network;
-using CTUScheduler.Infrastructure.Services.Registration;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
-using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.Factories;
-using CTUScheduler.Presentation.Services.TimetableDialog;
 using CTUScheduler.Presentation.Shared.Dialogs.ViewModels;
 using DynamicData;
 using DynamicData.Aggregation;
 using DynamicData.Binding;
 using Humanizer;
-using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using System.Linq;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
@@ -39,8 +32,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
     public class TimetableManagerViewModel : ViewModelBase, IRoutableViewModel, IDisposable
     {
         private readonly CompositeDisposable _disposables = new();
-        private readonly IDialogHostService _dialogHostService;
-        private readonly ITimetableDialogService _timetableDialogService;
         private readonly IConnectivityService _connectivityService;
         private readonly ICourseCatalogService _courseCatalogService;
         private readonly IProfileQueryService _profileQueryService;
@@ -87,13 +78,9 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             IScheduleSyncService scheduleSyncService,
             IScheduleRegistrationService scheduleRegistrationService,
             IViewModelFactory viewModelFactory,
-            IDialogHostService dialogHostService,
-            IUserInteractionService userInteractionService,
-            ITimetableDialogService timetableDialogService)
+            IUserInteractionService userInteractionService)
         {
             HostScreen = hostScreen;
-            _dialogHostService = dialogHostService;
-            _timetableDialogService = timetableDialogService;
             _connectivityService = connectivityService;
             _courseCatalogService = courseCatalogService;
             _userSessionService = userSessionService;

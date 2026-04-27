@@ -22,7 +22,6 @@
     <PackageReference Include="Avalonia.Xaml.Interactions" Version="11.3.0.6" />
     <PackageReference Include="Avalonia.Xaml.Interactivity" Version="11.3.0.6" />
     <PackageReference Include="ClosedXML" Version="0.105.0" />
-    <PackageReference Include="DialogHost.Avalonia" Version="0.10.3" />
     <PackageReference Include="Humanizer.Core.vi" Version="3.0.1" />
     <PackageReference Include="Irihi.Ursa" Version="1.14.1" />
     <PackageReference Include="Irihi.Ursa.ReactiveUIExtension" Version="1.1.0" />
