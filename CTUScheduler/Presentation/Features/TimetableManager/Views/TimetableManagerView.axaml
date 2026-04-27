@@ -170,6 +170,15 @@
                             <materialIcons:MaterialIcon Kind="Delete" Height="20" Width="20"/> <TextBlock VerticalAlignment="Center" Text="Xóa thời khóa biểu" Margin="5 0 0 0"/>
                             </StackPanel>
                         </Button>
+                                <Button DockPanel.Dock="Left"
+                                        x:Name="btnExportSelectedTables"
+                                        Command="{Binding ExportSelectedTimetablesCommand}"
+                                        IsVisible="{Binding HasSelectedTimetable}">
+                                    <StackPanel Orientation="Horizontal">
+                                                <materialIcons:MaterialIcon Kind="MonitorArrowDownVariant" Height="20" Width="20" />
+                                        <TextBlock VerticalAlignment="Center" Text="Xuất Excel" Margin="5 0 0 0" />
+                                    </StackPanel>
+                                </Button>
                         <!--// total schedule tables //-->
                         <TextBlock DockPanel.Dock="Left"
                                    x:Name="txtTotalTable"

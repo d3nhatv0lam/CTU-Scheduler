@@ -25,13 +25,45 @@ public static class TimetableExcelBuilder
 
     public static XLWorkbook BuildWorkbook(ScheduleBlueprint blueprint, string timetableSheetName = "Thời Khóa Biểu")
     {
+        var wb = new XLWorkbook();
+        AddTimetableWorksheet(wb, blueprint, timetableSheetName);
+        return wb;
+    }
+
+    public static XLWorkbook BuildWorkbook(IEnumerable<(ScheduleBlueprint Blueprint, string SheetName)> timetables)
+    {
+        ArgumentNullException.ThrowIfNull(timetables);
+
+        var wb = new XLWorkbook();
+        var usedSheetNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        int index = 1;
+
+        foreach (var (blueprint, sheetName) in timetables)
+        {
+            var normalizedName = NormalizeWorksheetName(sheetName, $"TKB_{index}");
+            var uniqueName = EnsureUniqueWorksheetName(normalizedName, usedSheetNames);
+            AddTimetableWorksheet(wb, blueprint, uniqueName);
+            index++;
+        }
+
+        if (wb.Worksheets.Count == 0)
+        {
+            throw new ArgumentException("Danh sách thời khóa biểu trống.", nameof(timetables));
+        }
+
+        return wb;
+    }
+
+    private static void AddTimetableWorksheet(XLWorkbook workbook, ScheduleBlueprint blueprint, string timetableSheetName)
+    {
+        ArgumentNullException.ThrowIfNull(workbook);
+
         if (!blueprint.TryTrim(out var trimmedBlueprint))
         {
             throw new Exception("Dữ liệu Thời khóa biểu không nhất quán (IsConsistent = false).");
         }
 
-        var wb = new XLWorkbook();
-        var sheet = wb.Worksheets.Add(timetableSheetName);
+        var sheet = workbook.Worksheets.Add(timetableSheetName);
 
         // --- 1. Tạo Tiêu đề ---
         sheet.Cell(1, 1).Value = "Thời Khóa Biểu Chi Tiết";
@@ -220,7 +252,46 @@ public static class TimetableExcelBuilder
         sheet.Columns().AdjustToContents();
         sheet.Column(1).Width = 14;
         for (int i = 2; i <= DayHeaders.Length; i++) sheet.Column(i).Width = 20;
+    }
 
-        return wb;
+    private static string NormalizeWorksheetName(string? name, string fallback)
+    {
+        var raw = string.IsNullOrWhiteSpace(name) ? fallback : name.Trim();
+        char[] invalidChars = { ':', '\\', '/', '?', '*', '[', ']' };
+        foreach (var invalidChar in invalidChars)
+        {
+            raw = raw.Replace(invalidChar, '_');
+        }
+
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            raw = fallback;
+        }
+
+        return raw.Length > 31 ? raw[..31] : raw;
+    }
+
+    private static string EnsureUniqueWorksheetName(string baseName, ISet<string> usedNames)
+    {
+        if (usedNames.Add(baseName))
+        {
+            return baseName;
+        }
+
+        int suffix = 2;
+        while (true)
+        {
+            var suffixText = $"_{suffix}";
+            int maxBaseLength = 31 - suffixText.Length;
+            var truncated = baseName.Length > maxBaseLength ? baseName[..maxBaseLength] : baseName;
+            var candidate = $"{truncated}{suffixText}";
+
+            if (usedNames.Add(candidate))
+            {
+                return candidate;
+            }
+
+            suffix++;
+        }
     }
 }
