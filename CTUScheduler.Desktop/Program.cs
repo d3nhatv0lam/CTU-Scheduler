@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
-using Avalonia.Dialogs;
+using Avalonia.Controls.ApplicationLifetimes;
 using CTUScheduler.AppServices.Extensions;
 using CTUScheduler.Desktop.Configs;
 using CTUScheduler.Infrastructure.Extensions;
 using CTUScheduler.Presentation.Extensions;
 using CTUScheduler.Presentation.Services.ApplicationLifetime;
+using CTUScheduler.Presentation.Shared.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
 using Serilog;
@@ -32,33 +32,21 @@ class Program
     public static void Main(string[] args)
     {
         LoggingConfig.Init();
-        // hạ tầng
-        var host = Host.CreateDefaultBuilder(args)
-            .UseSerilog(dispose: false)
-            .ConfigureServices((context, services) =>
-            {
-                // reactiveUI register 
-                services.UseMicrosoftDependencyResolver();
-                var resolver = Locator.CurrentMutable;
-                // resolver.InitializeSplat();
-                resolver.InitializeReactiveUI();
-                
-                services.AddSingleton<IApplicationLifetime, DesktopApplicationLifetime>();
 
-                // Services injector
-                services.AddInfrastructureServices();
-                services.AddApplicationServices();
-                services.AddPresentationServices();
-            })
-            .Build();
+        ServiceProvider? serviceProvider = null;
 
         try
         {
-            host.Start();
+            var services = new ServiceCollection();
+            ConfigureServices(services);
+            serviceProvider = services.BuildServiceProvider();
 
-            App.ServiceProvider = host.Services;
-            // UI
-            BuildAvaloniaApp()
+            App.ServiceProvider = serviceProvider;
+
+            var appLifetime = serviceProvider.GetRequiredService<IApplicationLifetime>() as AppLifetimeManager;
+            appLifetime?.NotifyStarted();
+
+            BuildAvaloniaApp(serviceProvider, appLifetime!)
                 .StartWithClassicDesktopLifetime(args);
         }
         catch (Exception ex)
@@ -67,56 +55,92 @@ class Program
         }
         finally
         {
-            var shutdownTask = Task.Run(async () =>
+            Log.Information("Cleaning up DI and infrastructure resources...");
+
+            // Sử dụng Task.Run để giải phóng ThreadPool, ngăn chặn rủi ro Deadlock
+            Task.Run(async () =>
             {
                 try
                 {
-                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-                    await host.StopAsync(cts.Token);
-
-                    Log.Information("Cleaning up resources...");
-                    if (host is IAsyncDisposable asyncDisposable)
-                        await asyncDisposable.DisposeAsync();
-                    else
-                        host.Dispose();
-
-                    return true;
+                    if (serviceProvider is IAsyncDisposable asyncDisposable)
+                    {
+                        var disposeTask = asyncDisposable.DisposeAsync().AsTask();
+                        await disposeTask.WaitAsync(TimeSpan.FromSeconds(15));
+                        Log.Information("Shutdown complete successfully.");
+                    }
+                    else if (serviceProvider is IDisposable disposable)
+                    {
+                        disposable.Dispose();
+                        Log.Information("Shutdown complete successfully.");
+                    }
+                }
+                catch (TimeoutException)
+                {
+                    Log.Warning("Shutdown timed out (15s)! Một số service chạy quá lâu. Ép buộc tắt...");
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, "Failed to clean up resources");
-                    return false;
+                    Log.Error(ex, "Lỗi khi dọn dẹp tài nguyên DI.");
                 }
-            });
-
-            bool finishedInTime = shutdownTask.Wait(5000);
-
-            if (!finishedInTime)
-            {
-                Log.Warning("Shutdown timed out - some resources might be forced to close.");
-            }
-            else
-            {
-                if (shutdownTask.Result)
-                {
-                    Log.Information("Shutdown complete successfully.");
-                }
-                else
-                {
-                    Log.Error("Shutdown completed but failed internally (check cleanup error log).");
-                }
-            }
+            }).GetAwaiter().GetResult();
 
             Log.Information("================= LOG END =================");
             LoggingConfig.CloseAndFlush();
         }
     }
-
-    // Avalonia configuration
+    
     public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
+    {
+        // chế độ Design
+        return AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace()
             .UseReactiveUI();
+    }
+
+    // Avalonia configuration
+    public static AppBuilder BuildAvaloniaApp(ServiceProvider serviceProvider, AppLifetimeManager appLifetime)
+        => AppBuilder.Configure<App>()
+            .UsePlatformDetect()
+            .WithInterFont()
+            .LogToTrace()
+            .UseReactiveUI()
+            .AfterSetup(builder =>
+            {
+                if (builder.Instance is App { ApplicationLifetime: IClassicDesktopStyleApplicationLifetime desktop })
+                {
+                    appLifetime.ShutdownRequested += () => desktop.Shutdown();
+
+                    desktop.Exit += (_, _) =>
+                    {
+                        Log.Information("UI Phase: Starting disposal of UI services...");
+
+                        var disposableUiServices = serviceProvider.GetServices<IUiDisposable>();
+                        int count = 0;
+                        foreach (var service in disposableUiServices)
+                        {
+                            service.Dispose();
+                            count++;
+                        }
+
+                        Log.Information("UI Phase: Disposed {Count} UI services successfully.", count);
+                        appLifetime.NotifyStopped();
+                    };
+                }
+            });
+
+    private static void ConfigureServices(IServiceCollection services)
+    {
+        services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: false));
+
+        services.UseMicrosoftDependencyResolver();
+        var resolver = Locator.CurrentMutable;
+        resolver.InitializeReactiveUI();
+
+        services.AddSingleton<IApplicationLifetime, AppLifetimeManager>();
+        services.AddInfrastructureServices();
+        services.AddApplicationServices();
+        services.AddPresentationServices();
+    }
 }

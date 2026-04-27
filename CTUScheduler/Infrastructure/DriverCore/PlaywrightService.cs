@@ -99,14 +99,14 @@ public class PlaywrightService : IWebDriverService, IAsyncDisposable
     {
         if (_isDisposed) return;
 
-        await _lock.WaitAsync();
+        await _lock.WaitAsync().ConfigureAwait(false);
         try
         {
             if (_isDisposed) return;
 
-            if (_mainPage is not null) await MainTab.DisposeAsync();
-            if (_context is not null) await _context.DisposeAsync();
-            if (_browser is not null) await _browser.DisposeAsync();
+            if (_mainPage is not null) await MainTab.DisposeAsync().ConfigureAwait(false);
+            if (_context is not null) await _context.DisposeAsync().ConfigureAwait(false);
+            if (_browser is not null) await _browser.DisposeAsync().ConfigureAwait(false);
 
             _playwright?.Dispose();
 

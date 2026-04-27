@@ -84,12 +84,16 @@ public static class ShadowAssist
 
     private static void ShadowDepthChangedCallback(AvaloniaPropertyChangedEventArgs args)
     {
-        // LƯU Ý: Code này chỉ hoạt động trên Border
         if (args.Sender is Border border)
         {
             border.BoxShadow =
                 (args.NewValue as ShadowDepth? ?? ShadowDepth.Depth0)
                 .ToBoxShadows();
+            
+            // var depth = args.NewValue as ShadowDepth? ?? ShadowDepth.Depth0;
+            // var newShadow = depth.ToBoxShadows();
+            //
+            // border.SetValue(Border.BoxShadowProperty, newShadow);
         }
     }
 

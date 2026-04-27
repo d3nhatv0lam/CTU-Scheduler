@@ -3,15 +3,11 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
-using CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
-using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
-using CTUScheduler.Presentation.Shared.Interfaces;
-using Microsoft.Extensions.Logging;
+using Irihi.Avalonia.Shared.Contracts;
 using ReactiveUI;
 using Serilog;
 
@@ -24,11 +20,11 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
         INeedArgs<SchedulingStrategy>
     {
         private readonly CompositeDisposable _disposables = new();
-        private string _btnNextContent = "Tiếp theo";
-        private IWizardStep[] _stepsVM;
-        private int _currentStepIndex;
+        private readonly IWizardStep[] _stepsVM;
         private readonly ObservableAsPropertyHelper<IWizardStep> _currentStep;
-        private readonly SchedulingStrategy _strategy;
+        private string _btnNextContent = "Tiếp theo";
+        private int _currentStepIndex;
+
 
         public int CurrentStepIndex
         {
@@ -38,7 +34,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
 
         public IWizardStep CurrentWizardStep => _currentStep.Value;
 
-        public string? UrlPathSegment => "Find_Course_Shell";
+        public string? UrlPathSegment => nameof(SchedulingShellViewModel);
         public IScreen HostScreen { get; }
 
         public string BtnNextContent
@@ -50,7 +46,6 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
         public ViewModelActivator Activator { get; } = new();
         public ReactiveCommand<Unit, Unit> NavigateNextCommand { get; protected set; }
         public ReactiveCommand<Unit, Unit> NavigateBackCommand { get; protected set; }
-        private readonly SchedulingWizardContext _context;
 
         public SchedulingShellViewModel()
         {
@@ -60,9 +55,9 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
         {
             HostScreen = hostScreen;
 
-            _context = new();
+            SchedulingWizardContext context = new();
 
-            _stepsVM = strategy.CreateSteps(_context, _disposables);
+            _stepsVM = strategy.CreateSteps(context, _disposables);
 
             _currentStep = this.WhenAnyValue(x => x.CurrentStepIndex)
                 .Select(index => _stepsVM[index])
@@ -81,6 +76,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
 
             NavigateBackCommand = ReactiveCommand.Create(NavigateBack)
                 .DisposeWith(_disposables);
+            
             var canNavigateNext = this.WhenAnyValue(x => x.CurrentWizardStep)
                 .Select(step => step.CanNavigateNext)
                 .Switch();
@@ -96,14 +92,12 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
                 }).DisposeWith(disposables);
             });
         }
-
-
+        
         private void NavigateNext()
         {
-            // await OnNavigate();
             if (CurrentStepIndex == _stepsVM.Length - 1)
             {
-                if (HostScreen is ICloseableDialog closeableDialog)
+                if (HostScreen is IDialogContext closeableDialog)
                 {
                     if (CurrentWizardStep is ICleanup cleanup)
                         cleanup.Cleanup();
@@ -123,7 +117,6 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
 
         private void NavigateBack()
         {
-            // await OnNavigate();
             if (CurrentStepIndex == 0)
             {
                 HostScreen.Router.NavigateBack.Execute();

@@ -16,6 +16,8 @@
     xmlns:timetableModel="clr-namespace:CTUScheduler.Presentation.Shared.Models"
     xmlns:paginationViews="clr-namespace:CTUScheduler.Presentation.Features.Pagination.Views"
     xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.Views"
+    xmlns:assists="clr-namespace:CTUScheduler.Presentation.Shared.Styles.Assists"
+    xmlns:ripple="clr-namespace:CTUScheduler.Presentation.Shared.Styles.Ripple"
     x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.TimetableSchedulerView">
 
     <rxui:ReactiveUserControl.Resources>
@@ -46,7 +48,7 @@
             <Setter Property="Margin" Value="0 0 15 0" />
             <Setter Property="CornerRadius" Value="4" />
         </Style>
-        
+
         <Style Selector="paginationViews|PaginationView.pagination">
             <Setter Property="Height" Value="35"></Setter>
             <Setter Property="VerticalAlignment" Value="Bottom"></Setter>
@@ -62,7 +64,7 @@
             <Setter Property="Opacity" Value="1"></Setter>
         </Style>
 
-        
+
         <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml"></StyleInclude>
         <StyleInclude Source="avares://CTUScheduler/Presentation/Features/Scheduling/Shared/Styles/controls.axaml"></StyleInclude>
     </rxui:ReactiveUserControl.Styles>
@@ -188,7 +190,7 @@
                         <TextBlock DockPanel.Dock="Left"
                                    Classes="SubTitle"
                                    Text="{Binding LimitTimetableSelectedDisplayed
-                                   ,StringFormat=Đã chọn {0} thời khóa biểu}"/>
+                                   ,StringFormat=Đã chọn {0} thời khóa biểu}" />
 
                         <Button
                             DockPanel.Dock="Right"
@@ -250,12 +252,17 @@
                                                                 </Viewbox>
                                                             </Border>
                                                             <!-- // Open Timetable View // -->
-                                                            <Button Background="Transparent"
+                                                                <Button Classes="ripple"
+                                                                    Background="Transparent"
+                                                                    HorizontalAlignment="Stretch"
+                                                                    VerticalAlignment="Stretch"
                                                                     Padding="0"
                                                                     BorderThickness="0"
                                                                     Command="{Binding Path= ((viewModels:TimetableSchedulerViewModel)DataContext).ShowTimetableDetailsCommand, RelativeSource={RelativeSource  Mode=FindAncestor, AncestorType=views:TimetableSchedulerView}}"
                                                                     CommandParameter="{Binding .}">
-                                                            </Button>
+                                                                </Button>
+                                                         
+
                                                         </Grid>
                                                     </Grid>
                                                 </controls:Card>
@@ -268,8 +275,8 @@
                             <paginationViews:PaginationView
                                 IsVisible="{Binding TotalPages}"
                                 DataContext="{Binding PaginationTimeTableViewModel}"
-                                Classes="pagination"
-                                ></paginationViews:PaginationView>
+                                Classes="pagination">
+                            </paginationViews:PaginationView>
                         </Grid>
                     </Border>
                 </Grid>

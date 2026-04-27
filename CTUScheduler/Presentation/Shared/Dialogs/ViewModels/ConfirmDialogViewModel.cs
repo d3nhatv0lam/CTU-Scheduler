@@ -3,12 +3,12 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Shared.Interfaces;
+using Irihi.Avalonia.Shared.Contracts;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Shared.Dialogs.ViewModels
 {
-    public class ConfirmDialogViewModel : ViewModelBase, IDisposable, ICloseableDialog
+    public class ConfirmDialogViewModel : ViewModelBase, IDialogContext, IDisposable
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private string _title = "";
@@ -16,6 +16,7 @@ namespace CTUScheduler.Presentation.Shared.Dialogs.ViewModels
         private string _confirmText = "";
         private string _cancelText = "";
         private bool _isDestructive = false;
+
 
         public string Title
         {
@@ -49,20 +50,29 @@ namespace CTUScheduler.Presentation.Shared.Dialogs.ViewModels
 
         public ReactiveCommand<Unit, Unit> AcceptCommand { get; }
         public ReactiveCommand<Unit, Unit> CancelCommand { get; }
-        public event Action<object?>? RequestClose;
+
+
+        private EventHandler<object?>? _ursaRequestClose;
+
+        public event EventHandler<object?>? RequestClose
+        {
+            add => _ursaRequestClose += value;
+            remove => _ursaRequestClose -= value;
+        }
+
 
         public ConfirmDialogViewModel()
         {
-            AcceptCommand = ReactiveCommand.Create(() => Close(true))
+            AcceptCommand = ReactiveCommand.Create(() => { Close(true); })
                 .DisposeWith(_disposables);
-            CancelCommand = ReactiveCommand.Create(() => Close(false))
+            CancelCommand = ReactiveCommand.Create(() => { Close(false); })
                 .DisposeWith(_disposables);
         }
 
-        public void Close(object? result = null)
-        {
-            RequestClose?.Invoke(result);
-        }
+        void IDialogContext.Close() => _ursaRequestClose?.Invoke(this, null);
+
+        public void Close(object? result = null) => _ursaRequestClose?.Invoke(this, result);
+
 
         public void Dispose()
         {

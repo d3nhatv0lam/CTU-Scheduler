@@ -19,8 +19,10 @@ using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
-using CTUScheduler.Presentation.Services.TimetableDialog;
+using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
+using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
 using CTUScheduler.Presentation.Shared.Models;
+using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using DynamicData;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
@@ -28,13 +30,14 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels;
 
-public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposable, IActivatableViewModel, ICleanup, INeedArgs<SchedulingWizardContext>
+public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposable, IActivatableViewModel, ICleanup,
+    INeedArgs<SchedulingWizardContext>
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
     private readonly IScheduleRegistrationService _scheduleRegistrationService;
-    private readonly ITimetableDialogService _timetableDialogService;
     private readonly SchedulingCourseOptionViewModel _schedulingCourseOptionVM;
     private readonly TimetablePaginationViewModel _paginationTimeTableViewModel;
+    private readonly IUserInteractionService _userInteractionService;
     private readonly ObservableAsPropertyHelper<string> _limitTimetableSelectedDisplayedHelper;
     private readonly ObservableAsPropertyHelper<bool> _isNextStepEnabled;
 
@@ -58,9 +61,9 @@ public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposab
 
     public TimetableSchedulerViewModel(SchedulingWizardContext context)
     {
-        _timetableDialogService = App.ServiceProvider.GetRequiredService<ITimetableDialogService>();
         _schedulingCourseOptionVM = new SchedulingCourseOptionViewModel();
         _scheduleRegistrationService = App.ServiceProvider.GetRequiredService<IScheduleRegistrationService>();
+        _userInteractionService = App.ServiceProvider.GetRequiredService<IUserInteractionService>();
 
         var profileQueryService = App.ServiceProvider.GetRequiredService<IProfileQueryService>();
         var maxCanSelect = profileQueryService.ProfileUsageState
@@ -102,7 +105,17 @@ public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposab
 
         ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<SelectableTimetableLayout>(async
                 selectableTimetableLayout =>
-                await _timetableDialogService.ShowTimetableDetails(selectableTimetableLayout.Item))
+            {
+                var options = new DialogOptions
+                {
+                    SizeMode = DialogSizeMode.Responsive,
+                    IsCloseButtonVisible = true,
+                    CanLightDismiss = true,
+                    HostId = DialogIds.Root
+                };
+                await _userInteractionService.Dialog.ShowModal<TimetableLayoutBaseViewModel, Unit>(
+                    selectableTimetableLayout.Item, options);
+            })
             .DisposeWith(_disposables);
 
         this.WhenActivated(disposable =>

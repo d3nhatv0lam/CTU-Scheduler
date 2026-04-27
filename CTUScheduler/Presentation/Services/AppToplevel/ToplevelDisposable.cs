@@ -3,24 +3,24 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
-using CTUScheduler.Presentation.Shells.AppShell.Views;
+using CTUScheduler.Presentation.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Presentation.Services.AppToplevel;
 
-public class ToplevelService: IToplevelService, IDisposable
+public class ToplevelDisposable: IToplevelService, IUiDisposable
 {
     private readonly CompositeDisposable _disposables = new();
-    private readonly ILogger<ToplevelService> _logger;
+    private readonly ILogger<ToplevelDisposable> _logger;
     private readonly BehaviorSubject<TopLevel?> _toplevelSubject = new(null);
+    private bool _isDisposed;
     
     public IObservable<TopLevel?> ToplevelChanges => _toplevelSubject;
 
-    public ToplevelService(ILogger<ToplevelService> logger)
+    public ToplevelDisposable(ILogger<ToplevelDisposable> logger)
     {
         _logger = logger;
     }
@@ -73,9 +73,11 @@ public class ToplevelService: IToplevelService, IDisposable
 
     public void Dispose()
     {
+        if (_isDisposed) return;
         _toplevelSubject.Dispose();
         _disposables.Dispose();
         
         _logger.LogInformation("ToplevelService disposed");
+        _isDisposed = true;
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Controls;
 using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
-using DialogHostAvalonia.Utilities;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Presentation.Services.ViewContext;
@@ -11,6 +11,7 @@ public class ViewContextService: IViewContextService, IDisposable
 {
     private readonly BehaviorSubject<TopLevel?> _toplevelSubject = new(null);
     private readonly ILogger<ViewContextService> _logger;
+    private bool _isDisposed;
     
     public TopLevel? CurrentTopLevel => _toplevelSubject.Value;
     public IObservable<TopLevel?> WhenTopLevelChanged { get; }
@@ -29,7 +30,9 @@ public class ViewContextService: IViewContextService, IDisposable
 
     public void Dispose()
     {
+        if (_isDisposed) return;
         _toplevelSubject.Dispose();
         _logger.LogInformation("ViewContextService disposed");
+        _isDisposed = true;
     }
 }

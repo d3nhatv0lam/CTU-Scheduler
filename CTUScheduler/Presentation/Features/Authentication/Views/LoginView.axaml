@@ -10,6 +10,8 @@
 		xmlns:controls ="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
 		xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
 		xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Authentication.ViewModels"
+		xmlns:u="https://irihi.tech/ursa"
+		xmlns:semi="https://irihi.tech/semi"
 		x:CompileBindings="True"
 		x:DataType="vm:LoginViewModel"
 		Focusable="True"
@@ -28,8 +30,8 @@
 	
 	<Grid Background="{StaticResource PrimaryColor}"
 		  ColumnDefinitions="0.85* *">
+		
 		<Grid Grid.Column="0" RowDefinitions="20 * *">
-			
 			<!--// Logo image//-->
 			<Image 
 				Grid.Row="1" 

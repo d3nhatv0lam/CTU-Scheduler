@@ -8,7 +8,6 @@ using Serilog;
 using System;
 using System.Reactive;
 using System.Threading.Tasks;
-using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
 using CTUScheduler.Presentation.Shared.Interfaces;
@@ -58,9 +57,10 @@ public class App : Application
                 requestClose.RequestClose -= handler;
                 MainWindow mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
                 mainWindow.DataContext = ServiceProvider.GetService<MainViewModel>();
-
+                
                 desktop.MainWindow = mainWindow;
-                desktop.MainWindow?.Show();
+                desktop.MainWindow.Show();
+                
                 splashScreen.Close();
             };
             requestClose.RequestClose += handler;

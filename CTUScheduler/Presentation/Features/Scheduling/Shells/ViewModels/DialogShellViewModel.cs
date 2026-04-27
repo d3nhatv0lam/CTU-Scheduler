@@ -6,36 +6,20 @@ using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.Viewport;
-using CTUScheduler.Presentation.Shared.Interfaces;
-using CTUScheduler.Presentation.Shared.Models.Regions;
+using CTUScheduler.Presentation.Shared.Models.Identifiers;
+using Irihi.Avalonia.Shared.Contracts;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
 {
-    public class DialogShellViewModel: ViewModelBase, IScreen, IDisposable, ICloseableDialog
+    public class DialogShellViewModel: ViewModelBase, IScreen, IDisposable, IDialogContext
     {
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly IViewportService _viewportService;
         private readonly INavigationRegionManager _navigationRegionManager;
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
-        private double _height;
-        private double _width;
-
-        public double Height
-        {
-            get => _height;
-            set => this.RaiseAndSetIfChanged(ref _height, value);
-        }
-
-        public double Width
-        {
-            get => _width;
-            set => this.RaiseAndSetIfChanged(ref _width, value);
-        }
-        public event Action<object?>? RequestClose;
-        public void Close(object? result = null)
-        {
-            RequestClose?.Invoke(result);
-        }
+        
+        public event EventHandler<object?>? RequestClose;
+        public void Close() => RequestClose?.Invoke(this, null);
 
         public RoutingState Router { get; } = new ();
         public ReactiveCommand<Unit, Unit> CloseDialogCommand { get; protected set; }
@@ -49,14 +33,8 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
             _navigationRegionManager.Register(RegionIds.Scheduling, this)
                 .DisposeWith(_disposables);
             
-            CloseDialogCommand = ReactiveCommand.Create(() => Close())
+            CloseDialogCommand = ReactiveCommand.Create(Close)
                 .DisposeWith(_disposables);
-            _viewportService.WhenSizeChanged
-                .Subscribe(size =>
-                {
-                    Height = size.Height;
-                    Width = size.Width;
-                }) .DisposeWith(_disposables);
 
             _navigationRegionManager.NavigateTo<SelectionViewModel>(RegionIds.Scheduling);
         }

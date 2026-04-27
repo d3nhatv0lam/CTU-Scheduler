@@ -43,6 +43,8 @@ public class RegistrationRulesService : IRegistrationRulesService
     }
 
     public IObservable<RegistrationInformation> RegistrationInfoChanged { get; }
+    
+    // public async Task<OperationResult> EnsureReadyAsync() => OperationResult.Success();
 
     public async Task<OperationResult> EnsureReadyAsync()
     {
@@ -57,7 +59,7 @@ public class RegistrationRulesService : IRegistrationRulesService
                 await _rulesPage.CheckSessionAndThrowAsync();
                 return OperationResult.Success();
             }
-
+    
             await _rulesPage.NavigateToAsync();
             await _rulesPage.WaitForReadyAsync();
             await _rulesPage.CheckSessionAndThrowAsync();
