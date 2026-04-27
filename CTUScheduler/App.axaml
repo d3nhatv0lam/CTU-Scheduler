@@ -33,6 +33,7 @@
         <u-Semi:SemiTheme Locale="vi-VN" />
         <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
         <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/BoxShadow.axaml" />
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.Button.axaml" />
     </Application.Styles>
 
     <Application.DataTemplates>
