@@ -9,7 +9,7 @@ using Ursa.Controls;
 
 namespace CTUScheduler.Presentation.Services.UserInteractionService.Implementations.Ursa.Notifications;
 
-public class UrsaInteractionToast(IViewContextService viewContextService, ILogger<UrsaInteractionToast> logger)
+public class UrsaToast(IViewContextService viewContextService, ILogger<UrsaToast> logger)
     : UrsaInteractionManagerBase<WindowToastManager>(viewContextService, logger), IToastService
 {
     protected override WindowToastManager CreateManager(TopLevel context) =>
