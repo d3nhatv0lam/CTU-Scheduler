@@ -1,0 +1,151 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+    <Design.PreviewWith>
+        <Border Padding="20" Background="White">
+            <StackPanel Spacing="20" Width="300">
+                <TextBox Classes="Login" Watermark="MSSV" />
+                <TextBox Classes="Login reveal" Watermark="Mật khẩu" PasswordChar="*" Text="password" />
+            </StackPanel>
+        </Border>
+    </Design.PreviewWith>
+
+    <Style Selector="TextBox.Login">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0 0 0 1"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BlackBrush}"/>
+        <Setter Property="CornerRadius" Value="0"/>
+        <Setter Property="Padding" Value="0 8"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="CaretBrush" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="SelectionBrush" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <DataValidationErrors>
+                    <StackPanel Spacing="0">
+                        <!-- Floating Watermark Label -->
+                        <TextBlock Name="PART_FloatingWatermark"
+                                   Text="{TemplateBinding Watermark}"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource PrimaryBrush}"
+                                   Height="20"
+                                   Margin="0,0,0,0">
+                            <TextBlock.Transitions>
+                                <Transitions>
+                                    <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+                                    <ThicknessTransition Property="Margin" Duration="0:0:0.2"/>
+                                </Transitions>
+                            </TextBlock.Transitions>
+                        </TextBlock>
+
+                        <Border Name="PART_Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                MinHeight="35">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <ContentPresenter Grid.Column="0"
+                                                  Content="{TemplateBinding InnerLeftContent}"/>
+                                <ScrollViewer Grid.Column="1"
+                                              HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                                              VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+                                    <Panel>
+                                        <TextBlock Name="PART_Watermark"
+                                                   Foreground="{StaticResource BlackBrush}"
+                                                   Opacity="1"
+                                                   Text="{TemplateBinding Watermark}"
+                                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                   HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                   IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"/>
+                                        <TextPresenter Name="PART_TextPresenter"
+                                                       Text="{TemplateBinding Text, Mode=TwoWay}"
+                                                       CaretIndex="{TemplateBinding CaretIndex}"
+                                                       SelectionStart="{TemplateBinding SelectionStart}"
+                                                       SelectionEnd="{TemplateBinding SelectionEnd}"
+                                                       TextAlignment="{TemplateBinding TextAlignment}"
+                                                       TextWrapping="{TemplateBinding TextWrapping}"
+                                                       PasswordChar="{TemplateBinding PasswordChar}"
+                                                       RevealPassword="{TemplateBinding RevealPassword}"
+                                                       SelectionBrush="{TemplateBinding SelectionBrush}"
+                                                       SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                                                       CaretBrush="{TemplateBinding CaretBrush}"
+                                                       VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                       HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                    </Panel>
+                                </ScrollViewer>
+                                
+                                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                    <ToggleButton Name="PART_RevealButton"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Padding="4"
+                                            IsVisible="False"
+                                            IsChecked="{Binding $parent[TextBox].RevealPassword, Mode=TwoWay}"
+                                            Cursor="Hand">
+                                        <ToggleButton.Styles>
+                                            <Style Selector="ToggleButton:pointerover /template/ ContentPresenter">
+                                                <Setter Property="Background" Value="Transparent"/>
+                                            </Style>
+                                            <Style Selector="ToggleButton:checked /template/ ContentPresenter">
+                                                <Setter Property="Background" Value="Transparent"/>
+                                            </Style>
+                                        </ToggleButton.Styles>
+                                        <materialIcons:MaterialIcon Name="RevealIcon" Width="18" Height="18" Foreground="{StaticResource PrimaryBrush}"/>
+                                    </ToggleButton>
+                                    <ContentPresenter Content="{TemplateBinding InnerRightContent}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </DataValidationErrors>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <!-- Floating Watermark Logic -->
+    <Style Selector="TextBox.Login /template/ TextBlock#PART_FloatingWatermark">
+        <Setter Property="Opacity" Value="0"/>
+        <Setter Property="Margin" Value="0,15,0,-15"/>
+    </Style>
+    <Style Selector="TextBox.Login:focus /template/ TextBlock#PART_FloatingWatermark">
+        <Setter Property="Opacity" Value="1"/>
+        <Setter Property="Margin" Value="0,0,0,0"/>
+    </Style>
+    <Style Selector="TextBox.Login:not(:empty) /template/ TextBlock#PART_FloatingWatermark">
+        <Setter Property="Opacity" Value="1"/>
+        <Setter Property="Margin" Value="0,0,0,0"/>
+    </Style>
+
+    <!-- Watermark Logic -->
+    <Style Selector="TextBox.Login:focus /template/ TextBlock#PART_Watermark">
+        <Setter Property="Opacity" Value="0"/>
+    </Style>
+    <Style Selector="TextBox.Login:not(:empty) /template/ TextBlock#PART_Watermark">
+        <Setter Property="IsVisible" Value="False"/>
+    </Style>
+
+    <!-- Border States -->
+    <Style Selector="TextBox.Login:focus /template/ Border#PART_Border">
+        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="BorderThickness" Value="0 0 0 2"/>
+    </Style>
+    <Style Selector="TextBox.Login:pointerover /template/ Border#PART_Border">
+        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+    </Style>
+
+    <!-- Reveal Button Logic -->
+    <Style Selector="TextBox.Login.reveal /template/ ToggleButton#PART_RevealButton">
+        <Setter Property="IsVisible" Value="True"/>
+    </Style>
+    <Style Selector="TextBox.Login.reveal /template/ ToggleButton#PART_RevealButton materialIcons|MaterialIcon#RevealIcon">
+        <Setter Property="Kind" Value="Eye"/>
+    </Style>
+    <Style Selector="TextBox.Login.reveal /template/ ToggleButton#PART_RevealButton:checked materialIcons|MaterialIcon#RevealIcon">
+        <Setter Property="Kind" Value="EyeOff"/>
+    </Style>
+
+</Styles>
