@@ -90,14 +90,14 @@
 					<!-- MSSV -->
 					<TextBox x:Name="txtUsername"
 							 Watermark="MSSV"
-							 Classes="Login"
+							 Classes="input floating"
 							 Margin="0 15 0 0"
 							 HorizontalAlignment="Stretch"/>
 
 					<!-- Password -->
 					<TextBox x:Name="txtPassword"
 							 Watermark="Mật khẩu" 
-							 Classes="Login reveal"
+							 Classes="input floating reveal"
 							 PasswordChar="*"
 							 Margin="0 20 0 0"
 							 HorizontalAlignment="Stretch"/>
