@@ -13,7 +13,7 @@
             </Grid>
         </Border>
     </Design.PreviewWith>
-
+    
     <Style Selector="Button.ripple">
         <Setter Property="Background" Value="#6200EE" />
         <Setter Property="Foreground" Value="White"></Setter>

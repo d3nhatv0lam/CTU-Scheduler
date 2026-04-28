@@ -19,21 +19,21 @@
 		<KeyBinding Gesture="Enter" Command="{Binding SignInCommand}" />
 	</rxui:ReactiveUserControl.KeyBindings>
 
-	<UserControl.Styles>
+	<rxui:ReactiveUserControl.Styles>
 		<Style Selector="TextBlock">
 			<Setter Property="FontFamily" Value="{StaticResource Ctu-Text-Font}"/>
 		</Style>
-		<Style Selector="Button#LoginButton">
-			<Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+		<Style Selector="Button#LoginButton.ripple">
+			<Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
 			<Setter Property="Foreground" Value="White"/>
 			<Setter Property="FontSize" Value="16"/>
 			<Setter Property="FontWeight" Value="Bold"/>
 		</Style>
-		<Style Selector="Button#LoginButton:pointerover /template/ ContentPresenter">
-			<Setter Property="Background" Value="{StaticResource ButtonHoverBrush}"/>
+		<Style Selector="Button#LoginButton:pointerover">
+			<Setter Property="Background" Value="{DynamicResource ButtonHoverBrush}"/>
 			<Setter Property="Foreground" Value="White"/>
 		</Style>
-	</UserControl.Styles>
+	</rxui:ReactiveUserControl.Styles>
 
 	<Grid Background="{StaticResource PrimaryColor}"
 		  ColumnDefinitions="0.85* *">
@@ -58,7 +58,7 @@
 					</Style>
 				</StackPanel.Styles>
 				
-				<TextBlock 
+				<TextBlock
 						   Text="CTU Scheduler"
 						   FontSize="45"
 						   Margin="0 20 0 0"
@@ -89,8 +89,8 @@
 
 					<!-- MSSV -->
 					<TextBox x:Name="txtUsername"
+					         Classes="input floating"
 							 Watermark="MSSV"
-							 Classes="input floating"
 							 Margin="0 15 0 0"
 							 HorizontalAlignment="Stretch"/>
 
@@ -108,6 +108,7 @@
 						Margin="0 25 0 0"/>
 				
 					<Button x:Name="LoginButton"
+					        Classes="ripple login-button"
 							Content="Đăng nhập"
 							HorizontalAlignment="Stretch"
 							Margin="0 40 0 0"
