@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -12,13 +12,14 @@ using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.CourseData;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Features.Scheduling.Models;
+using CTUScheduler.Presentation.Features.Scheduling.Models.Context;
+using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using DynamicData;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 
-namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
+namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
 {
     public class HandmadeFindCourseViewModel : ViewModelBase, IDisposable, IWizardStep,
         INeedArgs<SchedulingWizardContext>
@@ -38,8 +39,8 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         private QuickSelectCourse _selectedQuickSelectCourse = null!;
 
         private readonly Subject<Unit> _textBoxClickTriggerSubject = new();
-        private ReadOnlyObservableCollection<SelectedCourseNode> _coursesBindable;
-        private readonly SourceList<SelectedCourseNode> _coursesSourceList;
+        private ReadOnlyObservableCollection<SelectedCourse> _coursesBindable;
+        private readonly SourceList<SelectedCourse> _coursesSourceList;
 
         public string TxtInputCourseKey
         {
@@ -70,13 +71,13 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             set => this.RaiseAndSetIfChanged(ref _selectedQuickSelectCourse, value);
         }
 
-        public ReadOnlyObservableCollection<SelectedCourseNode> Courses => _coursesBindable;
+        public ReadOnlyObservableCollection<SelectedCourse> Courses => _coursesBindable;
         public ReactiveCommand<Unit, Unit> TryOpenPopupCommand { get; }
         public ReactiveCommand<Unit, Unit> ClosePopupCommand { get; }
         public ReactiveCommand<Unit, Course> SearchCommand { get; }
         public ReactiveCommand<SelectableCourseSection, Unit> ChangeSelectStateSectionCommand { get; }
         public ReactiveCommand<Unit, Unit> AddCoursesCommand { get; }
-        public ReactiveCommand<SelectedCourseNode, Unit> Tree_RemoveCourseCommand { get; }
+        public ReactiveCommand<SelectedCourse, Unit> Tree_RemoveCourseCommand { get; }
         public ReactiveCommand<CourseSection, Unit> Tree_RemoveSectionCommand { get; }
 
         public HandmadeFindCourseViewModel(SchedulingWizardContext context)
@@ -189,7 +190,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
                 
                 if (existingNode == null)
                 {
-                    var selectedCourseNode = new SelectedCourseNode(SearchedCourse, selectedSections);
+                    var selectedCourseNode = new SelectedCourse(SearchedCourse, selectedSections);
                     _coursesSourceList.Add(selectedCourseNode);
                     return;
                 }
@@ -207,7 +208,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
             }, canAddCourse).DisposeWith(_disposables);
 
 
-            Tree_RemoveCourseCommand = ReactiveCommand.Create<SelectedCourseNode>(course => RemoveCourseFromTree(course))
+            Tree_RemoveCourseCommand = ReactiveCommand.Create<SelectedCourse>(course => RemoveCourseFromTree(course))
                 .DisposeWith(_disposables);
 
             Tree_RemoveSectionCommand = ReactiveCommand
@@ -224,7 +225,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels
         }
         
 
-        private void RemoveCourseFromTree(SelectedCourseNode? course)
+        private void RemoveCourseFromTree(SelectedCourse? course)
         {
             if (course == null) return;
             _coursesSourceList.Remove(course);

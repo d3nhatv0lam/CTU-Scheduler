@@ -1,7 +1,7 @@
-﻿using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
+using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Presentation.Shared.Models;
 
-namespace CTUScheduler.Presentation.Features.Scheduling.Models
+namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components
 {
     public class SelectableCourseSection: SelectableItem<CourseSection>
     {

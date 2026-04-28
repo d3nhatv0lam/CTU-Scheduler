@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -66,12 +66,16 @@
       <DependentUpon>HomeView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Presentation\Features\Scheduling\Views\HandmadeFindCourseView.axaml.cs">
+    <Compile Update="Presentation\Features\Scheduling\Views\Steps\HandmadeFindCourseView.axaml.cs">
       <DependentUpon>HandmadeFindCourseView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Presentation\Features\Scheduling\Views\TimetableSchedulerView.axaml.cs">
+    <Compile Update="Presentation\Features\Scheduling\Views\Steps\TimetableSchedulerView.axaml.cs">
       <DependentUpon>TimetableSchedulerView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Presentation\Features\Scheduling\Views\Steps\SelectionView.axaml.cs">
+      <DependentUpon>SelectionView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Presentation\Features\Setting\Views\SettingView.axaml.cs">
@@ -90,24 +94,12 @@
       <DependentUpon>LoginView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Presentation\Features\Scheduling\Shells\Views\DialogShellView.axaml.cs">
-      <DependentUpon>DialogShellView.axaml</DependentUpon>
+    <Compile Update="Presentation\Features\Scheduling\Views\Shells\SchedulingDialogView.axaml.cs">
+      <DependentUpon>SchedulingDialogView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Presentation\Features\Scheduling\Selection\Views\SelectionView.axaml.cs">
-      <DependentUpon>SelectionView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Features\Scheduling\Shells\Views\SchedulingShellView.axaml.cs">
-      <DependentUpon>SchedulingShellView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Features\TimetableRefactor\Views\TimetableLayoutView.axaml.cs">
-      <DependentUpon>TimetableLayoutView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Features\TimetableRefactor\Views\TimetableView.axaml.cs">
-      <DependentUpon>TimetableView.axaml</DependentUpon>
+    <Compile Update="Presentation\Features\Scheduling\Views\Shells\SchedulingWizardView.axaml.cs">
+      <DependentUpon>SchedulingWizardView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Presentation\Features\TimetableRefactor\Views\TimetableLayoutView.axaml.cs">
@@ -128,8 +120,11 @@
     <AdditionalFiles Include="Presentation\Features\Authentication\Views\LoginView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Home\Views\HomeView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Scheduling\Shared\Styles\controls.axaml" />
-    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\HandmadeFindCourseView.axaml" />
-    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\TimetableSchedulerView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Steps\HandmadeFindCourseView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Steps\TimetableSchedulerView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Steps\SelectionView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Shells\SchedulingDialogView.axaml" />
+    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Shells\SchedulingWizardView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Setting\Views\SettingView.axaml" />
     <AdditionalFiles Include="Presentation\Features\SplashScreen\Components\Installation\Views\InstallationView.axaml" />
     <AdditionalFiles Include="Presentation\Features\SplashScreen\Views\SplashScreenWindow.axaml" />

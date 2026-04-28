@@ -11,14 +11,15 @@
     xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
     xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    xmlns:viewModels1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels"
-    xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Views"
+    xmlns:viewModels1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps"
+    xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Views.Steps"
     Focusable="True"
     xmlns:behaviors="clr-namespace:CTUScheduler.Presentation.Shared.Behaviors"
-    xmlns:models="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Models"
+    xmlns:models="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components"
+    xmlns:context="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Models.Context"
     xmlns:curriculumModel="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.CourseData"
     xmlns:qSelectCourse="clr-namespace:CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.CourseData"
-    x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.HandmadeFindCourseView">
+    x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.Steps.HandmadeFindCourseView">
 
     <rxui:ReactiveUserControl.KeyBindings>
         <KeyBinding Gesture="Enter" Command="{Binding SearchCommand}" />
@@ -294,7 +295,7 @@
 
                             <TreeView.ItemTemplate>
                                 <TreeDataTemplate ItemsSource="{Binding Sections}"
-                                                  x:DataType="{x:Type models:SelectedCourseNode}">
+                                                  x:DataType="{x:Type context:SelectedCourse}">
                                     <Grid ColumnDefinitions="* auto">
                                         <TextBlock Grid.Column="0"
                                                    HorizontalAlignment="Left">

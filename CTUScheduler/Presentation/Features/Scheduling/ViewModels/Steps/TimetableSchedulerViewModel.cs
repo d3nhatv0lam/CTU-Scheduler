@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
@@ -16,7 +16,8 @@ using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Validators;
 using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Features.Scheduling.Models;
+using CTUScheduler.Presentation.Features.Scheduling.Models.Context;
+using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
@@ -28,7 +29,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 
 
-namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels;
+namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps;
 
 public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposable, IActivatableViewModel, ICleanup,
     INeedArgs<SchedulingWizardContext>

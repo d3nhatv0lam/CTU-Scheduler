@@ -10,8 +10,8 @@
 			 x:CompileBindings="True"
 			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
 			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-			 xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels"
-			 x:Class="CTUScheduler.Presentation.Features.Scheduling.Selection.Views.SelectionView">
+			 xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps"
+			 x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.Steps.SelectionView">
 
 	<rxui:ReactiveUserControl.Styles>
 		<Style Selector="TextBlock">

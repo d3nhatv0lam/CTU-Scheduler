@@ -1,7 +1,7 @@
 using ReactiveUI.Avalonia;
-using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
+using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps;
 
-namespace CTUScheduler.Presentation.Features.Scheduling.Views;
+namespace CTUScheduler.Presentation.Features.Scheduling.Views.Steps;
 
 public partial class TimetableSchedulerView : ReactiveUserControl<TimetableSchedulerViewModel>
 {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -6,16 +6,15 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Features.Scheduling.Models;
 using DynamicData;
 using DynamicData.Binding;
 
-namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels;
+namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components;
 
 public class SchedulingCourseOptionViewModel : ViewModelBase, IDisposable
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
-    public ObservableCollection<SchedulingCourse> SchedulingCourses { get; set; } = new();
+    public ObservableCollection<SchedulingCourseViewModel> SchedulingCourses { get; set; } = new();
 
     public SchedulingCourseOptionViewModel()
     {
@@ -41,12 +40,12 @@ public class SchedulingCourseOptionViewModel : ViewModelBase, IDisposable
             SchedulingCourses.Clear();
     }
 
-    private void PartitionCourses(ObservableCollection<SchedulingCourse> schedulingCourses,
-        out List<SchedulingCourse> mainCourses,
-        out List<SchedulingCourse> alternativeCourses)
+    private void PartitionCourses(ObservableCollection<SchedulingCourseViewModel> schedulingCourses,
+        out List<SchedulingCourseViewModel> mainCourses,
+        out List<SchedulingCourseViewModel> alternativeCourses)
     {
-        mainCourses = new List<SchedulingCourse>();
-        alternativeCourses = new List<SchedulingCourse>();
+        mainCourses = new List<SchedulingCourseViewModel>();
+        alternativeCourses = new List<SchedulingCourseViewModel>();
         foreach (var schedulingCourse in SchedulingCourses)
         {
             if (schedulingCourse.IsMainCourse)
@@ -61,7 +60,7 @@ public class SchedulingCourseOptionViewModel : ViewModelBase, IDisposable
         ClearSchedulingCourses();
         foreach (var course in courses)
         {
-            var schedulingCourse = SchedulingCourse.CourseToSchedulingCourse(course);
+            var schedulingCourse = SchedulingCourseViewModel.CourseToSchedulingCourse(course);
             SchedulingCourses.Add(schedulingCourse);
         }
     }

@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Features.Scheduling.Models;
-using CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels;
+using CTUScheduler.Presentation.Features.Scheduling.Models.Strategies;
+using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Shells;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using ReactiveUI;
 
-namespace CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels
+namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
 {
     public class SelectionViewModel : ViewModelBase, IRoutableViewModel, IDisposable
     {
@@ -45,7 +45,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Selection.ViewModels
 
         private void NavigateToSelection(SchedulingStrategy strategy)
         {
-            _navigationRegionManager.NavigateTo<SchedulingShellViewModel>(RegionIds.Scheduling, strategy);
+            _navigationRegionManager.NavigateTo<SchedulingWizardViewModel>(RegionIds.Scheduling, strategy);
         }
 
         public void Dispose()
