@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables.Fluent;
@@ -24,7 +24,7 @@ public partial class HomeView : ReactiveUserControl<HomeViewModel>
             this.OneWayBind(ViewModel, vm => vm.RegistrationInfo, v => v.txtRegistrationTime.Text, info => info == null ?
                             "Không lấy được thông tin!" :
                             info.Period).DisposeWith(disposables);
-
+            
             this.OneWayBind<HomeViewModel, HomeView, List<PeriodItem>, IEnumerable>(ViewModel, vm => vm.RegistrationInfo.UserPeriod, v => v.dtgridUserRegistrationTime.ItemsSource, userRegistrationTime => userRegistrationTime ?? Enumerable.Empty<PeriodItem>()).DisposeWith(disposables);
 
             this.OneWayBind<HomeViewModel, HomeView, List<GroupItem>, IEnumerable>(ViewModel, vm => vm.RegistrationInfo.Groups, v => v.dtgridGroupList.ItemsSource, groups => groups ?? Enumerable.Empty<GroupItem>()).DisposeWith(disposables);
