@@ -1,16 +1,16 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using ReactiveUI;
 
-namespace CTUScheduler.Presentation.Features.Scheduling.Models;
+namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components;
 
-public class SchedulingCourse : ReactiveObject
+public class SchedulingCourseViewModel : ReactiveObject
 {
     private bool _isMainCourse = true;
     private int _mainCourseLockCount = 0;
-    private IEnumerable<SchedulingCourse> _replacementOptions = Enumerable.Empty<SchedulingCourse>();
-    private SchedulingCourse? _selectedReplacement;
+    private IEnumerable<SchedulingCourseViewModel> _replacementOptions = Enumerable.Empty<SchedulingCourseViewModel>();
+    private SchedulingCourseViewModel? _selectedReplacement;
     public Course Item { get; }
 
     public bool IsMainCourse
@@ -30,7 +30,7 @@ public class SchedulingCourse : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _mainCourseLockCount, value);
     }
 
-    public SchedulingCourse? SelectedReplacement
+    public SchedulingCourseViewModel? SelectedReplacement
     {
         get => _selectedReplacement;
         set
@@ -43,25 +43,25 @@ public class SchedulingCourse : ReactiveObject
         }
     }
 
-    public IEnumerable<SchedulingCourse> ReplacementOptions
+    public IEnumerable<SchedulingCourseViewModel> ReplacementOptions
     {
         get => _replacementOptions;
         set => this.RaiseAndSetIfChanged(ref _replacementOptions, value);
     }
 
-    public SchedulingCourse(Course course, IEnumerable<SchedulingCourse> options)
+    public SchedulingCourseViewModel(Course course, IEnumerable<SchedulingCourseViewModel> options)
     {
         Item = course;
         ReplacementOptions = options;
     }
 
-    public SchedulingCourse(Course course)
+    public SchedulingCourseViewModel(Course course)
     {
         Item = course;
     }
     
-    public static SchedulingCourse CourseToSchedulingCourse(Course course)
+    public static SchedulingCourseViewModel CourseToSchedulingCourse(Course course)
     {
-        return new SchedulingCourse(course);
+        return new SchedulingCourseViewModel(course);
     }
 }

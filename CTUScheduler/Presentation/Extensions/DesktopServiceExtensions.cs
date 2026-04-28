@@ -1,4 +1,4 @@
-﻿using CTUScheduler.Presentation.Features.Scheduling.Models;
+using CTUScheduler.Presentation.Features.Scheduling.Models.Strategies;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
 using CTUScheduler.Presentation.Services.Factories;
 using CTUScheduler.Presentation.Services.Navigation;

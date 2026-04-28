@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
-using CTUScheduler.Presentation.Features.Scheduling.ViewModels;
+using CTUScheduler.Presentation.Features.Scheduling.Models.Context;
+using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps;
 using CTUScheduler.Presentation.Services.Factories;
 
-namespace CTUScheduler.Presentation.Features.Scheduling.Models;
+namespace CTUScheduler.Presentation.Features.Scheduling.Models.Strategies;
 
 public class ManualSchedulingStrategy : SchedulingStrategy
 {

@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using CTUScheduler.Presentation.Features.Pagination.Models;
 using CTUScheduler.Presentation.Features.Pagination.ViewModels;
 using CTUScheduler.Presentation.Shared.Models;
 using DynamicData;
 
-namespace CTUScheduler.Presentation.Features.Scheduling.Models;
+namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components;
 
 public class TimetablePaginationViewModel : LimitedSelectionPaginationViewModel<SelectableTimetableLayout>
 {

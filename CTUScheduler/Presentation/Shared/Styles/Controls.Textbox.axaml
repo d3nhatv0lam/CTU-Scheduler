@@ -9,18 +9,20 @@
             </StackPanel>
         </Border>
     </Design.PreviewWith>
-
+    
+    <!-- add class reveal to visible reveal button  -->
+    <!-- example: classes="input floating reveal" -->
     <Style Selector="TextBox.input.floating">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0 0 0 1" />
-        <Setter Property="BorderBrush" Value="{StaticResource BlackBrush}" />
+        <Setter Property="BorderBrush" Value="Black" />
         <Setter Property="CornerRadius" Value="0" />
         <Setter Property="Padding" Value="0 8" />
         <Setter Property="FontSize" Value="16" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Foreground" Value="Black" />
-        <Setter Property="CaretBrush" Value="{StaticResource PrimaryBrush}" />
-        <Setter Property="SelectionBrush" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource PrimaryBrush}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource PrimaryBrush}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <DataValidationErrors>
@@ -30,7 +32,7 @@
                                    Text="{TemplateBinding Watermark}"
                                    FontSize="14"
                                    FontWeight="SemiBold"
-                                   Foreground="{StaticResource PrimaryBrush}"
+                                   Foreground="{DynamicResource PrimaryBrush}"
                                    Height="20"
                                    Margin="0,0,0,0">
                             <TextBlock.Transitions>
@@ -46,7 +48,6 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="{TemplateBinding CornerRadius}"
-                                Cursor="Hand"
                                 MinHeight="35">
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <ContentPresenter Grid.Column="0"
@@ -96,10 +97,27 @@
                                             </Style>
                                         </ToggleButton.Styles>
                                         <materialIcons:MaterialIcon Name="RevealIcon" Width="18" Height="18"
-                                                                    Foreground="{StaticResource PrimaryBrush}" />
+                                                                    Foreground="{DynamicResource PrimaryBrush}" />
                                     </ToggleButton>
                                     <ContentPresenter Content="{TemplateBinding InnerRightContent}" />
                                 </StackPanel>
+                                
+                                <Border Name="PART_AnimatedUnderline"
+                                        Grid.Column="0" Grid.ColumnSpan="3"
+                                        Background="{DynamicResource PrimaryBrush}"
+                                        Height="1"
+                                        VerticalAlignment="Bottom"
+                                        HorizontalAlignment="Stretch"
+                                        RenderTransform="scaleX(0)"
+                                        RenderTransformOrigin="50%,50%">
+                                    <Border.Transitions>
+                                        <Transitions>
+                                            <TransformOperationsTransition Property="RenderTransform" 
+                                                                           Duration="0:0:0.25" 
+                                                                           Easing="CubicEaseOut" />
+                                        </Transitions>
+                                    </Border.Transitions>
+                                </Border>
                             </Grid>
                         </Border>
                     </StackPanel>
@@ -130,12 +148,19 @@
         </Style>
 
         <!-- Border States -->
-        <Style Selector="^:focus /template/ Border#PART_Border">
-            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
-            <Setter Property="BorderThickness" Value="0 0 0 2" />
+        <!-- <Style Selector="^:focus /template/ Border#PART_Border"> -->
+        <!--     <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" /> -->
+        <!--     <Setter Property="BorderThickness" Value="0 0 0 2" /> -->
+        <!-- </Style> -->
+        <!-- <Style Selector="^:pointerover /template/ Border#PART_Border"> -->
+        <!--     <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" /> -->
+        <!-- </Style> -->
+        <Style Selector="^:pointerover /template/ Border#PART_AnimatedUnderline">
+            <Setter Property="RenderTransform" Value="scaleX(1)" />
         </Style>
-        <Style Selector="^:pointerover /template/ Border#PART_Border">
-            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+
+        <Style Selector="^:focus /template/ Border#PART_AnimatedUnderline">
+            <Setter Property="RenderTransform" Value="scaleX(1)" />
         </Style>
 
         <!-- Reveal Button Logic -->

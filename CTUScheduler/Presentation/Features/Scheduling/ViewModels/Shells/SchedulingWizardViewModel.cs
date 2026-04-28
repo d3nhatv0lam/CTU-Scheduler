@@ -1,19 +1,20 @@
-﻿using System;
+using System;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Features.Scheduling.Models;
+using CTUScheduler.Presentation.Features.Scheduling.Models.Context;
+using CTUScheduler.Presentation.Features.Scheduling.Models.Strategies;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using Irihi.Avalonia.Shared.Contracts;
 using ReactiveUI;
 using Serilog;
 
-namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
+namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Shells
 {
-    public class SchedulingShellViewModel : ViewModelBase,
+    public class SchedulingWizardViewModel : ViewModelBase,
         IRoutableViewModel,
         IDisposable,
         IActivatableViewModel,
@@ -34,7 +35,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
 
         public IWizardStep CurrentWizardStep => _currentStep.Value;
 
-        public string? UrlPathSegment => nameof(SchedulingShellViewModel);
+        public string? UrlPathSegment => nameof(SchedulingWizardViewModel);
         public IScreen HostScreen { get; }
 
         public string BtnNextContent
@@ -47,11 +48,11 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
         public ReactiveCommand<Unit, Unit> NavigateNextCommand { get; protected set; }
         public ReactiveCommand<Unit, Unit> NavigateBackCommand { get; protected set; }
 
-        public SchedulingShellViewModel()
+        public SchedulingWizardViewModel()
         {
         }
 
-        public SchedulingShellViewModel(IScreen hostScreen, SchedulingStrategy strategy)
+        public SchedulingWizardViewModel(IScreen hostScreen, SchedulingStrategy strategy)
         {
             HostScreen = hostScreen;
 
@@ -88,7 +89,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
                 Disposable.Create(() =>
                 {
                     Dispose();
-                    Log.Debug("SchedulingShellViewModel: Disposed");
+                    Log.Debug("SchedulingWizardViewModel: Disposed");
                 }).DisposeWith(disposables);
             });
         }
@@ -103,7 +104,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
                         cleanup.Cleanup();
                     closeableDialog.Close();
                 }
-                else Log.Warning("SchedulingShellViewModel: CurrentStepIndex reach step but can't close dialog");
+                Log.Warning("SchedulingWizardViewModel: CurrentStepIndex reach step but can't close dialog");
             }
             else if (CurrentStepIndex < _stepsVM.Length - 1)
             {
@@ -111,7 +112,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels
             }
             else
             {
-                Log.Warning("SchedulingShellViewModel: invalid index step?");
+                Log.Warning("SchedulingWizardViewModel: invalid index step?");
             }
         }
 

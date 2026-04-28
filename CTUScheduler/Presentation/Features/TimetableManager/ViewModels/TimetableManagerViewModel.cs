@@ -13,7 +13,6 @@ using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Features.Scheduling.Shells.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Services.Factories;
 using CTUScheduler.Presentation.Shared.Dialogs.ViewModels;
@@ -23,6 +22,7 @@ using DynamicData.Binding;
 using Humanizer;
 using ReactiveUI;
 using System.Linq;
+using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Shells;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
@@ -231,7 +231,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 
         private async Task OpenAddCourseDialog()
         {
-            using var viewModel = _viewModelFactory.Create<DialogShellViewModel>();
+            using var viewModel = _viewModelFactory.Create<SchedulingDialogViewModel>();
             var options = new DialogOptions()
             {
                 SizeMode = DialogSizeMode.Responsive,
@@ -239,9 +239,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 CanLightDismiss = false,
                 HostId = DialogIds.Root
             };
-            await _userInteractionService.Dialog.ShowModal<DialogShellViewModel, Unit>(viewModel, options);
-            // await _dialogHostService.ShowDialogAsync<DialogShellViewModel, Unit>(viewModel,
-            //     DialogIdentifier.MainLayout, false);
+            await _userInteractionService.Dialog.ShowModal<SchedulingDialogViewModel, Unit>(viewModel, options);
         }
 
         private async void GoToCourseCatalogPage()
