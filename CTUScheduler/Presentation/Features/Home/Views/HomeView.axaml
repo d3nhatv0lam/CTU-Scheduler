@@ -1,209 +1,252 @@
-<rxui:ReactiveUserControl 
-			x:TypeArguments="vm:HomeViewModel"
-			xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="550"
-			 xmlns:rxui="http://reactiveui.net"
-			x:DataType="vm:HomeViewModel"
-			 x:CompileBindings="True"
-			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
-			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-             xmlns:u="https://irihi.tech/ursa"
-			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Home.ViewModels;assembly=CTUScheduler"
-			 xmlns:model="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.Registration"
-			 x:Class="CTUScheduler.Presentation.Features.Home.Views.HomeView">
+<rxui:ReactiveUserControl
+    x:TypeArguments="vm:HomeViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="550"
+    xmlns:rxui="http://reactiveui.net"
+    x:DataType="vm:HomeViewModel"
+    x:CompileBindings="True"
+    xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Home.ViewModels;assembly=CTUScheduler"
+    xmlns:model="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.Registration"
+    x:Class="CTUScheduler.Presentation.Features.Home.Views.HomeView">
 
-	<Design.DataContext>
-		<vm:HomeViewModel/>
-	</Design.DataContext>
-	
-	<rxui:ReactiveUserControl.Styles>
-		<Style Selector="SelectableTextBlock">
-			<Setter Property="SelectionForegroundBrush" Value="White"/>
-			<Setter Property="Background" Value="Transparent"/>
-		</Style>
-		<StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml"></StyleInclude>
-	</rxui:ReactiveUserControl.Styles>
-	
-	<Grid>
-		<Border Background="#F9FAFB">
-			<Grid ColumnSpacing="10" RowSpacing="10">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="*" />
-					<ColumnDefinition Width="*" />
-				</Grid.ColumnDefinitions>
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="*"/>
-				</Grid.RowDefinitions>
-				
-				<Grid.Styles>
-					<Style Selector="Border.Card">
-						<Setter Property="Background" Value="White" />
-						<Setter Property="CornerRadius" Value="12" />
-						<Setter Property="Padding" Value="25" />
-						<Setter Property="BoxShadow" Value="0 4 15 0 #0D000000" />
-					</Style>
-					<Style Selector="TextBlock.CardTitle">
-						<Setter Property="FontFamily" Value="{StaticResource Ctu-Title-Font}"/>
-						<Setter Property="FontSize" Value="22" />
-						<Setter Property="FontWeight" Value="SemiBold" />
-						<Setter Property="Foreground" Value="{StaticResource PrimaryColor}" />
-						<Setter Property="Margin" Value="0,0,0,15" />
-					</Style>
-					<Style Selector="TextBlock.ContentText">
-						<Setter Property="FontFamily" Value="{StaticResource Ctu-Text-Font}"/>
-						<Setter Property="FontSize" Value="15" />
-						<Setter Property="Margin" Value="0,2,0,2" />
-						<Setter Property="Foreground" Value="#333333" />
-					</Style>
-				</Grid.Styles>
+    <Design.DataContext>
+        <vm:HomeViewModel />
+    </Design.DataContext>
 
-				<!--// Thông tin đăng ký //-->
-				<Border Grid.Row="0" Grid.Column="0" Classes="Card">
-					<Grid RowDefinitions="Auto, *, Auto">
-						<TextBlock Grid.Row="0" Classes="CardTitle" Text="Thông tin đăng ký" />
-						<TextBlock Grid.Row="1" x:Name="txtRegistrationInfo" Classes="ContentText" Text="Học kỳ: ..." LineHeight="24"/>
-						
-						<ItemsControl Grid.Row="2" Margin="0,25,0,0" ItemsSource="{Binding RegistrationInfo.UserPeriod}">
-							<ItemsControl.ItemTemplate>
-								<DataTemplate>
-									<Grid ColumnDefinitions="Auto, *, Auto" Margin="0,5,0,0">
-										<StackPanel Grid.Column="0" Orientation="Horizontal">
-											<TextBlock Text="Bắt đầu: " FontWeight="Bold" Classes="ContentText" />
-											<TextBlock Text="{Binding StartDate}" Classes="ContentText" FontWeight="Bold" />
-										</StackPanel>
-										<StackPanel Grid.Column="2" Orientation="Horizontal">
-											<TextBlock Text="Kết thúc: " FontWeight="Bold" Classes="ContentText" />
-											<TextBlock Text="{Binding EndDate}" Classes="ContentText" FontWeight="Bold" />
-										</StackPanel>
-									</Grid>
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
-					</Grid>
-				</Border>
+    <rxui:ReactiveUserControl.Styles>
+        <Style Selector="SelectableTextBlock">
+            <Setter Property="SelectionForegroundBrush" Value="White" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml"></StyleInclude>
+    </rxui:ReactiveUserControl.Styles>
 
-				<!--// Nhóm của bạn //-->
-				<Border Grid.Row="0" Grid.Column="1" Classes="Card">
-					<Grid RowDefinitions="Auto, *">
-						<TextBlock Grid.Row="0" Classes="CardTitle" Text="Nhóm của bạn" />
-						<ItemsControl Grid.Row="1" ItemsSource="{Binding RegistrationInfo.UserPeriod}">
-							<ItemsControl.ItemTemplate>
-								<DataTemplate>
-									<StackPanel>
-										<TextBlock Text="{Binding Group, StringFormat='Nhóm \{0\}'}" FontSize="24" FontWeight="Bold" Foreground="#111111" Margin="0,0,0,10" />
-										<TextBlock Text="Các chuyên ngành thuộc Trường Công nghệ Thông tin &amp; Truyền thông và Trường Thủy sản." TextWrapping="WrapWithOverflow" Classes="ContentText" Foreground="#555555" Margin="0,0,0,15" />
-										<TextBlock Text="{Binding Key, StringFormat='Khóa \{0\}'}" Classes="ContentText" Foreground="#777777" />
-									</StackPanel>
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
-					</Grid>
-				</Border>
+    <Grid>
+        <Border Background="#F9FAFB">
+            <Grid ColumnSpacing="10" RowSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-				<!--// Các nhóm đơn vị //-->
-				<Border Grid.Row="1" Grid.Column="0" Classes="Card">
-					<Grid RowDefinitions="Auto, *" ClipToBounds="True">
-						<TextBlock Grid.Row="0" Classes="CardTitle" Text="Các nhóm đơn vị" />
-						
-						<DataGrid Grid.Row="1"
-								  x:Name="dtgridGroupList"
-								  BorderBrush="#E5E7EB"
-								  BorderThickness="1"
-								  CanUserReorderColumns="False"
-								  CanUserSortColumns="False"
-								  CanUserResizeColumns="True"
-								  IsReadOnly="True"
-								  ColumnHeaderHeight="46"
-								  GridLinesVisibility="Horizontal"
-								  ScrollViewer.VerticalScrollBarVisibility="Auto"
-								  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-								  AutoGenerateColumns="False">
-							<DataGrid.Styles>
-								<Style Selector="SelectableTextBlock">
-									<Setter Property="TextWrapping" Value="WrapWithOverflow"/>
-									<Setter Property="FontSize" Value="14"/>
-									<Setter Property="VerticalAlignment" Value="Center"/>
-								</Style>
-								<Style Selector="DataGridCell">
-									<Setter Property="Padding" Value="12,10" />
-								</Style>
-								<Style Selector="DataGridColumnHeader">
-									<Setter Property="FontWeight" Value="Bold" />
-									<Setter Property="Background" Value="#F3F4F6" />
-								</Style>
-							</DataGrid.Styles>
+                <Grid.Styles>
+                    <Style Selector="Border.Card">
+                        <Setter Property="Background" Value="White" />
+                        <Setter Property="CornerRadius" Value="12" />
+                        <Setter Property="Padding" Value="25" />
+                        <Setter Property="BoxShadow" Value="0 4 15 0 #0D000000" />
+                    </Style>
+                    <Style Selector="TextBlock.CardTitle">
+                        <Setter Property="FontFamily" Value="{StaticResource Ctu-Title-Font}" />
+                        <Setter Property="FontSize" Value="22" />
+                        <Setter Property="FontWeight" Value="SemiBold" />
+                        <Setter Property="Foreground" Value="{StaticResource PrimaryColor}" />
+                        <Setter Property="Margin" Value="0,0,0,15" />
+                    </Style>
+                    <Style Selector="TextBlock.ContentText">
+                        <Setter Property="FontFamily" Value="{StaticResource Ctu-Text-Font}" />
+                        <Setter Property="FontSize" Value="15" />
+                        <Setter Property="Margin" Value="0,2,0,2" />
+                        <Setter Property="Foreground" Value="#333333" />
+                    </Style>
+                </Grid.Styles>
 
-							<DataGrid.Columns>
-								<DataGridTemplateColumn Width="Auto" MaxWidth="120">
-									<DataGridTemplateColumn.Header>
-										<TextBlock Text="Nhóm" Margin="10,0"/>
-									</DataGridTemplateColumn.Header>
-									<DataGridTemplateColumn.CellTemplate>
-										<DataTemplate x:DataType="{x:Type model:GroupItem}">
-											<SelectableTextBlock Text="{Binding Title}" FontWeight="Bold" Foreground="#111827" Margin="10,0"/>
-										</DataTemplate>
-									</DataGridTemplateColumn.CellTemplate>
-								</DataGridTemplateColumn>
+                <!--// Thông tin đăng ký //-->
+                <Border Grid.Row="0" Grid.Column="0" Classes="Card">
+                    <Grid RowDefinitions="Auto, *, Auto">
+                        <TextBlock Grid.Row="0" Classes="CardTitle" Text="Thông tin đăng ký" />
+                        <TextBlock Grid.Row="1" x:Name="txtRegistrationInfo" Classes="ContentText" Text="Học kỳ: ..."
+                                   LineHeight="24" />
 
-								<DataGridTemplateColumn Width="*">
-									<DataGridTemplateColumn.Header>
-										<TextBlock Text="Các trường/khoa"/>
-									</DataGridTemplateColumn.Header>
-									<DataGridTemplateColumn.CellTemplate>
-										<DataTemplate x:DataType="{x:Type model:GroupItem}">
-											<SelectableTextBlock Text="{Binding Value}" Foreground="#4B5563"/>
-										</DataTemplate>
-									</DataGridTemplateColumn.CellTemplate>
-								</DataGridTemplateColumn>
-							</DataGrid.Columns>
-						</DataGrid>
-					</Grid>
-				</Border>
+                        <ItemsControl Grid.Row="2" Margin="0,25,0,0"
+                                      ItemsSource="{Binding RegistrationInfo.UserPeriod}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <WrapPanel Margin="0,5,0,0">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,30,5">
+                                            <TextBlock Text="Bắt đầu: " FontWeight="Bold" Classes="ContentText" />
+                                            <TextBlock Text="{Binding StartDate}" Classes="ContentText"
+                                                       FontWeight="Bold" />
+                                        </StackPanel>
 
-				<!--// Lộ trình đăng ký học phần //-->
-				<Border Grid.Row="1" Grid.Column="1" Classes="Card">
-					<Grid RowDefinitions="Auto, *">
-						<TextBlock Grid.Row="0" Classes="CardTitle" Text="Lộ trình đăng ký học phần" />
-						
-						<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-							<u:Timeline Margin="15,10,0,0">
-								<u:TimelineItem Classes="Primary">
-									<StackPanel Margin="0,0,0,25">
-										<TextBlock Text="Đăng ký học phần (đợt 1)" FontSize="16" FontWeight="SemiBold" Foreground="#111827" Margin="0,0,0,6"/>
-										<TextBlock Text="06/08/1999 - 03/02/2000" FontSize="14" Foreground="#6B7280"/>
-									</StackPanel>
-								</u:TimelineItem>
-								<u:TimelineItem Classes="Primary">
-									<StackPanel Margin="0,0,0,25">
-										<TextBlock Text="Đăng ký học phần (đợt 1)" FontSize="16" FontWeight="SemiBold" Foreground="#111827" Margin="0,0,0,6"/>
-										<TextBlock Text="06/08/1999 - 03/02/2000" FontSize="14" Foreground="#6B7280"/>
-									</StackPanel>
-								</u:TimelineItem>
-								<u:TimelineItem Classes="Success">
-									<StackPanel Margin="0,0,0,25">
-										<TextBlock Text="Đăng ký học phần (đợt 1)" FontSize="16" FontWeight="SemiBold" Foreground="#111827" Margin="0,0,0,6"/>
-										<TextBlock Text="06/08/1999 - 03/02/2000" FontSize="14" Foreground="#6B7280"/>
-									</StackPanel>
-								</u:TimelineItem>
-								<u:TimelineItem>
-									<StackPanel Margin="0,0,0,25">
-										<TextBlock Text="Đăng ký học phần (đợt 1)" FontSize="16" FontWeight="SemiBold" Foreground="#111827" Margin="0,0,0,6"/>
-										<TextBlock Text="06/08/1999 - 03/02/2000" FontSize="14" Foreground="#6B7280"/>
-									</StackPanel>
-								</u:TimelineItem>
-							</u:Timeline>
-						</ScrollViewer>
-					</Grid>
-				</Border>
-			</Grid>
-		</Border>
-		
-		<!-- ẩn binding lỗi -->
-		<TextBlock x:Name="txtRegistrationTime" IsVisible="False" />
-		<DataGrid x:Name="dtgridUserRegistrationTime" IsVisible="False" />
-	</Grid>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                            <TextBlock Text="Kết thúc: " FontWeight="Bold" Classes="ContentText" />
+                                            <TextBlock Text="{Binding EndDate}" Classes="ContentText" FontWeight="Bold" />
+                                        </StackPanel>
+                                    </WrapPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+
+                <!--// Nhóm của bạn //-->
+                <Border Grid.Row="0" Grid.Column="1" Classes="Card">
+                    <Grid RowDefinitions="Auto, *">
+                        <TextBlock Grid.Row="0" Classes="CardTitle" Text="Nhóm của bạn" />
+                        <ItemsControl Grid.Row="1" ItemsSource="{Binding RegistrationInfo.UserPeriod}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Group, StringFormat='Nhóm \{0\}'}" FontSize="24"
+                                                   FontWeight="Bold" Foreground="#111111" Margin="0,0,0,10" />
+                                        <TextBlock
+                                            Text="Các chuyên ngành thuộc Trường Công nghệ Thông tin &amp; Truyền thông và Trường Thủy sản."
+                                            TextWrapping="WrapWithOverflow" Classes="ContentText" Foreground="#555555"
+                                            Margin="0,0,0,15" />
+                                        <TextBlock Text="{Binding Key, StringFormat='\{0\}'}" Classes="ContentText"
+                                                   Foreground="#777777" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+
+                <!--// Các nhóm đơn vị //-->
+                <Border Grid.Row="1" Grid.Column="0" Classes="Card">
+                    <Grid RowDefinitions="Auto, *" ClipToBounds="True">
+                        <TextBlock Grid.Row="0" Classes="CardTitle" Text="Các nhóm đơn vị" />
+
+                        <DataGrid Grid.Row="1"
+                                  x:Name="dtgridGroupList"
+                                  BorderBrush="#E5E7EB"
+                                  BorderThickness="1"
+                                  CanUserReorderColumns="False"
+                                  CanUserSortColumns="False"
+                                  CanUserResizeColumns="True"
+                                  IsReadOnly="True"
+                                  ColumnHeaderHeight="46"
+                                  GridLinesVisibility="Horizontal"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                  AutoGenerateColumns="False">
+                            <DataGrid.Styles>
+                                <Style Selector="SelectableTextBlock">
+                                    <Setter Property="TextWrapping" Value="WrapWithOverflow" />
+                                    <Setter Property="FontSize" Value="14" />
+                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                </Style>
+                                <Style Selector="DataGridCell">
+                                    <Setter Property="Padding" Value="12,10" />
+                                </Style>
+                                <Style Selector="DataGridColumnHeader">
+                                    <Setter Property="FontWeight" Value="Bold" />
+                                    <Setter Property="Background" Value="#F3F4F6" />
+                                </Style>
+                            </DataGrid.Styles>
+
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Width="Auto" MaxWidth="120">
+                                    <DataGridTemplateColumn.Header>
+                                        <TextBlock Text="Nhóm" Margin="10,0" />
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="{x:Type model:GroupItem}">
+                                            <SelectableTextBlock Text="{Binding Title}" FontWeight="Bold"
+                                                                 Foreground="#111827" Margin="10,0" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Width="*">
+                                    <DataGridTemplateColumn.Header>
+                                        <TextBlock Text="Các trường/khoa" />
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="{x:Type model:GroupItem}">
+                                            <SelectableTextBlock Text="{Binding Value}" Foreground="#4B5563" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+
+                <!--// Lộ trình đăng ký học phần //-->
+                <Border Grid.Row="1" Grid.Column="1" Classes="Card">
+                    <Grid RowDefinitions="Auto, *">
+                        <TextBlock Grid.Row="0" Classes="CardTitle" Text="Lộ trình đăng ký học phần" />
+
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <u:Timeline Margin="15,10,0,0">
+                                <u:Timeline.Styles>
+                                    <Style Selector="u|TimelineItem /template/ TextBlock#PART_Time">
+                                        <Setter Property="IsVisible" Value="False" />
+                                    </Style>
+                                </u:Timeline.Styles>
+
+                                <u:TimelineItem Classes="Primary">
+                                    <u:TimelineItem.Content>
+                                        <Grid MaxWidth="480" Margin="0,0,45,25" RowDefinitions="Auto, Auto">
+                                            <TextBlock Grid.Row="0" Text="Đăng ký học phần (đợt 1)" FontSize="16"
+                                                       FontWeight="SemiBold" Foreground="#111827" Margin="0,0,0,6"
+                                                       TextWrapping="Wrap" />
+                                            <TextBlock Grid.Row="1" Text="06/08/1999 - 03/02/2000" FontSize="14"
+                                                       Foreground="#6B7280" />
+                                        </Grid>
+                                    </u:TimelineItem.Content>
+                                </u:TimelineItem>
+
+                                <u:TimelineItem Classes="Primary">
+                                    <u:TimelineItem.Content>
+                                        <Grid MaxWidth="480" Margin="0,0,45,25" RowDefinitions="Auto, Auto">
+                                            <TextBlock Grid.Row="0" Text="Đăng ký học phần (đợt 1)" FontSize="16"
+                                                       FontWeight="SemiBold" Foreground="#111827" Margin="0,0,0,6"
+                                                       TextWrapping="Wrap" />
+                                            <TextBlock Grid.Row="1" Text="06/08/1999 - 03/02/2000" FontSize="14"
+                                                       Foreground="#6B7280" />
+                                        </Grid>
+                                    </u:TimelineItem.Content>
+                                </u:TimelineItem>
+
+                                <u:TimelineItem Classes="Success">
+                                    <u:TimelineItem.Content>
+                                        <Grid MaxWidth="480" Margin="0,0,45,25" RowDefinitions="Auto, Auto">
+                                            <TextBlock Grid.Row="0" Text="Đăng ký học phần (đợt 1)" FontSize="16"
+                                                       FontWeight="SemiBold" Foreground="#111827" Margin="0,0,0,6"
+                                                       TextWrapping="Wrap" />
+                                            <TextBlock Grid.Row="1" Text="06/08/1999 - 03/02/2000" FontSize="14"
+                                                       Foreground="#6B7280" />
+                                        </Grid>
+                                    </u:TimelineItem.Content>
+                                </u:TimelineItem>
+
+                                <u:TimelineItem>
+                                    <u:TimelineItem.Content>
+                                        <Grid MaxWidth="480" Margin="0,0,45,25" RowDefinitions="Auto, Auto">
+                                            <TextBlock Grid.Row="0"
+                                                       Text="Đăng ký học phần (đợt 1)"
+                                                       FontSize="16" FontWeight="SemiBold" Foreground="#111827"
+                                                       Margin="0,0,0,6"
+                                                       TextWrapping="Wrap" />
+                                            <TextBlock Grid.Row="1" Text="06/08/1999 - 03/02/2000" FontSize="14"
+                                                       Foreground="#6B7280" />
+                                        </Grid>
+                                    </u:TimelineItem.Content>
+                                </u:TimelineItem>
+
+                            </u:Timeline>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ẩn binding lỗi -->
+        <TextBlock x:Name="txtRegistrationTime" IsVisible="False" />
+        <DataGrid x:Name="dtgridUserRegistrationTime" IsVisible="False" />
+    </Grid>
 </rxui:ReactiveUserControl>
