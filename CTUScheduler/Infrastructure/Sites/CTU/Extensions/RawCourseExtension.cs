@@ -1,41 +1,41 @@
 ﻿using System.Linq;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
-using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.CourseData;
+using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
 {
     public static class RawCourseExtension
     {
-        public static Course? ToCourse(this RawCourse rawCourse)
+        public static Course? ToCourse(this RawDmhpPayload rawDmhpPayload)
         {
-            if (rawCourse?.hoc_phan_info is null || rawCourse?.data is null) return null;
+            if (rawDmhpPayload?.HocPhanInfo is null || rawDmhpPayload?.Data is null) return null;
 
-            var info = rawCourse.hoc_phan_info;
+            var info = rawDmhpPayload.HocPhanInfo;
 
             var course = new Course()
             {
-                Code = info.dkmh_tu_dien_hoc_phan_ma,
-                Name_VN = info.dkmh_tu_dien_hoc_phan_ten_vn,
-                Credits = info.dkmh_tu_dien_hoc_phan_so_tin_chi,
-                TheorySessions = info.dkmh_tu_dien_hoc_phan_so_tiet_ly_thuyet,
-                PracticalSessions = info.dkmh_tu_dien_hoc_phan_so_tiet_thuc_hanh,
+                Code = info.HocPhanMa,
+                Name_VN = info.HocPhanTenVn,
+                Credits = info.SoTinChi,
+                TheorySessions = info.SoTietLyThuyet,
+                PracticalSessions = info.SoTietThucHanh,
             };
 
-            course.Sections = rawCourse.data
-                .GroupBy(d => d.dkmh_nhom_hoc_phan_ma)
+            course.Sections = rawDmhpPayload.Data
+                .GroupBy(d => d.NhomHocPhanMa)
                 .Select(group =>
                 {
                     var firstItem = group.First();
 
                     return new CourseSection
                     {
-                        Key = firstItem.key,
-                        Code = firstItem.dkmh_tu_dien_hoc_phan_ma,
-                        Group = firstItem.dkmh_nhom_hoc_phan_ma,
-                        Lecturer = firstItem.dkmh_tu_dien_giang_vien_ten_vn,
-                        LecturerEmail = firstItem.dkmh_tu_dien_giang_vien_email,
-                        TotalStudents = firstItem.dkmh_tu_dien_lop_hoc_phan_si_so,
-                        RemainingStudents = firstItem.si_so_con_lai,
+                        Key = firstItem.Key,
+                        Code = firstItem.HocPhanMa,
+                        Group = firstItem.NhomHocPhanMa,
+                        Lecturer = firstItem.GiangVienTenVn,
+                        LecturerEmail = firstItem.GiangVienEmail,
+                        TotalStudents = firstItem.SiSo,
+                        RemainingStudents = firstItem.SiSoConLai,
 
                         ClassDays = group
                             .Select(GetClassDayData)
@@ -49,18 +49,18 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
 
             return course;
 
-            static ClassDay? GetClassDayData(RawCourseData item)
+            static ClassDay? GetClassDayData(RawDmhpCourseData item)
             {
-                if (item.dkmh_thu_trong_tuan_ma is null
-                    || item.tiet_hoc is null
-                    || item.dkmh_tu_dien_phong_hoc_ten is null)
+                if (item.ThuTrongTuanMa is null
+                    || item.TietHoc is null
+                    || item.PhongHocTen is null)
                     return null;
 
                 return new ClassDay()
                 {
-                    AttendingDay = item.dkmh_thu_trong_tuan_ma.Value,
-                    Period = item.tiet_hoc,
-                    Room = item.dkmh_tu_dien_phong_hoc_ten
+                    AttendingDay = item.ThuTrongTuanMa.Value,
+                    Period = item.TietHoc,
+                    Room = item.PhongHocTen
                 };
             }
         }

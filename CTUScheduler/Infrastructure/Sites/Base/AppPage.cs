@@ -52,7 +52,7 @@ public abstract class AppPage : ISitePage
     }
     
 
-    public virtual async Task WaitForReadyAsync(int timeoutMs = 10000)
+    public virtual async Task WaitForReadyAsync(int timeoutMs = 30000)
     {
         var waitReadyTask = Tab.NativePage.Locator(PageReadySelector)
             .WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = timeoutMs });

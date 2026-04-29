@@ -11,7 +11,7 @@ using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
-using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.Registration;
+using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Services.Registration;
@@ -94,7 +94,7 @@ public class RegistrationRulesService : IRegistrationRulesService
             .ToTask(cancellationToken);
     }
 
-    private async Task<RegistrationInformation?> ProcessRegistrationInfoAsync(RawRegistrationInformation rawContent,
+    private async Task<RegistrationInformation?> ProcessRegistrationInfoAsync(DkmhQddkCrawlerPayload rawContent,
         CancellationToken token)
     {
         try

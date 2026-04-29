@@ -7,7 +7,7 @@ using CTUScheduler.Infrastructure.DriverCore.Extensions;
 using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
-using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.Registration;
+using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
@@ -27,7 +27,7 @@ public class RegistrationRulesPage : DkmhSpaPage, IRegistrationRulesPage
     private const string UserSettingButtonSelector = ".anticon-setting";
 
 
-    public IObservable<RawRegistrationInformation> RawRegistrationInformationResponse { get; }
+    public IObservable<DkmhQddkCrawlerPayload> RawRegistrationInformationResponse { get; }
 
     public RegistrationRulesPage(IWebTab tab, IConnectivityService connectivityService, ILoggerFactory logger) :
         base(tab, connectivityService, logger)
@@ -35,9 +35,9 @@ public class RegistrationRulesPage : DkmhSpaPage, IRegistrationRulesPage
         RawRegistrationInformationResponse = Tab.JsonResponse
             .Where(packet => packet.Url.Contains("/quydinhdangky"))
             .FilterPacketJson(node =>
-                node["data"].HasFields<RawRegistrationInformation>(x => x.hocky, x => x.quyDinh, x => x.namhoc,
-                    x => x.thoiGianDangKy))
-            .ParseCtuResponse<RawRegistrationInformation>()
+                node["data"].HasFields<DkmhQddkCrawlerPayload>(x => x.HocKy, x => x.DanhSachQuyDinh, x => x.NamHoc,
+                    x => x.DanhSachThoiGianDangKy))
+            .ParseCtuResponse<DkmhQddkCrawlerPayload>()
             .Where(res => res is { IsSuccess: true, Content: not null })
             .Select(x => x.Content!);
     }

@@ -39,7 +39,7 @@ public abstract class DkmhSpaPage : AppPage, IRequireSession
         await base.NavigateToAsync(options);
     }
 
-    public override async Task WaitForReadyAsync(int timeoutMs = 10000)
+    public override async Task WaitForReadyAsync(int timeoutMs = 30000)
     {
         using var cts = new CancellationTokenSource(timeoutMs);
 

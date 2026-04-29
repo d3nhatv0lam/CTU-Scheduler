@@ -9,7 +9,7 @@ using CTUScheduler.Infrastructure.DriverCore.Extensions;
 using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
-using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.CourseData;
+using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
@@ -25,8 +25,8 @@ public class CourseCatalogPage : DkmhSpaPage, ICourseCatalogPage
     private const string SearchBoxSelector = $"//p[normalize-space()='{SearchBoxLabel}']/..//input";
     private const string SearchButtonSelector = "span[aria-label='search']";
 
-    public IObservable<List<QuickSelectCourse>> AutoCompleteQueryResponse { get; }
-    public IObservable<RawCourse> CourseCatalogResponse { get; }
+    public IObservable<List<QuickSelectDmhpCourse>> AutoCompleteQueryResponse { get; }
+    public IObservable<RawDmhpPayload> CourseCatalogResponse { get; }
 
     public CourseCatalogPage(IWebTab tab, IConnectivityService connectivityService, ILoggerFactory loggerFactory)
         : base(tab, connectivityService, loggerFactory)
@@ -34,7 +34,7 @@ public class CourseCatalogPage : DkmhSpaPage, ICourseCatalogPage
         AutoCompleteQueryResponse = Tab.JsonResponse
             .Where(packet => packet.Url.Contains(AutoCompleteQueryPattern))
             .FilterPacketJson(node => node["data"]?[AutoCompleteKey] is not null)
-            .ParseCtuResponse<List<QuickSelectCourse>>(node => node["data"]?[AutoCompleteKey])
+            .ParseCtuResponse<List<QuickSelectDmhpCourse>>(node => node["data"]?[AutoCompleteKey])
             .Where(res => res is { IsSuccess: true, Content: not null })
             .Select(x => x.Content!);
 
@@ -42,8 +42,8 @@ public class CourseCatalogPage : DkmhSpaPage, ICourseCatalogPage
         CourseCatalogResponse = Tab.JsonResponse
             .Where(packet => packet.Url.Contains("/danhmuchocphan"))
             .FilterPacketJson(node =>
-                node["data"].HasFields<RawCourse>(x => x.hoc_phan_info, x => x.data, x => x.tuan_max))
-            .ParseCtuResponse<RawCourse>()
+                node["data"].HasFields<RawDmhpPayload>(x => x.HocPhanInfo, x => x.Data, x => x.TuanMax))
+            .ParseCtuResponse<RawDmhpPayload>()
             .Where(res => res is { IsSuccess: true, Content: not null })
             .Select(x => x.Content!);
     }
