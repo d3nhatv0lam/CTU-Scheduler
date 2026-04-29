@@ -74,10 +74,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 
         public ReactiveCommand<Unit, bool> DeleteSelectedTimetablesCommand { get;}
         public ReactiveCommand<TimetableLayoutBaseViewModel, Unit> ShowTimetableDetailsCommand { get; }
-        
-        public TimetableManagerViewModel()
-        {
-        }
 
 
         public TimetableManagerViewModel(
