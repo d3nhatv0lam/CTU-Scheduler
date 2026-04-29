@@ -9,7 +9,8 @@ public class LayoutTemplate: IDataTemplate
 {
     public bool Match(object? data)
     {
-        return data is TimetablePreviewViewModel || data is TimetableEditorViewModel;
+        // return data is TimetablePreviewViewModel || data is TimetableEditorViewModel;
+        return data is TimetableLayoutBaseViewModel;
     }
     
     public Control? Build(object? param)

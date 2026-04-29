@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
@@ -22,8 +21,11 @@ namespace CTUScheduler.Presentation.Services.Navigation
         public CachingNavigationService(IScreen hostScreen, IViewModelFactory vmFactory,
             ILogger<CachingNavigationService> logger)
         {
-            _hostScreen = hostScreen ?? throw new ArgumentNullException(nameof(hostScreen));
-            _vmFactory = vmFactory ?? throw new ArgumentNullException(nameof(vmFactory));
+            ArgumentNullException.ThrowIfNull(hostScreen);
+            ArgumentNullException.ThrowIfNull(vmFactory);
+            ArgumentNullException.ThrowIfNull(logger);
+            _hostScreen = hostScreen ;
+            _vmFactory = vmFactory;
             _logger = logger;
             _logger.LogDebug("CachingNavigationService initialized for Screen: {ScreenType}",
                 hostScreen.GetType().Name);

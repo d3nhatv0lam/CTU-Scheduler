@@ -3,7 +3,6 @@
              x:Class="CTUScheduler.App"
              xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-             xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
              xmlns:semi="https://irihi.tech/semi"
              xmlns:u-Semi="https://irihi.tech/ursa/themes/semi"
              xmlns:u="https://irihi.tech/ursa"
@@ -14,9 +13,11 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Colors.axaml"></ResourceInclude>
-                <ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Fonts.axaml"></ResourceInclude>
-                <ResourceInclude Source="avares://CTUScheduler/Assets/Localization/Locale.vi-VN.axaml"></ResourceInclude>
+                <ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Colors.axaml" />
+                <ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Fonts.axaml" />
+                <ResourceInclude Source="avares://CTUScheduler/Assets/Localization/Locale.vi-VN.axaml" />
+                <ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Ripple/Theme.axaml" />
+
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
@@ -24,13 +25,14 @@
     <Application.Styles>
         <!--       <FluentTheme /> -->
         <themes:CustomMaterialTheme PrimaryColor="Blue" SecondaryColor="#1f5ca9" />
-        <dialogHostAvalonia:DialogHostStyles />
         <materialIcons:MaterialIconStyles />
 
         <semi:SemiTheme Locale="vi-VN" />
         <u-Semi:SemiTheme Locale="vi-VN" />
         <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.Textbox.axaml" />
         <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/BoxShadow.axaml" />
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.Button.axaml" />
     </Application.Styles>
 
     <Application.DataTemplates>

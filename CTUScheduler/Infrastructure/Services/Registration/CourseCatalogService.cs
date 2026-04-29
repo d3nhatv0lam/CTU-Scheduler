@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,6 +42,8 @@ public class CourseCatalogService : ICourseCatalogService
         _catalogPage = _factory.GetPage<ICourseCatalogPage>(webDriver.MainTab);
     }
 
+    // public async Task<OperationResult> EnsureReadyAsync() => OperationResult.Success();
+    
     public async Task<OperationResult> EnsureReadyAsync()
     {
         try

@@ -6,16 +6,18 @@ using CTUScheduler.Presentation.Services.UserInteractionService.Implementations.
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models;
 using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
+using CTUScheduler.Presentation.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Presentation.Services.UserInteractionService.Implementations.Ursa.Notifications.Base;
 
-public abstract class UrsaInteractionManagerBase<TManager> : INotificationPopup, IDisposable
+public abstract class UrsaInteractionManagerBase<TManager> : INotificationTypeAccessor, IUiDisposable
     where TManager : class
 {
     protected readonly ILogger Logger;
     protected TManager? Manager;
     private readonly IDisposable _viewContextSubscription;
+    private bool _isDisposed;
 
     public INotificationTypeAccessor Light { get; }
 
@@ -30,27 +32,53 @@ public abstract class UrsaInteractionManagerBase<TManager> : INotificationPopup,
             .Subscribe(InitializeInternal);
     }
 
+    // --- Nhóm hàm Success ---
+    public void Success(string title, object content, in NotificationOptions options = default) =>
+        Show(content, NotificationType.Success, title, in options);
+
     public void Success(object content, in NotificationOptions options = default) =>
         Show(content, NotificationType.Success, in options);
+
+    // --- Nhóm hàm Error ---
+    public void Error(string title, object content, in NotificationOptions options = default) =>
+        Show(content, NotificationType.Error, title, in options);
 
     public void Error(object content, in NotificationOptions options = default) =>
         Show(content, NotificationType.Error, in options);
 
+    // --- Nhóm hàm Warning ---
+    public void Warning(string title, object content, in NotificationOptions options = default) =>
+        Show(content, NotificationType.Warning, title, in options);
+
     public void Warning(object content, in NotificationOptions options = default) =>
         Show(content, NotificationType.Warning, in options);
+
+    // --- Nhóm hàm Info ---
+    public void Info(string title, object content, in NotificationOptions options = default) =>
+        Show(content, NotificationType.Information, title, in options);
 
     public void Info(object content, in NotificationOptions options = default) =>
         Show(content, NotificationType.Information, in options);
 
 
-    public void Show(object content, NotificationType type, in NotificationOptions options = default)
+    public void Show(object content, NotificationType type, in NotificationOptions options = default) =>
+        Show(content, type, null, in options);
+
+    public void Show(
+        object content,
+        NotificationType type,
+        string? title,
+        in NotificationOptions options = default)
     {
         var manager = Manager;
         if (manager is null) return;
 
-        // Xử lý đóng gói Classes và Theme 
+        // tạo custom content theo ursa
+        object finalContent = CreateFinalContent(content, title);
+
+        // Xử lý đóng gói Classes và Theme
         var finalOpt = ProcessThemeAndClasses(in options);
-        InvokeShow(manager, type, content, in finalOpt);
+        InvokeShow(manager, type, finalContent, in finalOpt);
     }
 
     private NotificationOptions ProcessThemeAndClasses(in NotificationOptions opt)
@@ -70,8 +98,11 @@ public abstract class UrsaInteractionManagerBase<TManager> : INotificationPopup,
 
     protected abstract TManager CreateManager(TopLevel context);
     protected abstract void UninstallManager(TManager manager);
+
     protected abstract void InvokeShow(TManager manager, NotificationType type, object content,
         in NotificationOptions opt);
+
+    protected virtual object CreateFinalContent(object content, string? title) => content;
 
     protected void CleanupManager()
     {
@@ -91,8 +122,10 @@ public abstract class UrsaInteractionManagerBase<TManager> : INotificationPopup,
 
     public virtual void Dispose()
     {
+        if (_isDisposed) return;
         _viewContextSubscription.Dispose();
         CleanupManager();
-        Logger.LogInformation("{Service} disposed", GetType().Name);
+        Logger.LogDebug("{Service} disposed", GetType().Name);
+        _isDisposed = true;
     }
 }

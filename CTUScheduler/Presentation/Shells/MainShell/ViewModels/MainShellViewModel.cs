@@ -6,15 +6,15 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Abstractions;
-using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Features.Home.ViewModels;
-using CTUScheduler.Presentation.Features.Setting.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableManager.ViewModels;
-using CTUScheduler.Presentation.Services.Dialogs;
 using CTUScheduler.Presentation.Services.Navigation;
-using CTUScheduler.Presentation.Shared.Models.Regions;
+using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
+using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
+using CTUScheduler.Presentation.Shared.Dialogs.ViewModels;
+using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using CTUScheduler.Presentation.Shells.MainShell.Models;
 using Material.Icons;
 using ReactiveUI;
@@ -24,8 +24,8 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
     public class MainShellViewModel: ViewModelBase, IScreen , IRoutableViewModel, IDisposable
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
-        private readonly IDialogHostService _dialogHostService;
         private readonly IMainHomeService _mainHomeService;
+        private readonly IUserInteractionService _userInteractionService;
         private readonly INavigationRegionManager _navigationRegionManager;
         private NavigationItem _selectedItem;
         private string _userName = "họ tên";
@@ -65,13 +65,13 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 
         public MainShellViewModel(IScreen hostScreen,
             IMainHomeService mainHomeService,
-            INavigationRegionManager navigationRegionManager
-            ,IDialogHostService dialogHostService)
+            INavigationRegionManager navigationRegionManager,
+            IUserInteractionService userInteractionService)
         {
             HostScreen = hostScreen;
-            _dialogHostService = dialogHostService;
             _mainHomeService = mainHomeService;
             _navigationRegionManager = navigationRegionManager;
+            _userInteractionService = userInteractionService;
 
             _navigationRegionManager.Register(RegionIds.Main, this)
                 .DisposeWith(_disposables);
@@ -79,6 +79,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             Observable.Defer(() => Observable.StartAsync(_ => _mainHomeService.EnsureReadyAsync())
                     .Where(x => x.IsSuccess))
                 .SelectMany(_ =>_mainHomeService.GetStudentIdAsync())
+                .Catch((Exception ex) => Observable.Return(string.Empty))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(userText =>
                 {
@@ -105,8 +106,24 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 
             LogoutCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                bool isAcceptLogout = await _dialogHostService
-                    .ShowDialogAsync<LogoutDialogViewModel,bool>(new LogoutDialogViewModel(), DialogIdentifier.MainLayout);
+                using var confirmViewModel = new ConfirmDialogViewModel
+                {
+                    Title = "Đăng xuất",
+                    Message = "Bạn có chắc chắn muốn đăng xuất ?",
+                    ConfirmText = "Đăng xuất",
+                    CancelText = "Không",
+                    IsDestructive = true
+                };
+
+                var options = new DialogOptions()
+                {
+                    SizeMode = DialogSizeMode.Content,
+                    CanLightDismiss = true,
+                    HostId = DialogIds.Root
+                };
+                
+                bool isAcceptLogout = await _userInteractionService.Dialog.ShowModal<ConfirmDialogViewModel,bool>(confirmViewModel,options);
+             
                 if (isAcceptLogout)
                 {
                     var currentStack = Router.NavigationStack.ToList();
@@ -125,8 +142,6 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
         private void OnNavigatePage(NavigationItem item)
         {
             Title = item.Title;
-            // var page = (IRoutableViewModel)Activator.CreateInstance(item.ViewModelType,HostScreen)!;
-            // Router.NavigateAndReset.Execute(page);
             var oldPage = Router.GetCurrentViewModel();
             _navigationRegionManager.NavigateAndResetTo(RegionIds.Main, item.ViewModelType);
                     

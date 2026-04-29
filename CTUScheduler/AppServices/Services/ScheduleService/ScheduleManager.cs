@@ -48,7 +48,7 @@ public class ScheduleManager : IScheduleManager, IDisposable
             .DistinctUntilChanged();
 
         var maxProfileLimitStream = settingService.SettingsChanged
-            .Select(x => x.General.MaxScheduleProfiles)
+            .Select(x => x.Schedule.MaxScheduleProfiles)
             .DistinctUntilChanged();
 
         ProfileUsageState = currentProfileCountStream.CombineLatest(

@@ -42,10 +42,15 @@ public class MainHomeService: IMainHomeService
             _logger.LogDebug(ex, "Session expired");
             return OperationResult.Failed(ex.Message, kind: OperationFailureReason.Unauthorized);
         }
+        catch (TimeoutException ex)
+        {
+            _logger.LogDebug(ex, "Timeout");
+            return OperationResult.Failed("Hệ thống không phản hồi! Vui lòng Thử lại", kind: OperationFailureReason.Network);
+        }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex,"Lỗi không xác định");
-            return  OperationResult.Failed("Lỗi hệ thống!", kind: OperationFailureReason.System);
+            _logger.LogError(ex,"Lỗi không xác định");
+            return OperationResult.Failed("Lỗi hệ thống!", kind: OperationFailureReason.System);
         }
     }
     
@@ -53,6 +58,20 @@ public class MainHomeService: IMainHomeService
     {
         var mainPage = _pageFactory.GetPage<IMainPage>(_webDriverService.MainTab);
         if (!await mainPage.IsActiveAsync()) return string.Empty;
-        return await mainPage.GetUserInfoAsync(cancellationToken);
+        
+        try
+        {
+            return await mainPage.GetUserInfoAsync(cancellationToken);
+        }
+        catch (TimeoutException ex)
+        {
+            _logger.LogWarning(ex, "Timeout while getting student ID");
+            return string.Empty;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while getting student ID");
+            return string.Empty;
+        }
     }
 }

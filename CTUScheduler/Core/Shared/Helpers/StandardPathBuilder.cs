@@ -80,4 +80,38 @@ public static class StandardPathBuilder
     {
         return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
     }
+    
+    /// <summary>
+    /// Cross-platform wrapper to get the current user's Desktop folder.
+    /// </summary>
+    public static string GetUserDesktopPath()
+    {
+        return Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+    }
+    
+    /// <summary>
+    /// Constructs an application-specific folder within the current user's Documents folder.
+    /// Ideal for user-generated content, exported reports, or saved projects.
+    /// </summary>
+    public static string GetAppDocumentsPath(string appNameWindows, string appNameUnix)
+    {
+        var docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        
+        return OperatingSystem.IsWindows() 
+            ? Path.Combine(docs, appNameWindows)
+            : Path.Combine(docs, appNameUnix);
+    }
+    
+    /// <summary>
+    /// Constructs an application-specific folder within the current user's Pictures folder.
+    /// Useful if the application deals with image processing, screenshots, or media exports.
+    /// </summary>
+    public static string GetAppPicturesPath(string appNameWindows, string appNameUnix)
+    {
+        var pics = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+    
+        return OperatingSystem.IsWindows() 
+            ? Path.Combine(pics, appNameWindows)
+            : Path.Combine(pics, appNameUnix);
+    }
 }

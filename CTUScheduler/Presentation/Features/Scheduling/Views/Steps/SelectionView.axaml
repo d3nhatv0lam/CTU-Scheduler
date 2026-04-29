@@ -1,0 +1,81 @@
+<rxui:ReactiveUserControl 
+			 x:TypeArguments="viewModels:SelectionViewModel" 
+			 xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="474"
+			  xmlns:rxui="http://reactiveui.net"
+			 x:DataType="viewModels:SelectionViewModel"
+			 x:CompileBindings="True"
+			 xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+			 xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps"
+			 x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.Steps.SelectionView">
+
+	<rxui:ReactiveUserControl.Styles>
+		<Style Selector="TextBlock">
+			<Setter Property="HorizontalAlignment" Value="Center"/>
+			<Setter	Property="FontFamily" Value="{StaticResource Text-Font}"/>
+			<Setter Property="TextAlignment" Value="Center"/>
+		</Style>
+		<Style Selector="TextBlock.Title">
+			<Setter Property="FontWeight" Value="Bold"/>
+			<Setter Property="FontSize" Value="20"/>
+		</Style>
+		<Style Selector="TextBlock.Subtitle">
+			<Setter Property="Foreground" Value="#7d7a7a"/>
+			<Setter Property="FontWeight" Value="Bold"/>
+		</Style>
+
+		<Style Selector="TextBlock.Text">
+			<Setter Property="FontSize" Value="17"/>
+			<Setter Property="Margin" Value="0 20 0 20"/>
+			<Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+		</Style>
+
+		<Style Selector="Button">
+			<Setter Property="CornerRadius" Value="40"/>
+		</Style>
+	</rxui:ReactiveUserControl.Styles>
+	
+	<!-- // Manual Selection // -->
+	<Grid ColumnDefinitions="* 1 *" >
+		<StackPanel Grid.Column="0" >
+			<TextBlock Classes="Title" Text="Soạn Thời khóa biểu thủ công"/>
+			<TextBlock Classes="Subtitle" Text="Thời khóa biểu tùy chỉnh"/>
+			<Border Padding="10">
+				<Separator Margin="0 0 0 3"/>
+			</Border>
+			<TextBlock Classes="Text" Text="Chọn chi tiết các nhóm học phần bạn muốn học"/>
+			<TextBlock Classes="Text" Text="Tạo các thời khóa biểu"/>
+			<TextBlock Classes="Text" Text="Chọn các thời khóa biểu bạn muốn"/>
+
+			<Border Padding="10">
+				<Button x:Name="BtnManualSelection" 
+				        Content="Chọn" 
+				        Command="{Binding ManualSelectionCommand}"/>
+			</Border>
+
+		</StackPanel>
+
+		<Border Grid.Column="1" Padding="0 10 0 10">
+			<Rectangle Fill="#a3a3a3"/>
+		</Border>
+		<!-- // Quick selection // -->
+		<StackPanel Grid.Column="2">
+			<TextBlock Classes="Title" Text="Soạn thời khóa biểu nhanh"/>
+			<TextBlock Classes="Subtitle" Text="Thời khóa biểu tổng quát"/>
+			<Border Padding="10">
+				<Separator Margin="0 0 0 3"/>
+			</Border>
+			<TextBlock Classes="Text" Text="Chọn các học phần bạn muốn học"/>
+			<TextBlock Classes="Text" Text="Tạo các thời khóa biểu"/>
+			<TextBlock Classes="Text" Text="Chọn các thời khóa biểu bạn muốn"/>
+			
+			<Border Padding="10">
+				<Button Content="Chọn" Command="{Binding QuickSelectionCommand}"/>
+			</Border> 
+		</StackPanel>
+	</Grid>
+</rxui:ReactiveUserControl>

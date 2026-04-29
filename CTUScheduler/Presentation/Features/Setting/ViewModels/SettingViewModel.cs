@@ -1,5 +1,4 @@
-﻿using CTUScheduler.Core.Interfaces;
-using CTUScheduler.Presentation.Base;
+﻿using CTUScheduler.Presentation.Base;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Setting.ViewModels

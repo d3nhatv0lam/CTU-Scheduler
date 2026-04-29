@@ -1,0 +1,89 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:assists="using:CTUScheduler.Presentation.Shared.Styles.Assists"
+        xmlns:ripple="clr-namespace:CTUScheduler.Presentation.Shared.Styles.Ripple">
+
+    <Design.PreviewWith>
+        <Border Padding="20" Height="100" Width="150">
+            <Grid>
+                <Button Classes="ripple"
+                        Cursor="Hand">
+                    fu
+                </Button>
+            </Grid>
+        </Border>
+    </Design.PreviewWith>
+    
+    <Style Selector="Button.ripple">
+        <Setter Property="Background" Value="#6200EE" />
+        <Setter Property="Foreground" Value="White"></Setter>
+        <Setter Property="ClipToBounds" Value="False" />
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
+        <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+        <Setter Property="assists:ShadowAssist.ShadowDepth" Value="Depth1" />
+
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="PART_RootBorder"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        MinHeight="{TemplateBinding MinHeight}"
+                        MinWidth="{TemplateBinding MinWidth}"
+                        MaxHeight="{TemplateBinding MaxHeight}"
+                        MaxWidth="{TemplateBinding MaxWidth}"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        ClipToBounds="False"
+                        assists:ShadowAssist.ShadowDepth="{TemplateBinding assists:ShadowAssist.ShadowDepth}">
+
+                    <Border.Transitions>
+                        <Transitions>
+                            <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.1" Easing="QuadraticEaseOut" />
+                        </Transitions>
+                    </Border.Transitions>
+
+                    <Panel>
+                        <Border Name="PART_HoverEffect"
+                                Background="White"
+                                Opacity="0"
+                                CornerRadius="{TemplateBinding CornerRadius}">
+                            <Border.Transitions>
+                                <Transitions>
+                                    <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
+                                </Transitions>
+                            </Border.Transitions>
+                        </Border>
+
+                        <ripple:RippleEffect Name="PART_Ripple"
+                                             RippleFill="White"
+                                             RippleOpacity="0.3"
+                                             CornerRadius="{TemplateBinding CornerRadius}">
+
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              Padding="{TemplateBinding Padding}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </ripple:RippleEffect>
+                    </Panel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:disabled">
+            <Setter Property="Background" Value="Gray"></Setter>
+        </Style>
+
+        <Style Selector="^:pointerover /template/ Border#PART_HoverEffect">
+            <Setter Property="Opacity" Value="0.12" />
+        </Style>
+
+        <Style Selector="^:pointerover">
+            <Setter Property="assists:ShadowAssist.ShadowDepth" Value="CenterDepth3" />
+        </Style>
+    </Style>
+</Styles>

@@ -9,10 +9,18 @@ public readonly record struct DialogOptions()
     public string? HostId { get; init; } = null;
     public string? StyleClass { get; init; } = null;
     public Action? OnClosed { get; init; } = null;
+    public DialogSizeMode SizeMode { get; init; } = DialogSizeMode.Content;
 
     // Nullable Doubles (8-16 bytes)
     public double? HorizontalOffset { get; init; } = null;
     public double? VerticalOffset { get; init; } = null;
+    public double? Width { get; init; } = null;
+    public double? Height { get; init; } = null;
+
+    public double ResponsiveHorizontalMargin { get; init; } = 100;
+    public double ResponsiveVerticalMargin { get; init; } = 100;
+    public double ResponsivePercentage { get; init; } = 1.0;
+
 
     // Enums (4 bytes)
     public DialogHorizontalAlignment HorizontalAlignment { get; init; } = DialogHorizontalAlignment.Center;
