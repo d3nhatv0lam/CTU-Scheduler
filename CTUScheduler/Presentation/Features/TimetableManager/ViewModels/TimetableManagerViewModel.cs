@@ -191,17 +191,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     return result;
                 }, this.WhenAnyValue(x => x.HasSelectedTimetable))
                 .DisposeWith(_disposables);
-                if (result)
-                {
-                    foreach (var timetable in TimetableLayouts.Where(x => x.IsSelected))
-                    {
-                        _scheduleRegistrationService.UnregisterProfile(timetable.ScheduleProfile);
-                    }
-                }
-                
-                return result;
-            }, this.WhenAnyValue(x => x.HasSelectedTimetable))
-            .DisposeWith(_disposables);
 
             ExportSelectedTimetablesCommand = ReactiveCommand.CreateFromTask(async () =>
             {
