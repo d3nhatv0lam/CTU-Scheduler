@@ -16,6 +16,7 @@ namespace CTUScheduler.Presentation.Services.Viewport
         private IDisposable _subscription = null!;
         public Size CurrentSize => _sizeSubject.Value;
         public IObservable<Size> WhenSizeChanged => _sizeSubject.AsObservable();
+        private bool _isDisposed;
 
         public ViewportService(IViewContextService viewContextService,ILogger<ViewportService> logger)
         {
@@ -41,9 +42,11 @@ namespace CTUScheduler.Presentation.Services.Viewport
 
         public void Dispose()
         {
+            if (_isDisposed) return;
             _subscription?.Dispose();
             _sizeSubject.Dispose();
             _logger.LogInformation("ViewportService disposed");
+            _isDisposed = true;
         }
     }
 }

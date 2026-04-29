@@ -1,18 +1,25 @@
 <rxui:ReactiveUserControl
-			 x:TypeArguments="vm:MainViewModel" 
-			 xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
-			 x:DataType="vm:MainViewModel"
-			 x:CompileBindings="True"
-			 xmlns:rxui="http://reactiveui.net"
-			 xmlns:vm="clr-namespace:CTUScheduler.Presentation.Shells.AppShell.ViewModels"
-             x:Class="CTUScheduler.Presentation.Shells.AppShell.Views.MainView"
-             >
-	
-	<rxui:RoutedViewHost x:Name="RoutedViewHost"
-	                     VerticalContentAlignment="Stretch"
-	                     HorizontalContentAlignment="Stretch"/>
+    x:TypeArguments="vm:MainViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+    x:DataType="vm:MainViewModel"
+    x:CompileBindings="True"
+    xmlns:rxui="http://reactiveui.net"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:ids="clr-namespace:CTUScheduler.Presentation.Shared.Models.Identifiers"
+    xmlns:vm="clr-namespace:CTUScheduler.Presentation.Shells.AppShell.ViewModels"
+    x:Class="CTUScheduler.Presentation.Shells.AppShell.Views.MainView">
+
+    <Panel>
+        <rxui:RoutedViewHost x:Name="RoutedViewHost"
+                             VerticalContentAlignment="Stretch"
+                             HorizontalContentAlignment="Stretch" />
+
+        <u:OverlayDialogHost HostId="{x:Static ids:DialogIds.Root}" ></u:OverlayDialogHost>
+    </Panel>
+
+
 </rxui:ReactiveUserControl>

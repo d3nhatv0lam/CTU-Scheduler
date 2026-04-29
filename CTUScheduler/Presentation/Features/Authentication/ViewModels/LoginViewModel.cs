@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+using System;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
@@ -10,17 +9,16 @@ using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.UserSettingService;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Core.Models.Shared.Results;
-using CTUScheduler.Infrastructure.Repositories;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
-using CTUScheduler.Presentation.Shared.Models.Regions;
+using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
 {
-    public class LoginViewModel : ViewModelBase, IDisposable, IRoutableViewModel
+    public class LoginViewModel : ViewModelBase, IDisposable, IRoutableViewModel, IActivatableViewModel
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly ILoginService _loginService;
@@ -32,8 +30,9 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         private string _password = string.Empty;
         private bool _isSaveUsername;
 
-        public string? UrlPathSegment => "LoginViewModel";
+        public string? UrlPathSegment => nameof(LoginViewModel);
         public IScreen HostScreen { get; }
+        public ViewModelActivator Activator { get; } = new();
 
         public string UserName
         {
@@ -53,7 +52,8 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
             set => this.RaiseAndSetIfChanged(ref _isSaveUsername, value);
         }
 
-        public ReactiveCommand<Unit, Unit> SignInCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> PrewarmBrowserCommand { get; }
+        public ReactiveCommand<Unit, Unit> SignInCommand { get; }
 
         public LoginViewModel(IScreen hostScreen,
             ILoginService loginService,
@@ -75,9 +75,16 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                         UserName = authSettings.SavedUserName;
                 })
                 .DisposeWith(_disposables);
+            
+            PrewarmBrowserCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                await _loginService.EnsureReadyAsync();
+            }).DisposeWith(_disposables);
 
 
-            Observable.StartAsync(loginService.EnsureReadyAsync);
+            var canSignIn = PrewarmBrowserCommand.IsExecuting
+                .Select(isPrewarming => !isPrewarming)
+                .ObserveOn(RxApp.MainThreadScheduler);
 
             SignInCommand = ReactiveCommand.CreateFromTask(async () =>
                 {
@@ -89,28 +96,29 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                             var errorTexts = errors.Select(e => e.FormattedMessage);
                             _userInteractionService.Notification.Light.Error($"{string.Join('\n', errorTexts)}");
                         });
-                })
+                }, canSignIn)
                 .DisposeWith(_disposables);
+
+            this.WhenActivated((CompositeDisposable disposable) =>
+            {
+                PrewarmBrowserCommand.Execute()
+                    .Subscribe()
+                    .DisposeWith(disposable);
+            });
         }
 
 
         private void OnLoggedIn()
         {
-            _userInteractionService.Notification.Light.Success("Đăng nhập thành công");
+            _userInteractionService.Toast.Light.Success("Đăng nhập thành công!");
             _userSettingService.UpdateSettings(preferences => preferences with
             {
                 Auth = new AuthSettings { IsSaveUsername = IsSaveUsername, SavedUserName = UserName }
             });
             Password = string.Empty;
-            RxApp.MainThreadScheduler.Schedule(NavigateToHome);
-            Dispose();
+            RxApp.MainThreadScheduler.Schedule(() =>
+                _navigationRegionManager.NavigateAndResetTo<MainShellViewModel>(RegionIds.Root));
         }
-
-        private void NavigateToHome()
-        {
-            _navigationRegionManager.NavigateAndResetTo<MainShellViewModel>(RegionIds.Root);
-        }
-        
 
         public void Dispose()
         {

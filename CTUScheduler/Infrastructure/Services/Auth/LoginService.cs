@@ -2,7 +2,6 @@
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
-using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
@@ -27,10 +26,11 @@ public class LoginService : ILoginService
 
     public async Task<OperationResult> EnsureReadyAsync()
     {
-        var tab = _playwrightService.MainTab;
         try
         {
+            var tab = _playwrightService.MainTab;
             var page = _ctuSitePageFactory.GetPage<ILoginPage>(tab);
+            
             await page.NavigateToAsync(new()
             {
                 Timeout = 5000,
@@ -47,6 +47,10 @@ public class LoginService : ILoginService
 
     public async Task<OperationResult> LoginAsync(string username, string password)
     {
+        var isPageReady =  await this.EnsureReadyAsync();
+        if (isPageReady.IsFailed) 
+            return isPageReady;
+            
         var tab = _playwrightService.MainTab;
         var page = _ctuSitePageFactory.GetPage<ILoginPage>(tab);
 

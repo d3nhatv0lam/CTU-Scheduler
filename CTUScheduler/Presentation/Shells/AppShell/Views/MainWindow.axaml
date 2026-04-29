@@ -11,7 +11,7 @@
     mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
     WindowState="Maximized"
     WindowStartupLocation="CenterScreen"
-    Icon="avares://CTUScheduler/Assets/Logo/icon.ico"
+    Icon="/Assets/Logo/icon.ico"
     Height="600" Width="1000"
     MinWidth="350"
     SystemDecorations="Full"
