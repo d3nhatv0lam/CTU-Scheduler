@@ -57,6 +57,8 @@ public record RawDmhpCourseData(
     [property: JsonPropertyName("si_so_con_lai")]
     int SiSoConLai,
     [property: JsonPropertyName("tiet_hoc")]
-    string? TietHoc,
-    [property: JsonExtensionData] IDictionary<string, JsonElement>? ExtraData
-);
+    string? TietHoc
+)
+{
+    [JsonExtensionData] public IDictionary<string, JsonElement>? ExtraData { get; set; }
+};
