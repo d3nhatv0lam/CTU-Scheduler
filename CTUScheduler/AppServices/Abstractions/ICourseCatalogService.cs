@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Shared.Results;
-using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.CourseData;
+using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum;
 
 namespace CTUScheduler.AppServices.Abstractions;
 
@@ -19,7 +19,7 @@ public interface ICourseCatalogService
     /// <param name="query">The search query used to filter and fetch course suggestions.</param>
     /// <param name="timeout">default is 5sec</param>
     /// <returns>An observable sequence that provides a list of quick-select courses matching the query.</returns>
-    IObservable<List<QuickSelectCourse>> RequestSuggestionsStream(string query, TimeSpan? timeout = null);
+    IObservable<List<QuickSelectDmhpCourse>> RequestSuggestionsStream(string query, TimeSpan? timeout = null);
 
     /// <summary>
     /// Retrieves a stream of course details based on the provided query parameter.

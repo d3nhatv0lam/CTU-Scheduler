@@ -37,8 +37,8 @@
                                    Margin="0,0,0,0">
                             <TextBlock.Transitions>
                                 <Transitions>
-                                    <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
-                                    <ThicknessTransition Property="Margin" Duration="0:0:0.2" />
+                                    <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+                                    <ThicknessTransition Property="Margin" Duration="0:0:0.15" />
                                 </Transitions>
                             </TextBlock.Transitions>
                         </TextBlock>
@@ -113,7 +113,7 @@
                                     <Border.Transitions>
                                         <Transitions>
                                             <TransformOperationsTransition Property="RenderTransform" 
-                                                                           Duration="0:0:0.25" 
+                                                                           Duration="0:0:0.1" 
                                                                            Easing="CubicEaseOut" />
                                         </Transitions>
                                     </Border.Transitions>

@@ -12,6 +12,9 @@ using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
+using CTUScheduler.Infrastructure.Excel;
+using CTUScheduler.Infrastructure.Services.Network;
+using CTUScheduler.Infrastructure.Services.Registration;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Services.Factories;
@@ -38,6 +41,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly IScheduleSyncService _scheduleSyncService;
         private readonly IScheduleRegistrationService _scheduleRegistrationService;
         private readonly IUserInteractionService _userInteractionService;
+        private readonly IExcelExporterService _excelExporterService;
         private readonly IUserSessionService _userSessionService;
         private readonly IWorkspaceStore _workspaceStore;
         private readonly IViewModelFactory _viewModelFactory;
@@ -63,6 +67,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         public ReactiveCommand<IReadOnlyList<IStorageFile>, Unit> LoadScheduleCommand { get; }
         public ReactiveCommand<IStorageFile, Unit> SaveScheduleCommand { get; }
         public ReactiveCommand<Unit, Unit> ReloadAllTimetableCommand { get; }
+        public ReactiveCommand<Unit, Unit> ExportSelectedTimetablesCommand { get; }
 
         public ReactiveCommand<Unit, bool> DeleteSelectedTimetablesCommand { get; }
         public ReactiveCommand<TimetableLayoutBaseViewModel, Unit> ShowTimetableDetailsCommand { get; }
@@ -77,6 +82,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             IProfileQueryService profileQueryService,
             IScheduleSyncService scheduleSyncService,
             IScheduleRegistrationService scheduleRegistrationService,
+            IExcelExporterService excelExporterService,
             IViewModelFactory viewModelFactory,
             IUserInteractionService userInteractionService)
         {
@@ -88,6 +94,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             _profileQueryService = profileQueryService;
             _scheduleSyncService = scheduleSyncService;
             _scheduleRegistrationService = scheduleRegistrationService;
+            _excelExporterService = excelExporterService;
             _viewModelFactory = viewModelFactory;
             _userInteractionService = userInteractionService;
 
@@ -184,6 +191,29 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     return result;
                 }, this.WhenAnyValue(x => x.HasSelectedTimetable))
                 .DisposeWith(_disposables);
+
+            ExportSelectedTimetablesCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var selectedTimetables = TimetableLayouts.Where(x => x.IsSelected).ToList();
+                if (selectedTimetables.Count == 0) return;
+
+                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                string fileName = $"CTU_Scheduler_TKB_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                string fullPath = System.IO.Path.Combine(desktopPath, fileName);
+
+                var blueprints = selectedTimetables
+                    .Select((layout, index) =>
+                    {
+                        var sheetName = string.IsNullOrWhiteSpace(layout.Name)
+                            ? $"TKB_{index + 1}"
+                            : layout.Name;
+                        return (Blueprint: layout.ToScheduleBlueprint(), SheetName: sheetName);
+                    })
+                    .ToList();
+
+                await _excelExporterService.ExportTimetablesAsync(blueprints, fullPath);
+            }, this.WhenAnyValue(x => x.HasSelectedTimetable))
+            .DisposeWith(_disposables);
 
             ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<TimetableLayoutBaseViewModel>(async
                     timetableLayoutViewModel =>

@@ -25,15 +25,46 @@ public static class TimetableExcelBuilder
 
     public static XLWorkbook BuildWorkbook(ScheduleBlueprint blueprint, string timetableSheetName = "Thời Khóa Biểu")
     {
+        var wb = new XLWorkbook();
+        AddTimetableWorksheet(wb, blueprint, timetableSheetName);
+        return wb;
+    }
+
+    public static XLWorkbook BuildWorkbook(IEnumerable<(ScheduleBlueprint Blueprint, string SheetName)> timetables)
+    {
+        ArgumentNullException.ThrowIfNull(timetables);
+
+        var wb = new XLWorkbook();
+        var usedSheetNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        int index = 1;
+
+        foreach (var (blueprint, sheetName) in timetables)
+        {
+            var normalizedName = NormalizeWorksheetName(sheetName, $"TKB_{index}");
+            var uniqueName = EnsureUniqueWorksheetName(normalizedName, usedSheetNames);
+            AddTimetableWorksheet(wb, blueprint, uniqueName);
+            index++;
+        }
+
+        if (wb.Worksheets.Count == 0)
+        {
+            throw new ArgumentException("Danh sách thời khóa biểu trống.", nameof(timetables));
+        }
+
+        return wb;
+    }
+
+    private static void AddTimetableWorksheet(XLWorkbook workbook, ScheduleBlueprint blueprint, string timetableSheetName)
+    {
+        ArgumentNullException.ThrowIfNull(workbook);
+
         if (!blueprint.TryTrim(out var trimmedBlueprint))
         {
             throw new Exception("Dữ liệu Thời khóa biểu không nhất quán (IsConsistent = false).");
         }
 
-        var wb = new XLWorkbook();
-        var sheet = wb.Worksheets.Add(timetableSheetName);
+        var sheet = workbook.Worksheets.Add(timetableSheetName);
 
-        // --- 1. Tạo Tiêu đề ---
         sheet.Cell(1, 1).Value = "Thời Khóa Biểu Chi Tiết";
         var titleRange = sheet.Range(1, 1, 1, DayHeaders.Length);
         titleRange.Merge().Style.Font.SetBold().Font.FontSize = 16;
@@ -43,7 +74,6 @@ public static class TimetableExcelBuilder
         sheet.Cell(1, listStartCol).Value = "Thông tin Giảng viên";
         sheet.Range(1, listStartCol, 1, listStartCol + 3).Merge().Style.Font.SetBold().Font.FontSize = 16;
 
-        // --- 2. Tạo Header Lưới TKB ---
         for (int c = 0; c < DayHeaders.Length; c++)
         {
             var cell = sheet.Cell(2, c + 1);
@@ -55,7 +85,6 @@ public static class TimetableExcelBuilder
             cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
         }
 
-        // --- 3. Tạo Header Danh sách môn ---
         var headers = new[] { "Môn học", "Số TC", "Giảng viên", "Nhóm" };
         for (int i = 0; i < headers.Length; i++)
         {
@@ -68,7 +97,6 @@ public static class TimetableExcelBuilder
             h.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
         }
 
-        // --- 4. Vẽ khung các Tiết học ---
         int startRow = 3;
         for (int period = 1; period < 10; period++)
         {
@@ -103,29 +131,25 @@ public static class TimetableExcelBuilder
             }
         }
 
-        // --- 5. ĐỔ DỮ LIỆU ---
         int listRow = 3;
         int colorIndex = 0;
         int totalCredits = 0;
 
-        // Danh sách chứa các lớp không có lịch
         var unscheduledClasses = new List<(Course course, CourseSection section)>();
 
         foreach (var course in trimmedBlueprint.Courses)
         {
-            totalCredits += course.Credits; // Tính tổng tín chỉ
+            totalCredits += course.Credits;
 
             foreach (var section in course.Sections)
             {
                 var xlBgColor = PastelColors[colorIndex % PastelColors.Length];
 
-                // Phân loại môn chưa có lịch học
                 if (section.ClassDays == null || !section.ClassDays.Any())
                 {
                     unscheduledClasses.Add((course, section));
                 }
 
-                // Đổ vào bảng thông tin bên phải
                 sheet.Cell(listRow, listStartCol).Value = course.Name_VN;
                 sheet.Cell(listRow, listStartCol + 1).Value = course.Credits;
                 sheet.Cell(listRow, listStartCol + 2).Value = section.Lecturer ?? "";
@@ -137,7 +161,6 @@ public static class TimetableExcelBuilder
                 listRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
                 listRow++;
 
-                // Rải môn học vào lưới TKB bên trái (nếu có lịch)
                 if (section.ClassDays != null && section.ClassDays.Any())
                 {
                     foreach (var day in section.ClassDays)
@@ -165,7 +188,6 @@ public static class TimetableExcelBuilder
             }
         }
 
-        // --- 6. TỔNG SỐ TÍN CHỈ ---
         var tcLabelCell = sheet.Cell(listRow, listStartCol);
         tcLabelCell.Value = "Tổng số tín chỉ";
         tcLabelCell.Style.Font.SetBold();
@@ -175,52 +197,81 @@ public static class TimetableExcelBuilder
         tcValueCell.Style.Font.SetBold();
         tcValueCell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
 
-        // Kẻ viền cho dòng tổng tín chỉ giống với bảng ở trên
         var tcRange = sheet.Range(listRow, listStartCol, listRow, listStartCol + 3);
         tcRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
         tcRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
-        // Kẻ viền trái dày màu xanh cho ô Tổng số tín chỉ (Bookmark)
         tcLabelCell.Style.Border.LeftBorder = XLBorderStyleValues.Thick;
         tcLabelCell.Style.Border.LeftBorderColor = XLColor.FromHtml("#1f5ca9");
 
-        // --- 7. DANH SÁCH LỚP CHƯA CÓ LỊCH HỌC ---
-        int bottomRow = 25; // Dòng 25 là dòng dưới lưới TKB
+        int bottomRow = 25;
 
         if (unscheduledClasses.Any())
         {
-            var titleCell = sheet.Cell(bottomRow, 2); // Nằm ở Cột B (Thứ 2)
+            var titleCell = sheet.Cell(bottomRow, 2);
             titleCell.Value = "Môn học chưa có lịch:";
             titleCell.Style.Font.SetBold();
 
-            // In môn đầu tiên cùng dòng với tiêu đề (Nằm ở Cột C - Thứ 3)
             sheet.Cell(bottomRow, 3).Value = unscheduledClasses[0].course.Name_VN;
 
-            // In các môn tiếp theo rớt xuống các dòng dưới (Cột C)
             for (int i = 1; i < unscheduledClasses.Count; i++)
             {
                 bottomRow++;
                 sheet.Cell(bottomRow, 3).Value = unscheduledClasses[i].course.Name_VN;
             }
         }
-
-        // --- 8. FOOTER BẢN QUYỀN ---
-        // Nằm ở dưới cùng, nhích xuống 1 dòng so với danh sách chưa có lịch
+        
         int footerRow = bottomRow + 1;
-        if (footerRow < 26) footerRow = 26; // Đảm bảo không đâm vào lưới TKB
+        if (footerRow < 26) footerRow = 26;
 
-        var footerCell = sheet.Cell(footerRow, 7); // Nằm ở Cột G (Thứ 7)
+        var footerCell = sheet.Cell(footerRow, 7);
         footerCell.Value = "Được tạo bởi App CTU_Scheduler";
         footerCell.Style.Font.Italic = true;
         footerCell.Style.Font.FontColor = XLColor.Gray;
-        // Gộp ô G và H để chữ kéo dài qua không bị che
-        sheet.Range(footerRow, 7, footerRow, 8).Merge().Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
         sheet.Range(footerRow, 7, footerRow, 8).Merge().Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-        // --- 9. CĂN CHỈNH UI ---
         sheet.Columns().AdjustToContents();
         sheet.Column(1).Width = 14;
         for (int i = 2; i <= DayHeaders.Length; i++) sheet.Column(i).Width = 20;
+    }
 
-        return wb;
+    private static string NormalizeWorksheetName(string? name, string fallback)
+    {
+        var raw = string.IsNullOrWhiteSpace(name) ? fallback : name.Trim();
+        char[] invalidChars = { ':', '\\', '/', '?', '*', '[', ']' };
+        foreach (var invalidChar in invalidChars)
+        {
+            raw = raw.Replace(invalidChar, '_');
+        }
+
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            raw = fallback;
+        }
+
+        return raw.Length > 31 ? raw[..31] : raw;
+    }
+
+    private static string EnsureUniqueWorksheetName(string baseName, ISet<string> usedNames)
+    {
+        if (usedNames.Add(baseName))
+        {
+            return baseName;
+        }
+
+        int suffix = 2;
+        while (true)
+        {
+            var suffixText = $"_{suffix}";
+            int maxBaseLength = 31 - suffixText.Length;
+            var truncated = baseName.Length > maxBaseLength ? baseName[..maxBaseLength] : baseName;
+            var candidate = $"{truncated}{suffixText}";
+
+            if (usedNames.Add(candidate))
+            {
+                return candidate;
+            }
+
+            suffix++;
+        }
     }
 }

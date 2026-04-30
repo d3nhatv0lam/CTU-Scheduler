@@ -11,7 +11,7 @@ public interface ISitePage
     string PageUrl { get; }
     string CurrentUrl { get; }
     Task NavigateToAsync(PageGotoOptions? options = null);
-    Task WaitForReadyAsync(int timeoutMs = 15000);
+    Task WaitForReadyAsync(int timeoutMs = 30000);
     Task CheckSessionAndThrowAsync();
     Task<bool> IsActiveAsync();
 }

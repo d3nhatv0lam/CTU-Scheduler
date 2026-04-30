@@ -4,6 +4,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using CTUScheduler.AppServices.Extensions;
 using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration;

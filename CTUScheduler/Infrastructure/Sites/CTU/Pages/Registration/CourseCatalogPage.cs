@@ -1,20 +1,22 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
+using CTUScheduler.Core.Extensions;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.DriverCore.Extensions;
 using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
-using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.CourseData;
+using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 
-public class CourseCatalogPage : DkmhSpaPage, ICourseCatalogPage
+public class CourseCatalogPage : BaseRegistrationPage, ICourseCatalogPage
 {
     public override string PageUrl => "https://dkmhfe.ctu.edu.vn/dangkyhocphan/sinhvien/danhmuchocphan";
     protected override string PageReadySelector => SearchButtonSelector;
@@ -25,8 +27,8 @@ public class CourseCatalogPage : DkmhSpaPage, ICourseCatalogPage
     private const string SearchBoxSelector = $"//p[normalize-space()='{SearchBoxLabel}']/..//input";
     private const string SearchButtonSelector = "span[aria-label='search']";
 
-    public IObservable<List<QuickSelectCourse>> AutoCompleteQueryResponse { get; }
-    public IObservable<RawCourse> CourseCatalogResponse { get; }
+    public IObservable<List<QuickSelectDmhpCourse>> AutoCompleteQueryResponse { get; }
+    public IObservable<RawDmhpPayload> CourseCatalogResponse { get; }
 
     public CourseCatalogPage(IWebTab tab, IConnectivityService connectivityService, ILoggerFactory loggerFactory)
         : base(tab, connectivityService, loggerFactory)
@@ -34,20 +36,20 @@ public class CourseCatalogPage : DkmhSpaPage, ICourseCatalogPage
         AutoCompleteQueryResponse = Tab.JsonResponse
             .Where(packet => packet.Url.Contains(AutoCompleteQueryPattern))
             .FilterPacketJson(node => node["data"]?[AutoCompleteKey] is not null)
-            .ParseCtuResponse<List<QuickSelectCourse>>(node => node["data"]?[AutoCompleteKey])
+            .ParseCtuResponse<List<QuickSelectDmhpCourse>>(node => node["data"]?[AutoCompleteKey])
             .Where(res => res is { IsSuccess: true, Content: not null })
             .Select(x => x.Content!);
 
 
         CourseCatalogResponse = Tab.JsonResponse
             .Where(packet => packet.Url.Contains("/danhmuchocphan"))
-            .FilterPacketJson(node =>
-                node["data"].HasFields<RawCourse>(x => x.hoc_phan_info, x => x.data, x => x.tuan_max))
-            .ParseCtuResponse<RawCourse>()
+            .FilterPacketJson(node => node["data"] is not null)
+            .ParseCtuResponse<RawDmhpPayload>()
             .Where(res => res is { IsSuccess: true, Content: not null })
-            .Select(x => x.Content!);
+            .Select(x => x.Content!)
+            .Do(x => Debug.WriteLine("di toi day roiiiiiii"));
     }
-    
+
     public async Task FillQueryAsync(string query)
     {
         if (string.IsNullOrEmpty(query)) return;
@@ -58,9 +60,9 @@ public class CourseCatalogPage : DkmhSpaPage, ICourseCatalogPage
     {
         await Tab.NativePage.ClickAsync(SearchButtonSelector);
     }
-    
+
     protected override async Task NavigateToFormSideBarAsync()
     {
-        await this.Sidebar.NavigateToCatalogAsync();
+        await this.SidebarComponent.NavigateToCatalogAsync();
     }
 }

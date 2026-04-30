@@ -8,7 +8,7 @@
     xmlns:rxui="http://reactiveui.net"
     x:DataType="viewModels:TimetableManagerViewModel"
     x:CompileBindings="True"
-    xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+    xmlns:u="https://irihi.tech/ursa"
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.TimetableManager.ViewModels"
     xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.TimetableManager.Views"
@@ -28,6 +28,12 @@
             <Setter Property="Foreground" Value="Red"></Setter>
         </Style>
         <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml"></StyleInclude>
+        <Style Selector="Border.Card">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="12" />
+            <Setter Property="BoxShadow" Value="0 4 15 0 #0D000000" />
+        </Style>
     </rxui:ReactiveUserControl.Styles>
 
     <Grid RowDefinitions="50 *">
@@ -122,12 +128,10 @@
                             FontSize="24"
                             FontWeight="Bold"
                             Text="Quản lý thời khóa biểu" />
-                        <Separator
+                        <u:Divider
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Bottom"
-                            Margin="0"
-                            Background="#a3a3a3"
-                            Height="1" />
+                            Margin="0" />
                     </Panel>
 
                     <!--// Button field //-->
@@ -170,6 +174,15 @@
                             <materialIcons:MaterialIcon Kind="Delete" Height="20" Width="20"/> <TextBlock VerticalAlignment="Center" Text="Xóa thời khóa biểu" Margin="5 0 0 0"/>
                             </StackPanel>
                         </Button>
+                                <Button DockPanel.Dock="Left"
+                                        x:Name="btnExportSelectedTables"
+                                        Command="{Binding ExportSelectedTimetablesCommand}"
+                                        IsVisible="{Binding HasSelectedTimetable}">
+                                    <StackPanel Orientation="Horizontal">
+                                                <materialIcons:MaterialIcon Kind="MonitorArrowDownVariant" Height="20" Width="20" />
+                                        <TextBlock VerticalAlignment="Center" Text="Xuất Excel" Margin="5 0 0 0" />
+                                    </StackPanel>
+                                </Button>
                         <!--// total schedule tables //-->
                         <TextBlock DockPanel.Dock="Left"
                                    x:Name="txtTotalTable"
@@ -198,12 +211,12 @@
 
                                     <ItemsRepeater.ItemTemplate>
                                         <DataTemplate x:DataType="timetableViewModel:TimetableLayoutBaseViewModel">
-                                            <controls:Card
+                                            <Border Classes="Card"
                                                 Width="250"
                                                 Height="220">
                                                 <Grid
                                                     RowDefinitions="auto auto auto auto *">
-                                                    <CheckBox Grid.Row="0" Classes="accent" IsEnabled="{Binding IsEnabled}" IsChecked="{Binding IsSelected}" Content="Chọn!" />
+                                                    <CheckBox Grid.Row="0" IsEnabled="{Binding IsEnabled}" IsChecked="{Binding IsSelected}" Content="Chọn!" />
                                                     <TextBlock Grid.Row="1"
                                                                Text="{Binding Name, StringFormat=Thời khóa biểu: {0}}">
                                                     </TextBlock>
@@ -235,7 +248,7 @@
                                                         </Button>
                                                     </Grid>
                                                 </Grid>
-                                            </controls:Card>
+                                            </Border>
                                         </DataTemplate>
                                     </ItemsRepeater.ItemTemplate>
                                 </ItemsRepeater>

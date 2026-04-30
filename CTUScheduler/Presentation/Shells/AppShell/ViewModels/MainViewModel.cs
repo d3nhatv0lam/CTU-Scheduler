@@ -57,8 +57,8 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
         OpenGithubRepo = ReactiveCommand.Create(() => ProcessHelper.OpenUrl(AppConstants.Urls.GithubRepo))
             .DisposeWith(_disposables);
 
-        // _navigationRegionManager.NavigateAndResetTo<LoginViewModel>(_regionId);
-        _navigationRegionManager.NavigateAndResetTo<MainShellViewModel>(_regionId);
+        _navigationRegionManager.NavigateAndResetTo<LoginViewModel>(_regionId);
+        // _navigationRegionManager.NavigateAndResetTo<MainShellViewModel>(_regionId);
         
         this.WhenActivated((CompositeDisposable disposables) =>
         {
