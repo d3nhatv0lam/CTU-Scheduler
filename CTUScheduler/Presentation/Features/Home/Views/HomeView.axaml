@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="550"
+    mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
     xmlns:rxui="http://reactiveui.net"
     x:DataType="vm:HomeViewModel"
     x:CompileBindings="True"
@@ -29,14 +29,15 @@
 
     <Grid>
         <Border Background="#F9FAFB">
-            <Grid ColumnSpacing="10" RowSpacing="10">
+            <!-- Thêm x:Name="MainGrid" để điều khiển chia cột trong C# -->
+            <Grid x:Name="MainGrid" ColumnSpacing="15" RowSpacing="15">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="2*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <Grid.Styles>
@@ -61,133 +62,134 @@
                     </Style>
                 </Grid.Styles>
 
-                <!--// Thông tin đăng ký //-->
-                <Border Grid.Row="0" Grid.Column="0" Classes="Card">
-                    <Grid RowDefinitions="Auto, *, Auto">
+                <!--// Card 1: Thông tin đăng ký //-->
+                <Border x:Name="Card1" Grid.Row="0" Grid.Column="0" Classes="Card">
+                    <Grid RowDefinitions="Auto, Auto, Auto">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Thông tin đăng ký" />
-                        <TextBlock Grid.Row="1" x:Name="txtRegistrationInfo" Classes="ContentText" Text="Học kỳ: ..."
-                                   LineHeight="24" />
-
-                        <ItemsControl Grid.Row="2" Margin="0,25,0,0"
-                                      ItemsSource="{Binding RegistrationInfo.UserPeriod}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <WrapPanel Margin="0,5,0,0">
-                                        <StackPanel Orientation="Horizontal" Margin="0,0,30,5">
-                                            <TextBlock Text="Bắt đầu: " FontWeight="Bold" Classes="ContentText" />
-                                            <TextBlock Text="{Binding StartDate}" Classes="ContentText"
-                                                       FontWeight="Bold" />
-                                        </StackPanel>
-
-                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                                            <TextBlock Text="Kết thúc: " FontWeight="Bold" Classes="ContentText" />
-                                            <TextBlock Text="{Binding EndDate}" Classes="ContentText" FontWeight="Bold" />
-                                        </StackPanel>
-                                    </WrapPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoading}" IsActive="True">
+                            <TextBlock x:Name="txtRegistrationInfo" Classes="ContentText" Text="Học kỳ: ..."
+                                       LineHeight="24" />
+                        </u:Skeleton>
+                        <u:Skeleton Grid.Row="2" Margin="0,25,0,0" IsLoading="{Binding IsLoading}" IsActive="True">
+                            <ItemsControl ItemsSource="{Binding RegistrationInfo.UserPeriod}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <WrapPanel Margin="0,5,0,0">
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,30,5">
+                                                <TextBlock Text="Bắt đầu: " FontWeight="Bold" Classes="ContentText" />
+                                                <TextBlock Text="{Binding StartDate}" Classes="ContentText"
+                                                           FontWeight="Bold" />
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                                <TextBlock Text="Kết thúc: " FontWeight="Bold" Classes="ContentText" />
+                                                <TextBlock Text="{Binding EndDate}" Classes="ContentText"
+                                                           FontWeight="Bold" />
+                                            </StackPanel>
+                                        </WrapPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </u:Skeleton>
                     </Grid>
                 </Border>
 
-                <!--// Nhóm của bạn //-->
-                <Border Grid.Row="0" Grid.Column="1" Classes="Card">
+                <!--// Card 2: Nhóm của bạn //-->
+                <Border x:Name="Card2" Grid.Row="0" Grid.Column="1" Classes="Card">
                     <Grid RowDefinitions="Auto, *">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Nhóm của bạn" />
-                        <ItemsControl Grid.Row="1" ItemsSource="{Binding RegistrationInfo.UserPeriod}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Group, StringFormat='Nhóm \{0\}'}" FontSize="24"
-                                                   FontWeight="Bold" Foreground="#111111" Margin="0,0,0,10" />
-                                        <TextBlock
-                                            Text="Các chuyên ngành thuộc Trường Công nghệ Thông tin &amp; Truyền thông và Trường Thủy sản."
-                                            TextWrapping="WrapWithOverflow" Classes="ContentText" Foreground="#555555"
-                                            Margin="0,0,0,15" />
-                                        <TextBlock Text="{Binding Key, StringFormat='\{0\}'}" Classes="ContentText"
-                                                   Foreground="#777777" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoading}" IsActive="True">
+                            <ItemsControl ItemsSource="{Binding RegistrationInfo.UserPeriod}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Group, StringFormat='Nhóm \{0\}'}" FontSize="24"
+                                                       FontWeight="Bold" Foreground="#111111" Margin="0,0,0,10" />
+                                            <!-- Dữ liệu ảo, cần hàm ở đây hihi -->
+                                            <TextBlock
+                                                Text="Các chuyên ngành thuộc Trường Công nghệ Thông tin &amp; Truyền thông và Trường Thủy sản."
+                                                TextWrapping="WrapWithOverflow" Classes="ContentText"
+                                                Foreground="#555555" Margin="0,0,0,15" />
+                                            <TextBlock Text="{Binding Key, StringFormat='\{0\}'}" Classes="ContentText"
+                                                       Foreground="#777777" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </u:Skeleton>
                     </Grid>
                 </Border>
 
-                <!--// Các nhóm đơn vị //-->
-                <Border Grid.Row="1" Grid.Column="0" Classes="Card">
+                <!--// Card 3: Các nhóm đơn vị //-->
+                <Border x:Name="Card3" Grid.Row="1" Grid.Column="0" Classes="Card">
                     <Grid RowDefinitions="Auto, *" ClipToBounds="True">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Các nhóm đơn vị" />
-
-                        <DataGrid Grid.Row="1"
-                                  x:Name="dtgridGroupList"
-                                  BorderBrush="#E5E7EB"
-                                  BorderThickness="1"
-                                  CanUserReorderColumns="False"
-                                  CanUserSortColumns="False"
-                                  CanUserResizeColumns="True"
-                                  IsReadOnly="True"
-                                  ColumnHeaderHeight="46"
-                                  GridLinesVisibility="Horizontal"
-                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                  AutoGenerateColumns="False">
-                            <DataGrid.Styles>
-                                <Style Selector="SelectableTextBlock">
-                                    <Setter Property="TextWrapping" Value="WrapWithOverflow" />
-                                    <Setter Property="FontSize" Value="14" />
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                </Style>
-                                <Style Selector="DataGridCell">
-                                    <Setter Property="Padding" Value="12,10" />
-                                </Style>
-                                <Style Selector="DataGridColumnHeader">
-                                    <Setter Property="FontWeight" Value="Bold" />
-                                    <Setter Property="Background" Value="#F3F4F6" />
-                                </Style>
-                            </DataGrid.Styles>
-
-                            <DataGrid.Columns>
-                                <DataGridTemplateColumn Width="Auto" MaxWidth="120">
-                                    <DataGridTemplateColumn.Header>
-                                        <TextBlock Text="Nhóm" Margin="10,0" />
-                                    </DataGridTemplateColumn.Header>
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="{x:Type model:GroupItem}">
-                                            <SelectableTextBlock Text="{Binding Title}" FontWeight="Bold"
-                                                                 Foreground="#111827" Margin="10,0" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-
-                                <DataGridTemplateColumn Width="*">
-                                    <DataGridTemplateColumn.Header>
-                                        <TextBlock Text="Các trường/khoa" />
-                                    </DataGridTemplateColumn.Header>
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="{x:Type model:GroupItem}">
-                                            <SelectableTextBlock Text="{Binding Value}" Foreground="#4B5563" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoading}" IsActive="True">
+                            <DataGrid x:Name="dtgridGroupList" BorderBrush="#E5E7EB" BorderThickness="1"
+                                      CanUserReorderColumns="False" CanUserSortColumns="False"
+                                      CanUserResizeColumns="False"
+                                      IsReadOnly="True" ColumnHeaderHeight="46" GridLinesVisibility="Horizontal"
+                                      AutoGenerateColumns="False">
+                                <DataGrid.Styles>
+                                    <!-- <Style Selector="DataGridColumnHeader /template/ Rectangle#VerticalSeparator"> -->
+                                    <!--     <Setter Property="IsVisible" Value="False" /> -->
+                                    <!--     <Setter Property="Width" Value="0" /> -->
+                                    <!-- </Style> -->
+                                    <!-- <Style Selector="DataGridColumnHeader /template/ Grid > Border"> -->
+                                    <!--     <Setter Property="BorderThickness" Value="0" /> -->
+                                    <!-- </Style> -->
+                                    <Style Selector="SelectableTextBlock">
+                                        <Setter Property="TextWrapping" Value="WrapWithOverflow" />
+                                        <Setter Property="FontSize" Value="14" />
+                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                    </Style>
+                                    <Style Selector="DataGridCell">
+                                        <Setter Property="Padding" Value="12,10" />
+                                    </Style>
+                                    <Style Selector="DataGridColumnHeader">
+                                        <Setter Property="FontWeight" Value="Bold" />
+                                        <Setter Property="Background" Value="#F3F4F6" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                    </Style>
+                                </DataGrid.Styles>
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Width="Auto" MaxWidth="120">
+                                        <DataGridTemplateColumn.Header>
+                                            <TextBlock Text="Nhóm" Margin="10,0" />
+                                        </DataGridTemplateColumn.Header>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="{x:Type model:GroupItem}">
+                                                <SelectableTextBlock Text="{Binding Title}" FontWeight="Bold"
+                                                                     Foreground="#111827" Margin="10,0" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Width="*">
+                                        <DataGridTemplateColumn.Header>
+                                            <TextBlock Text="Các trường/khoa" />
+                                        </DataGridTemplateColumn.Header>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="{x:Type model:GroupItem}">
+                                                <SelectableTextBlock Text="{Binding Value}" Foreground="#4B5563" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </u:Skeleton>
                     </Grid>
                 </Border>
 
-                <!--// Lộ trình đăng ký học phần //-->
-                <Border Grid.Row="1" Grid.Column="1" Classes="Card">
+                <!--// Card 4: Lộ trình đăng ký học phần //-->
+                <Border x:Name="Card4" Grid.Row="1" Grid.Column="1" Classes="Card">
                     <Grid RowDefinitions="Auto, *">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Lộ trình đăng ký học phần" />
-
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
-                                      HorizontalScrollBarVisibility="Disabled">
-                            <u:Timeline Margin="15,10,0,0">
+                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoading}" IsActive="True">
+                            <u:Timeline Margin="15,0,0,0">
                                 <u:Timeline.Styles>
                                     <Style Selector="u|TimelineItem /template/ TextBlock#PART_Time">
                                         <Setter Property="IsVisible" Value="False" />
                                     </Style>
                                 </u:Timeline.Styles>
-
                                 <u:TimelineItem Classes="Primary">
                                     <u:TimelineItem.Content>
                                         <Grid MaxWidth="480" Margin="0,0,45,25" RowDefinitions="Auto, Auto">
@@ -199,7 +201,6 @@
                                         </Grid>
                                     </u:TimelineItem.Content>
                                 </u:TimelineItem>
-
                                 <u:TimelineItem Classes="Primary">
                                     <u:TimelineItem.Content>
                                         <Grid MaxWidth="480" Margin="0,0,45,25" RowDefinitions="Auto, Auto">
@@ -211,7 +212,6 @@
                                         </Grid>
                                     </u:TimelineItem.Content>
                                 </u:TimelineItem>
-
                                 <u:TimelineItem Classes="Success">
                                     <u:TimelineItem.Content>
                                         <Grid MaxWidth="480" Margin="0,0,45,25" RowDefinitions="Auto, Auto">
@@ -223,23 +223,19 @@
                                         </Grid>
                                     </u:TimelineItem.Content>
                                 </u:TimelineItem>
-
                                 <u:TimelineItem>
                                     <u:TimelineItem.Content>
                                         <Grid MaxWidth="480" Margin="0,0,45,25" RowDefinitions="Auto, Auto">
-                                            <TextBlock Grid.Row="0"
-                                                       Text="Đăng ký học phần (đợt 1)"
-                                                       FontSize="16" FontWeight="SemiBold" Foreground="#111827"
-                                                       Margin="0,0,0,6"
+                                            <TextBlock Grid.Row="0" Text="Đăng ký học phần (đợt 1)" FontSize="16"
+                                                       FontWeight="SemiBold" Foreground="#111827" Margin="0,0,0,6"
                                                        TextWrapping="Wrap" />
                                             <TextBlock Grid.Row="1" Text="06/08/1999 - 03/02/2000" FontSize="14"
                                                        Foreground="#6B7280" />
                                         </Grid>
                                     </u:TimelineItem.Content>
                                 </u:TimelineItem>
-
                             </u:Timeline>
-                        </ScrollViewer>
+                        </u:Skeleton>
                     </Grid>
                 </Border>
             </Grid>
