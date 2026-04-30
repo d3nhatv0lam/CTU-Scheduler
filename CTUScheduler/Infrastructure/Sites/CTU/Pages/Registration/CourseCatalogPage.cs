@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,13 +43,13 @@ public class CourseCatalogPage : BaseRegistrationPage, ICourseCatalogPage
 
         CourseCatalogResponse = Tab.JsonResponse
             .Where(packet => packet.Url.Contains("/danhmuchocphan"))
-            .FilterPacketJson(node =>
-                node["data"].HasFields<RawDmhpPayload>(x => x.HocPhanInfo, x => x.Data, x => x.TuanMax))
+            .FilterPacketJson(node => node["data"] is not null)
             .ParseCtuResponse<RawDmhpPayload>()
             .Where(res => res is { IsSuccess: true, Content: not null })
-            .Select(x => x.Content!);
+            .Select(x => x.Content!)
+            .Do(x => Debug.WriteLine("di toi day roiiiiiii"));
     }
-    
+
     public async Task FillQueryAsync(string query)
     {
         if (string.IsNullOrEmpty(query)) return;
@@ -59,7 +60,7 @@ public class CourseCatalogPage : BaseRegistrationPage, ICourseCatalogPage
     {
         await Tab.NativePage.ClickAsync(SearchButtonSelector);
     }
-    
+
     protected override async Task NavigateToFormSideBarAsync()
     {
         await this.SidebarComponent.NavigateToCatalogAsync();

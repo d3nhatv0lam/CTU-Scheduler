@@ -10,16 +10,19 @@ public static class JsonNodeExtensions
 {
     public static bool HasFields<T>(this JsonNode? node, params Expression<Func<T, object?>>[] propertySelectors)
     {
-        if (node == null) return false;
+        if (node is not JsonObject jsonObj) return false;
+
         foreach (var selector in propertySelectors)
         {
             var memberInfo = GetMemberInfo(selector);
-            if (memberInfo == null) return false;
+            if (memberInfo is null) return false;
 
             var jsonAttr = memberInfo.GetCustomAttribute<JsonPropertyNameAttribute>();
             string jsonKey = jsonAttr?.Name ?? memberInfo.Name;
-            if (node[jsonKey] is null) return false;
+
+            if (!jsonObj.ContainsKey(jsonKey)) return false;
         }
+
         return true;
     }
 
@@ -27,9 +30,10 @@ public static class JsonNodeExtensions
     {
         if (expression.Body is MemberExpression memberExpression)
             return memberExpression.Member;
-        
-        if (expression.Body is UnaryExpression unaryExpression && unaryExpression.Operand is MemberExpression unaryMember)
+
+        if (expression.Body is UnaryExpression { Operand: MemberExpression unaryMember })
             return unaryMember.Member;
+
         return null;
     }
 }
