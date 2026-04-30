@@ -43,7 +43,8 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
             IUserSessionService userSessionService,
             IRegistrationRulesService registrationRulesService,
             IUserInteractionService userInteractionService,
-            INavigationRegionManager navigationRegionManager)
+            INavigationRegionManager navigationRegionManager,
+            ICourseRegistrationService courseRegistrationService)
         {
             HostScreen = hostScreen;
             _userSessionService = userSessionService;
@@ -59,7 +60,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
                 .Subscribe(result =>
                 {
                     result.Match(
-                        () => {  },
+                        () => { },
                         (errors, _) =>
                         {
                             var errorsString = String.Join('\n', errors.Select(x => x.FormattedMessage));

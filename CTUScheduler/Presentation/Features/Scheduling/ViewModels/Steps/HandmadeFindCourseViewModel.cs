@@ -10,7 +10,7 @@ using System.Reactive.Subjects;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
-using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.CourseData;
+using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models.Context;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components;
@@ -34,9 +34,9 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         private ObservableAsPropertyHelper<Course> _searchedCourse;
         private ObservableAsPropertyHelper<ObservableCollection<SelectableCourseSection>> _searchedCourseSections;
         private ObservableAsPropertyHelper<ObservableCollection<SelectableCourseSection>> _filtedCourseSections;
-        private ObservableAsPropertyHelper<ObservableCollection<QuickSelectCourse>> _quickSelectCourses;
+        private ObservableAsPropertyHelper<ObservableCollection<QuickSelectDmhpCourse>> _quickSelectCourses;
 
-        private QuickSelectCourse _selectedQuickSelectCourse = null!;
+        private QuickSelectDmhpCourse _selectedQuickSelectDmhpCourse = null!;
 
         private readonly Subject<Unit> _textBoxClickTriggerSubject = new();
         private ReadOnlyObservableCollection<SelectedCourse> _coursesBindable;
@@ -63,12 +63,12 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         public Course SearchedCourse => _searchedCourse.Value;
         public ObservableCollection<SelectableCourseSection> SearchedCourseSections => _searchedCourseSections.Value;
         public ObservableCollection<SelectableCourseSection> FiltedCourseSections => _filtedCourseSections.Value;
-        public ObservableCollection<QuickSelectCourse> QuickSelectCourses => _quickSelectCourses.Value;
+        public ObservableCollection<QuickSelectDmhpCourse> QuickSelectCourses => _quickSelectCourses.Value;
 
-        public QuickSelectCourse SelectedQuickSelectCourse
+        public QuickSelectDmhpCourse SelectedQuickSelectDmhpCourse
         {
-            get => _selectedQuickSelectCourse;
-            set => this.RaiseAndSetIfChanged(ref _selectedQuickSelectCourse, value);
+            get => _selectedQuickSelectDmhpCourse;
+            set => this.RaiseAndSetIfChanged(ref _selectedQuickSelectDmhpCourse, value);
         }
 
         public ReadOnlyObservableCollection<SelectedCourse> Courses => _coursesBindable;
@@ -97,18 +97,18 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
                 .DistinctUntilChanged()
                 .Select(query =>
                 {
-                    if (string.IsNullOrEmpty(query)) return Observable.Return(new List<QuickSelectCourse>());
+                    if (string.IsNullOrEmpty(query)) return Observable.Return(new List<QuickSelectDmhpCourse>());
                     ;
                     return _courseCatalogService.RequestSuggestionsStream(query)
                         .SubscribeOn(RxApp.TaskpoolScheduler)
-                        .Catch((Exception _) => Observable.Return(new List<QuickSelectCourse>()));
+                        .Catch((Exception _) => Observable.Return(new List<QuickSelectDmhpCourse>()));
                 })
                 .Switch()
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Select(x => new ObservableCollection<QuickSelectCourse>(x))
+                .Select(x => new ObservableCollection<QuickSelectDmhpCourse>(x))
                 .ToProperty(this,
                     nameof(QuickSelectCourses),
-                    initialValue: new ObservableCollection<QuickSelectCourse>())
+                    initialValue: new ObservableCollection<QuickSelectDmhpCourse>())
                 .DisposeWith(_disposables);
 
 
@@ -124,14 +124,14 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
 
 
             // Selected QuickSelectCourse do
-            this.WhenAnyValue(x => x.SelectedQuickSelectCourse)
+            this.WhenAnyValue(x => x.SelectedQuickSelectDmhpCourse)
                 .WhereNotNull()
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(selectedQuickSelectCourse =>
                 {
                     // set course key
                     TxtInputCourseKey = selectedQuickSelectCourse.CourseCode;
-                    SelectedQuickSelectCourse = null!;
+                    SelectedQuickSelectDmhpCourse = null!;
                     IsOpenQuickSelectPopup = false;
                 }).DisposeWith(_disposables);
 

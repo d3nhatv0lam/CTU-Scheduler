@@ -1,7 +1,7 @@
 ﻿using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
 using CTUScheduler.Core.Models.Settings;
 
-namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions;
+namespace CTUScheduler.AppServices.Extensions;
 
 public static class RegistrationExtensions
 {

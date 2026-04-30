@@ -15,7 +15,7 @@ using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
-using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.CourseData;
+using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Services.Registration;
@@ -59,10 +59,10 @@ public class CourseCatalogService : ICourseCatalogService
         }
     }
 
-    public IObservable<List<QuickSelectCourse>> RequestSuggestionsStream(string query, TimeSpan? timeout = null)
+    public IObservable<List<QuickSelectDmhpCourse>> RequestSuggestionsStream(string query, TimeSpan? timeout = null)
     {
         var finalTimeout = timeout ?? DefaultStreamTimeout;
-        return Observable.Create<List<QuickSelectCourse>>(async (observer, ct) =>
+        return Observable.Create<List<QuickSelectDmhpCourse>>(async (observer, ct) =>
         {
             var subscription = _catalogPage.AutoCompleteQueryResponse
                 .Timeout(finalTimeout)

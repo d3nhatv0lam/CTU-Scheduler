@@ -5,11 +5,11 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Routes;
 
 public static class CtuRoutes
 {
-    public static readonly string[] AuthRedirectSignatures = 
-    { 
+    public static readonly string[] AuthRedirectSignatures =
+    [
         "login.do", 
-        "authenticationendpoint" 
-    };
+        "authenticationendpoint"
+    ];
     
     public static readonly Regex AuthRedirectRegex = new(
         string.Join("|", AuthRedirectSignatures.Select(Regex.Escape)),
@@ -24,4 +24,5 @@ public static class CtuRoutes
     // Các route con của ĐKMH
     public const string DkmhCatalog = "https://dkmhfe.ctu.edu.vn/dangkyhocphan/sinhvien/danhmuchocphan";
     public const string DkmhRules = "https://dkmhfe.ctu.edu.vn/dangkyhocphan/sinhvien/quydinhdangky";
+    public const string DkmhRegistration = "https://dkmhfe.ctu.edu.vn/dangkyhocphan/sinhvien/dangkyhocphan";
 }
