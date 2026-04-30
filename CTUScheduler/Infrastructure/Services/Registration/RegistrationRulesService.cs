@@ -77,8 +77,8 @@ public class RegistrationRulesService : IRegistrationRulesService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to navigate to registration rules page");
-            return OperationResult.Failed("Hệ thống truy cập trang dkmh không thành công!",
-                kind: OperationFailureReason.Unauthorized);
+            return OperationResult.FromException(ex,"Hệ thống truy cập trang dkmh không thành công!",
+                kind: OperationFailureReason.System);
         }
     }
 
@@ -94,7 +94,7 @@ public class RegistrationRulesService : IRegistrationRulesService
             .ToTask(cancellationToken);
     }
 
-    private async Task<RegistrationInformation?> ProcessRegistrationInfoAsync(DkmhQddkCrawlerPayload rawContent,
+    private async Task<RegistrationInformation?> ProcessRegistrationInfoAsync(RawQddkPayload rawContent,
         CancellationToken token)
     {
         try

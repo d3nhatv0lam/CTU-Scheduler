@@ -7,7 +7,7 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 
 public interface IRegistrationRulesPage: ISitePage
 {
-    IObservable<DkmhQddkCrawlerPayload> RawRegistrationInformationResponse { get; }
+    IObservable<RawQddkPayload> RawRegistrationInformationResponse { get; }
 
     Task<(string userKey, string userUnit)> TryGetUserKeyAndUnitAsync();
 }

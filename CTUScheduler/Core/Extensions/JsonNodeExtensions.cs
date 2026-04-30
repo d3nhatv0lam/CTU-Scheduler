@@ -4,9 +4,9 @@ using System.Reflection;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions;
+namespace CTUScheduler.Core.Extensions;
 
-public static class JsonNodeExtension
+public static class JsonNodeExtensions
 {
     public static bool HasFields<T>(this JsonNode? node, params Expression<Func<T, object?>>[] propertySelectors)
     {

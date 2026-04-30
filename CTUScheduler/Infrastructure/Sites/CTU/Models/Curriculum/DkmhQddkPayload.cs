@@ -3,26 +3,26 @@ using System.Text.Json.Serialization;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum;
 
-public record DkmhQddkCrawlerPayload(
+public record RawQddkPayload(
     [property: JsonPropertyName("namhoc")] int NamHoc,
     [property: JsonPropertyName("hocky")] string HocKy,
     [property: JsonPropertyName("quyDinh")]
-    IReadOnlyList<RawQuyDinh> DanhSachQuyDinh,
+    IReadOnlyList<RawQddkQuyDinh> DanhSachQuyDinh,
     [property: JsonPropertyName("thoiGianDangKy")]
-    IReadOnlyList<IReadOnlyList<RawThoiGianDangKyItem>> DanhSachThoiGianDangKy);
+    IReadOnlyList<IReadOnlyList<RawQddkThoiGianDangKyItem>> DanhSachThoiGianDangKy);
 
-public record RawQuyDinh(
+public record RawQddkQuyDinh(
     [property: JsonPropertyName("leftData")]
-    IReadOnlyList<RawQuyDinhData> CotTrai,
+    IReadOnlyList<RawQddkQuyDinhData> CotTrai,
     [property: JsonPropertyName("rightData")]
-    IReadOnlyList<RawQuyDinhData> CotPhai);
+    IReadOnlyList<RawQddkQuyDinhData> CotPhai);
 
-public record RawQuyDinhData(
+public record RawQddkQuyDinhData(
     [property: JsonPropertyName("value")] string NoiDung,
     [property: JsonPropertyName("important")]
     IReadOnlyList<string> CacDiemLuuY);
 
-public record RawThoiGianDangKyItem(
+public record RawQddkThoiGianDangKyItem(
     [property: JsonPropertyName("title")] string TieuDe,
     [property: JsonPropertyName("rowspan")]
     string RowSpan,

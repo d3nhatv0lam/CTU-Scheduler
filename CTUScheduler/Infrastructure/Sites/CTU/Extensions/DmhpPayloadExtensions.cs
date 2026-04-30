@@ -4,7 +4,7 @@ using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
 {
-    public static class RawCourseExtension
+    public static class DmhpPayloadExtensions
     {
         public static Course? ToCourse(this RawDmhpPayload rawDmhpPayload)
         {

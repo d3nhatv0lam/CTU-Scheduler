@@ -4,6 +4,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
+using CTUScheduler.Core.Extensions;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.DriverCore.Extensions;
 using CTUScheduler.Infrastructure.Services.Network;
@@ -14,7 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 
-public class CourseCatalogPage : DkmhSpaPage, ICourseCatalogPage
+public class CourseCatalogPage : BaseRegistrationPage, ICourseCatalogPage
 {
     public override string PageUrl => "https://dkmhfe.ctu.edu.vn/dangkyhocphan/sinhvien/danhmuchocphan";
     protected override string PageReadySelector => SearchButtonSelector;
@@ -61,6 +62,6 @@ public class CourseCatalogPage : DkmhSpaPage, ICourseCatalogPage
     
     protected override async Task NavigateToFormSideBarAsync()
     {
-        await this.Sidebar.NavigateToCatalogAsync();
+        await this.SidebarComponent.NavigateToCatalogAsync();
     }
 }

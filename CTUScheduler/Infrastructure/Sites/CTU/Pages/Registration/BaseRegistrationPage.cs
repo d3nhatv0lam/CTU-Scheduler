@@ -14,17 +14,17 @@ using Microsoft.Playwright;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 
-public abstract class DkmhSpaPage : AppPage, IRequireSession
+public abstract class BaseRegistrationPage : AppPage, IRequireSession
 {
     private const string InvalidSessionSelector =
         ".ant-modal-confirm-content:has-text('Bạn hiện không có quyền truy cập vào hệ thống')";
 
-    protected Sidebar Sidebar { get; }
+    protected SidebarComponent SidebarComponent { get; }
 
-    protected DkmhSpaPage(IWebTab tab, IConnectivityService connectivityService, ILoggerFactory loggerFactory) : base(
+    protected BaseRegistrationPage(IWebTab tab, IConnectivityService connectivityService, ILoggerFactory loggerFactory) : base(
         tab, connectivityService, loggerFactory)
     {
-        Sidebar = new Sidebar(tab);
+        SidebarComponent = new SidebarComponent(tab);
     }
 
 

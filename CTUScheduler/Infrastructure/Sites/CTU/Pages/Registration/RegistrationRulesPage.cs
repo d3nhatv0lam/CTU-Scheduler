@@ -2,6 +2,7 @@ using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
+using CTUScheduler.Core.Extensions;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.DriverCore.Extensions;
 using CTUScheduler.Infrastructure.Services.Network;
@@ -18,7 +19,7 @@ internal class UserInfoResult
     public string u { get; set; } = string.Empty;
 }
 
-public class RegistrationRulesPage : DkmhSpaPage, IRegistrationRulesPage
+public class RegistrationRulesPage : BaseRegistrationPage, IRegistrationRulesPage
 {
     public override string PageUrl => "https://dkmhfe.ctu.edu.vn/dangkyhocphan/sinhvien/quydinhdangky";
     protected override string PageReadySelector => UserInfoButtonSelector;
@@ -27,7 +28,7 @@ public class RegistrationRulesPage : DkmhSpaPage, IRegistrationRulesPage
     private const string UserSettingButtonSelector = ".anticon-setting";
 
 
-    public IObservable<DkmhQddkCrawlerPayload> RawRegistrationInformationResponse { get; }
+    public IObservable<RawQddkPayload> RawRegistrationInformationResponse { get; }
 
     public RegistrationRulesPage(IWebTab tab, IConnectivityService connectivityService, ILoggerFactory logger) :
         base(tab, connectivityService, logger)
@@ -35,9 +36,9 @@ public class RegistrationRulesPage : DkmhSpaPage, IRegistrationRulesPage
         RawRegistrationInformationResponse = Tab.JsonResponse
             .Where(packet => packet.Url.Contains("/quydinhdangky"))
             .FilterPacketJson(node =>
-                node["data"].HasFields<DkmhQddkCrawlerPayload>(x => x.HocKy, x => x.DanhSachQuyDinh, x => x.NamHoc,
+                node["data"].HasFields<RawQddkPayload>(x => x.HocKy, x => x.DanhSachQuyDinh, x => x.NamHoc,
                     x => x.DanhSachThoiGianDangKy))
-            .ParseCtuResponse<DkmhQddkCrawlerPayload>()
+            .ParseCtuResponse<RawQddkPayload>()
             .Where(res => res is { IsSuccess: true, Content: not null })
             .Select(x => x.Content!);
     }
@@ -87,6 +88,6 @@ public class RegistrationRulesPage : DkmhSpaPage, IRegistrationRulesPage
 
     protected override async Task NavigateToFormSideBarAsync()
     {
-        await this.Sidebar.NavigateToRulesAsync();
+        await this.SidebarComponent.NavigateToRulesAsync();
     }
 }
