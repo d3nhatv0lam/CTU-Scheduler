@@ -41,6 +41,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IMainHomeService, MainHomeService>();
         services.AddTransient<IRegistrationRulesService, RegistrationRulesService>();
         services.AddTransient<ICourseCatalogService, CourseCatalogService>();   
+        services.AddTransient<ICourseRegistrationService, CourseRegistrationService>();
         services.AddSingleton<ITimetableGeneratorService, TimetableGeneratorService>();
 
         // --- Schedule Manager Pattern ---

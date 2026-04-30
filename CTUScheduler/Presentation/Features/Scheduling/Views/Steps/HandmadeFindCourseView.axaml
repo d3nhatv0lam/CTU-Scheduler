@@ -18,7 +18,7 @@
     xmlns:models="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components"
     xmlns:context="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Models.Context"
     xmlns:curriculumModel="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.CourseData"
-    xmlns:qSelectCourse="clr-namespace:CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.CourseData"
+    xmlns:qSelectCourse="clr-namespace:CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum"
     x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.Steps.HandmadeFindCourseView">
 
     <rxui:ReactiveUserControl.KeyBindings>
@@ -103,11 +103,11 @@
                                                   Theme="{StaticResource MaterialModernScrollViewer}">
                                         
                                         <ListBox x:Name="lboxQuickSelect"
-                                                 SelectedItem="{Binding SelectedQuickSelectCourse,Mode=TwoWay}"
+                                                 SelectedItem="{Binding SelectedQuickSelectDmhpCourse,Mode=TwoWay}"
                                                  ItemsSource="{Binding QuickSelectCourses,Mode=OneWay}">
 
                                             <ListBox.ItemTemplate>
-                                                <DataTemplate x:DataType="{x:Type qSelectCourse:QuickSelectCourse}">
+                                                <DataTemplate x:DataType="{x:Type qSelectCourse:QuickSelectDmhpCourse}">
                                                     <Grid Background="Transparent">
                                                         <TextBlock Text="{Binding Information,Mode= OneTime}" />
                                                         <ToolTip.Tip>

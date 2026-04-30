@@ -5,13 +5,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
-using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum.Registration;
+using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
 {
-    public static class RawRegistrationExtension
+    public static class QddkPayloadExtensions
     {
-        public static RegistrationInformation ToRegistrationInformation(this RawRegistrationInformation rawRegistrationInformation,string userKey, string userUnit)
+        public static RegistrationInformation ToRegistrationInformation(this RawQddkPayload rawQddkPayload,string userKey, string userUnit)
         {
             try
             {
@@ -22,13 +22,13 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
                 List<GroupItem> groups = null!;
 
                 Parallel.Invoke(
-                    () => maxCreditPerSemester = GetMaxCreditPerSemester(rawRegistrationInformation),
-                    () => period = GetPeriod(rawRegistrationInformation),
-                    () => groups = GetGroups(rawRegistrationInformation)
+                    () => maxCreditPerSemester = GetMaxCreditPerSemester(rawQddkPayload),
+                    () => period = GetPeriod(rawQddkPayload),
+                    () => groups = GetGroups(rawQddkPayload)
                 );
 
-                info.AcademicYear = rawRegistrationInformation.namhoc;
-                info.Semester = rawRegistrationInformation.hocky;
+                info.AcademicYear = rawQddkPayload.NamHoc;
+                info.Semester = rawQddkPayload.HocKy;
                 info.MaxCreditPerSemester = maxCreditPerSemester;
                 info.Period = period;
                 info.Groups = groups;
@@ -37,7 +37,7 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
                     return info;
                 
                 string userGroup = FindGroupByUnit(info.Groups, userUnit);
-                info.UserPeriod = GetUserPeriod(rawRegistrationInformation, userKey,userGroup);
+                info.UserPeriod = GetUserPeriod(rawQddkPayload, userKey,userGroup);
                 return info;
             }
             catch
@@ -46,18 +46,18 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
             }
         }
 
-        private static int GetMaxCreditPerSemester(RawRegistrationInformation rawRegistrationInformation)
+        private static int GetMaxCreditPerSemester(RawQddkPayload rawQddkPayload)
         {
             int maxCreditPerSemester = 99;
-            foreach(var quyDinh in rawRegistrationInformation.quyDinh)
+            foreach(var quyDinh in rawQddkPayload.DanhSachQuyDinh)
             {
-                foreach (var leftData in quyDinh.leftData)
+                foreach (var leftData in quyDinh.CotTrai)
                 {
-                    if (leftData.value.Contains("tín chỉ"))
+                    if (leftData.NoiDung.Contains("tín chỉ"))
                     {
-                        foreach (var rightData in quyDinh.rightData)
+                        foreach (var rightData in quyDinh.CotPhai)
                         {
-                            if (int.TryParse(rightData.important.First(), out maxCreditPerSemester))
+                            if (int.TryParse(rightData.CacDiemLuuY.First(), out maxCreditPerSemester))
                                 return maxCreditPerSemester;
                         }
                     }
@@ -67,30 +67,30 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
         }
 
 
-        private static string GetPeriod(RawRegistrationInformation rawRegistrationInformation)
+        private static string GetPeriod(RawQddkPayload rawQddkPayload)
         {
-            foreach (var quyDinh in rawRegistrationInformation.quyDinh)
+            foreach (var quyDinh in rawQddkPayload.DanhSachQuyDinh)
             {
-                if (quyDinh.leftData.Any(leftData => leftData.value.Contains("Thời gian đăng ký"))) 
+                if (quyDinh.CotTrai.Any(leftData => leftData.NoiDung.Contains("Thời gian đăng ký"))) 
                 {
-                    return quyDinh.leftData.Last().value;
+                    return quyDinh.CotTrai.Last().NoiDung;
                 }
             }
             return string.Empty;
         }
 
-        private static List<GroupItem> GetGroups(RawRegistrationInformation rawRegistrationInformation)
+        private static List<GroupItem> GetGroups(RawQddkPayload rawQddkPayload)
         {
             List<GroupItem> groups = new List<GroupItem>();
-            foreach (var quyDinh in rawRegistrationInformation.quyDinh)
+            foreach (var quyDinh in rawQddkPayload.DanhSachQuyDinh)
             {
-                if (quyDinh.rightData.Count > 0 && quyDinh.rightData.First().value.StartsWith("Nhóm"))
+                if (quyDinh.CotPhai.Count > 0 && quyDinh.CotPhai.First().NoiDung.StartsWith("Nhóm"))
                 {
-                    foreach(var rightData in quyDinh.rightData)
+                    foreach(var rightData in quyDinh.CotPhai)
                     {
                         GroupItem group = new GroupItem();
-                        group.Title = rightData.important.First();
-                        group.Value = Regex.Replace(rightData.value, @"Nhóm \d+: ?", "");
+                        group.Title = rightData.CacDiemLuuY.First();
+                        group.Value = Regex.Replace(rightData.NoiDung, @"Nhóm \d+: ?", "");
                         groups.Add(group);
                     }
                 }
@@ -136,7 +136,7 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
             }
         }
 
-        private static List<PeriodItem> GetUserPeriod(RawRegistrationInformation rawRegistrationInformation, string userKey, string group)
+        private static List<PeriodItem> GetUserPeriod(RawQddkPayload rawQddkPayload, string userKey, string group)
         {
             List<PeriodItem> userPeriods = new List<PeriodItem>();
             // empty check
@@ -147,15 +147,15 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
             int userKeyInt = int.Parse(Regex.Match(userKey, @"\d+").Value);
 
             int i = 0;
-            while(i < rawRegistrationInformation.thoiGianDangKy.Count)
+            while(i < rawQddkPayload.DanhSachThoiGianDangKy.Count)
             {
-                List<RawThoiGianDangKyItem> firstRow = rawRegistrationInformation.thoiGianDangKy[i];
+                IReadOnlyList<RawQddkThoiGianDangKyItem> firstRow = rawQddkPayload.DanhSachThoiGianDangKy[i];
                 try
                 {
-                    var rowSpan = int.Parse(firstRow.First().rowspan);
+                    var rowSpan = int.Parse(firstRow.First().RowSpan);
 
-                    if (i == 0 && userKeyInt > int.Parse(Regex.Match(firstRow[1].title, @"\d+").Value) 
-                        || !firstRow[1].title.Contains(userKey))
+                    if (i == 0 && userKeyInt > int.Parse(Regex.Match(firstRow[1].TieuDe, @"\d+").Value) 
+                        || !firstRow[1].TieuDe.Contains(userKey))
                     {
                         i += rowSpan;
                         continue;
@@ -165,12 +165,12 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
 
                     for (int j = i; j < i + rowSpan; j++)
                     {
-                        var row = rawRegistrationInformation.thoiGianDangKy[j];
-                        if (row.Last().title.Contains(group))
+                        var row = rawQddkPayload.DanhSachThoiGianDangKy[j];
+                        if (row.Last().TieuDe.Contains(group))
                         {
-                            period.StartDate = row[^3].title;
-                            period.EndDate = row[^2].title;
-                            period.Group = row[^1].title;
+                            period.StartDate = row[^3].TieuDe;
+                            period.EndDate = row[^2].TieuDe;
+                            period.Group = row[^1].TieuDe;
                         }
                     }
                     userPeriods.Add(period);
