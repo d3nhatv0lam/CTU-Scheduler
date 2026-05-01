@@ -74,9 +74,12 @@
                                 Theme="{StaticResource OutlineTextBox}"
                                 p1:TextFieldAssist.Label="Mã học phần">
                                 <Interaction.Behaviors>
-                                    <behaviors:TextBoxClickBehavior ClickCommand="{Binding TryOpenPopupCommand}"></behaviors:TextBoxClickBehavior>
+                                    <behaviors:TextBoxClickBehavior ClickCommand="{Binding FocusTextBoxCommand}"></behaviors:TextBoxClickBehavior>
+                                    <EventTriggerBehavior EventName="GotFocus">
+                                        <InvokeCommandAction Command="{Binding FocusTextBoxCommand}" />
+                                    </EventTriggerBehavior>
                                     <EventTriggerBehavior EventName="LostFocus">
-                                        <InvokeCommandAction Command="{Binding ClosePopupCommand}"></InvokeCommandAction>
+                                        <InvokeCommandAction Command="{Binding UnfocusTextBoxCommand}"></InvokeCommandAction>
                                     </EventTriggerBehavior>
                                 </Interaction.Behaviors>
                             </TextBox>

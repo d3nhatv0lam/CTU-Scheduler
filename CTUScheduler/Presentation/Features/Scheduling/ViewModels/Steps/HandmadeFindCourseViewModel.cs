@@ -18,18 +18,20 @@ using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using DynamicData;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
 {
-    public class HandmadeFindCourseViewModel : ViewModelBase, IDisposable, IWizardStep,
+    public partial class HandmadeFindCourseViewModel : ViewModelBase, IDisposable, IWizardStep,
         INeedArgs<SchedulingWizardContext>
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private readonly ICourseCatalogService _courseCatalogService;
 
-        private string _txtInputCourseKey = string.Empty;
-        private bool _isOpenQuickSelectPopup;
-        private bool _showOnlyAvailableSections;
+        [Reactive] private string _txtInputCourseKey = string.Empty;
+        [Reactive] private bool _isOpenQuickSelectPopup;
+        [Reactive] private bool _showOnlyAvailableSections;
+        [Reactive] private bool _isTextBoxFocused;
 
         private ObservableAsPropertyHelper<Course> _searchedCourse;
         private ObservableAsPropertyHelper<ObservableCollection<SelectableCourseSection>> _searchedCourseSections;
@@ -42,23 +44,6 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         private ReadOnlyObservableCollection<SelectedCourse> _coursesBindable;
         private readonly SourceList<SelectedCourse> _coursesSourceList;
 
-        public string TxtInputCourseKey
-        {
-            get => _txtInputCourseKey;
-            set => this.RaiseAndSetIfChanged(ref _txtInputCourseKey, value);
-        }
-
-        public bool IsOpenQuickSelectPopup
-        {
-            get => _isOpenQuickSelectPopup;
-            set => this.RaiseAndSetIfChanged(ref _isOpenQuickSelectPopup, value);
-        }
-
-        public bool ShowOnlyAvailableSections
-        {
-            get => _showOnlyAvailableSections;
-            set => this.RaiseAndSetIfChanged(ref _showOnlyAvailableSections, value);
-        }
 
         public Course SearchedCourse => _searchedCourse.Value;
         public ObservableCollection<SelectableCourseSection> SearchedCourseSections => _searchedCourseSections.Value;
@@ -72,17 +57,17 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         }
 
         public ReadOnlyObservableCollection<SelectedCourse> Courses => _coursesBindable;
-        public ReactiveCommand<Unit, Unit> TryOpenPopupCommand { get; }
-        public ReactiveCommand<Unit, Unit> ClosePopupCommand { get; }
+        public ReactiveCommand<Unit, Unit> FocusTextBoxCommand { get; }
+        public ReactiveCommand<Unit, Unit> UnfocusTextBoxCommand { get; }
         public ReactiveCommand<Unit, Course> SearchCommand { get; }
         public ReactiveCommand<SelectableCourseSection, Unit> ChangeSelectStateSectionCommand { get; }
         public ReactiveCommand<Unit, Unit> AddCoursesCommand { get; }
         public ReactiveCommand<SelectedCourse, Unit> Tree_RemoveCourseCommand { get; }
         public ReactiveCommand<CourseSection, Unit> Tree_RemoveSectionCommand { get; }
 
-        public HandmadeFindCourseViewModel(SchedulingWizardContext context)
+        public HandmadeFindCourseViewModel(SchedulingWizardContext context, ICourseCatalogService courseCatalogService)
         {
-            _courseCatalogService = App.ServiceProvider.GetRequiredService<ICourseCatalogService>();
+            _courseCatalogService = courseCatalogService;
             _coursesSourceList = context.SelectedCourses;
 
             // TreeView SourceList
@@ -98,7 +83,6 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
                 .Select(query =>
                 {
                     if (string.IsNullOrEmpty(query)) return Observable.Return(new List<QuickSelectDmhpCourse>());
-                    ;
                     return _courseCatalogService.RequestSuggestionsStream(query)
                         .SubscribeOn(RxApp.TaskpoolScheduler)
                         .Catch((Exception _) => Observable.Return(new List<QuickSelectDmhpCourse>()));
@@ -142,7 +126,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
                     ? new ObservableCollection<SelectableCourseSection>()
                     : new ObservableCollection<SelectableCourseSection>(
                         course.Sections.Select(s => new SelectableCourseSection(s))))
-                .ToProperty(this, nameof(SearchedCourseSections), scheduler:RxApp.MainThreadScheduler)
+                .ToProperty(this, nameof(SearchedCourseSections), scheduler: RxApp.MainThreadScheduler)
                 .DisposeWith(_disposables);
 
             // Filtered Course Sections
@@ -154,19 +138,25 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
                     ? new ObservableCollection<SelectableCourseSection>(
                         tuple.searchedCourseSections.Where(section => section.Item.RemainingStudents > 0))
                     : tuple.searchedCourseSections)
-                .ToProperty(this, nameof(FiltedCourseSections), scheduler:RxApp.MainThreadScheduler)
+                .ToProperty(this, nameof(FiltedCourseSections), scheduler: RxApp.MainThreadScheduler)
                 .DisposeWith(_disposables);
 
 
-            this.WhenAnyValue(x => x.QuickSelectCourses)
+            this.WhenAnyValue(x => x.QuickSelectCourses, x => x.IsTextBoxFocused)
                 .Subscribe(_ => TryOpenQuickSelectPopup())
                 .DisposeWith(_disposables);
 
-            TryOpenPopupCommand = ReactiveCommand.Create(TryOpenQuickSelectPopup)
-                .DisposeWith(_disposables);
+            FocusTextBoxCommand = ReactiveCommand.Create(() =>
+            {
+                IsTextBoxFocused = true;
+                TryOpenQuickSelectPopup();
+            }).DisposeWith(_disposables);
 
-            ClosePopupCommand = ReactiveCommand.Create(() => { IsOpenQuickSelectPopup = false; })
-                .DisposeWith(_disposables);
+            UnfocusTextBoxCommand = ReactiveCommand.Create(() =>
+            {
+                IsTextBoxFocused = false;
+                IsOpenQuickSelectPopup = false;
+            }).DisposeWith(_disposables);
 
 
             ChangeSelectStateSectionCommand = ReactiveCommand.Create<SelectableCourseSection>(selectable =>
@@ -186,25 +176,25 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
 
                 if (selectedSections.Count == 0) return;
 
-                var existingNode = _coursesSourceList.Items.FirstOrDefault(x => x.CoreCourse.Code == SearchedCourse.Code);
-                
+                var existingNode =
+                    _coursesSourceList.Items.FirstOrDefault(x => x.CoreCourse.Code == SearchedCourse.Code);
+
                 if (existingNode == null)
                 {
                     var selectedCourseNode = new SelectedCourse(SearchedCourse, selectedSections);
                     _coursesSourceList.Add(selectedCourseNode);
                     return;
                 }
-                
+
                 foreach (var section in selectedSections)
                 {
                     if (!existingNode.Sections.Contains(section))
                         existingNode.Sections.Add(section);
                 }
-                
+
                 var sorted = existingNode.Sections.OrderBy(s => s.Group).ToList();
                 existingNode.Sections.Clear();
                 foreach (var s in sorted) existingNode.Sections.Add(s);
-                
             }, canAddCourse).DisposeWith(_disposables);
 
 
@@ -218,12 +208,12 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
 
         private void TryOpenQuickSelectPopup()
         {
-            if ((QuickSelectCourses?.Any()).GetValueOrDefault())
+            if ((QuickSelectCourses?.Any()).GetValueOrDefault() && IsTextBoxFocused)
                 IsOpenQuickSelectPopup = true;
             else
                 IsOpenQuickSelectPopup = false;
         }
-        
+
 
         private void RemoveCourseFromTree(SelectedCourse? course)
         {

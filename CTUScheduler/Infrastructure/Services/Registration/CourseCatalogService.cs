@@ -43,7 +43,7 @@ public class CourseCatalogService : ICourseCatalogService
     }
 
     // public async Task<OperationResult> EnsureReadyAsync() => OperationResult.Success();
-    
+
     public async Task<OperationResult> EnsureReadyAsync()
     {
         try
@@ -88,12 +88,17 @@ public class CourseCatalogService : ICourseCatalogService
         {
             var subscription = _catalogPage.CourseCatalogResponse
                 .Select(course => course.ToCourse())
-                .Where(course => course is not null &&
+                .Where(course => course is null ||
                                  course.Code.Equals(query, StringComparison.OrdinalIgnoreCase))
-                .Select(x => x!)
                 .Take(1)
                 .Timeout(finalTimeout)
-                .Subscribe(observer);
+                .Subscribe(course =>
+                {
+                    if (course is not null)
+                        observer.OnNext(course);
+                    else
+                        observer.OnError(new Exception($"Không tìm thấy môn học có mã: {query}"));
+                }, observer.OnError, observer.OnCompleted);
 
             try
             {
