@@ -31,44 +31,4 @@ public partial class HomeView : ReactiveUserControl<HomeViewModel>
             this.OneWayBind<HomeViewModel, HomeView, List<GroupItem>, IEnumerable>(ViewModel, vm => vm.RegistrationInfo.Groups, v => v.dtgridGroupList.ItemsSource, groups => groups ?? Enumerable.Empty<GroupItem>()).DisposeWith(disposables);
         });
     }
-    
-    protected override void OnSizeChanged(SizeChangedEventArgs e)
-    {
-        base.OnSizeChanged(e);
-
-        double breakPoint = 1000;
-
-        if (e.NewSize.Width < breakPoint)
-        {
-            // Chế độ Màn hình nhỏ (1 Cột dọc)
-            MainGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
-            MainGrid.ColumnDefinitions[1].Width = new GridLength(0); // Giấu cột 2
-
-            // Đẻ thêm 2 dòng nữa cho đủ 4 dòng xếp dọc
-            while (MainGrid.RowDefinitions.Count < 4)
-            {
-                MainGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-            }
-
-            Grid.SetColumn(Card2, 0); Grid.SetRow(Card2, 1);
-            Grid.SetColumn(Card3, 0); Grid.SetRow(Card3, 2);
-            Grid.SetColumn(Card4, 0); Grid.SetRow(Card4, 3);
-        }
-        else
-        {
-            // Chế độ Full màn hình (2 Cột)
-            MainGrid.ColumnDefinitions[0].Width = new GridLength(2, GridUnitType.Star);
-            MainGrid.ColumnDefinitions[1].Width = new GridLength(1, GridUnitType.Star);
-
-            Grid.SetColumn(Card2, 1); Grid.SetRow(Card2, 0);
-            Grid.SetColumn(Card3, 0); Grid.SetRow(Card3, 1);
-            Grid.SetColumn(Card4, 1); Grid.SetRow(Card4, 1);
-
-            // Xóa sạch các dòng thừa đi để triệt tiêu cái RowSpacing (15px) đội lên từ cõi âm!
-            while (MainGrid.RowDefinitions.Count > 2)
-            {
-                MainGrid.RowDefinitions.RemoveAt(MainGrid.RowDefinitions.Count - 1);
-            }
-        }
-    }
 }
