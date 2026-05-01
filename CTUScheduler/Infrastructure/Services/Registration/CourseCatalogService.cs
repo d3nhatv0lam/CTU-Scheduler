@@ -65,6 +65,7 @@ public class CourseCatalogService : ICourseCatalogService
         return Observable.Create<List<QuickSelectDmhpCourse>>(async (observer, ct) =>
         {
             var subscription = _catalogPage.AutoCompleteQueryResponse
+                .Take(1)
                 .Timeout(finalTimeout)
                 .Subscribe(observer);
             try

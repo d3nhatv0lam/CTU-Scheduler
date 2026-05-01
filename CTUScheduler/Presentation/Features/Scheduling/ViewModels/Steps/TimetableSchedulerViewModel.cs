@@ -120,7 +120,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposab
 
         this.WhenActivated(disposable =>
         {
-            context.SelectedCourses.Connect()
+            context.CourseBlueprints.Connect()
                 .Transform(node => node.CoreCourse.WithSections(node.Sections))
                 .Bind(out var courseBindable)
                 .Subscribe(_ => SchedulingCourseOptionVM.MapToSchedulingCourses(courseBindable))

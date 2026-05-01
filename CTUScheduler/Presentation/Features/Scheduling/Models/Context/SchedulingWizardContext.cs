@@ -4,5 +4,5 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Models.Context;
 
 public record SchedulingWizardContext
 {
-    public SourceList<SelectedCourse> SelectedCourses { get; init; } = new();
+    public SourceList<CourseBlueprint> CourseBlueprints { get; init; } = new();
 };
