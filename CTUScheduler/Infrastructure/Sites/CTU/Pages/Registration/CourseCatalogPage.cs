@@ -46,8 +46,7 @@ public class CourseCatalogPage : BaseRegistrationPage, ICourseCatalogPage
             .FilterPacketJson(node => node["data"] is not null)
             .ParseCtuResponse<RawDmhpPayload>()
             .Where(res => res is { IsSuccess: true, Content: not null })
-            .Select(x => x.Content!)
-            .Do(x => Debug.WriteLine("di toi day roiiiiiii"));
+            .Select(x => x.Content!);
     }
 
     public async Task FillQueryAsync(string query)

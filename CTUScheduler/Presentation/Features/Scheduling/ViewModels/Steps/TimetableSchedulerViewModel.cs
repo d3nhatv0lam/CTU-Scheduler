@@ -22,6 +22,7 @@ using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
+using CTUScheduler.Presentation.Shared.Interfaces;
 using CTUScheduler.Presentation.Shared.Models;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using DynamicData;
@@ -31,7 +32,8 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps;
 
-public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposable, IActivatableViewModel, ICleanup,
+public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposable, IActivatableViewModel,
+    IFinishableStep,
     INeedArgs<SchedulingWizardContext>
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
@@ -40,7 +42,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposab
     private readonly TimetablePaginationViewModel _paginationTimeTableViewModel;
     private readonly IUserInteractionService _userInteractionService;
     private readonly ObservableAsPropertyHelper<string> _limitTimetableSelectedDisplayedHelper;
-    private readonly ObservableAsPropertyHelper<bool> _isNextStepEnabled;
+
 
     private CancellationTokenSource? _cts;
     private bool _isGeneratingTimeTable;
@@ -55,8 +57,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposab
     public SchedulingCourseOptionViewModel SchedulingCourseOptionVM => _schedulingCourseOptionVM;
     public TimetablePaginationViewModel PaginationTimeTableViewModel => _paginationTimeTableViewModel;
     public string LimitTimetableSelectedDisplayed => _limitTimetableSelectedDisplayedHelper.Value;
-
-    public bool IsNextStepEnabled => _isNextStepEnabled.Value;
+    public IObservable<bool> CanNavigateNext { get; }
     public ReactiveCommand<Unit, Unit> GenerateTimeTableCommand { get; }
     public ReactiveCommand<SelectableTimetableLayout, Unit> ShowTimetableDetailsCommand { get; }
 
@@ -84,10 +85,8 @@ public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposab
                 .ToProperty(this, nameof(LimitTimetableSelectedDisplayed))
                 .DisposeWith(_disposables);
 
-        _isNextStepEnabled = PaginationTimeTableViewModel.SelectedItemCountChanged
-            .Select(count => count > 0)
-            .ToProperty(this, nameof(IsNextStepEnabled), scheduler: RxApp.MainThreadScheduler)
-            .DisposeWith(_disposables);
+        CanNavigateNext = PaginationTimeTableViewModel.SelectedItemCountChanged
+            .Select(count => count > 0);
 
         GenerateTimeTableCommand = ReactiveCommand.CreateFromTask(async () =>
             {
@@ -187,7 +186,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposab
             );
     }
 
-    public void Cleanup()
+    public void Commit()
     {
         var blueprints = PaginationTimeTableViewModel.GetSelectedItems()
             .Select(x => x.Item.ToScheduleBlueprint());

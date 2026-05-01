@@ -3,133 +3,116 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models.Context;
 using CTUScheduler.Presentation.Features.Scheduling.Models.Strategies;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
-using Irihi.Avalonia.Shared.Contracts;
+using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
+using CTUScheduler.Presentation.Shared.Interfaces;
+using DocumentFormat.OpenXml.Office2013.Drawing.Chart;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
-using Serilog;
+using ReactiveUI.SourceGenerators;
 
-namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Shells
+namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Shells;
+
+public partial class SchedulingWizardViewModel : ViewModelBase,
+    IRoutableViewModel,
+    IDisposable,
+    IHaveCloseInteraction<Unit>,
+    INeedArgs<SchedulingStrategy>
 {
-    public class SchedulingWizardViewModel : ViewModelBase,
-        IRoutableViewModel,
-        IDisposable,
-        IActivatableViewModel,
-        INeedArgs<SchedulingStrategy>
+    private readonly CompositeDisposable _disposables = new();
+    private readonly IUserInteractionService _userInteractionService;
+    private readonly ILogger<SchedulingWizardViewModel> _logger;
+    private readonly IWizardStep[] _stepsVM;
+
+
+    [ObservableAsProperty] private IWizardStep _currentWizardStep = null!;
+    [ObservableAsProperty] private string _btnNextContent = null!;
+    [Reactive] private int _currentStepIndex = 0;
+
+
+    public string? UrlPathSegment => nameof(SchedulingWizardViewModel);
+    public IScreen HostScreen { get; }
+    public ReactiveCommand<Unit, Unit> NavigateNextCommand { get; }
+    public ReactiveCommand<Unit, Unit> NavigateBackCommand { get; }
+    public Interaction<Unit, Unit> CloseInteraction { get; } = new();
+
+
+    public SchedulingWizardViewModel(IScreen hostScreen, SchedulingStrategy strategy,
+        IUserInteractionService userInteractionService, ILogger<SchedulingWizardViewModel> logger)
     {
-        private readonly CompositeDisposable _disposables = new();
-        private readonly IWizardStep[] _stepsVM;
-        private readonly ObservableAsPropertyHelper<IWizardStep> _currentStep;
-        private string _btnNextContent = "Tiếp theo";
-        private int _currentStepIndex;
+        HostScreen = hostScreen;
+        _userInteractionService = userInteractionService;
+        _logger = logger;
 
+        SchedulingWizardContext context = new();
+        _stepsVM = strategy.CreateSteps(context, _disposables);
 
-        public int CurrentStepIndex
+        ArgumentOutOfRangeException.ThrowIfLessThan(_stepsVM.Length, 1, nameof(_stepsVM));
+
+        _currentWizardStepHelper = this.WhenAnyValue(x => x.CurrentStepIndex)
+            .Select(index => _stepsVM[index])
+            .ToProperty(this,
+                nameof(CurrentWizardStep),
+                initialValue: _stepsVM[0],
+                deferSubscription: false)
+            .DisposeWith(_disposables);
+
+        _btnNextContentHelper = this.WhenAnyValue(x => x.CurrentStepIndex)
+            .Select(index => index + 1 < _stepsVM.Length ? "Tiếp theo" : "Hoàn thành")
+            .ToProperty(this,
+                nameof(BtnNextContent),
+                initialValue: _stepsVM.Length > 1 ? "Tiếp theo" : "Hoàn thành")
+            .DisposeWith(_disposables);
+
+        NavigateBackCommand = ReactiveCommand.Create(NavigateBack)
+            .DisposeWith(_disposables);
+
+        var canNavigateNext = this.WhenAnyValue(x => x.CurrentWizardStep)
+            .Select(step => step.CanNavigateNext)
+            .Switch();
+        NavigateNextCommand = ReactiveCommand.CreateFromTask(async () => await NavigateNext(), canNavigateNext)
+            .DisposeWith(_disposables);
+    }
+
+    private async Task NavigateNext()
+    {
+        if (CurrentStepIndex == _stepsVM.Length - 1)
         {
-            get => _currentStepIndex;
-            set => this.RaiseAndSetIfChanged(ref _currentStepIndex, value);
+            if (CurrentWizardStep is IFinishableStep finishableStep)
+                finishableStep.Commit();
+            //close dialog
+            await CloseInteraction.Handle(Unit.Default);
+            _userInteractionService.Toast.Light.Success("Lưu thời khóa biểu thành công!");
         }
-
-        public IWizardStep CurrentWizardStep => _currentStep.Value;
-
-        public string? UrlPathSegment => nameof(SchedulingWizardViewModel);
-        public IScreen HostScreen { get; }
-
-        public string BtnNextContent
+        else if (CurrentStepIndex < _stepsVM.Length - 1)
         {
-            get => _btnNextContent;
-            set => this.RaiseAndSetIfChanged(ref _btnNextContent, value);
+            CurrentStepIndex++;
         }
-
-        public ViewModelActivator Activator { get; } = new();
-        public ReactiveCommand<Unit, Unit> NavigateNextCommand { get; protected set; }
-        public ReactiveCommand<Unit, Unit> NavigateBackCommand { get; protected set; }
-
-        public SchedulingWizardViewModel()
+        else
         {
+            _logger.LogWarning("SchedulingWizardViewModel: invalid index step?");
         }
+    }
 
-        public SchedulingWizardViewModel(IScreen hostScreen, SchedulingStrategy strategy)
+    private void NavigateBack()
+    {
+        if (CurrentStepIndex <= 0)
         {
-            HostScreen = hostScreen;
-
-            SchedulingWizardContext context = new();
-
-            _stepsVM = strategy.CreateSteps(context, _disposables);
-
-            _currentStep = this.WhenAnyValue(x => x.CurrentStepIndex)
-                .Select(index => _stepsVM[index])
-                .ToProperty(this, nameof(CurrentWizardStep), scheduler: RxApp.MainThreadScheduler)
-                .DisposeWith(_disposables);
-
-            CurrentStepIndex = 0;
-
-            this.WhenAnyValue(x => x._stepsVM, x => x.CurrentStepIndex)
-                .Subscribe(tuple =>
-                {
-                    var (steps, index) = tuple;
-                    BtnNextContent = index == steps.Length - 1 ? "Hoàn thành" : "Tiếp theo";
-                })
-                .DisposeWith(_disposables);
-
-            NavigateBackCommand = ReactiveCommand.Create(NavigateBack)
-                .DisposeWith(_disposables);
-            
-            var canNavigateNext = this.WhenAnyValue(x => x.CurrentWizardStep)
-                .Select(step => step.CanNavigateNext)
-                .Switch();
-            NavigateNextCommand = ReactiveCommand.Create(NavigateNext, canNavigateNext)
-                .DisposeWith(_disposables);
-
-            this.WhenActivated((CompositeDisposable disposables) =>
-            {
-                Disposable.Create(() =>
-                {
-                    Dispose();
-                    Log.Debug("SchedulingWizardViewModel: Disposed");
-                }).DisposeWith(disposables);
-            });
+            HostScreen.Router.NavigateBack.Execute();
         }
-        
-        private void NavigateNext()
-        {
-            if (CurrentStepIndex == _stepsVM.Length - 1)
-            {
-                if (HostScreen is IDialogContext closeableDialog)
-                {
-                    if (CurrentWizardStep is ICleanup cleanup)
-                        cleanup.Cleanup();
-                    closeableDialog.Close();
-                }
-                Log.Warning("SchedulingWizardViewModel: CurrentStepIndex reach step but can't close dialog");
-            }
-            else if (CurrentStepIndex < _stepsVM.Length - 1)
-            {
-                CurrentStepIndex++;
-            }
-            else
-            {
-                Log.Warning("SchedulingWizardViewModel: invalid index step?");
-            }
-        }
-
-        private void NavigateBack()
-        {
-            if (CurrentStepIndex == 0)
-            {
-                HostScreen.Router.NavigateBack.Execute();
-            }
-            else
-                CurrentStepIndex--;
-        }
+        else
+            CurrentStepIndex--;
+    }
 
 
-        public void Dispose()
-        {
-            _disposables.Dispose();
-        }
+    public void Dispose()
+    {
+        _disposables.Dispose();
+        _logger.LogDebug("{this}: Disposed", nameof(SchedulingWizardViewModel));
     }
 }

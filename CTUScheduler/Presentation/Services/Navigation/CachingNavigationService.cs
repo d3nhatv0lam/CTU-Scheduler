@@ -5,6 +5,7 @@ using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Services.Factories;
+using CTUScheduler.Presentation.Services.Navigation.Interfaces;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
