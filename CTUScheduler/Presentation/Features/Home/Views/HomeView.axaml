@@ -13,9 +13,7 @@
     xmlns:u="https://irihi.tech/ursa"
     xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Home.ViewModels;assembly=CTUScheduler"
     xmlns:model="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.Registration"
-    x:Class="CTUScheduler.Presentation.Features.Home.Views.HomeView"
-    xmlns:i="using:Avalonia.Xaml.Interactivity"
-    xmlns:ir="using:Avalonia.Xaml.Interactions.Responsive">
+    x:Class="CTUScheduler.Presentation.Features.Home.Views.HomeView">
 
     <Design.DataContext>
         <vm:HomeViewModel />
@@ -36,11 +34,11 @@
                   RowSpacing="10"
                   ColumnDefinitions="2*, *"
                   RowDefinitions="Auto, Auto, Auto, Auto">
-                <i:Interaction.Behaviors>
-                    <ir:AdaptiveBehavior SourceControl="{Binding $parent[Window]}">
-                        <ir:AdaptiveClassSetter MinWidth="1200" MaxWidth="Infinity" ClassName="large" />
-                    </ir:AdaptiveBehavior>
-                </i:Interaction.Behaviors>
+                <Interaction.Behaviors>
+                    <AdaptiveBehavior SourceControl="{Binding $parent[Window]}">
+                        <AdaptiveClassSetter MinWidth="1200" MaxWidth="Infinity" ClassName="large" />
+                    </AdaptiveBehavior>
+                </Interaction.Behaviors>
 
                 <Grid.Styles>
                     <Style Selector="Grid#MainGrid > Border.Card">
