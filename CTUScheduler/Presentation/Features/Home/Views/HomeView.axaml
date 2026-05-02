@@ -133,9 +133,8 @@
                                         <StackPanel>
                                             <TextBlock Text="{Binding Group, StringFormat='Nhóm \{0\}'}" FontSize="24"
                                                        FontWeight="Bold" Foreground="#111111" Margin="0,0,0,10" />
-                                            <!-- Dữ liệu ảo, cần hàm ở đây hihi -->
                                             <TextBlock
-                                                Text="Các chuyên ngành thuộc Trường Công nghệ Thông tin &amp; Truyền thông và Trường Thủy sản."
+                                                Text="{Binding GroupDescription}"
                                                 TextWrapping="WrapWithOverflow" Classes="ContentText"
                                                 Foreground="#555555" Margin="0,0,0,15" />
                                             <TextBlock Text="{Binding Key, StringFormat='\{0\}'}" Classes="ContentText"

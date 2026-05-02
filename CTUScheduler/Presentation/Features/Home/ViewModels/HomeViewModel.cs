@@ -79,6 +79,11 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
                                 var errorsString = String.Join('\n', errors.Select(x => x.FormattedMessage));
                                 _userInteractionService.Notification.Light.Error(errorsString);
                                 navigationRegionManager.NavigateAndResetTo<LoginViewModel>(RegionIds.Root);
+                                
+                                foreach (var period in RegistrationInfo?.UserPeriod ?? [])
+                                {
+                                    Console.WriteLine($"Group: '{period.Group}' | Titles: {string.Join(", ", RegistrationInfo.Groups?.Select(g => $"'{g.Title}'") ?? [])}");
+                                }
                             },
                             ex => { Debug.WriteLine(ex, "Lỗi khi _registrationRulesService.EnsureReadyAsync"); }
                         );
@@ -94,8 +99,23 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
             _registrationInfo = _userSessionService.RegistrationInfoChanged
                 .Where(x => x is not null)
                 .Select(x => x!)
-                .ToProperty(this, nameof(RegistrationInfo), scheduler: RxApp.MainThreadScheduler);
+                .Do(info =>
+                {
 
+                    if (info.UserPeriod == null || info.Groups == null) return;
+                    foreach (var period in info.UserPeriod)
+                    {
+                        var raw = info.Groups
+                            .FirstOrDefault(g => g.Title == $"Nhóm {period.Group}")
+                            ?.Value ?? "Không có thông tin.";
+
+                        period.GroupDescription = string.Join(". ", 
+                            raw.Split(". ").Select(s => string.IsNullOrEmpty(s) ? s : char.ToUpper(s[0]) + s[1..]));
+                        
+                    }
+                })
+                .ToProperty(this, nameof(RegistrationInfo), scheduler: RxApp.MainThreadScheduler);
+            
             var ownerContributor = AppConstants.AppCredits.AllContributors[0];
             OpenFacebookCommand = ReactiveCommand
                 .Create(() => OpenUrl(ownerContributor.SocialLinks[SocialPlatform.Facebook])).DisposeWith(_disposable);

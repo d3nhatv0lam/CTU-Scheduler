@@ -7,5 +7,6 @@
         public string StartDate { get; set; }
         public string EndDate { get; set; }
         public string Group { get; set; }
+        public string GroupDescription { get; set; }
     }
 }
