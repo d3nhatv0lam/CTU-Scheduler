@@ -13,8 +13,8 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components;
 
 public class SchedulingCourseOptionViewModel : ViewModelBase, IDisposable
 {
-    private readonly CompositeDisposable _disposables = new CompositeDisposable();
-    public ObservableCollection<SchedulingCourseViewModel> SchedulingCourses { get; set; } = new();
+    private readonly CompositeDisposable _disposables = new();
+    public ObservableCollectionExtended<SchedulingCourseViewModel> SchedulingCourses { get; } = new();
 
     public SchedulingCourseOptionViewModel()
     {
@@ -34,34 +34,18 @@ public class SchedulingCourseOptionViewModel : ViewModelBase, IDisposable
             .DisposeWith(_disposables);
     }
 
-    private void ClearSchedulingCourses()
-    {
-        if (SchedulingCourses.Any())
-            SchedulingCourses.Clear();
-    }
-
-    private void PartitionCourses(ObservableCollection<SchedulingCourseViewModel> schedulingCourses,
+    private void PartitionCourses(IEnumerable<SchedulingCourseViewModel> schedulingCourses,
         out List<SchedulingCourseViewModel> mainCourses,
         out List<SchedulingCourseViewModel> alternativeCourses)
     {
         mainCourses = new List<SchedulingCourseViewModel>();
         alternativeCourses = new List<SchedulingCourseViewModel>();
-        foreach (var schedulingCourse in SchedulingCourses)
+        foreach (var schedulingCourse in schedulingCourses)
         {
             if (schedulingCourse.IsMainCourse)
                 mainCourses.Add(schedulingCourse);
             else
                 alternativeCourses.Add(schedulingCourse);
-        }
-    }
-
-    public void MapToSchedulingCourses(ReadOnlyObservableCollection<Course> courses)
-    {
-        ClearSchedulingCourses();
-        foreach (var course in courses)
-        {
-            var schedulingCourse = SchedulingCourseViewModel.CourseToSchedulingCourse(course);
-            SchedulingCourses.Add(schedulingCourse);
         }
     }
 

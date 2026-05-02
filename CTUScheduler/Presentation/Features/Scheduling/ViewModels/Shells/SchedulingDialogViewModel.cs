@@ -2,7 +2,6 @@ using System;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using System.Reactive.Linq;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps;
 using CTUScheduler.Presentation.Services.Navigation;

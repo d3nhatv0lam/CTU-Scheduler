@@ -22,68 +22,54 @@ using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
-using CTUScheduler.Presentation.Shared.Interfaces;
 using CTUScheduler.Presentation.Shared.Models;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using DynamicData;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps;
 
-public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposable, IActivatableViewModel,
+public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposable, IActivatableViewModel,
     IFinishableStep,
     INeedArgs<SchedulingWizardContext>
 {
     private readonly CompositeDisposable _disposables = new CompositeDisposable();
+    private readonly ILogger<TimetableSchedulerViewModel> _logger;
     private readonly IScheduleRegistrationService _scheduleRegistrationService;
-    private readonly SchedulingCourseOptionViewModel _schedulingCourseOptionVM;
-    private readonly TimetablePaginationViewModel _paginationTimeTableViewModel;
-    private readonly IUserInteractionService _userInteractionService;
-    private readonly ObservableAsPropertyHelper<string> _limitTimetableSelectedDisplayedHelper;
-
+    private readonly IExcelExporterService _excelExporter;
 
     private CancellationTokenSource? _cts;
-    private bool _isGeneratingTimeTable;
-
-    public bool IsGeneratingTimeTable
-    {
-        get => _isGeneratingTimeTable;
-        set => this.RaiseAndSetIfChanged(ref _isGeneratingTimeTable, value);
-    }
+    [Reactive] private bool _isGeneratingTimeTable;
 
     public ViewModelActivator Activator { get; } = new();
-    public SchedulingCourseOptionViewModel SchedulingCourseOptionVM => _schedulingCourseOptionVM;
-    public TimetablePaginationViewModel PaginationTimeTableViewModel => _paginationTimeTableViewModel;
-    public string LimitTimetableSelectedDisplayed => _limitTimetableSelectedDisplayedHelper.Value;
+    public SchedulingCourseOptionViewModel SchedulingCourseOptionVM { get; }
+    public TimetablePaginationViewModel PaginationTimeTableViewModel { get; }
     public IObservable<bool> CanNavigateNext { get; }
     public ReactiveCommand<Unit, Unit> GenerateTimeTableCommand { get; }
     public ReactiveCommand<SelectableTimetableLayout, Unit> ShowTimetableDetailsCommand { get; }
 
-    public TimetableSchedulerViewModel(SchedulingWizardContext context)
+    public TimetableSchedulerViewModel(SchedulingWizardContext context,
+        IScheduleRegistrationService scheduleRegistrationService,
+        IUserInteractionService userInteractionService,
+        IProfileQueryService profileQueryService,
+        IExcelExporterService excelExporterService,
+        ILogger<TimetableSchedulerViewModel> logger)
     {
-        _schedulingCourseOptionVM = new SchedulingCourseOptionViewModel();
-        _scheduleRegistrationService = App.ServiceProvider.GetRequiredService<IScheduleRegistrationService>();
-        _userInteractionService = App.ServiceProvider.GetRequiredService<IUserInteractionService>();
+        _scheduleRegistrationService = scheduleRegistrationService;
+        _excelExporter = excelExporterService;
+        _logger = logger;
 
-        var profileQueryService = App.ServiceProvider.GetRequiredService<IProfileQueryService>();
+        SchedulingCourseOptionVM = new SchedulingCourseOptionViewModel()
+            .DisposeWith(_disposables);
+
         var maxCanSelect = profileQueryService.ProfileUsageState
             .Select(x => x.Limit - x.Current)
             .DistinctUntilChanged();
-        _paginationTimeTableViewModel = new(maxCanSelect);
-
-        _limitTimetableSelectedDisplayedHelper =
-            this.WhenAnyValue(
-                    x => x.PaginationTimeTableViewModel.SelectedItemCount,
-                    x => x.PaginationTimeTableViewModel.MaxItemCanSelect)
-                .Select(tuple =>
-                {
-                    var (selectedPageCount, maxPageCanSelect) = tuple;
-                    return $"{selectedPageCount}/{maxPageCanSelect}";
-                })
-                .ToProperty(this, nameof(LimitTimetableSelectedDisplayed))
-                .DisposeWith(_disposables);
+        PaginationTimeTableViewModel = new TimetablePaginationViewModel(maxCanSelect)
+            .DisposeWith(_disposables);
 
         CanNavigateNext = PaginationTimeTableViewModel.SelectedItemCountChanged
             .Select(count => count > 0);
@@ -113,17 +99,19 @@ public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposab
                     CanLightDismiss = true,
                     HostId = DialogIds.Root
                 };
-                await _userInteractionService.Dialog.ShowModal<TimetableLayoutBaseViewModel, Unit>(
+                await userInteractionService.Dialog.ShowModal<TimetableLayoutBaseViewModel, Unit>(
                     selectableTimetableLayout.Item, options);
             })
             .DisposeWith(_disposables);
 
-        this.WhenActivated(disposable =>
+        this.WhenActivated((CompositeDisposable disposable) =>
         {
             context.CourseBlueprints.Connect()
                 .Transform(node => node.CoreCourse.WithSections(node.Sections))
-                .Bind(out var courseBindable)
-                .Subscribe(_ => SchedulingCourseOptionVM.MapToSchedulingCourses(courseBindable))
+                .Transform(SchedulingCourseViewModel.CourseToSchedulingCourse)
+                .Bind(SchedulingCourseOptionVM.SchedulingCourses)
+                .Finally(SchedulingCourseOptionVM.SchedulingCourses.Clear)
+                .Subscribe()
                 .DisposeWith(disposable);
         });
     }
@@ -142,9 +130,6 @@ public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposab
         _cts = new CancellationTokenSource();
         PaginationTimeTableViewModel.Clear();
 
-        // Lấy Excel exporter từ DI một lần, rồi truyền vào mỗi TimetablePreviewViewModel
-        var excelExporter = App.ServiceProvider.GetRequiredService<IExcelExporterService>();
-
         await Task.Run(() =>
         {
             var batch = new List<SelectableTimetableLayout>();
@@ -154,7 +139,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposab
                          _ => true,
                          _cts.Token))
             {
-                var layout = new TimetablePreviewViewModel(tableData, excelExporter);
+                var layout = new TimetablePreviewViewModel(tableData, _excelExporter);
 
                 var selectableLayoutViewModel = new SelectableTimetableLayout(layout);
                 batch.Add(selectableLayoutViewModel);
@@ -197,8 +182,7 @@ public class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposab
 
     public void Dispose()
     {
-        SchedulingCourseOptionVM.Dispose();
-        PaginationTimeTableViewModel.Dispose();
         _disposables.Dispose();
+        _logger.LogDebug("{this}: Disposed", nameof(TimetableSchedulerViewModel));
     }
 }

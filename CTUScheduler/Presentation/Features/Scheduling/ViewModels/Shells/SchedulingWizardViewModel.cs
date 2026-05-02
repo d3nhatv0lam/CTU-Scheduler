@@ -11,7 +11,6 @@ using CTUScheduler.Presentation.Features.Scheduling.Models.Strategies;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Shared.Interfaces;
-using DocumentFormat.OpenXml.Office2013.Drawing.Chart;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
@@ -35,7 +34,7 @@ public partial class SchedulingWizardViewModel : ViewModelBase,
     [Reactive] private int _currentStepIndex = 0;
 
 
-    public string? UrlPathSegment => nameof(SchedulingWizardViewModel);
+    public string UrlPathSegment => nameof(SchedulingWizardViewModel);
     public IScreen HostScreen { get; }
     public ReactiveCommand<Unit, Unit> NavigateNextCommand { get; }
     public ReactiveCommand<Unit, Unit> NavigateBackCommand { get; }
@@ -49,7 +48,8 @@ public partial class SchedulingWizardViewModel : ViewModelBase,
         _userInteractionService = userInteractionService;
         _logger = logger;
 
-        SchedulingWizardContext context = new();
+        SchedulingWizardContext context = new SchedulingWizardContext()
+            .DisposeWith(_disposables);
         _stepsVM = strategy.CreateSteps(context, _disposables);
 
         ArgumentOutOfRangeException.ThrowIfLessThan(_stepsVM.Length, 1, nameof(_stepsVM));

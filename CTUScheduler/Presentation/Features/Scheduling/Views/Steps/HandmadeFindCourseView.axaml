@@ -89,7 +89,6 @@
                                 PlacementTarget="{Binding ElementName=tboxCourseKeyInput}"
                                 Placement="BottomEdgeAlignedLeft"
                                 IsOpen="{Binding IsOpenQuickSelectPopup, Mode=TwoWay}"
-                                IsLightDismissEnabled="True"
                                 MaxHeight="200" Width="210">
 
                                 <controls:Card
@@ -314,7 +313,7 @@
                                         <Button Grid.Column="1"
                                                 Classes="BtnRemove"
                                                 Content="{materialIcons:MaterialIconExt Kind=CloseBoxOutline,Size=20}"
-                                                Command="{Binding ViewModel.Tree_RemoveCourseCommand , RelativeSource={RelativeSource AncestorType=views1:HandmadeFindCourseView}}"
+                                                Command="{Binding ViewModel.TreeRemoveCourseCommand , RelativeSource={RelativeSource AncestorType=views1:HandmadeFindCourseView}}"
                                                 CommandParameter="{Binding .}" />
                                     </Grid>
                                 </TreeDataTemplate>
@@ -358,7 +357,7 @@
                                                 Grid.Column="2"
                                                 Classes="BtnRemove"
                                                 Content="{materialIcons:MaterialIconExt Kind=CloseBoxOutline,Size=20}"
-                                                Command="{Binding ViewModel.Tree_RemoveSectionCommand , RelativeSource={RelativeSource AncestorType=views1:HandmadeFindCourseView}}"
+                                                Command="{Binding ViewModel.TreeRemoveSectionCommand , RelativeSource={RelativeSource AncestorType=views1:HandmadeFindCourseView}}"
                                                 CommandParameter="{Binding .}" />
                                     </Grid>
                                 </DataTemplate>

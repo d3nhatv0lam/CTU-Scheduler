@@ -188,9 +188,14 @@
                             HorizontalAlignment="Left"
                             Margin="10 0 0 0" />
                         <TextBlock DockPanel.Dock="Left"
-                                   Classes="SubTitle"
-                                   Text="{Binding LimitTimetableSelectedDisplayed
-                                   ,StringFormat=Đã chọn {0} thời khóa biểu}" />
+                                   Classes="SubTitle">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="Đã chọn {0}/{1} thời khóa biểu">
+                                    <Binding Path="PaginationTimeTableViewModel.SelectedItemCount" Mode="OneWay" />
+                                    <Binding Path="PaginationTimeTableViewModel.MaxItemCanSelect" Mode="OneWay" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
 
                         <Button
                             DockPanel.Dock="Right"
@@ -252,7 +257,7 @@
                                                                 </Viewbox>
                                                             </Border>
                                                             <!-- // Open Timetable View // -->
-                                                                <Button Classes="ripple"
+                                                            <Button Classes="ripple"
                                                                     Background="Transparent"
                                                                     HorizontalAlignment="Stretch"
                                                                     VerticalAlignment="Stretch"
@@ -260,8 +265,8 @@
                                                                     BorderThickness="0"
                                                                     Command="{Binding Path= ((viewModels:TimetableSchedulerViewModel)DataContext).ShowTimetableDetailsCommand, RelativeSource={RelativeSource  Mode=FindAncestor, AncestorType=views:TimetableSchedulerView}}"
                                                                     CommandParameter="{Binding .}">
-                                                                </Button>
-                                                         
+                                                            </Button>
+
 
                                                         </Grid>
                                                     </Grid>
