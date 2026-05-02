@@ -43,6 +43,8 @@
     <PackageReference Include="Scrutor" Version="7.0.0" />
     <PackageReference Include="Semi.Avalonia" Version="11.3.7.2" />
     <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.66" />
+    <PackageReference Include="UglyToad.PdfPig" Version="0.1.9-alpha001-patch1" />
   </ItemGroup>
 
   <ItemGroup>
