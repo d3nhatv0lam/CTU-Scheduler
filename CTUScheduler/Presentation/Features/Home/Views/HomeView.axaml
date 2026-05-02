@@ -8,8 +8,6 @@
     xmlns:rxui="http://reactiveui.net"
     x:DataType="vm:HomeViewModel"
     x:CompileBindings="True"
-    xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
-    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:u="https://irihi.tech/ursa"
     xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Home.ViewModels;assembly=CTUScheduler"
     xmlns:model="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.Registration"
@@ -24,75 +22,76 @@
             <Setter Property="SelectionForegroundBrush" Value="White" />
             <Setter Property="Background" Value="Transparent" />
         </Style>
+        
+        <Style Selector="Grid.main-grid">
+            <Style Selector="^ > Border.Card">
+                <Setter Property="Grid.Column" Value="0" />
+                <Setter Property="Grid.ColumnSpan" Value="2" />
+            </Style>
+            <Style Selector="^ Border.card-item-1"><Setter Property="Grid.Row" Value="0" /></Style>
+            <Style Selector="^ Border.card-item-2"><Setter Property="Grid.Row" Value="1" /></Style>
+            <Style Selector="^ Border.card-item-3"><Setter Property="Grid.Row" Value="2" /></Style>
+            <Style Selector="^ Border.card-item-4"><Setter Property="Grid.Row" Value="3" /></Style>
+        </Style>
+
+        <!-- Trạng thái màn hình lớn (large screen) -->
+        <Style Selector="Grid.main-grid.large">
+            <Style Selector="^ > Border.Card">
+                <Setter Property="Grid.ColumnSpan" Value="1" />
+            </Style>
+
+            <Style Selector="^ > Border.card-item-1">
+                <Setter Property="Grid.Row" Value="0" />
+                <Setter Property="Grid.Column" Value="0" />
+            </Style>
+            <Style Selector="^ > Border.card-item-2">
+                <Setter Property="Grid.Row" Value="0" />
+                <Setter Property="Grid.Column" Value="1" />
+            </Style>
+            <Style Selector="^ > Border.card-item-3">
+                <Setter Property="Grid.Row" Value="1" />
+                <Setter Property="Grid.Column" Value="0" />
+            </Style>
+            <Style Selector="^ > Border.card-item-4">
+                <Setter Property="Grid.Row" Value="1" />
+                <Setter Property="Grid.Column" Value="1" />
+            </Style>
+        </Style>
+        
+        <!-- UI tĩnh của Card -->
+        <Style Selector="Border.Card">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="25" />
+            <Setter Property="BoxShadow" Value="0 4 15 0 #0D000000" />
+        </Style>
+
+        <Style Selector="TextBlock.CardTitle">
+            <Setter Property="FontFamily" Value="{StaticResource Ctu-Title-Font}" />
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryColor}" />
+            <Setter Property="Margin" Value="0,0,0,15" />
+        </Style>
+        
         <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml"></StyleInclude>
     </rxui:ReactiveUserControl.Styles>
 
     <Grid>
         <Border>
             <!-- Thêm x:Name="MainGrid" để điều khiển chia cột trong C# -->
-            <Grid x:Name="MainGrid" ColumnSpacing="10"
+            <Grid Classes="main-grid" ColumnSpacing="10"
                   RowSpacing="10"
                   ColumnDefinitions="2*, *"
                   RowDefinitions="Auto, Auto, Auto, Auto">
                 <Interaction.Behaviors>
-                    <AdaptiveBehavior SourceControl="{Binding $parent[Window]}">
-                        <AdaptiveClassSetter MinWidth="1200" MaxWidth="Infinity" ClassName="large" />
+                    <AdaptiveBehavior>
+                        <AdaptiveClassSetter MinWidth="1200" MinWidthOperator="GreaterThanOrEqual" ClassName="large" />
                     </AdaptiveBehavior>
                 </Interaction.Behaviors>
-
-                <Grid.Styles>
-                    <Style Selector="Grid#MainGrid > Border.Card">
-                        <Setter Property="Grid.Column" Value="0" />
-                        <Setter Property="Grid.ColumnSpan" Value="2" />
-                    </Style>
-                    <Style Selector="Border#Card1">
-                        <Setter Property="Grid.Row" Value="0" />
-                    </Style>
-                    <Style Selector="Border#Card2">
-                        <Setter Property="Grid.Row" Value="1" />
-                    </Style>
-                    <Style Selector="Border#Card3">
-                        <Setter Property="Grid.Row" Value="2" />
-                    </Style>
-                    <Style Selector="Border#Card4">
-                        <Setter Property="Grid.Row" Value="3" />
-                    </Style>
-
-                    <!-- large screen -->
-                    <Style Selector="Grid#MainGrid.large > Border.Card">
-                        <Setter Property="Grid.ColumnSpan" Value="1" />
-                    </Style>
-
-                    <Style Selector="Grid#MainGrid.large > Border#Card1">
-                        <Setter Property="Grid.Row" Value="0" /> <Setter Property="Grid.Column" Value="0" />
-                    </Style>
-                    <Style Selector="Grid#MainGrid.large > Border#Card2">
-                        <Setter Property="Grid.Row" Value="0" /> <Setter Property="Grid.Column" Value="1" />
-                    </Style>
-                    <Style Selector="Grid#MainGrid.large > Border#Card3">
-                        <Setter Property="Grid.Row" Value="1" /> <Setter Property="Grid.Column" Value="0" />
-                    </Style>
-                    <Style Selector="Grid#MainGrid.large > Border#Card4">
-                        <Setter Property="Grid.Row" Value="1" /> <Setter Property="Grid.Column" Value="1" />
-                    </Style>
-
-                    <Style Selector="Border.Card">
-                        <Setter Property="Background" Value="White" />
-                        <Setter Property="CornerRadius" Value="12" />
-                        <Setter Property="Padding" Value="25" />
-                        <Setter Property="BoxShadow" Value="0 4 15 0 #0D000000" />
-                    </Style>
-
-                    <Style Selector="TextBlock.CardTitle">
-                        <Setter Property="FontFamily" Value="{StaticResource Ctu-Title-Font}" />
-                        <Setter Property="FontSize" Value="22" />
-                        <Setter Property="FontWeight" Value="SemiBold" />
-                        <Setter Property="Foreground" Value="{StaticResource PrimaryColor}" />
-                        <Setter Property="Margin" Value="0,0,0,15" />
-                    </Style>
-                </Grid.Styles>
+                
                 <!--// Card 1: Thông tin đăng ký //-->
-                <Border x:Name="Card1" Classes="Card">
+                <Border Classes="Card card-item-1">
                     <Grid RowDefinitions="Auto, Auto, Auto">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Thông tin đăng ký" />
                         <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoading}" IsActive="True">
@@ -123,7 +122,7 @@
                 </Border>
 
                 <!--// Card 2: Nhóm của bạn //-->
-                <Border x:Name="Card2" Classes="Card">
+                <Border Classes="Card card-item-2">
                     <Grid RowDefinitions="Auto, *">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Nhóm của bạn" />
                         <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoading}" IsActive="True">
@@ -148,7 +147,7 @@
                 </Border>
 
                 <!--// Card 3: Các nhóm đơn vị //-->
-                <Border x:Name="Card3" Classes="Card">
+                <Border Classes="Card card-item-3">
                     <Grid RowDefinitions="Auto, *" ClipToBounds="True">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Các nhóm đơn vị" />
                         <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoading}" IsActive="True">
@@ -208,7 +207,7 @@
                 </Border>
 
                 <!--// Card 4: Lộ trình đăng ký học phần //-->
-                <Border x:Name="Card4" Classes="Card">
+                <Border x:Name="Card4" Classes="Card card-item-4">
                     <Grid RowDefinitions="Auto, *">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Lộ trình đăng ký học phần" />
                         <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoading}" IsActive="True">
@@ -268,9 +267,5 @@
                 </Border>
             </Grid>
         </Border>
-
-        <!-- ẩn binding lỗi -->
-        <TextBlock x:Name="txtRegistrationTime" IsVisible="False" />
-        <DataGrid x:Name="dtgridUserRegistrationTime" IsVisible="False" />
     </Grid>
 </rxui:ReactiveUserControl>
