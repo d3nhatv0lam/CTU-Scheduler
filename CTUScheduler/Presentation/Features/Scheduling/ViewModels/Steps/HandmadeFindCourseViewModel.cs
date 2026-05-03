@@ -15,6 +15,7 @@ using CTUScheduler.Presentation.Features.Scheduling.Models.Context;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using DynamicData;
+using DynamicData.Binding;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
@@ -48,7 +49,8 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         public ReactiveCommand<CourseBlueprint, Unit> TreeRemoveCourseCommand { get; }
         public ReactiveCommand<CourseSection, Unit> TreeRemoveSectionCommand { get; }
 
-        public HandmadeFindCourseViewModel(SchedulingWizardContext context, ICourseCatalogService courseCatalogService, ILogger<HandmadeFindCourseViewModel> logger)
+        public HandmadeFindCourseViewModel(SchedulingWizardContext context, ICourseCatalogService courseCatalogService,
+            ILogger<HandmadeFindCourseViewModel> logger)
         {
             _coursesSourceList = context.CourseBlueprints;
             _logger = logger;
@@ -171,43 +173,36 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
             #endregion
         }
 
+        private void TryOpenQuickSelectPopup()
+        {
+            IsOpenQuickSelectPopup = IsTextBoxFocused && (QuickSelectCourses?.Any() ?? false);
+        }
+
         private void AddSelectedSectionsToCart()
         {
-            var selectedSections = FilteredCourseSections
+            var selected = FilteredCourseSections
                 .Where(x => x.IsSelected)
                 .Select(x => x.Item)
                 .ToList();
 
-            if (selectedSections.Count == 0) return;
+            if (selected.Count == 0) return;
 
             var existingNode = _coursesSourceList.Items.FirstOrDefault(x => x.CoreCourse.Code == SearchedCourse.Code);
 
             if (existingNode == null)
             {
-                var selectedCourseNode = new CourseBlueprint(SearchedCourse, selectedSections);
+                var selectedCourseNode = new CourseBlueprint(SearchedCourse, selected);
                 _coursesSourceList.Add(selectedCourseNode);
                 return;
             }
 
-            foreach (var section in selectedSections)
+            existingNode.UpdateSections(list =>
             {
-                if (existingNode.Sections.All(s => s.Group != section.Group))
-                    existingNode.Sections.Add(section);
-            }
+                var newItems = selected.Where(s => list.All(ex => ex.Group != s.Group));
 
-            var sorted = existingNode.Sections.OrderBy(s => s.Group).ToList();
-            existingNode.Sections.Clear();
-            foreach (var s in sorted) existingNode.Sections.Add(s);
+                list.AddRange(newItems);
+            });
         }
-
-        private void TryOpenQuickSelectPopup()
-        {
-            if ((QuickSelectCourses?.Any()).GetValueOrDefault() && IsTextBoxFocused)
-                IsOpenQuickSelectPopup = true;
-            else
-                IsOpenQuickSelectPopup = false;
-        }
-
 
         private void RemoveCourseFromTree(CourseBlueprint? course)
         {
@@ -215,14 +210,22 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
             _coursesSourceList.Remove(course);
         }
 
-        private void RemoveSectionFromTree(CourseSection section)
+        private void RemoveSectionFromTree(CourseSection? section)
         {
             if (section == null) return;
-            var targetNode = _coursesSourceList.Items.FirstOrDefault(n => n.Sections.Contains(section));
+            var targetNode = _coursesSourceList.Items
+                .FirstOrDefault(n => n.Sections.Contains(section));
+
             if (targetNode == null) return;
-            targetNode.Sections.Remove(section);
-            if (!targetNode.Sections.Any())
-                RemoveCourseFromTree(targetNode);
+
+            if (targetNode.Sections.Count == 1 && targetNode.Sections.Contains(section))
+            {
+                _coursesSourceList.Remove(targetNode);
+            }
+            else
+            {
+                targetNode.UpdateSections(list => list.Remove(section));
+            }
         }
 
         public void Dispose()

@@ -25,6 +25,7 @@ using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
 using CTUScheduler.Presentation.Shared.Models;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using DynamicData;
+using DynamicData.Binding;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
@@ -36,7 +37,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
     IFinishableStep,
     INeedArgs<SchedulingWizardContext>
 {
-    private readonly CompositeDisposable _disposables = new CompositeDisposable();
+    private readonly CompositeDisposable _disposables = new();
     private readonly ILogger<TimetableSchedulerViewModel> _logger;
     private readonly IScheduleRegistrationService _scheduleRegistrationService;
     private readonly IExcelExporterService _excelExporter;
@@ -45,7 +46,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
     [Reactive] private bool _isGeneratingTimeTable;
 
     public ViewModelActivator Activator { get; } = new();
-    public SchedulingCourseOptionViewModel SchedulingCourseOptionVM { get; }
+    public SchedulingCourseCoordinatorViewModel SchedulingCourseCoordinatorVM { get; }
     public TimetablePaginationViewModel PaginationTimeTableViewModel { get; }
     public IObservable<bool> CanNavigateNext { get; }
     public ReactiveCommand<Unit, Unit> GenerateTimeTableCommand { get; }
@@ -56,13 +57,21 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
         IUserInteractionService userInteractionService,
         IProfileQueryService profileQueryService,
         IExcelExporterService excelExporterService,
-        ILogger<TimetableSchedulerViewModel> logger)
+        ILoggerFactory loggerFactory)
     {
         _scheduleRegistrationService = scheduleRegistrationService;
         _excelExporter = excelExporterService;
-        _logger = logger;
-
-        SchedulingCourseOptionVM = new SchedulingCourseOptionViewModel()
+        _logger = loggerFactory.CreateLogger<TimetableSchedulerViewModel>();
+        
+        var courseStream = context.CourseBlueprints.Connect()
+            .SubscribeOn(RxSchedulers.TaskpoolScheduler)
+            .AutoRefreshOnObservable(x => x.SectionsSourceChanges.Skip(1))
+            .Transform(node => node.CoreCourse.WithSections(node.Sections), transformOnRefresh:true)
+            .Transform(course => new SchedulingCourseViewModel(course, loggerFactory.CreateLogger<SchedulingCourseViewModel>()))
+            .DisposeMany()
+            .AsObservableList()
+            .DisposeWith(_disposables);
+        SchedulingCourseCoordinatorVM = new SchedulingCourseCoordinatorViewModel(courseStream, loggerFactory.CreateLogger<SchedulingCourseCoordinatorViewModel>())
             .DisposeWith(_disposables);
 
         var maxCanSelect = profileQueryService.ProfileUsageState
@@ -83,7 +92,8 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                 }
 
                 IsGeneratingTimeTable = true;
-                var courseSectionFlatten = CourseSectionsTrackerFlatten(SchedulingCourseOptionVM.GetGroupedCourses());
+                var courseSectionFlatten =
+                    CourseSectionsTrackerFlatten(SchedulingCourseCoordinatorVM.GetGroupedCourses());
                 await GenerateTimeTable(courseSectionFlatten);
                 IsGeneratingTimeTable = false;
             })
@@ -103,17 +113,6 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                     selectableTimetableLayout.Item, options);
             })
             .DisposeWith(_disposables);
-
-        this.WhenActivated((CompositeDisposable disposable) =>
-        {
-            context.CourseBlueprints.Connect()
-                .Transform(node => node.CoreCourse.WithSections(node.Sections))
-                .Transform(SchedulingCourseViewModel.CourseToSchedulingCourse)
-                .Bind(SchedulingCourseOptionVM.SchedulingCourses)
-                .Finally(SchedulingCourseOptionVM.SchedulingCourses.Clear)
-                .Subscribe()
-                .DisposeWith(disposable);
-        });
     }
 
 
@@ -123,7 +122,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
         IsGeneratingTimeTable = false;
     }
 
-    private async Task GenerateTimeTable(IEnumerable<List<SectionChoice>> sets)
+    private async Task GenerateTimeTable(IReadOnlyList<IReadOnlyList<SectionChoice>> sets)
     {
         _cts?.Cancel();
         _cts?.Dispose();
@@ -162,13 +161,14 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
         });
     }
 
-    private IEnumerable<List<SectionChoice>> CourseSectionsTrackerFlatten(IEnumerable<List<Course>> courseSets)
+    private IReadOnlyList<IReadOnlyList<SectionChoice>> CourseSectionsTrackerFlatten(
+        IReadOnlyList<IReadOnlyList<Course>> courseSets)
     {
         return courseSets
             .Select(group => group
                 .SelectMany(course => course.Sections.Select(section => new SectionChoice(course, section)))
                 .ToList()
-            );
+            ).ToList();
     }
 
     public void Commit()

@@ -18,6 +18,9 @@ public static class Combinatorics
         if (setList.Count == 0 || setList.Any(s => s?.Count == 0))
             yield break;
 
+        // depth : dộ sâu, hay Row
+        // indices[depth]: ở depth thì đang chọn phần tử thứ mấy
+        // current : path hiện tại
         var indices = new int[setList.Count];
         var current = new List<T>(setList.Count);
 
@@ -35,9 +38,13 @@ public static class Combinatorics
             {
                 indices[depth] = -1;
                 depth--;
-                if (depth >= 0 && current.Count > depth)
-                    current.RemoveAt(current.Count - 1);
                 continue;
+            }
+            
+            // dọn dữ liệu thừa ở các nhánh trước
+            if (current.Count > depth)
+            {
+                current.RemoveRange(depth, current.Count - depth);
             }
 
             T candidate = setList[depth][indices[depth]];
@@ -46,11 +53,8 @@ public static class Combinatorics
             {
                 continue;
             }
-
-            if (current.Count > depth)
-                current[depth] = candidate;
-            else
-                current.Add(candidate);
+            
+            current.Add(candidate);
 
             if (depth == setList.Count - 1)
             {
@@ -70,11 +74,13 @@ public static class Combinatorics
         Func<T[], bool>? isValidFull = null,
         CancellationToken token = default)
     {
-        if (sets is null || sets.Length == 0) yield break;
+        ArgumentNullException.ThrowIfNull(sets);
+        if (sets.Length == 0) yield break;
         int count = sets.Length;
         for (int i = 0; i < count; i++)
         {
-            if (sets[i] is null || sets[i].Length == 0) yield break;
+            ArgumentNullException.ThrowIfNull(sets[i]);
+            if (sets[i].Length == 0) yield break;
         }
         
         var indices = new int[count];
