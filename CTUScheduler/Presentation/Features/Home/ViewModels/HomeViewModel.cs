@@ -29,10 +29,18 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
         private readonly IUserInteractionService _userInteractionService;
         private readonly IRegistrationRulesService _registrationRulesService;
         private readonly ObservableAsPropertyHelper<RegistrationInformation> _registrationInfo;
+        
         public string? UrlPathSegment => "HomeViewModel";
         public IScreen HostScreen { get; }
         public ViewModelActivator Activator { get; } = new();
         public RegistrationInformation RegistrationInfo => _registrationInfo.Value;
+
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => this.RaiseAndSetIfChanged(ref _isLoading, value);
+        }
 
         public ReactiveCommand<Unit, Unit> OpenFacebookCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenYoutubeCommand { get; }
@@ -55,28 +63,59 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
                 .Subscribe(info => _userSessionService.UpdateServerInfo(info))
                 .DisposeWith(_disposable);
 
+            IsLoading = true; 
+
             Observable.StartAsync(async _ => await _registrationRulesService.EnsureReadyAsync())
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(result =>
-                {
-                    result.Match(
-                        () => { },
-                        (errors, _) =>
-                        {
-                            var errorsString = String.Join('\n', errors.Select(x => x.FormattedMessage));
-                            _userInteractionService.Notification.Light.Error(errorsString);
-                            navigationRegionManager.NavigateAndResetTo<LoginViewModel>(RegionIds.Root);
-                        },
-                        ex => { Debug.WriteLine(ex, "Lỗi khi _registrationRulesService.EnsureReadyAsync"); }
-                    );
-                })
+                .Subscribe(
+                    result =>
+                    {
+                        IsLoading = false; 
+
+                        result.Match(
+                            () => { },
+                            (errors, _) =>
+                            {
+                                var errorsString = String.Join('\n', errors.Select(x => x.FormattedMessage));
+                                _userInteractionService.Notification.Light.Error(errorsString);
+                                navigationRegionManager.NavigateAndResetTo<LoginViewModel>(RegionIds.Root);
+                                
+                                foreach (var period in RegistrationInfo?.UserPeriod ?? [])
+                                {
+                                    Console.WriteLine($"Group: '{period.Group}' | Titles: {string.Join(", ", RegistrationInfo.Groups?.Select(g => $"'{g.Title}'") ?? [])}");
+                                }
+                            },
+                            ex => { Debug.WriteLine(ex, "Lỗi khi _registrationRulesService.EnsureReadyAsync"); }
+                        );
+                    },
+                    ex => 
+                    {
+                        IsLoading = false;
+                        Debug.WriteLine(ex, "Lỗi Runtime khi chạy EnsureReadyAsync");
+                    }
+                )
                 .DisposeWith(_disposable);
 
             _registrationInfo = _userSessionService.RegistrationInfoChanged
                 .Where(x => x is not null)
                 .Select(x => x!)
-                .ToProperty(this, nameof(RegistrationInfo), scheduler: RxApp.MainThreadScheduler);
+                .Do(info =>
+                {
 
+                    if (info.UserPeriod == null || info.Groups == null) return;
+                    foreach (var period in info.UserPeriod)
+                    {
+                        var raw = info.Groups
+                            .FirstOrDefault(g => g.Title == $"Nhóm {period.Group}")
+                            ?.Value ?? "Không có thông tin.";
+
+                        period.GroupDescription = string.Join(". ", 
+                            raw.Split(". ").Select(s => string.IsNullOrEmpty(s) ? s : char.ToUpper(s[0]) + s[1..]));
+                        
+                    }
+                })
+                .ToProperty(this, nameof(RegistrationInfo), scheduler: RxApp.MainThreadScheduler);
+            
             var ownerContributor = AppConstants.AppCredits.AllContributors[0];
             OpenFacebookCommand = ReactiveCommand
                 .Create(() => OpenUrl(ownerContributor.SocialLinks[SocialPlatform.Facebook])).DisposeWith(_disposable);
@@ -92,25 +131,11 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
                 disposable.Add(_registrationInfo);
                 disposable.Add(_disposable);
             });
-
-            // LoadPage();
         }
 
         private void OpenUrl(string url)
         {
             ProcessHelper.OpenUrl(url);
-        }
-
-        private async void LoadPage()
-        {
-            try
-            {
-                await _registrationRulesService.EnsureReadyAsync();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
         }
 
         public void Dispose()
