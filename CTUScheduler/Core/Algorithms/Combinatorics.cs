@@ -132,4 +132,69 @@ public static class Combinatorics
             }
         }
     }
+    
+    // C# 9+ modern
+    public delegate bool CandidateValidator<T>(ReadOnlySpan<T> current, T candidate, int depth);
+    public delegate bool FullValidator<T>(ReadOnlySpan<T> current);
+    public static IEnumerable<T[]> CartesianProduct<T>(
+        IReadOnlyList<IReadOnlyList<T>> sets,
+        CandidateValidator<T>? isValidCandidate = null,
+        FullValidator<T>? isValidFull = null,
+        CancellationToken token = default)
+    {
+        if (sets.Count == 0) yield break;
+
+        // Early validation
+        for (int i = 0; i < sets.Count; i++)
+        {
+            if (sets[i].Count == 0)
+                yield break;
+        }
+
+        var indices = new int[sets.Count];
+        var buffer = new T[sets.Count];
+        Array.Fill(indices, -1);
+
+        int depth = 0;
+
+        while (depth >= 0)
+        {
+            if (token.IsCancellationRequested)
+                yield break;
+
+            indices[depth]++;
+
+            if (indices[depth] >= sets[depth].Count)
+            {
+                indices[depth] = -1;
+                depth--;
+                continue;
+            }
+
+            T candidate = sets[depth][indices[depth]];
+
+            if (isValidCandidate is not null)
+            {
+                var span = new ReadOnlySpan<T>(buffer, 0, depth);
+                if (!isValidCandidate(span, candidate, depth))
+                    continue;
+            }
+
+            buffer[depth] = candidate;
+
+            if (depth == sets.Count - 1)
+            {
+                if (isValidFull is null || isValidFull(new ReadOnlySpan<T>(buffer, 0, sets.Count)))
+                {
+                    var result = new T[sets.Count];
+                    Array.Copy(buffer, result, sets.Count);
+                    yield return result;
+                }
+            }
+            else
+            {
+                depth++;
+            }
+        }
+    }
 }

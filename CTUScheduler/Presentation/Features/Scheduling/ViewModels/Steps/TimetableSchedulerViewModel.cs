@@ -2,18 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
-using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.ScheduleService;
-using CTUScheduler.Core.Algorithms;
+using CTUScheduler.AppServices.Services.TimetableGeneratorService;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Shared;
-using CTUScheduler.Core.Validators;
+using CTUScheduler.Core.Models.Timetable;
 using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Scheduling.Models.Context;
@@ -25,15 +23,13 @@ using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
 using CTUScheduler.Presentation.Shared.Models;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using DynamicData;
-using DynamicData.Binding;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
-using ReactiveUI.SourceGenerators;
 
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps;
 
-public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposable, IActivatableViewModel,
+public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, IDisposable,
     IFinishableStep,
     INeedArgs<SchedulingWizardContext>
 {
@@ -41,19 +37,18 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
     private readonly ILogger<TimetableSchedulerViewModel> _logger;
     private readonly IScheduleRegistrationService _scheduleRegistrationService;
     private readonly IExcelExporterService _excelExporter;
+    private readonly ITimetableGeneratorService _timetableGeneratorService;
 
-    private CancellationTokenSource? _cts;
-    [Reactive] private bool _isGeneratingTimeTable;
-
-    public ViewModelActivator Activator { get; } = new();
     public SchedulingCourseCoordinatorViewModel SchedulingCourseCoordinatorVM { get; }
     public TimetablePaginationViewModel PaginationTimeTableViewModel { get; }
     public IObservable<bool> CanNavigateNext { get; }
-    public ReactiveCommand<Unit, Unit> GenerateTimeTableCommand { get; }
+    public ReactiveCommand<Unit, IReadOnlyList<SectionChoice>> GenerateTimeTableCommand { get; }
+    public ReactiveCommand<Unit, Unit> CancelGenerationCommand { get; }
     public ReactiveCommand<SelectableTimetableLayout, Unit> ShowTimetableDetailsCommand { get; }
 
     public TimetableSchedulerViewModel(SchedulingWizardContext context,
         IScheduleRegistrationService scheduleRegistrationService,
+        ITimetableGeneratorService timetableGeneratorService,
         IUserInteractionService userInteractionService,
         IProfileQueryService profileQueryService,
         IExcelExporterService excelExporterService,
@@ -61,17 +56,20 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
     {
         _scheduleRegistrationService = scheduleRegistrationService;
         _excelExporter = excelExporterService;
+        _timetableGeneratorService = timetableGeneratorService;
         _logger = loggerFactory.CreateLogger<TimetableSchedulerViewModel>();
-        
+
         var courseStream = context.CourseBlueprints.Connect()
             .SubscribeOn(RxSchedulers.TaskpoolScheduler)
             .AutoRefreshOnObservable(x => x.SectionsSourceChanges.Skip(1))
-            .Transform(node => node.CoreCourse.WithSections(node.Sections), transformOnRefresh:true)
-            .Transform(course => new SchedulingCourseViewModel(course, loggerFactory.CreateLogger<SchedulingCourseViewModel>()))
+            .Transform(node => node.CoreCourse.WithSections(node.Sections), transformOnRefresh: true)
+            .Transform(course =>
+                new SchedulingCourseViewModel(course, loggerFactory.CreateLogger<SchedulingCourseViewModel>()))
             .DisposeMany()
             .AsObservableList()
             .DisposeWith(_disposables);
-        SchedulingCourseCoordinatorVM = new SchedulingCourseCoordinatorViewModel(courseStream, loggerFactory.CreateLogger<SchedulingCourseCoordinatorViewModel>())
+        SchedulingCourseCoordinatorVM = new SchedulingCourseCoordinatorViewModel(courseStream,
+                loggerFactory.CreateLogger<SchedulingCourseCoordinatorViewModel>())
             .DisposeWith(_disposables);
 
         var maxCanSelect = profileQueryService.ProfileUsageState
@@ -83,20 +81,44 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
         CanNavigateNext = PaginationTimeTableViewModel.SelectedItemCountChanged
             .Select(count => count > 0);
 
-        GenerateTimeTableCommand = ReactiveCommand.CreateFromTask(async () =>
-            {
-                if (IsGeneratingTimeTable)
-                {
-                    StopGenerateTimeTable();
-                    return;
-                }
+        CancelGenerationCommand = ReactiveCommand.Create(
+                () => _logger.LogInformation("Timetable generation cancelled by user."),
+                this.WhenAnyObservable(x => x.GenerateTimeTableCommand.IsExecuting))
+            .DisposeWith(_disposables);
 
-                IsGeneratingTimeTable = true;
-                var courseSectionFlatten =
-                    CourseSectionsTrackerFlatten(SchedulingCourseCoordinatorVM.GetGroupedCourses());
-                await GenerateTimeTable(courseSectionFlatten);
-                IsGeneratingTimeTable = false;
-            })
+        GenerateTimeTableCommand = ReactiveCommand.CreateFromObservable(() =>
+                Observable.Using(
+                    () => new CancellationTokenSource(),
+                    cts =>
+                    {
+                        PaginationTimeTableViewModel.Clear();
+                        var courseSectionFlatten =
+                            CourseSectionsTrackerFlatten(SchedulingCourseCoordinatorVM.GetGroupedCourses());
+
+                        var options = new ScheduleGenerationOptions()
+                        {
+                            CancellationToken = cts.Token,
+                        };
+                        return _timetableGeneratorService.Generate(courseSectionFlatten, options)
+                            .SubscribeOn(RxSchedulers.TaskpoolScheduler)
+                            .TakeUntil(CancelGenerationCommand.Do(_ =>
+                            {
+                                try
+                                {
+                                    cts.Cancel();
+                                }
+                                catch (ObjectDisposedException)
+                                {
+                                }
+                            }));
+                    }))
+            .DisposeWith(_disposables);
+
+        GenerateTimeTableCommand
+            .Select(x => new SelectableTimetableLayout(new TimetablePreviewViewModel(x, _excelExporter)))
+            .Buffer(TimeSpan.FromMilliseconds(100), PaginationTimeTableViewModel.PageSize)
+            .Where(batch => batch.Count > 0)
+            .Subscribe(batch => { PaginationTimeTableViewModel.AddRange(batch); })
             .DisposeWith(_disposables);
 
         ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<SelectableTimetableLayout>(async
@@ -115,51 +137,6 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
             .DisposeWith(_disposables);
     }
 
-
-    private void StopGenerateTimeTable()
-    {
-        _cts?.Cancel();
-        IsGeneratingTimeTable = false;
-    }
-
-    private async Task GenerateTimeTable(IReadOnlyList<IReadOnlyList<SectionChoice>> sets)
-    {
-        _cts?.Cancel();
-        _cts?.Dispose();
-        _cts = new CancellationTokenSource();
-        PaginationTimeTableViewModel.Clear();
-
-        await Task.Run(() =>
-        {
-            var batch = new List<SelectableTimetableLayout>();
-            foreach (var tableData in Combinatorics.CartesianProduct(
-                         sets,
-                         (currentPath, next) => ScheduleValidator.ValidateStep(currentPath, next),
-                         _ => true,
-                         _cts.Token))
-            {
-                var layout = new TimetablePreviewViewModel(tableData, _excelExporter);
-
-                var selectableLayoutViewModel = new SelectableTimetableLayout(layout);
-                batch.Add(selectableLayoutViewModel);
-
-                if (batch.Count > 30)
-                {
-                    var copyList = batch.ToList();
-                    batch.Clear();
-
-                    RxApp.MainThreadScheduler.Schedule(() => PaginationTimeTableViewModel.AddRange(copyList));
-                }
-            }
-
-            if (batch.Count > 0)
-            {
-                var copyList = batch.ToList();
-                batch.Clear();
-                RxApp.MainThreadScheduler.Schedule(() => PaginationTimeTableViewModel.AddRange(copyList));
-            }
-        });
-    }
 
     private IReadOnlyList<IReadOnlyList<SectionChoice>> CourseSectionsTrackerFlatten(
         IReadOnlyList<IReadOnlyList<Course>> courseSets)
