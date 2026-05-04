@@ -26,7 +26,7 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <DataValidationErrors>
-                    <StackPanel Spacing="0">
+                    <StackPanel Spacing="0" Cursor="Ibeam">
                         <!-- Floating Watermark Label -->
                         <TextBlock Name="PART_FloatingWatermark"
                                    Text="{TemplateBinding Watermark}"
@@ -146,18 +146,10 @@
         <Style Selector="^:not(:empty) /template/ TextBlock#PART_Watermark">
             <Setter Property="IsVisible" Value="False" />
         </Style>
-
-        <!-- Border States -->
-        <!-- <Style Selector="^:focus /template/ Border#PART_Border"> -->
-        <!--     <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" /> -->
-        <!--     <Setter Property="BorderThickness" Value="0 0 0 2" /> -->
+        
+        <!-- <Style Selector="^:pointerover /template/ Border#PART_AnimatedUnderline"> -->
+        <!--     <Setter Property="RenderTransform" Value="scaleX(1)" /> -->
         <!-- </Style> -->
-        <!-- <Style Selector="^:pointerover /template/ Border#PART_Border"> -->
-        <!--     <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" /> -->
-        <!-- </Style> -->
-        <Style Selector="^:pointerover /template/ Border#PART_AnimatedUnderline">
-            <Setter Property="RenderTransform" Value="scaleX(1)" />
-        </Style>
 
         <Style Selector="^:focus /template/ Border#PART_AnimatedUnderline">
             <Setter Property="RenderTransform" Value="scaleX(1)" />
