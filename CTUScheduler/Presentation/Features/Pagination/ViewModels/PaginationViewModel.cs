@@ -27,7 +27,7 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationVi
 
     protected CompositeDisposable Disposables { get; } = new();
     protected ISourceList<T> DataList { get; }
-    protected BehaviorSubject<IPageRequest> PageRequestSubject { get; }
+    protected  BehaviorSubject<IPageRequest> PageRequestSubject { get; }
 
     /// <summary>
     /// has sorter, filter
@@ -74,6 +74,13 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationVi
         
         var connection = DataList.Connect()
             .SubscribeOn(RxApp.TaskpoolScheduler);
+
+        bool shouldDisposeItems = options.DisposeItemsOnRemove ?? ownsData; 
+        if (shouldDisposeItems)
+        {
+            connection = connection
+                .DisposeMany();
+        }
 
         if (options.FilterObservable is not null)
         {

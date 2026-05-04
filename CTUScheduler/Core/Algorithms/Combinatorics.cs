@@ -18,6 +18,9 @@ public static class Combinatorics
         if (setList.Count == 0 || setList.Any(s => s?.Count == 0))
             yield break;
 
+        // depth : dộ sâu, hay Row
+        // indices[depth]: ở depth thì đang chọn phần tử thứ mấy
+        // current : path hiện tại
         var indices = new int[setList.Count];
         var current = new List<T>(setList.Count);
 
@@ -35,9 +38,13 @@ public static class Combinatorics
             {
                 indices[depth] = -1;
                 depth--;
-                if (depth >= 0 && current.Count > depth)
-                    current.RemoveAt(current.Count - 1);
                 continue;
+            }
+            
+            // dọn dữ liệu thừa ở các nhánh trước
+            if (current.Count > depth)
+            {
+                current.RemoveRange(depth, current.Count - depth);
             }
 
             T candidate = setList[depth][indices[depth]];
@@ -46,11 +53,8 @@ public static class Combinatorics
             {
                 continue;
             }
-
-            if (current.Count > depth)
-                current[depth] = candidate;
-            else
-                current.Add(candidate);
+            
+            current.Add(candidate);
 
             if (depth == setList.Count - 1)
             {
@@ -70,11 +74,13 @@ public static class Combinatorics
         Func<T[], bool>? isValidFull = null,
         CancellationToken token = default)
     {
-        if (sets is null || sets.Length == 0) yield break;
+        ArgumentNullException.ThrowIfNull(sets);
+        if (sets.Length == 0) yield break;
         int count = sets.Length;
         for (int i = 0; i < count; i++)
         {
-            if (sets[i] is null || sets[i].Length == 0) yield break;
+            ArgumentNullException.ThrowIfNull(sets[i]);
+            if (sets[i].Length == 0) yield break;
         }
         
         var indices = new int[count];
@@ -117,6 +123,71 @@ public static class Combinatorics
                 {
                     var result = new T[count];
                     Array.Copy(currentBuffer, result, count);
+                    yield return result;
+                }
+            }
+            else
+            {
+                depth++;
+            }
+        }
+    }
+    
+    // C# 9+ modern
+    public delegate bool CandidateValidator<T>(ReadOnlySpan<T> current, T candidate, int depth);
+    public delegate bool FullValidator<T>(ReadOnlySpan<T> current);
+    public static IEnumerable<T[]> CartesianProduct<T>(
+        IReadOnlyList<IReadOnlyList<T>> sets,
+        CandidateValidator<T>? isValidCandidate = null,
+        FullValidator<T>? isValidFull = null,
+        CancellationToken token = default)
+    {
+        if (sets.Count == 0) yield break;
+
+        // Early validation
+        for (int i = 0; i < sets.Count; i++)
+        {
+            if (sets[i].Count == 0)
+                yield break;
+        }
+
+        var indices = new int[sets.Count];
+        var buffer = new T[sets.Count];
+        Array.Fill(indices, -1);
+
+        int depth = 0;
+
+        while (depth >= 0)
+        {
+            if (token.IsCancellationRequested)
+                yield break;
+
+            indices[depth]++;
+
+            if (indices[depth] >= sets[depth].Count)
+            {
+                indices[depth] = -1;
+                depth--;
+                continue;
+            }
+
+            T candidate = sets[depth][indices[depth]];
+
+            if (isValidCandidate is not null)
+            {
+                var span = new ReadOnlySpan<T>(buffer, 0, depth);
+                if (!isValidCandidate(span, candidate, depth))
+                    continue;
+            }
+
+            buffer[depth] = candidate;
+
+            if (depth == sets.Count - 1)
+            {
+                if (isValidFull is null || isValidFull(new ReadOnlySpan<T>(buffer, 0, sets.Count)))
+                {
+                    var result = new T[sets.Count];
+                    Array.Copy(buffer, result, sets.Count);
                     yield return result;
                 }
             }

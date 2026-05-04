@@ -7,5 +7,6 @@ namespace CTUScheduler.AppServices.Services.TimetableGeneratorService;
 
 public interface ITimetableGeneratorService
 {
-    IObservable<List<SectionChoice>> Generate(IEnumerable<IReadOnlyList<SectionChoice>> sets, ScheduleGenerationOptions? options);
+    IObservable<IReadOnlyList<SectionChoice>> Generate(IEnumerable<IReadOnlyList<SectionChoice>> sets,
+        ScheduleGenerationOptions? options = null);
 }

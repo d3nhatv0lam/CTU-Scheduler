@@ -15,7 +15,7 @@ public record RawDmhpPayload(
     [property: JsonPropertyName("tuan_max")]
     int TuanMax,
     [property: JsonPropertyName("hoc_phan_info")]
-    RawDmhpCourseInfo HocPhanInfo,
+    RawDmhpCourseInfo? HocPhanInfo,
     [property: JsonPropertyName("data")] IReadOnlyList<RawDmhpCourseData> Data);
 
 public record RawDmhpCourseInfo(

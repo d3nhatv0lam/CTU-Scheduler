@@ -74,9 +74,12 @@
                                 Theme="{StaticResource OutlineTextBox}"
                                 p1:TextFieldAssist.Label="Mã học phần">
                                 <Interaction.Behaviors>
-                                    <behaviors:TextBoxClickBehavior ClickCommand="{Binding TryOpenPopupCommand}"></behaviors:TextBoxClickBehavior>
+                                    <behaviors:TextBoxClickBehavior ClickCommand="{Binding FocusTextBoxCommand}"></behaviors:TextBoxClickBehavior>
+                                    <EventTriggerBehavior EventName="GotFocus">
+                                        <InvokeCommandAction Command="{Binding FocusTextBoxCommand}" />
+                                    </EventTriggerBehavior>
                                     <EventTriggerBehavior EventName="LostFocus">
-                                        <InvokeCommandAction Command="{Binding ClosePopupCommand}"></InvokeCommandAction>
+                                        <InvokeCommandAction Command="{Binding UnfocusTextBoxCommand}"></InvokeCommandAction>
                                     </EventTriggerBehavior>
                                 </Interaction.Behaviors>
                             </TextBox>
@@ -85,7 +88,7 @@
                             <Popup
                                 PlacementTarget="{Binding ElementName=tboxCourseKeyInput}"
                                 Placement="BottomEdgeAlignedLeft"
-                                IsOpen="{Binding  IsOpenQuickSelectPopup, Mode=OneWay}"
+                                IsOpen="{Binding IsOpenQuickSelectPopup, Mode=TwoWay}"
                                 MaxHeight="200" Width="210">
 
                                 <controls:Card
@@ -167,7 +170,7 @@
                             IsReadOnly="False"
                             ColumnHeaderHeight="40"
                             SelectionMode="Single"
-                            ItemsSource="{Binding FiltedCourseSections,Mode=OneWay}"
+                            ItemsSource="{Binding FilteredCourseSections,Mode=OneWay}"
                             AutoGenerateColumns="False">
                             
 
@@ -295,7 +298,7 @@
 
                             <TreeView.ItemTemplate>
                                 <TreeDataTemplate ItemsSource="{Binding Sections}"
-                                                  x:DataType="{x:Type context:SelectedCourse}">
+                                                  x:DataType="{x:Type context:CourseBlueprint}">
                                     <Grid ColumnDefinitions="* auto">
                                         <TextBlock Grid.Column="0"
                                                    HorizontalAlignment="Left">
@@ -310,7 +313,7 @@
                                         <Button Grid.Column="1"
                                                 Classes="BtnRemove"
                                                 Content="{materialIcons:MaterialIconExt Kind=CloseBoxOutline,Size=20}"
-                                                Command="{Binding ViewModel.Tree_RemoveCourseCommand , RelativeSource={RelativeSource AncestorType=views1:HandmadeFindCourseView}}"
+                                                Command="{Binding ViewModel.TreeRemoveCourseCommand , RelativeSource={RelativeSource AncestorType=views1:HandmadeFindCourseView}}"
                                                 CommandParameter="{Binding .}" />
                                     </Grid>
                                 </TreeDataTemplate>
@@ -354,7 +357,7 @@
                                                 Grid.Column="2"
                                                 Classes="BtnRemove"
                                                 Content="{materialIcons:MaterialIconExt Kind=CloseBoxOutline,Size=20}"
-                                                Command="{Binding ViewModel.Tree_RemoveSectionCommand , RelativeSource={RelativeSource AncestorType=views1:HandmadeFindCourseView}}"
+                                                Command="{Binding ViewModel.TreeRemoveSectionCommand , RelativeSource={RelativeSource AncestorType=views1:HandmadeFindCourseView}}"
                                                 CommandParameter="{Binding .}" />
                                     </Grid>
                                 </DataTemplate>

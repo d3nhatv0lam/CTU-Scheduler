@@ -1,6 +1,6 @@
 ﻿using System;
-using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
+using CTUScheduler.Presentation.Shared.Interfaces;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Shared.Models;
@@ -21,6 +21,6 @@ public class SelectableTimetableLayout: SelectableItem<TimetablePreviewViewModel
 
     public void Dispose()
     {
-        Item?.Dispose();
+        Item.Dispose();
     }
 }
