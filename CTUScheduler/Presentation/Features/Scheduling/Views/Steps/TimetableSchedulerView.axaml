@@ -125,8 +125,9 @@
                                                             <Style Selector="StackPanel.locked">
                                                                 <Setter Property="IsHitTestVisible" Value="False"></Setter>
                                                                 <Style
-                                                                    Selector="^ RadioButton.rd-locked /template/ Path#Graphic, ^ RadioButton.rd-locked /template/ Path#InnerGraphic">
+                                                                    Selector="^ RadioButton.rd-locked /template/ Ellipse#OuterEllipse">
                                                                     <Setter Property="Fill" Value="Red"></Setter>
+                                                                    <Setter Property="Stroke" Value="Red"></Setter>
                                                                 </Style>
                                                             </Style>
                                                         </StackPanel.Styles>
