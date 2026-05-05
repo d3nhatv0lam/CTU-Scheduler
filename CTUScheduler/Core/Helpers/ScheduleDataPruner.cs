@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
@@ -10,20 +10,20 @@ public static class ScheduleDataPruner
 {
     /// <summary>
     /// Optimizes the provided list of courses by removing unnecessary data based on the specified schedule profiles.
-    /// Modifies the input collections directly.
+    /// Returns a new list of pruned courses.
     /// </summary>
-    /// <param name="courses">The list of courses to be trimmed. This list will be altered during execution.</param>
-    /// <param name="profiles">The list of schedule profiles used to determine which courses and sections to keep. This list will also be altered by removing profiles with no saved course group keys.</param>
-    public static void Trim(List<Course> courses, List<ScheduleProfile> profiles)
+    /// <param name="courses">The list of courses to be trimmed.</param>
+    /// <param name="profiles">The list of schedule profiles used to determine which courses and sections to keep. This list will be altered by removing profiles with no saved course group keys.</param>
+    /// <returns>A new list of courses containing only relevant sections.</returns>
+    public static List<Course> Prune(IEnumerable<Course> courses, List<ScheduleProfile> profiles)
     {
-        if (courses is null || profiles is null) return;
+        if (courses is null || profiles is null) return new List<Course>();
         
         profiles.RemoveAll(t => t.SavedCourseGroupKeys.Count == 0);
 
         if (profiles.Count == 0)
         {
-            courses.Clear();
-            return;
+            return new List<Course>();
         }
         
         var requiredKeys = profiles
@@ -31,23 +31,21 @@ public static class ScheduleDataPruner
             .Select(kvp => (Code: kvp.Key, Group: kvp.Value))
             .ToHashSet();
         
-        courses.RemoveAll(course =>
-        {
-            var validSections = new List<CourseSection>();
-            foreach (var section in course.Sections)
+        return courses
+            .Select(course =>
             {
-                if (requiredKeys.Contains((course.Code, section.Group)))
+                var validSections = course.Sections
+                    .Where(section => requiredKeys.Contains((course.Code, section.Group)))
+                    .ToList();
+
+                if (validSections.Count > 0)
                 {
-                    validSections.Add(section);
+                    return course with { Sections = validSections };
                 }
-            }
-            
-            if (validSections.Count > 0)
-            {
-                course.Sections = validSections; 
-                return false;
-            }
-            return true;
-        });
+                return null;
+            })
+            .Where(c => c is not null)
+            .Cast<Course>()
+            .ToList();
     }
 }

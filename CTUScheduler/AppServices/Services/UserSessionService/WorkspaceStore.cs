@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -41,11 +41,14 @@ public class WorkspaceStore : IWorkspaceStore
         
         var courseSnapshot = _scheduleManager.GetCoursesSnapshot().ToList();
         var profileSnapshot = _scheduleManager.GetProfileSnapshot().ToList();
-        ScheduleDataPruner.Trim(courseSnapshot, profileSnapshot);
+        
+        // Prune returns a new list
+        var prunedCourses = ScheduleDataPruner.Prune(courseSnapshot, profileSnapshot);
+        
         var workspace = new WorkspaceSnapshot()
         {
             Context = _userSessionService.CurrentContext ?? RegistrationContext.Unknown,
-            Courses = courseSnapshot,
+            Courses = prunedCourses,
             Profiles = profileSnapshot,
             LastModified = DateTimeOffset.Now
         };
