@@ -108,8 +108,8 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
         {
             Room = day.Room,
             AttendingDay = day.AttendingDay,
-            StartPeriod = day.StartPeriod(),
-            NumberOfPeriods = day.PeriodCount()
+            StartPeriod = day.StartPeriod,
+            NumberOfPeriods = day.PeriodCount
         });
 
         return new TimetableRenderItem(shared, cells);

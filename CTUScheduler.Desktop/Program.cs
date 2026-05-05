@@ -55,7 +55,9 @@ class Program
         }
         finally
         {
-            Log.Information("Cleaning up DI and infrastructure resources...");
+            var sysLog = Log.ForContext("ShortTypeName", "System");
+
+            sysLog.Information("Cleaning up DI and infrastructure resources...");
 
             // Sử dụng Task.Run để giải phóng ThreadPool, ngăn chặn rủi ro Deadlock
             Task.Run(async () =>
@@ -66,29 +68,29 @@ class Program
                     {
                         var disposeTask = asyncDisposable.DisposeAsync().AsTask();
                         await disposeTask.WaitAsync(TimeSpan.FromSeconds(15));
-                        Log.Information("Shutdown complete successfully.");
+                        sysLog.Information("Shutdown complete successfully.");
                     }
                     else if (serviceProvider is IDisposable disposable)
                     {
                         disposable.Dispose();
-                        Log.Information("Shutdown complete successfully.");
+                        sysLog.Information("Shutdown complete successfully.");
                     }
                 }
                 catch (TimeoutException)
                 {
-                    Log.Warning("Shutdown timed out (15s)! Một số service chạy quá lâu. Ép buộc tắt...");
+                    sysLog.Warning("Shutdown timed out (15s)! Một số service chạy quá lâu. Ép buộc tắt...");
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, "Lỗi khi dọn dẹp tài nguyên DI.");
+                    sysLog.Error(ex, "Lỗi khi dọn dẹp tài nguyên DI.");
                 }
             }).GetAwaiter().GetResult();
 
-            Log.Information("================= LOG END =================");
+            sysLog.Information("================= LOG END =================");
             LoggingConfig.CloseAndFlush();
         }
     }
-    
+
     public static AppBuilder BuildAvaloniaApp()
     {
         // chế độ Design
@@ -114,7 +116,8 @@ class Program
 
                     desktop.Exit += (_, _) =>
                     {
-                        Log.Information("UI Phase: Starting disposal of UI services...");
+                        var uiLog = Log.ForContext("ShortTypeName", "UI");
+                        uiLog.Information("UI Phase: Starting disposal of UI services...");
 
                         var disposableUiServices = serviceProvider.GetServices<IUiDisposable>();
                         int count = 0;
@@ -124,7 +127,7 @@ class Program
                             count++;
                         }
 
-                        Log.Information("UI Phase: Disposed {Count} UI services successfully.", count);
+                        uiLog.Information("UI Phase: Disposed {Count} UI services successfully.", count);
                         appLifetime.NotifyStopped();
                     };
                 }
