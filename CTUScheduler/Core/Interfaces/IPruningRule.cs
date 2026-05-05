@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using CTUScheduler.Core.Models.Shared;
 
 namespace CTUScheduler.Core.Interfaces;
@@ -15,5 +15,5 @@ public interface IPruningRule
     /// A boolean value indicating whether the addition of the next candidate is valid
     /// based on specific pruning rules. Returns true if the addition can proceed, otherwise false.
     /// </returns>
-    bool CanContinue(IReadOnlyList<SectionChoice> currentPath, SectionChoice nextCandidate);
+    bool CanContinue(ReadOnlySpan<SectionChoice> currentPath, SectionChoice nextCandidate);
 }

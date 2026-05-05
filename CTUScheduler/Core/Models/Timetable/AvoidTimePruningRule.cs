@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Interfaces;
@@ -19,7 +20,7 @@ public class AvoidTimePruningRule : IPruningRule
         _avoidanceSlots = slotsToAvoid?.ToList() ?? new List<AvoidanceSlot>();
     }
 
-    public bool CanContinue(IReadOnlyList<SectionChoice> currentPath, SectionChoice nextCandidate)
+    public bool CanContinue(ReadOnlySpan<SectionChoice> currentPath, SectionChoice nextCandidate)
     {
         if (_avoidanceSlots.Count == 0) return true;
 

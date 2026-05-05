@@ -43,7 +43,7 @@ public static class DesktopServiceExtensions
         services.Scan(scan => scan
             .FromAssemblyOf<UrsaToast>() 
             .AddClasses(c => c.AssignableTo<IUiDisposable>())
-            .AsImplementedInterfaces()
+            .AsSelfWithInterfaces()
             .WithSingletonLifetime()
         );
 

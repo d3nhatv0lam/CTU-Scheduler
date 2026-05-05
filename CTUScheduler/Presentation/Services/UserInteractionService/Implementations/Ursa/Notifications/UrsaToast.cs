@@ -13,7 +13,7 @@ public class UrsaToast(IViewContextService viewContextService, ILogger<UrsaToast
     : UrsaInteractionManagerBase<WindowToastManager>(viewContextService, logger), IToastService
 {
     protected override WindowToastManager CreateManager(TopLevel context) =>
-        new (context) { MaxItems = 5 };
+        new(context) { MaxItems = 5 };
 
     protected override void UninstallManager(WindowToastManager manager) => manager.Uninstall();
 
