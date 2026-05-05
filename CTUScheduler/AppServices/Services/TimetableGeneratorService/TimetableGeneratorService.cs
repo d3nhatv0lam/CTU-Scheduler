@@ -18,9 +18,8 @@ public class TimetableGeneratorService : ITimetableGeneratorService
     {
         var opts = options ?? new ScheduleGenerationOptions();
 
-        IReadOnlyList<IPruningRule> pruningRules =
-            [new NoOverlapPruningRule(), .. opts.AdditionalPruningRules];
-        IEnumerable<IPostFilterRule> postFilterRules = opts.AdditionalPostFilterRules;
+        IPruningRule[] pruningArray = [new OverlapPruningRule(), .. opts.AdditionalPruningRules];
+        IPostFilterRule[] postFilterArray = opts.AdditionalPostFilterRules.ToArray();
 
         return Observable.Create<IReadOnlyList<SectionChoice>>(observer =>
         {
@@ -32,8 +31,8 @@ public class TimetableGeneratorService : ITimetableGeneratorService
             {
                 var results = Combinatorics.CartesianProduct(
                     sets,
-                    (path, candidate) => pruningRules.All(r => r.CanContinue(path, candidate)),
-                    fullTimetable => postFilterRules.All(filter => filter.IsSatisfied(fullTimetable)),
+                    PruningDelegate,
+                    PostFilterDelegate,
                     token
                 );
 
@@ -60,6 +59,26 @@ public class TimetableGeneratorService : ITimetableGeneratorService
             }
 
             return Disposable.Empty;
+            
+            bool PruningDelegate(IReadOnlyList<SectionChoice> path, SectionChoice candidate)
+            {
+                foreach (var rule in pruningArray)
+                {
+                    if (!rule.CanContinue(path, candidate)) return false;
+                }
+
+                return true;
+            }
+
+            bool PostFilterDelegate(IReadOnlyList<SectionChoice> fullTimetable)
+            {
+                foreach (var filter in postFilterArray)
+                {
+                    if (!filter.IsSatisfied(fullTimetable)) return false;
+                }
+
+                return true;
+            }
         });
     }
 }
