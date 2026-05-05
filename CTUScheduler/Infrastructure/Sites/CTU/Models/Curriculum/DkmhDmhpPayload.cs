@@ -11,6 +11,12 @@ public record QuickSelectDmhpCourse(
     public string Information => $"{CourseCode} - {CourseNameVn}";
 }
 
+/// <summary>
+/// Học phần
+/// </summary>
+/// <param name="TuanMax"></param>
+/// <param name="HocPhanInfo"></param>
+/// <param name="Data"></param>
 public record RawDmhpPayload(
     [property: JsonPropertyName("tuan_max")]
     int TuanMax,
@@ -18,6 +24,16 @@ public record RawDmhpPayload(
     RawDmhpCourseInfo? HocPhanInfo,
     [property: JsonPropertyName("data")] IReadOnlyList<RawDmhpCourseData> Data);
 
+/// <summary>
+/// Thông tin chung của học phần
+/// </summary>
+/// <param name="HocPhanMa"></param>
+/// <param name="HocPhanTen"></param>
+/// <param name="HocPhanTenVn"></param>
+/// <param name="SoTinChi"></param>
+/// <param name="SoTietLyThuyet"></param>
+/// <param name="SoTietThucHanh"></param>
+/// <param name="DonViMa"></param>
 public record RawDmhpCourseInfo(
     [property: JsonPropertyName("dkmh_tu_dien_hoc_phan_ma")]
     string HocPhanMa,
@@ -34,6 +50,21 @@ public record RawDmhpCourseInfo(
     [property: JsonPropertyName("dkmh_tu_dien_don_vi_ma")]
     string DonViMa);
 
+/// <summary>
+///  Nhóm học phần
+/// </summary>
+/// <param name="Key"></param>
+/// <param name="HocPhanMa"></param>
+/// <param name="NhomHocPhanMa"></param>
+/// <param name="HocPhanTenVn"></param>
+/// <param name="SoTinChi"></param>
+/// <param name="PhongHocTen"></param>
+/// <param name="ThuTrongTuanMa"></param>
+/// <param name="GiangVienTenVn"></param>
+/// <param name="GiangVienEmail"></param>
+/// <param name="SiSo"></param>
+/// <param name="SiSoConLai"></param>
+/// <param name="TietHoc"></param>
 public record RawDmhpCourseData(
     [property: JsonPropertyName("key")] int Key,
     [property: JsonPropertyName("dkmh_tu_dien_hoc_phan_ma")]
@@ -61,4 +92,4 @@ public record RawDmhpCourseData(
 )
 {
     [JsonExtensionData] public IDictionary<string, JsonElement>? ExtraData { get; set; }
-};
+}

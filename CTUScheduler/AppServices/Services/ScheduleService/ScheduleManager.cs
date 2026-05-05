@@ -165,6 +165,8 @@ public class ScheduleManager : IScheduleManager, IDisposable
         if (_isRefreshingSubject.Value) return;
         _isRefreshingSubject.OnNext(true);
         
+        // var stopwatch = Stopwatch.StartNew();
+        
         try
         {
             var coursesDict = _coursesSource.Items.ToDictionary(x => x.Code);
@@ -220,6 +222,12 @@ public class ScheduleManager : IScheduleManager, IDisposable
         }
         finally
         {
+            // stopwatch.Stop(); 
+            // _logger.LogInformation(
+            //     "Finished refreshing courses. Vừa tốn mất: {ElapsedMilliseconds} ms (khoảng {ElapsedSeconds} giây).", 
+            //     stopwatch.ElapsedMilliseconds,
+            //     stopwatch.Elapsed.TotalSeconds);
+            
             _logger.LogInformation("Finished refreshing courses.");
             _isRefreshingSubject.OnNext(false);
         }
