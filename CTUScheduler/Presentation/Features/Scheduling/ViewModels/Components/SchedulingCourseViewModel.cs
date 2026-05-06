@@ -1,67 +1,63 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
+using System.Reactive.Linq;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components;
 
-public class SchedulingCourseViewModel : ReactiveObject
+public partial class SchedulingCourseViewModel : ReactiveObject, IDisposable
 {
-    private bool _isMainCourse = true;
-    private int _mainCourseLockCount = 0;
-    private IEnumerable<SchedulingCourseViewModel> _replacementOptions = Enumerable.Empty<SchedulingCourseViewModel>();
-    private SchedulingCourseViewModel? _selectedReplacement;
+    private readonly CompositeDisposable _disposables = new();
+    private readonly ILogger<SchedulingCourseViewModel>? _logger;
+    [Reactive] private bool _isMainCourse = true;
+    [Reactive] private int _mainCourseLockCount = 0;
+    [Reactive] private IEnumerable<SchedulingCourseViewModel> _replacementOptions = [];
+    [Reactive] private SchedulingCourseViewModel? _selectedReplacement;
+
+    [ObservableAsProperty] private bool _isLocked;
     public Course Item { get; }
 
-    public bool IsMainCourse
-    {
-        get => _isMainCourse;
-        set
-        {
-            this.RaiseAndSetIfChanged(ref _isMainCourse, value);
-            if (_isMainCourse && SelectedReplacement != null)
-                SelectedReplacement = null;
-        }
-    }
-
-    public int MainCourseLockCount
-    {
-        get => _mainCourseLockCount;
-        set => this.RaiseAndSetIfChanged(ref _mainCourseLockCount, value);
-    }
-
-    public SchedulingCourseViewModel? SelectedReplacement
-    {
-        get => _selectedReplacement;
-        set
-        {
-            if (_selectedReplacement != null)
-                _selectedReplacement.MainCourseLockCount--;
-            if (value != null)
-                value.MainCourseLockCount++;
-            this.RaiseAndSetIfChanged(ref _selectedReplacement, value);
-        }
-    }
-
-    public IEnumerable<SchedulingCourseViewModel> ReplacementOptions
-    {
-        get => _replacementOptions;
-        set => this.RaiseAndSetIfChanged(ref _replacementOptions, value);
-    }
-
-    public SchedulingCourseViewModel(Course course, IEnumerable<SchedulingCourseViewModel> options)
+    public SchedulingCourseViewModel(Course course, ILogger<SchedulingCourseViewModel>? logger = null)
     {
         Item = course;
-        ReplacementOptions = options;
+        _logger = logger;
+        
+        this.WhenAnyValue(x => x.IsMainCourse)
+            .Where(isMain => isMain)
+            .Subscribe(_ => SelectedReplacement = null)
+            .DisposeWith(_disposables);
+
+        _isLockedHelper = this.WhenAnyValue(x => x.MainCourseLockCount)
+            .Select(count => count > 0)
+            .ToProperty(this, nameof(IsLocked))
+            .DisposeWith(_disposables);
+        
+        SchedulingCourseViewModel? oldReplacement = SelectedReplacement;
+        this.WhenAnyValue(x => x.SelectedReplacement)
+            .Subscribe(newReplacement =>
+            {
+                if (ReferenceEquals(oldReplacement, newReplacement)) return;
+
+                if (oldReplacement != null)
+                    oldReplacement.MainCourseLockCount--;
+
+                if (newReplacement != null)
+                    newReplacement.MainCourseLockCount++;
+
+                oldReplacement = newReplacement;
+            })
+            .DisposeWith(_disposables);
     }
 
-    public SchedulingCourseViewModel(Course course)
+    public void Dispose()
     {
-        Item = course;
-    }
-    
-    public static SchedulingCourseViewModel CourseToSchedulingCourse(Course course)
-    {
-        return new SchedulingCourseViewModel(course);
+        SelectedReplacement = null;
+        _disposables.Dispose();
+        _logger?.LogDebug("{this} - {code}: disposed", nameof(SchedulingCourseViewModel), Item.Code);
     }
 }

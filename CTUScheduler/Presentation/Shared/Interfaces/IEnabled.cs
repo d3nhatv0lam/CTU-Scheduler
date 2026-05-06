@@ -1,4 +1,4 @@
-﻿namespace CTUScheduler.Core.Interfaces;
+﻿namespace CTUScheduler.Presentation.Shared.Interfaces;
 
 public interface IEnabled
 {

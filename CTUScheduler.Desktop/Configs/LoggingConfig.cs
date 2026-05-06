@@ -1,6 +1,7 @@
 ﻿using System;
 using CTUScheduler.Core.Helpers;
 using Serilog;
+using Serilog.Enrichers.ShortTypeName;
 
 namespace CTUScheduler.Desktop.Configs;
 
@@ -17,12 +18,13 @@ public static class LoggingConfig
 #else
         .MinimumLevel.Information()
 #endif
+            .Enrich.FromLogContext()
+            .Enrich.WithShortTypeName()
             .WriteTo.File(
                 path: logPath,
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 14,
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message}{NewLine}{Exception}"
-            )
+                outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {ShortTypeName,-40} | {Message}{NewLine}{Exception}")
             .CreateLogger();
         LogHeader();
         PathProvider.CreateLogShortcut();
@@ -30,13 +32,16 @@ public static class LoggingConfig
 
     private static void LogHeader()
     {
+        var headerLogger = Log.ForContext("ShortTypeName", "System");
+
         string separator = new string('=', 60);
-        Log.Information($"{separator}");
-        Log.Information("    CTU-SCHEDULER LOGGER (Started)");
-        Log.Information($"    Time: {DateTime.Now}");
-        Log.Information($"{separator}");
+
+        headerLogger.Information(separator);
+        headerLogger.Information("CTU-SCHEDULER LOGGER (Started)");
+        headerLogger.Information("Time: {Now:yyyy-MM-dd HH:mm:ss}", DateTime.Now);
+        headerLogger.Information(separator);
     }
-    
+
     public static void CloseAndFlush()
     {
         Log.CloseAndFlush();

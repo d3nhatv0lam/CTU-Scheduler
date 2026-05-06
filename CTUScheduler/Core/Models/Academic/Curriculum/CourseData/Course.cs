@@ -1,17 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 
-public class Course
+public record Course(
+    string Code,
+    string Name_VN,
+    int Credits,
+    int TheorySessions,
+    int PracticalSessions,
+    IReadOnlyList<CourseSection> Sections
+)
 {
-    public string Code { get; set; }
-    public string Name_VN { get; set; }
-    public int Credits { get; set; }
-    public int TheorySessions { get; set; }
-    public int PracticalSessions { get; set; }
-    public List<CourseSection> Sections { get; set; } = new();
-
     /// <summary>
     /// Create a new course with a single filled section (Optimized overload)
     /// </summary>
@@ -30,9 +30,7 @@ public class Course
             );
         }
 
-        var newCourse = (Course)this.MemberwiseClone();
-        newCourse.Sections = new List<CourseSection>(1) { section };
-        return newCourse;
+        return this with { Sections = [section] };
     }
 
     /// <summary>
@@ -51,11 +49,6 @@ public class Course
                 throw new ArgumentException($"Mismatch code: Expected {this.Code}, found {section.Code}");
         }
 
-        var newCourse = (Course)this.MemberwiseClone();
-
-        newCourse.Sections = new List<CourseSection>(sections.Count);
-        newCourse.Sections.AddRange(sections);
-
-        return newCourse;
+        return this with { Sections = sections };
     }
 }

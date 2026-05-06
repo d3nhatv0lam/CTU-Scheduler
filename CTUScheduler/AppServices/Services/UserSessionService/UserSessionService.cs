@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
@@ -54,7 +54,9 @@ public class UserSessionService: IUserSessionService, IDisposable
             {
                 if (empty) return false; 
                 if (local is null || serverInfo is null) return false;
-                return local.GetContextId() != serverInfo.ToContext().GetContextId();
+                
+                // Sử dụng tính năng so sánh (value equality) của Record thay vì GetContextId()
+                return local != serverInfo.ToContext();
             })
             .DistinctUntilChanged()
             .Replay(1)
@@ -66,10 +68,10 @@ public class UserSessionService: IUserSessionService, IDisposable
             .WithLatestFrom(_localContextSubject, (serverInfo, localCtx) => (serverInfo, localCtx))
             .Subscribe(state => 
             {
-                if (state.serverInfo == null) return;
+                if (state.serverInfo is null) return;
                 var serverCtx = state.serverInfo.ToContext();
-                // không có local   // server và local chưa đồng bộ
-                if (state.localCtx is null || state.localCtx.GetContextId() != serverCtx.GetContextId())
+                
+                if (state.localCtx != serverCtx)
                 {
                     _localContextSubject.OnNext(serverCtx);
                 }
@@ -81,7 +83,7 @@ public class UserSessionService: IUserSessionService, IDisposable
     
 
     
-    public void SetLocalContext(RegistrationContext context)
+    public void SetLocalContext(RegistrationContext? context)
     {
         _localContextSubject.OnNext(context);
     }
@@ -94,9 +96,12 @@ public class UserSessionService: IUserSessionService, IDisposable
     {
         _lastSavedSubject.OnNext(DateTimeOffset.Now);
     }
-    public void SetLastModified(DateTimeOffset time)
+    public void SetLastModified(DateTimeOffset? time)
     {
-        _lastSavedSubject.OnNext(time);
+        if (time.HasValue && time.Value == DateTimeOffset.MinValue)
+            _lastSavedSubject.OnNext(null);
+        else
+            _lastSavedSubject.OnNext(time);
     }
     public void Dispose()
     {

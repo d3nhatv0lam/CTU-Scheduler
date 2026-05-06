@@ -7,117 +7,69 @@ namespace CTUScheduler.Core.Algorithms;
 
 public static class Combinatorics
 {
-    // O(∏(sets[i].size)) 
-    public static IEnumerable<List<T>> CartesianProduct<T>(
-        IEnumerable<IReadOnlyList<T>> sets,
-        Func<IReadOnlyList<T>, T, bool>? isValidCandidate = null,
-        Func<IReadOnlyList<T>, bool>? isValidFull = null,
-        CancellationToken? token = null)
+    /// <summary>
+    /// Delegate dùng để cắt tỉa (prune) các nhánh không hợp lệ ngay trong quá trình sinh.
+    /// Sử dụng ReadOnlySpan để đảm bảo Zero-Allocation (không tạo mảng mới/không rác GC).
+    /// </summary>
+    public delegate bool CandidateValidator<T>(ReadOnlySpan<T> current, T candidate);
+
+    /// <summary>
+    /// Delegate kiểm tra điều kiện của toàn bộ tập hợp sau khi đã đi đến độ sâu cuối cùng.
+    /// </summary>
+    public delegate bool FullValidator<T>(ReadOnlySpan<T> fullPath);
+
+    /// <summary>
+    /// Sinh tích Đề-các (Cartesian Product) cho danh sách các tập hợp.
+    /// <br/>
+    /// O(∏(sets[i].size)) 
+    /// </summary>
+    public static IEnumerable<T[]> CartesianProduct<T>(
+        IReadOnlyList<IReadOnlyList<T>> sets,
+        CandidateValidator<T>? isValidCandidate = null,
+        FullValidator<T>? isValidFull = null,
+        CancellationToken token = default)
     {
-        var setList = sets as IReadOnlyList<IReadOnlyList<T>> ?? sets.ToList();
-        if (setList.Count == 0 || setList.Any(s => s?.Count == 0))
+        ArgumentNullException.ThrowIfNull(sets);
+
+        if (sets.Count == 0 || sets.Any(s => s == null || s.Count == 0))
             yield break;
 
-        var indices = new int[setList.Count];
-        var current = new List<T>(setList.Count);
+        var indices = new int[sets.Count];
+        var buffer = new T[sets.Count];
 
-        int depth = 0;
         Array.Fill(indices, -1);
+        int depth = 0;
 
         while (depth >= 0)
         {
-            if (token?.IsCancellationRequested == true)
+            if (token.IsCancellationRequested)
                 yield break;
 
             indices[depth]++;
 
-            if (indices[depth] >= setList[depth].Count)
-            {
-                indices[depth] = -1;
-                depth--;
-                if (depth >= 0 && current.Count > depth)
-                    current.RemoveAt(current.Count - 1);
-                continue;
-            }
-
-            T candidate = setList[depth][indices[depth]];
-
-            if (isValidCandidate is not null && !isValidCandidate(current, candidate))
-            {
-                continue;
-            }
-
-            if (current.Count > depth)
-                current[depth] = candidate;
-            else
-                current.Add(candidate);
-
-            if (depth == setList.Count - 1)
-            {
-                if (isValidFull is null || isValidFull(current))
-                    yield return new List<T>(current);
-            }
-            else
-            {
-                depth++;
-            }
-        }
-    }
-
-    public static IEnumerable<T[]> CartesianProductArray<T>(
-        T[][] sets,
-        Func<T[], int, T, bool>? isValidCandidate = null,
-        Func<T[], bool>? isValidFull = null,
-        CancellationToken token = default)
-    {
-        if (sets is null || sets.Length == 0) yield break;
-        int count = sets.Length;
-        for (int i = 0; i < count; i++)
-        {
-            if (sets[i] is null || sets[i].Length == 0) yield break;
-        }
-        
-        var indices = new int[count];
-        Array.Fill(indices, -1);
-
-        var currentBuffer = new T[count]; 
-        int depth = 0;
-
-     
-        while (depth >= 0)
-        {
-            if (token.IsCancellationRequested) yield break;
-
-            T[] currentSet = sets[depth];
-            indices[depth]++;
-            
-            if (indices[depth] >= currentSet.Length)
+            // Hết lựa chọn ở depth hiện tại -> quay lui
+            if (indices[depth] >= sets[depth].Count)
             {
                 indices[depth] = -1;
                 depth--;
                 continue;
             }
-            
-            T candidate = currentSet[indices[depth]];
 
-        
+            T candidate = sets[depth][indices[depth]];
+
             if (isValidCandidate is not null)
             {
-                if (!isValidCandidate(currentBuffer, depth, candidate))
-                {
+                if (!isValidCandidate(buffer.AsSpan(0, depth), candidate))
                     continue;
-                }
             }
-            
-            currentBuffer[depth] = candidate;
-            
-            if (depth == count - 1)
+
+            buffer[depth] = candidate;
+
+            if (depth == sets.Count - 1)
             {
-                if (isValidFull is null || isValidFull(currentBuffer))
+                if (isValidFull is null || isValidFull(buffer.AsSpan()))
                 {
-                    var result = new T[count];
-                    Array.Copy(currentBuffer, result, count);
-                    yield return result;
+                    yield return (T[])buffer.Clone();
                 }
             }
             else

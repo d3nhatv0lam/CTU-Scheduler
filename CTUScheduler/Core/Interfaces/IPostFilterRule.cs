@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using CTUScheduler.Core.Models.Shared;
 
 namespace CTUScheduler.Core.Interfaces;
 
 public interface IPostFilterRule
 {
-    bool IsSatisfied(IReadOnlyList<SectionChoice> fullSchedule);
+    bool IsSatisfied(ReadOnlySpan<SectionChoice> fullSchedule);
 }

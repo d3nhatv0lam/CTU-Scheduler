@@ -14,17 +14,13 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
 {
     public class SelectionViewModel : ViewModelBase, IRoutableViewModel, IDisposable
     {
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private readonly CompositeDisposable _disposables = new();
         private readonly INavigationRegionManager _navigationRegionManager;
-        private readonly SchedulingStrategy _manualStrategy;
-        private readonly SchedulingStrategy _quickStrategy;
 
-        public string? UrlPathSegment => nameof(SelectionViewModel);
-
+        public string UrlPathSegment => nameof(SelectionViewModel);
         public IScreen HostScreen { get; }
-
-        public ReactiveCommand<Unit, Unit> ManualSelectionCommand { get; protected set; }
-        public ReactiveCommand<Unit, Unit> QuickSelectionCommand { get; protected set; }
+        public ReactiveCommand<Unit, Unit> ManualSelectionCommand { get; }
+        public ReactiveCommand<Unit, Unit> QuickSelectionCommand { get; }
 
         public SelectionViewModel(IScreen hostScreen,
             INavigationRegionManager navigationRegionManager,
@@ -33,14 +29,14 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         {
             HostScreen = hostScreen;
             _navigationRegionManager = navigationRegionManager;
-            _manualStrategy = manualStrategy;
-            _quickStrategy = quickStrategy;
-
-            ManualSelectionCommand = ReactiveCommand.Create(() => NavigateToSelection(_manualStrategy))
+            
+            ManualSelectionCommand = ReactiveCommand.Create(() => NavigateToSelection(manualStrategy))
                 .DisposeWith(_disposables);
 
             var disabledQuickSelection = Observable.Return(false);
-            // QuickSelectionCommand = ReactiveCommand.Create(() => NavigateToSelection(_quickStrategy),disabledQuickSelection).DisposeWith(_disposables);
+            QuickSelectionCommand = ReactiveCommand
+                .Create(() => NavigateToSelection(quickStrategy), disabledQuickSelection)
+                .DisposeWith(_disposables);
         }
 
         private void NavigateToSelection(SchedulingStrategy strategy)

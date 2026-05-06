@@ -6,7 +6,6 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
@@ -16,235 +15,223 @@ using CTUScheduler.Presentation.Features.Scheduling.Models.Context;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using DynamicData;
-using Microsoft.Extensions.DependencyInjection;
+using DynamicData.Binding;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
 {
-    public class HandmadeFindCourseViewModel : ViewModelBase, IDisposable, IWizardStep,
+    public partial class HandmadeFindCourseViewModel : ViewModelBase, IDisposable, IWizardStep,
         INeedArgs<SchedulingWizardContext>
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
-        private readonly ICourseCatalogService _courseCatalogService;
+        private readonly ILogger<HandmadeFindCourseViewModel> _logger;
+        [Reactive] private string _txtInputCourseKey = string.Empty;
+        [Reactive] private bool _isOpenQuickSelectPopup;
+        [Reactive] private bool _showOnlyAvailableSections;
+        [Reactive] private bool _isTextBoxFocused;
+        [Reactive] private QuickSelectDmhpCourse? _selectedQuickSelectDmhpCourse;
 
-        private string _txtInputCourseKey = string.Empty;
-        private bool _isOpenQuickSelectPopup;
-        private bool _showOnlyAvailableSections;
+        [ObservableAsProperty] private Course _searchedCourse = null!;
+        [ObservableAsProperty] private IReadOnlyList<SelectableCourseSection> _searchedCourseSections = null!;
+        [ObservableAsProperty] private IReadOnlyList<SelectableCourseSection> _filteredCourseSections = null!;
+        [ObservableAsProperty] private IReadOnlyList<QuickSelectDmhpCourse> _quickSelectCourses = null!;
 
-        private ObservableAsPropertyHelper<Course> _searchedCourse;
-        private ObservableAsPropertyHelper<ObservableCollection<SelectableCourseSection>> _searchedCourseSections;
-        private ObservableAsPropertyHelper<ObservableCollection<SelectableCourseSection>> _filtedCourseSections;
-        private ObservableAsPropertyHelper<ObservableCollection<QuickSelectDmhpCourse>> _quickSelectCourses;
+        private readonly ReadOnlyObservableCollection<CourseBlueprint> _coursesBindable;
+        private readonly SourceList<CourseBlueprint> _coursesSourceList;
 
-        private QuickSelectDmhpCourse _selectedQuickSelectDmhpCourse = null!;
-
-        private readonly Subject<Unit> _textBoxClickTriggerSubject = new();
-        private ReadOnlyObservableCollection<SelectedCourse> _coursesBindable;
-        private readonly SourceList<SelectedCourse> _coursesSourceList;
-
-        public string TxtInputCourseKey
-        {
-            get => _txtInputCourseKey;
-            set => this.RaiseAndSetIfChanged(ref _txtInputCourseKey, value);
-        }
-
-        public bool IsOpenQuickSelectPopup
-        {
-            get => _isOpenQuickSelectPopup;
-            set => this.RaiseAndSetIfChanged(ref _isOpenQuickSelectPopup, value);
-        }
-
-        public bool ShowOnlyAvailableSections
-        {
-            get => _showOnlyAvailableSections;
-            set => this.RaiseAndSetIfChanged(ref _showOnlyAvailableSections, value);
-        }
-
-        public Course SearchedCourse => _searchedCourse.Value;
-        public ObservableCollection<SelectableCourseSection> SearchedCourseSections => _searchedCourseSections.Value;
-        public ObservableCollection<SelectableCourseSection> FiltedCourseSections => _filtedCourseSections.Value;
-        public ObservableCollection<QuickSelectDmhpCourse> QuickSelectCourses => _quickSelectCourses.Value;
-
-        public QuickSelectDmhpCourse SelectedQuickSelectDmhpCourse
-        {
-            get => _selectedQuickSelectDmhpCourse;
-            set => this.RaiseAndSetIfChanged(ref _selectedQuickSelectDmhpCourse, value);
-        }
-
-        public ReadOnlyObservableCollection<SelectedCourse> Courses => _coursesBindable;
-        public ReactiveCommand<Unit, Unit> TryOpenPopupCommand { get; }
-        public ReactiveCommand<Unit, Unit> ClosePopupCommand { get; }
+        public ReadOnlyObservableCollection<CourseBlueprint> Courses => _coursesBindable;
+        public ReactiveCommand<Unit, Unit> FocusTextBoxCommand { get; }
+        public ReactiveCommand<Unit, Unit> UnfocusTextBoxCommand { get; }
         public ReactiveCommand<Unit, Course> SearchCommand { get; }
-        public ReactiveCommand<SelectableCourseSection, Unit> ChangeSelectStateSectionCommand { get; }
         public ReactiveCommand<Unit, Unit> AddCoursesCommand { get; }
-        public ReactiveCommand<SelectedCourse, Unit> Tree_RemoveCourseCommand { get; }
-        public ReactiveCommand<CourseSection, Unit> Tree_RemoveSectionCommand { get; }
+        public ReactiveCommand<CourseBlueprint, Unit> TreeRemoveCourseCommand { get; }
+        public ReactiveCommand<CourseSection, Unit> TreeRemoveSectionCommand { get; }
 
-        public HandmadeFindCourseViewModel(SchedulingWizardContext context)
+        public HandmadeFindCourseViewModel(SchedulingWizardContext context, ICourseCatalogService courseCatalogService,
+            ILogger<HandmadeFindCourseViewModel> logger)
         {
-            _courseCatalogService = App.ServiceProvider.GetRequiredService<ICourseCatalogService>();
-            _coursesSourceList = context.SelectedCourses;
+            _coursesSourceList = context.CourseBlueprints;
+            _logger = logger;
 
-            // TreeView SourceList
+            #region Source Lists Setup
+
             _coursesSourceList.Connect()
                 .Bind(out _coursesBindable)
                 .Subscribe()
                 .DisposeWith(_disposables);
 
-            // Fill & Search Field //
-            _quickSelectCourses = this.WhenAnyValue(x => x.TxtInputCourseKey)
+            #endregion
+
+            #region Course Search Pipeline
+
+            SearchCommand = ReactiveCommand.CreateFromObservable(() =>
+                courseCatalogService.RequestCourseStream(TxtInputCourseKey)
+                    .Catch((Exception _) => Observable.Empty<Course>())
+            );
+
+            _searchedCourseHelper = SearchCommand
+                .ToProperty(this, nameof(SearchedCourse), scheduler: RxApp.MainThreadScheduler)
+                .DisposeWith(_disposables);
+
+            #endregion
+
+            #region Section Filtering Pipeline
+
+            _searchedCourseSectionsHelper = this.WhenAnyValue(x => x.SearchedCourse)
+                .Select(course => course is null
+                    ? (IReadOnlyList<SelectableCourseSection>)[]
+                    : course.Sections.Select(s => new SelectableCourseSection(s)).ToList())
+                .ToProperty(this, nameof(SearchedCourseSections), scheduler: RxApp.MainThreadScheduler)
+                .DisposeWith(_disposables);
+
+            _filteredCourseSectionsHelper = this.WhenAnyValue(x => x.ShowOnlyAvailableSections,
+                    x => x.SearchedCourseSections,
+                    (showOnlyAvailableSections, searchedCourseSections) =>
+                        (showOnlyAvailableSections, searchedCourseSections))
+                .Where(tuple => tuple.searchedCourseSections != null)
+                .Select(tuple => tuple.showOnlyAvailableSections
+                    ? tuple.searchedCourseSections
+                        .Where(section => section.Item.RemainingStudents > 0).ToList()
+                    : tuple.searchedCourseSections)
+                .ToProperty(this, nameof(FilteredCourseSections), scheduler: RxApp.MainThreadScheduler)
+                .DisposeWith(_disposables);
+
+            #endregion
+
+            #region Suggestions Pipeline
+
+            _quickSelectCoursesHelper = this.WhenAnyValue(x => x.TxtInputCourseKey)
                 .Throttle(TimeSpan.FromMilliseconds(300))
                 .DistinctUntilChanged()
                 .Select(query =>
                 {
-                    if (string.IsNullOrEmpty(query)) return Observable.Return(new List<QuickSelectDmhpCourse>());
-                    ;
-                    return _courseCatalogService.RequestSuggestionsStream(query)
-                        .SubscribeOn(RxApp.TaskpoolScheduler)
-                        .Catch((Exception _) => Observable.Return(new List<QuickSelectDmhpCourse>()));
+                    if (string.IsNullOrEmpty(query))
+                        return Observable.Return<IReadOnlyList<QuickSelectDmhpCourse>>([]);
+
+                    return Observable.Defer(() => courseCatalogService.RequestSuggestionsStream(query))
+                        .Select(x => (IReadOnlyList<QuickSelectDmhpCourse>)x.ToList())
+                        .SubscribeOn(RxSchedulers.TaskpoolScheduler)
+                        .Catch((Exception _) =>
+                            Observable.Return<IReadOnlyList<QuickSelectDmhpCourse>>([]));
                 })
                 .Switch()
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Select(x => new ObservableCollection<QuickSelectDmhpCourse>(x))
-                .ToProperty(this,
-                    nameof(QuickSelectCourses),
-                    initialValue: new ObservableCollection<QuickSelectDmhpCourse>())
+                .ToProperty(this, nameof(QuickSelectCourses), initialValue: [],
+                    scheduler: RxSchedulers.MainThreadScheduler)
                 .DisposeWith(_disposables);
 
-
-            // không cần Switch vì viết CreateFromObservable sẽ lock nút đến khi xong
-            SearchCommand = ReactiveCommand.CreateFromObservable(() =>
-                _courseCatalogService.RequestCourseStream(TxtInputCourseKey)
-                    .Catch((Exception _) => Observable.Empty<Course>())
-            );
-
-            _searchedCourse = SearchCommand
-                .ToProperty(this, nameof(SearchedCourse), scheduler: RxApp.MainThreadScheduler)
+            // Trigger popup when suggestions change and text box is focused
+            this.WhenAnyValue(x => x.QuickSelectCourses, x => x.IsTextBoxFocused)
+                .Subscribe(_ => TryOpenQuickSelectPopup())
                 .DisposeWith(_disposables);
 
-
-            // Selected QuickSelectCourse do
+            // Handle user selecting a suggestion
             this.WhenAnyValue(x => x.SelectedQuickSelectDmhpCourse)
                 .WhereNotNull()
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(selectedQuickSelectCourse =>
                 {
-                    // set course key
                     TxtInputCourseKey = selectedQuickSelectCourse.CourseCode;
                     SelectedQuickSelectDmhpCourse = null!;
                     IsOpenQuickSelectPopup = false;
                 }).DisposeWith(_disposables);
 
+            #endregion
 
-            // Course -> UI items
-            _searchedCourseSections = this.WhenAnyValue(x => x.SearchedCourse)
-                .Select(course => course is null
-                    ? new ObservableCollection<SelectableCourseSection>()
-                    : new ObservableCollection<SelectableCourseSection>(
-                        course.Sections.Select(s => new SelectableCourseSection(s))))
-                .ToProperty(this, nameof(SearchedCourseSections), scheduler:RxApp.MainThreadScheduler)
-                .DisposeWith(_disposables);
+            #region Commands Setup
 
-            // Filtered Course Sections
-            _filtedCourseSections = this.WhenAnyValue(x => x.ShowOnlyAvailableSections, x => x.SearchedCourseSections,
-                    (showOnlyAvailableSections, searchedCourseSections) =>
-                        (showOnlyAvailableSections, searchedCourseSections))
-                .Where(tuple => tuple.searchedCourseSections != null)
-                .Select(tuple => tuple.showOnlyAvailableSections
-                    ? new ObservableCollection<SelectableCourseSection>(
-                        tuple.searchedCourseSections.Where(section => section.Item.RemainingStudents > 0))
-                    : tuple.searchedCourseSections)
-                .ToProperty(this, nameof(FiltedCourseSections), scheduler:RxApp.MainThreadScheduler)
-                .DisposeWith(_disposables);
+            FocusTextBoxCommand = ReactiveCommand.Create(() =>
+            {
+                IsTextBoxFocused = true;
+                TryOpenQuickSelectPopup();
+            }).DisposeWith(_disposables);
 
+            UnfocusTextBoxCommand =
+                ReactiveCommand.Create(() => { IsTextBoxFocused = false; }).DisposeWith(_disposables);
 
-            this.WhenAnyValue(x => x.QuickSelectCourses)
+            // Delay closing the popup on lost focus to allow popup clicks to register
+            this.WhenAnyValue(x => x.IsTextBoxFocused)
+                .Where(focused => !focused)
+                .Delay(TimeSpan.FromMilliseconds(150), RxApp.MainThreadScheduler)
                 .Subscribe(_ => TryOpenQuickSelectPopup())
                 .DisposeWith(_disposables);
 
-            TryOpenPopupCommand = ReactiveCommand.Create(TryOpenQuickSelectPopup)
-                .DisposeWith(_disposables);
-
-            ClosePopupCommand = ReactiveCommand.Create(() => { IsOpenQuickSelectPopup = false; })
-                .DisposeWith(_disposables);
-
-
-            ChangeSelectStateSectionCommand = ReactiveCommand.Create<SelectableCourseSection>(selectable =>
-                {
-                    selectable.IsSelected = !selectable.IsSelected;
-                })
-                .DisposeWith(_disposables);
 
             var canAddCourse = this.WhenAnyValue(x => x.SearchedCourseSections,
-                searchedCourseSections => searchedCourseSections != null && searchedCourseSections.Any());
-            AddCoursesCommand = ReactiveCommand.Create(() =>
-            {
-                var selectedSections = FiltedCourseSections
-                    .Where(x => x.IsSelected)
-                    .Select(x => x.Item)
-                    .ToList();
+                searchedCourseSections => searchedCourseSections is not null && searchedCourseSections.Any());
 
-                if (selectedSections.Count == 0) return;
-
-                var existingNode = _coursesSourceList.Items.FirstOrDefault(x => x.CoreCourse.Code == SearchedCourse.Code);
-                
-                if (existingNode == null)
-                {
-                    var selectedCourseNode = new SelectedCourse(SearchedCourse, selectedSections);
-                    _coursesSourceList.Add(selectedCourseNode);
-                    return;
-                }
-                
-                foreach (var section in selectedSections)
-                {
-                    if (!existingNode.Sections.Contains(section))
-                        existingNode.Sections.Add(section);
-                }
-                
-                var sorted = existingNode.Sections.OrderBy(s => s.Group).ToList();
-                existingNode.Sections.Clear();
-                foreach (var s in sorted) existingNode.Sections.Add(s);
-                
-            }, canAddCourse).DisposeWith(_disposables);
-
-
-            Tree_RemoveCourseCommand = ReactiveCommand.Create<SelectedCourse>(course => RemoveCourseFromTree(course))
+            AddCoursesCommand = ReactiveCommand.Create(AddSelectedSectionsToCart, canAddCourse)
                 .DisposeWith(_disposables);
 
-            Tree_RemoveSectionCommand = ReactiveCommand
-                .Create<CourseSection>(section => RemoveSectionFromTree(section))
+            TreeRemoveCourseCommand = ReactiveCommand.Create<CourseBlueprint>(RemoveCourseFromTree)
                 .DisposeWith(_disposables);
+
+            TreeRemoveSectionCommand = ReactiveCommand.Create<CourseSection>(RemoveSectionFromTree)
+                .DisposeWith(_disposables);
+
+            #endregion
         }
 
         private void TryOpenQuickSelectPopup()
         {
-            if ((QuickSelectCourses?.Any()).GetValueOrDefault())
-                IsOpenQuickSelectPopup = true;
-            else
-                IsOpenQuickSelectPopup = false;
+            IsOpenQuickSelectPopup = IsTextBoxFocused && (QuickSelectCourses?.Any() ?? false);
         }
-        
 
-        private void RemoveCourseFromTree(SelectedCourse? course)
+        private void AddSelectedSectionsToCart()
+        {
+            var selected = FilteredCourseSections
+                .Where(x => x.IsSelected)
+                .Select(x => x.Item)
+                .ToList();
+
+            if (selected.Count == 0) return;
+
+            var existingNode = _coursesSourceList.Items.FirstOrDefault(x => x.CoreCourse.Code == SearchedCourse.Code);
+
+            if (existingNode == null)
+            {
+                var selectedCourseNode = new CourseBlueprint(SearchedCourse, selected);
+                _coursesSourceList.Add(selectedCourseNode);
+                return;
+            }
+
+            existingNode.UpdateSections(list =>
+            {
+                var newItems = selected.Where(s => list.All(ex => ex.Group != s.Group));
+
+                list.AddRange(newItems);
+            });
+        }
+
+        private void RemoveCourseFromTree(CourseBlueprint? course)
         {
             if (course == null) return;
             _coursesSourceList.Remove(course);
         }
 
-        private void RemoveSectionFromTree(CourseSection section)
+        private void RemoveSectionFromTree(CourseSection? section)
         {
             if (section == null) return;
-            var targetNode = _coursesSourceList.Items.FirstOrDefault(n => n.Sections.Contains(section));
+            var targetNode = _coursesSourceList.Items
+                .FirstOrDefault(n => n.Sections.Contains(section));
+
             if (targetNode == null) return;
-            targetNode.Sections.Remove(section);
-            if (!targetNode.Sections.Any())
-                RemoveCourseFromTree(targetNode);
+
+            if (targetNode.Sections.Count == 1 && targetNode.Sections.Contains(section))
+            {
+                _coursesSourceList.Remove(targetNode);
+            }
+            else
+            {
+                targetNode.UpdateSections(list => list.Remove(section));
+            }
         }
 
         public void Dispose()
         {
-            _textBoxClickTriggerSubject.Dispose();
             _disposables.Dispose();
+            _logger.LogDebug("{this}: Disposed", nameof(HandmadeFindCourseViewModel));
         }
     }
 }

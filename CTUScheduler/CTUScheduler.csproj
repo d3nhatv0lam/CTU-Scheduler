@@ -52,10 +52,6 @@
       <DependentUpon>MainLayoutView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Presentation\Shells\MainShell\Views\LogoutDialogView.axaml.cs">
-      <DependentUpon>LogoutDialogView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Update="Presentation\Shells\AppShell\Views\MainView.axaml.cs">
       <DependentUpon>MainView.axaml</DependentUpon>
       <SubType>Code</SubType>

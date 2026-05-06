@@ -13,10 +13,8 @@ public record ScheduleGenerationOptions
     public TimeSpan? Timeout { get; init; } = TimeSpan.FromSeconds(30);
 
     // --- Cấu hình thuật toán (Strategy Pattern) ---
-    public List<IPruningRule> PruningRules { get; init; } = new()
-    {
-        // default
-        new NoOverlapPruningRule()
-    };
-    public List<IPostFilterRule> PostFilterRules { get; init; } = new();
+    public IReadOnlyList<IPruningRule> AdditionalPruningRules { get; init; } = [];
+    public IReadOnlyList<IPostFilterRule> AdditionalPostFilterRules { get; init; } = [];
+    // --- Chấm điểm để hiện lên theo thứ tự từ tốt nhất trở xuống cho user
+    public IReadOnlyList<IScheduleScorer> Scorers { get; init; } = [];
 }

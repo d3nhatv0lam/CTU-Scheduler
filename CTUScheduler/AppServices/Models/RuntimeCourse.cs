@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -67,7 +67,7 @@ public class RuntimeCourse : IDisposable, INotifyPropertyChanged
     public bool RegisterSection(CourseSection section, string ownerId)
     {
         ArgumentNullException.ThrowIfNull(section);
-        if (string.IsNullOrEmpty(ownerId)) throw new ArgumentNullException(nameof(ownerId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(ownerId);
         
         var owners = _sectionOwners.GetOrAdd(section.Group, _ => new HashSet<string>());
         lock (owners)
@@ -143,21 +143,21 @@ public class RuntimeCourse : IDisposable, INotifyPropertyChanged
                 }
                 else if (!localSection.IsCancelled)
                 {
-                    localSection.IsCancelled = true;
-                    innerList.AddOrUpdate(localSection);
+                    var cancelledSection = localSection with { IsCancelled = true };
+                    innerList.AddOrUpdate(cancelledSection);
                 }
             }
         });
     }
-    public Course ToCourse() => new Course()
-    {
-        Code = this.Code,
-        Name_VN = this.Name_VN,
-        Credits = this.Credits,
-        TheorySessions = this.TheorySessions,
-        PracticalSessions = this.PracticalSessions,
-        Sections = this._sectionsCache.Items.ToList()
-    };
+
+    public Course ToCourse() => new Course(
+        Code: this.Code,
+        Name_VN: this.Name_VN,
+        Credits: this.Credits,
+        TheorySessions: this.TheorySessions,
+        PracticalSessions: this.PracticalSessions,
+        Sections: this._sectionsCache.Items.ToList()
+    );
     
     public event PropertyChangedEventHandler? PropertyChanged;
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)

@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum;
 
@@ -8,46 +8,45 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
     {
         public static Course? ToCourse(this RawDmhpPayload rawDmhpPayload)
         {
-            if (rawDmhpPayload?.HocPhanInfo is null || rawDmhpPayload?.Data is null) return null;
+            if (rawDmhpPayload.HocPhanInfo is null || rawDmhpPayload?.Data is null) return null;
 
             var info = rawDmhpPayload.HocPhanInfo;
 
-            var course = new Course()
-            {
-                Code = info.HocPhanMa,
-                Name_VN = info.HocPhanTenVn,
-                Credits = info.SoTinChi,
-                TheorySessions = info.SoTietLyThuyet,
-                PracticalSessions = info.SoTietThucHanh,
-            };
-
-            course.Sections = rawDmhpPayload.Data
+            var sections = rawDmhpPayload.Data
                 .GroupBy(d => d.NhomHocPhanMa)
                 .Select(group =>
                 {
                     var firstItem = group.First();
 
-                    return new CourseSection
-                    {
-                        Key = firstItem.Key,
-                        Code = firstItem.HocPhanMa,
-                        Group = firstItem.NhomHocPhanMa,
-                        Lecturer = firstItem.GiangVienTenVn,
-                        LecturerEmail = firstItem.GiangVienEmail,
-                        TotalStudents = firstItem.SiSo,
-                        RemainingStudents = firstItem.SiSoConLai,
+                    var classDays = group
+                        .Select(GetClassDayData)
+                        .Where(day => day is not null)
+                        .Cast<ClassDay>()
+                        .ToList();
 
-                        ClassDays = group
-                            .Select(GetClassDayData)
-                            .Where(day => day is not null)
-                            .Cast<ClassDay>()
-                            .ToList()
-                    };
+                    return new CourseSection(
+                        IsCancelled: false,
+                        Key: firstItem.Key,
+                        Code: firstItem.HocPhanMa,
+                        Group: firstItem.NhomHocPhanMa,
+                        Lecturer: firstItem.GiangVienTenVn,
+                        LecturerEmail: firstItem.GiangVienEmail,
+                        TotalStudents: firstItem.SiSo,
+                        RemainingStudents: firstItem.SiSoConLai,
+                        ClassDays: classDays
+                    );
                 })
                 .OrderBy(x => x.Key)
                 .ToList();
 
-            return course;
+            return new Course(
+                Code: info.HocPhanMa,
+                Name_VN: info.HocPhanTenVn,
+                Credits: info.SoTinChi,
+                TheorySessions: info.SoTietLyThuyet,
+                PracticalSessions: info.SoTietThucHanh,
+                Sections: sections
+            );
 
             static ClassDay? GetClassDayData(RawDmhpCourseData item)
             {
@@ -56,12 +55,11 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
                     || item.PhongHocTen is null)
                     return null;
 
-                return new ClassDay()
-                {
-                    AttendingDay = item.ThuTrongTuanMa.Value,
-                    Period = item.TietHoc,
-                    Room = item.PhongHocTen
-                };
+                return new ClassDay(
+                    AttendingDay: item.ThuTrongTuanMa.Value,
+                    Period: item.TietHoc,
+                    Room: item.PhongHocTen
+                );
             }
         }
     }

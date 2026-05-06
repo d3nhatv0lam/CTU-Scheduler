@@ -110,11 +110,11 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
 
                     if (!isAvailable)
                     {
-                        _userInteractionService.Notification.Light.Warning("Mât kết nối internet!", this._internetNotificationOptions);
+                        _userInteractionService.Notification.Light.Warning("Mât kết nối internet!", in this._internetNotificationOptions);
                     }
                     else
                     {
-                        _userInteractionService.Notification.Light.Success("Kết nối internet đã sẵn sàng!", this._internetNotificationOptions);
+                        _userInteractionService.Notification.Light.Success("Kết nối internet đã sẵn sàng!", in this._internetNotificationOptions);
                     }
 
                 }).DisposeWith(disposables);
