@@ -45,13 +45,12 @@ public class WorkspaceStore : IWorkspaceStore
         // Prune returns a new list
         var prunedCourses = ScheduleDataPruner.Prune(courseSnapshot, profileSnapshot);
         
-        var workspace = new WorkspaceSnapshot()
-        {
-            Context = _userSessionService.CurrentContext ?? RegistrationContext.Unknown,
-            Courses = prunedCourses,
-            Profiles = profileSnapshot,
-            LastModified = DateTimeOffset.Now
-        };
+        var workspace = new WorkspaceSnapshot(
+            _userSessionService.CurrentContext,
+            prunedCourses,
+            profileSnapshot,
+            DateTimeOffset.Now
+        );
         try
         {
             await JsonHelper.SerializeToSafeFileAsync(filePath, workspace);
@@ -90,21 +89,28 @@ public class WorkspaceStore : IWorkspaceStore
             var newWorkspace = await JsonHelper.DeserializeFromFileAsync<WorkspaceSnapshot>(filePath,option);
             if (newWorkspace is null)
             {
-                _logger.LogError("Failed to load workspace from file {FilePath}.}", filePath);
+                _logger.LogError("Failed to load workspace from file {FilePath}.", filePath);
                 return false;
             }
-            // Sanitization
-            newWorkspace.Courses ??= new List<Course>();
-            newWorkspace.Profiles ??= new List<ScheduleProfile>();
-            // validate
-            SanitizeAndRepair(newWorkspace, out var warnings);
+
+            // Đảm bảo Courses và Profiles không bao giờ null khi nạp từ file JSON cũ
+            newWorkspace = newWorkspace with
+            {
+                Courses = newWorkspace.Courses ?? Array.Empty<Course>(),
+                Profiles = newWorkspace.Profiles ?? Array.Empty<ScheduleProfile>()
+            };
+
+            // validate & sanitize
+            var sanitizedWorkspace = SanitizeAndRepair(newWorkspace, out var warnings);
+            
             if (warnings.Count > 0)
             {
                 _logger.LogWarning("Found broken references in Saved: {Warnings}", warnings);
             }
-            _userSessionService.SetLocalContext(newWorkspace.Context);
-            _userSessionService.SetLastModified(newWorkspace.LastModified);
-            _scheduleManager.ImportSchedule(newWorkspace.Courses, newWorkspace.Profiles);
+
+            _userSessionService.SetLocalContext(sanitizedWorkspace.Context);
+            _userSessionService.SetLastModified(sanitizedWorkspace.LastModified);
+            _scheduleManager.ImportSchedule(sanitizedWorkspace.Courses, sanitizedWorkspace.Profiles);
             return true;
         } catch (IOException ex)
         {
@@ -122,38 +128,42 @@ public class WorkspaceStore : IWorkspaceStore
     /// </summary>
     /// <param name="snapshot"></param>
     /// <param name="warnings">Code:group brokenRef -> UI</param>
-    private static void SanitizeAndRepair(WorkspaceSnapshot snapshot, out List<string> warnings)
+    private static WorkspaceSnapshot SanitizeAndRepair(WorkspaceSnapshot snapshot, out IReadOnlyList<string> warnings)
     {
-        warnings = new List<string>();
+        var currentWarnings = new List<string>();
 
         var availableKeys = snapshot.Courses
             .SelectMany(c => c.Sections.Select(s => (c.Code, s.Group)))
             .ToHashSet();
 
-        var profiles = snapshot.Profiles.ToList();
-        foreach (var profile in profiles)
+        var sanitizedProfiles = new List<ScheduleProfile>();
+
+        foreach (var profile in snapshot.Profiles)
         {
             if (profile.SavedCourseGroupKeys is null || profile.SavedCourseGroupKeys.Count == 0)
-            {
-                snapshot.Profiles.Remove(profile);
                 continue;
-            }
-            
-            // xuất hiện trong profile mà không có trong course
-            var brokenRef = profile.SavedCourseGroupKeys
+
+            // Kiểm tra các tham chiếu bị hỏng
+            var brokenRefs = profile.SavedCourseGroupKeys
                 .Where(kpv => !availableKeys.Contains((kpv.Key, kpv.Value)))
                 .ToList();
 
-            if (brokenRef.Count > 0)
+            if (brokenRefs.Count > 0)
             {
-                foreach (var (code, group) in brokenRef)
+                foreach (var (code, group) in brokenRefs)
                 {
-                    warnings.Add($"{code}:{group}");
+                    currentWarnings.Add($"{code}:{group}");
                     profile.SavedCourseGroupKeys.Remove(code);
                 }
-                if (profile.SavedCourseGroupKeys.Count == 0)
-                    snapshot.Profiles.Remove(profile);
             }
-        } 
+
+            if (profile.SavedCourseGroupKeys.Count > 0)
+            {
+                sanitizedProfiles.Add(profile);
+            }
+        }
+
+        warnings = currentWarnings;
+        return snapshot with { Profiles = sanitizedProfiles };
     }
 }
