@@ -100,7 +100,7 @@ public class RegistrationRulesService : IRegistrationRulesService
         try
         {
             var userInfo = await _rulesPage.TryGetUserKeyAndUnitAsync();
-            return rawContent.ToRegistrationInformation(userInfo.userKey, userInfo.userUnit);
+            return rawContent.ToRegistrationInformation(userInfo.userKey, userInfo.userUnit, _logger);
         }
         catch (Exception ex)
         {

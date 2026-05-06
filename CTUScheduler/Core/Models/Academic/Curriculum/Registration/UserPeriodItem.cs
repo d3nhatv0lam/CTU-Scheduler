@@ -5,8 +5,8 @@ namespace CTUScheduler.Core.Models.Academic.Curriculum.Registration;
 
 public record UserPeriodItem(
     string Key, 
-    DateTime StartDate, 
-    DateTime EndDate, 
+    DateTime? StartDate, 
+    DateTime? EndDate, 
     IReadOnlyList<int> AllowedGroups, 
     string GroupDescription
 )
