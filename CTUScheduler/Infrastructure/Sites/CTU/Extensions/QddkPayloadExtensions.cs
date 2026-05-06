@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -11,12 +12,10 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
 {
     public static class QddkPayloadExtensions
     {
-        public static RegistrationInformation ToRegistrationInformation(this RawQddkPayload rawQddkPayload,string userKey, string userUnit)
+        public static RegistrationInformation ToRegistrationInformation(this RawQddkPayload rawQddkPayload, string userKey, string userUnit)
         {
             try
             {
-                RegistrationInformation info = new RegistrationInformation();
-                
                 int maxCreditPerSemester = 99;
                 string period = string.Empty;
                 List<GroupItem> groups = null!;
@@ -27,18 +26,29 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
                     () => groups = GetGroups(rawQddkPayload)
                 );
 
-                info.AcademicYear = rawQddkPayload.NamHoc;
-                info.Semester = rawQddkPayload.HocKy;
-                info.MaxCreditPerSemester = maxCreditPerSemester;
-                info.Period = period;
-                info.Groups = groups;
-
                 if (string.IsNullOrEmpty(userKey) || string.IsNullOrEmpty(userUnit))
-                    return info;
-                
-                string userGroup = FindGroupByUnit(info.Groups, userUnit);
-                info.UserPeriod = GetUserPeriod(rawQddkPayload, userKey,userGroup);
-                return info;
+                {
+                    return new RegistrationInformation(
+                        rawQddkPayload.NamHoc,
+                        rawQddkPayload.HocKy,
+                        maxCreditPerSemester,
+                        period,
+                        groups,
+                        null
+                    );
+                }
+
+                string userGroup = FindGroupByUnit(groups, userUnit);
+                var userPeriod = GetUserPeriod(rawQddkPayload, userKey, userGroup, groups);
+
+                return new RegistrationInformation(
+                    rawQddkPayload.NamHoc,
+                    rawQddkPayload.HocKy,
+                    maxCreditPerSemester,
+                    period,
+                    groups,
+                    userPeriod
+                );
             }
             catch
             {
@@ -49,7 +59,7 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
         private static int GetMaxCreditPerSemester(RawQddkPayload rawQddkPayload)
         {
             int maxCreditPerSemester = 99;
-            foreach(var quyDinh in rawQddkPayload.DanhSachQuyDinh)
+            foreach (var quyDinh in rawQddkPayload.DanhSachQuyDinh)
             {
                 foreach (var leftData in quyDinh.CotTrai)
                 {
@@ -71,7 +81,7 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
         {
             foreach (var quyDinh in rawQddkPayload.DanhSachQuyDinh)
             {
-                if (quyDinh.CotTrai.Any(leftData => leftData.NoiDung.Contains("Thời gian đăng ký"))) 
+                if (quyDinh.CotTrai.Any(leftData => leftData.NoiDung.Contains("Thời gian đăng ký")))
                 {
                     return quyDinh.CotTrai.Last().NoiDung;
                 }
@@ -86,12 +96,11 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
             {
                 if (quyDinh.CotPhai.Count > 0 && quyDinh.CotPhai.First().NoiDung.StartsWith("Nhóm"))
                 {
-                    foreach(var rightData in quyDinh.CotPhai)
+                    foreach (var rightData in quyDinh.CotPhai)
                     {
-                        GroupItem group = new GroupItem();
-                        group.Title = rightData.CacDiemLuuY.First();
-                        group.Value = Regex.Replace(rightData.NoiDung, @"Nhóm \d+: ?", "");
-                        groups.Add(group);
+                        var name = rightData.CacDiemLuuY.First();
+                        var description = Regex.Replace(rightData.NoiDung, @"Nhóm \d+: ?", "");
+                        groups.Add(new GroupItem(name, description));
                     }
                 }
             }
@@ -104,11 +113,11 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
             string group = string.Empty;
             foreach (var item in groups)
             {
-                if (NormalizeString(item.Value).Contains(unitNormalized))
+                if (NormalizeString(item.Description).Contains(unitNormalized))
                 {
-                    try 
+                    try
                     {
-                        Match match = Regex.Match(item.Title, @"\d+");
+                        Match match = Regex.Match(item.Name, @"\d+");
                         group = match.Value;
                         break;
                     }
@@ -136,44 +145,67 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
             }
         }
 
-        private static List<PeriodItem> GetUserPeriod(RawQddkPayload rawQddkPayload, string userKey, string group)
+        private static UserPeriodItem? GetUserPeriod(RawQddkPayload rawQddkPayload, string userKey, string group, List<GroupItem> groups)
         {
-            List<PeriodItem> userPeriods = new List<PeriodItem>();
-            // empty check
             if (string.IsNullOrEmpty(userKey) || string.IsNullOrEmpty(group))
-                return userPeriods;
+                return null;
 
             userKey = Regex.Match(userKey, @"Khóa \d+").Value;
             int userKeyInt = int.Parse(Regex.Match(userKey, @"\d+").Value);
 
             int i = 0;
-            while(i < rawQddkPayload.DanhSachThoiGianDangKy.Count)
+            while (i < rawQddkPayload.DanhSachThoiGianDangKy.Count)
             {
                 IReadOnlyList<RawQddkThoiGianDangKyItem> firstRow = rawQddkPayload.DanhSachThoiGianDangKy[i];
                 try
                 {
                     var rowSpan = int.Parse(firstRow.First().RowSpan);
 
-                    if (i == 0 && userKeyInt > int.Parse(Regex.Match(firstRow[1].TieuDe, @"\d+").Value) 
+                    if (i == 0 && userKeyInt > int.Parse(Regex.Match(firstRow[1].TieuDe, @"\d+").Value)
                         || !firstRow[1].TieuDe.Contains(userKey))
                     {
                         i += rowSpan;
                         continue;
                     }
 
-                    PeriodItem period = new PeriodItem() { Key = userKey};
-
                     for (int j = i; j < i + rowSpan; j++)
                     {
                         var row = rawQddkPayload.DanhSachThoiGianDangKy[j];
-                        if (row.Last().TieuDe.Contains(group))
+                        var groupStr = row.Last().TieuDe;
+
+                        // Parse groups in row: "1, 3" -> [1, 3]
+                        var allowedGroups = groupStr.Split(',', ' ', ';')
+                            .Select(s => Regex.Match(s, @"\d+").Value)
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Select(int.Parse)
+                            .ToList();
+
+                        if (allowedGroups.Contains(int.Parse(group)))
                         {
-                            period.StartDate = row[^3].TieuDe;
-                            period.EndDate = row[^2].TieuDe;
-                            period.Group = row[^1].TieuDe;
+                            var startDate = ParseDateTime(row[^3].TieuDe);
+                            var endDate = ParseDateTime(row[^2].TieuDe);
+
+                            // Get description for all allowed groups
+                            var groupDescriptions = groups
+                                .Where(g => allowedGroups.Any(id => g.Name.Contains(id.ToString())))
+                                .Select(g => g.Description)
+                                .Distinct()
+                                .ToList();
+
+                            // Clean and capitalize descriptions
+                            var finalDescription = string.Join(". ", groupDescriptions
+                                .Select(d => d.Trim())
+                                .Select(d => string.IsNullOrEmpty(d) ? d : char.ToUpper(d[0]) + d[1..]));
+
+                            return new UserPeriodItem(
+                                userKey,
+                                startDate,
+                                endDate,
+                                allowedGroups,
+                                finalDescription
+                            );
                         }
                     }
-                    userPeriods.Add(period);
                     break;
                 }
                 catch
@@ -181,7 +213,27 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Extensions
                     i++;
                 }
             }
-            return userPeriods;
+            return null;
+        }
+
+        private static DateTime ParseDateTime(string input)
+        {
+            if (string.IsNullOrEmpty(input)) return DateTime.MinValue;
+
+            // Xử lý định dạng: "07:30 ngày 06/04/2026"
+            // Thay thế " ngày " thành " " để parse dễ hơn
+            string normalized = input.Replace(" ngày ", " ").Trim();
+
+            // Thử parse các định dạng phổ biến
+            string[] formats = { "HH:mm dd/MM/yyyy", "dd/MM/yyyy HH:mm", "dd/MM/yyyy" };
+            
+            if (DateTime.TryParseExact(normalized, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt))
+                return dt;
+            
+            if (DateTime.TryParse(normalized, out dt))
+                return dt;
+
+            return DateTime.MinValue;
         }
     }
 }
