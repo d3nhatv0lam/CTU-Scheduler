@@ -15,6 +15,7 @@ using CTUScheduler.Presentation.Services.UserInteractionService.Models;
 using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
@@ -26,7 +27,9 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
     private readonly IConnectivityService _connectivityService;
     private readonly INavigationRegionManager _navigationRegionManager;
     private readonly IUserInteractionService _userInteractionService;
-    
+    private readonly ITeachingPlanLoaderService _teachingPlanLoaderService;
+    private readonly ILogger<MainViewModel> _logger;
+
     private readonly NotificationOptions _internetNotificationOptions = new() { Expiration = TimeSpan.FromSeconds(10), ShowIcon = true};
 
     private readonly RegionId _regionId = RegionIds.Root;
@@ -44,11 +47,15 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
         IConnectivityService connectivityService,
         INavigationRegionManager navigationRegionManager,
         IViewContextService viewContextService,
-        IUserInteractionService userInteractionService)
+        IUserInteractionService userInteractionService,
+        ITeachingPlanLoaderService teachingPlanLoaderService,
+        ILogger<MainViewModel> logger)
     {
         _connectivityService = connectivityService;
         _navigationRegionManager = navigationRegionManager;
         _userInteractionService = userInteractionService;
+        _teachingPlanLoaderService = teachingPlanLoaderService;
+        _logger = logger;
         ViewContext = viewContextService;
 
         _navigationRegionManager.Register(_regionId, this)
@@ -62,6 +69,38 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
         
         this.WhenActivated((CompositeDisposable disposables) =>
         {
+            Observable.StartAsync(async _ => await _teachingPlanLoaderService.LoadLatestAsync())
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(result =>
+                {
+                    if (result.IsFailed)
+                    {
+                        var message = result.FirstErrorMessage ?? "Không tải được kế hoạch giảng dạy";
+                        _userInteractionService.Notification.Light.Warning(message);
+                        return;
+                    }
+
+                    var data = result.Content;
+                    _logger.LogInformation(
+                        "TeachingPlanData: Title={Title}; Semester={Semester}; SchoolYear={SchoolYear}; TimelineCount={Count}",
+                        data.Title,
+                        data.Semester,
+                        data.SchoolYear,
+                        data.RegistrationTimeline.Count);
+
+                    for (var i = 0; i < data.RegistrationTimeline.Count; i++)
+                    {
+                        var item = data.RegistrationTimeline[i];
+                        _logger.LogInformation(
+                            "TeachingPlanTimeline[{Index}]: {Description} (Start={Start}, End={End})",
+                            i + 1,
+                            item.Description,
+                            item.StartDate,
+                            item.EndDate);
+                    }
+                })
+                .DisposeWith(disposables);
+
             _connectivityService.IsInternetAvailable
                 .DistinctUntilChanged()
                 .ObserveOn(RxSchedulers.MainThreadScheduler)
