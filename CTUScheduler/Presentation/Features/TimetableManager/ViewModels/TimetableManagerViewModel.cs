@@ -100,25 +100,25 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 
 
             _profileQueryService.ConnectProfiles()
-                .ObserveOn(RxApp.TaskpoolScheduler)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .Transform(viewModelFactory.Create<TimetableEditorViewModel, ScheduleProfile>)
                 .DisposeMany()
-                .ObserveOn(RxApp.MainThreadScheduler)
+                .ObserveOn(RxSchedulers.MainThreadScheduler)
                 .Bind(out _bindableTimetableLayouts)
                 .Subscribe()
                 .DisposeWith(_disposables);
 
             _hasSelectedTimetable = TimetableLayouts.ToObservableChangeSet()
                 .AutoRefresh(x => x.IsSelected)
-                .ToCollection()
-                .Select(items => items.Any(x => x.IsSelected))
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .ToProperty(this, nameof(HasSelectedTimetable))
+                .Filter(x => x.IsSelected)
+                .Count()
+                .Select(count => count > 0)
+                .ToProperty(this, nameof(HasSelectedTimetable), scheduler: RxSchedulers.MainThreadScheduler)
                 .DisposeWith(_disposables);
 
             _timetableLayoutsCount = _profileQueryService.ConnectProfiles()
                 .Count()
-                .ToProperty(this, nameof(TimetableLayoutsCount), scheduler: RxApp.MainThreadScheduler)
+                .ToProperty(this, nameof(TimetableLayoutsCount), scheduler: RxSchedulers.MainThreadScheduler)
                 .DisposeWith(_disposables);
 
             _lastSavedText = userSessionService.LastSaved
@@ -129,16 +129,16 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                         .Select(_ => FormatTime(savedTime.Value));
                 })
                 .Switch()
-                .ToProperty(this, nameof(LastSaved), scheduler: RxApp.MainThreadScheduler)
+                .ToProperty(this, nameof(LastSaved), scheduler: RxSchedulers.MainThreadScheduler)
                 .DisposeWith(_disposables);
 
             _isEmptyTimetableLayouts = this.WhenAnyValue(x => x.TimetableLayoutsCount)
                 .Select(count => count == 0)
-                .ToProperty(this, nameof(IsEmptyTimetableLayouts), scheduler: RxApp.MainThreadScheduler)
+                .ToProperty(this, nameof(IsEmptyTimetableLayouts), scheduler: RxSchedulers.MainThreadScheduler)
                 .DisposeWith(_disposables);
 
             _isExpiredSaved = userSessionService.IsReadonly
-                .ToProperty(this, nameof(IsExpiredSaved), scheduler: RxApp.MainThreadScheduler)
+                .ToProperty(this, nameof(IsExpiredSaved), scheduler: RxSchedulers.MainThreadScheduler)
                 .DisposeWith(_disposables);
 
             GoToCourseCatalogPage();
@@ -150,7 +150,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             var canReloadAllTimetable = _connectivityService.IsInternetAvailable
                 .DistinctUntilChanged()
                 .CombineLatest(canInteractUi, (isOnline, canInteract) => isOnline && canInteract)
-                .ObserveOn(RxApp.MainThreadScheduler);
+                .ObserveOn(RxSchedulers.MainThreadScheduler);
 
             ReloadAllTimetableCommand = ReactiveCommand.CreateFromTask(async () =>
             {

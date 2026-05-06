@@ -20,8 +20,8 @@ public interface IUserSessionService
     RegistrationInformation? CurrentRegistrationInfo { get; }
     IObservable<bool> IsReadonly { get; }
     IObservable<DateTimeOffset?> LastSaved { get; }
-    void SetLocalContext(RegistrationContext context);
+    void SetLocalContext(RegistrationContext? context);
     void UpdateServerInfo(RegistrationInformation info);
     void NotifyModified();
-    void SetLastModified(DateTimeOffset lastSaved);
+    void SetLastModified(DateTimeOffset? lastSaved);
 }
