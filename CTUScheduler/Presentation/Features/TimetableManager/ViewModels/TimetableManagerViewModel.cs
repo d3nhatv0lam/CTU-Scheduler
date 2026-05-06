@@ -46,8 +46,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly IWorkspaceStore _workspaceStore;
         private readonly IViewModelFactory _viewModelFactory;
 
-        private readonly ReadOnlyObservableCollection<TimetableEditorViewModel> _bindableTimetableLayouts =
-            ReadOnlyObservableCollection<TimetableEditorViewModel>.Empty;
+        private readonly ReadOnlyObservableCollection<TimetableEditorViewModel> _bindableTimetableLayouts;
 
         private readonly ObservableAsPropertyHelper<int> _timetableLayoutsCount;
         private readonly ObservableAsPropertyHelper<bool> _isEmptyTimetableLayouts;
@@ -55,7 +54,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly ObservableAsPropertyHelper<string> _lastSavedText;
         private readonly ObservableAsPropertyHelper<bool> _hasSelectedTimetable;
         public bool HasSelectedTimetable => _hasSelectedTimetable.Value;
-        public string? UrlPathSegment => "TimetableManagerViewModel";
+        public string UrlPathSegment => nameof(TimetableManagerViewModel);
         public IScreen HostScreen { get; }
         public ReadOnlyObservableCollection<TimetableEditorViewModel> TimetableLayouts => _bindableTimetableLayouts;
         public int TimetableLayoutsCount => _timetableLayoutsCount.Value;
