@@ -99,24 +99,24 @@
                                        LineHeight="24" />
                         </u:Skeleton>
                         <u:Skeleton Grid.Row="2" Margin="0,25,0,0" IsLoading="{Binding IsLoading}" IsActive="True">
-                            <ItemsControl ItemsSource="{Binding RegistrationInfo.UserPeriod}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
+                            <ContentControl Content="{Binding RegistrationInfo.UserPeriod}">
+                                <ContentControl.ContentTemplate>
+                                    <DataTemplate x:DataType="model:UserPeriodItem">
                                         <WrapPanel Margin="0,5,0,0">
                                             <StackPanel Orientation="Horizontal" Margin="0,0,30,5">
                                                 <TextBlock Text="Bắt đầu: " FontWeight="Bold" Classes="ContentText" />
-                                                <TextBlock Text="{Binding StartDate}" Classes="ContentText"
+                                                <TextBlock Text="{Binding StartDate, StringFormat='dd/MM/yyyy HH:mm'}" Classes="ContentText"
                                                            FontWeight="Bold" />
                                             </StackPanel>
                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                                                 <TextBlock Text="Kết thúc: " FontWeight="Bold" Classes="ContentText" />
-                                                <TextBlock Text="{Binding EndDate}" Classes="ContentText"
+                                                <TextBlock Text="{Binding EndDate, StringFormat='dd/MM/yyyy HH:mm'}" Classes="ContentText"
                                                            FontWeight="Bold" />
                                             </StackPanel>
                                         </WrapPanel>
                                     </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                                </ContentControl.ContentTemplate>
+                            </ContentControl>
                         </u:Skeleton>
                     </Grid>
                 </Border>
@@ -126,22 +126,22 @@
                     <Grid RowDefinitions="Auto, *">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Nhóm của bạn" />
                         <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoading}" IsActive="True">
-                            <ItemsControl ItemsSource="{Binding RegistrationInfo.UserPeriod}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
+                            <ContentControl Content="{Binding RegistrationInfo.UserPeriod}">
+                                <ContentControl.ContentTemplate>
+                                    <DataTemplate x:DataType="model:UserPeriodItem">
                                         <StackPanel>
-                                            <TextBlock Text="{Binding Group, StringFormat='Nhóm \{0\}'}" FontSize="24"
+                                            <TextBlock Text="{Binding AllowedGroupsDisplay, StringFormat='Nhóm \{0\}'}" FontSize="24"
                                                        FontWeight="Bold" Foreground="#111111" Margin="0,0,0,10" />
                                             <TextBlock
                                                 Text="{Binding GroupDescription}"
                                                 TextWrapping="WrapWithOverflow" Classes="ContentText"
                                                 Foreground="#555555" Margin="0,0,0,15" />
-                                            <TextBlock Text="{Binding Key, StringFormat='\{0\}'}" Classes="ContentText"
+                                            <TextBlock Text="{Binding Key}" Classes="ContentText"
                                                        Foreground="#777777" />
                                         </StackPanel>
                                     </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                                </ContentControl.ContentTemplate>
+                            </ContentControl>
                         </u:Skeleton>
                     </Grid>
                 </Border>
@@ -185,7 +185,7 @@
                                         </DataGridTemplateColumn.Header>
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate x:DataType="{x:Type model:GroupItem}">
-                                                <SelectableTextBlock Text="{Binding Title}" FontWeight="Bold"
+                                                <SelectableTextBlock Text="{Binding Name}" FontWeight="Bold"
                                                                      Foreground="#111827" Margin="10,0" />
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
@@ -196,7 +196,7 @@
                                         </DataGridTemplateColumn.Header>
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate x:DataType="{x:Type model:GroupItem}">
-                                                <SelectableTextBlock Text="{Binding Value}" Foreground="#4B5563" />
+                                                <SelectableTextBlock Text="{Binding Description}" Foreground="#4B5563" />
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>

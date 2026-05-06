@@ -24,7 +24,7 @@ public partial class HomeView : ReactiveUserControl<HomeViewModel>
                         : $"Học kỳ: {info.Semester ?? "?"}\n{info.AcademicYear}-{info.AcademicYear + 1}\nSố tín chỉ tối đa: {info.MaxCreditPerSemester}")
                 .DisposeWith(disposables);
 
-            this.OneWayBind<HomeViewModel, HomeView, List<GroupItem>, IEnumerable>(ViewModel,
+            this.OneWayBind<HomeViewModel, HomeView, IReadOnlyList<GroupItem>, IEnumerable>(ViewModel,
                 vm => vm.RegistrationInfo.Groups, v => v.dtgridGroupList.ItemsSource,
                 groups => groups ?? Enumerable.Empty<GroupItem>()).DisposeWith(disposables);
         });

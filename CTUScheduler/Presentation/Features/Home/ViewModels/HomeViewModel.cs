@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
@@ -29,13 +29,14 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
         private readonly IUserInteractionService _userInteractionService;
         private readonly IRegistrationRulesService _registrationRulesService;
         private readonly ObservableAsPropertyHelper<RegistrationInformation> _registrationInfo;
-        
+
         public string? UrlPathSegment => "HomeViewModel";
         public IScreen HostScreen { get; }
         public ViewModelActivator Activator { get; } = new();
         public RegistrationInformation RegistrationInfo => _registrationInfo.Value;
 
         private bool _isLoading;
+
         public bool IsLoading
         {
             get => _isLoading;
@@ -63,14 +64,14 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
                 .Subscribe(info => _userSessionService.UpdateServerInfo(info))
                 .DisposeWith(_disposable);
 
-            IsLoading = true; 
+            IsLoading = true;
 
             Observable.StartAsync(async _ => await _registrationRulesService.EnsureReadyAsync())
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(
                     result =>
                     {
-                        IsLoading = false; 
+                        IsLoading = false;
 
                         result.Match(
                             () => { },
@@ -79,16 +80,17 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
                                 var errorsString = String.Join('\n', errors.Select(x => x.FormattedMessage));
                                 _userInteractionService.Notification.Light.Error(errorsString);
                                 navigationRegionManager.NavigateAndResetTo<LoginViewModel>(RegionIds.Root);
-                                
-                                foreach (var period in RegistrationInfo?.UserPeriod ?? [])
+
+                                if (RegistrationInfo?.UserPeriod is { } period)
                                 {
-                                    Console.WriteLine($"Group: '{period.Group}' | Titles: {string.Join(", ", RegistrationInfo.Groups?.Select(g => $"'{g.Title}'") ?? [])}");
+                                    Console.WriteLine(
+                                        $"Group: '{string.Join(", ", period.AllowedGroups)}' | Titles: {string.Join(", ", RegistrationInfo.Groups?.Select(g => $"'{g.Name}'") ?? [])}");
                                 }
                             },
                             ex => { Debug.WriteLine(ex, "Lỗi khi _registrationRulesService.EnsureReadyAsync"); }
                         );
                     },
-                    ex => 
+                    ex =>
                     {
                         IsLoading = false;
                         Debug.WriteLine(ex, "Lỗi Runtime khi chạy EnsureReadyAsync");
@@ -101,28 +103,20 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels
                 .Select(x => x!)
                 .Do(info =>
                 {
-
-                    if (info.UserPeriod == null || info.Groups == null) return;
-                    foreach (var period in info.UserPeriod)
-                    {
-                        var raw = info.Groups
-                            .FirstOrDefault(g => g.Title == $"Nhóm {period.Group}")
-                            ?.Value ?? "Không có thông tin.";
-
-                        period.GroupDescription = string.Join(". ", 
-                            raw.Split(". ").Select(s => string.IsNullOrEmpty(s) ? s : char.ToUpper(s[0]) + s[1..]));
-                        
-                    }
+                    // GroupDescription is now pre-populated in the mapping layer
                 })
                 .ToProperty(this, nameof(RegistrationInfo), scheduler: RxApp.MainThreadScheduler);
-            
+
             var ownerContributor = AppConstants.AppCredits.AllContributors[0];
             OpenFacebookCommand = ReactiveCommand
-                .Create(() => OpenUrl(ownerContributor.SocialLinks[SocialPlatform.Facebook])).DisposeWith(_disposable);
+                .Create(() => OpenUrl(ownerContributor.SocialLinks[SocialPlatform.Facebook]))
+                .DisposeWith(_disposable);
             OpenYoutubeCommand = ReactiveCommand
-                .Create(() => OpenUrl(ownerContributor.SocialLinks[SocialPlatform.YouTube])).DisposeWith(_disposable);
+                .Create(() => OpenUrl(ownerContributor.SocialLinks[SocialPlatform.YouTube]))
+                .DisposeWith(_disposable);
             OpenGithubCommand = ReactiveCommand
-                .Create(() => OpenUrl(ownerContributor.SocialLinks[SocialPlatform.GitHub])).DisposeWith(_disposable);
+                .Create(() => OpenUrl(ownerContributor.SocialLinks[SocialPlatform.GitHub]))
+                .DisposeWith(_disposable);
             OpenCTUHTQLCommand = ReactiveCommand.Create(() => OpenUrl(AppConstants.Urls.CtuSignIn))
                 .DisposeWith(_disposable);
 
