@@ -2,6 +2,7 @@
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Models;
 using CTUScheduler.AppServices.Services.ScheduleService;
+using CTUScheduler.AppServices.Services.TeachingPlanService;
 using CTUScheduler.AppServices.Services.TimetableGeneratorService;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.AppServices.Services.UserSettingService;
@@ -42,6 +43,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IRegistrationRulesService, RegistrationRulesService>();
         services.AddTransient<ICourseCatalogService, CourseCatalogService>();   
         services.AddTransient<ICourseRegistrationService, CourseRegistrationService>();
+        services.AddTransient<ITeachingPlanLoaderService, TeachingPlanLoaderService>();
         services.AddSingleton<ITimetableGeneratorService, TimetableGeneratorService>();
 
         // --- Schedule Manager Pattern ---

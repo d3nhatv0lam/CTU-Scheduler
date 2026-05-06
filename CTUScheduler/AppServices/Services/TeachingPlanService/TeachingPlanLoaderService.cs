@@ -2,7 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
-using CTUScheduler.AppServices.Models;
+using CTUScheduler.Core.Models.Shared.Results;
+using CTUScheduler.Core.Models.TeachingPlan;
 
 namespace CTUScheduler.AppServices.Services.TeachingPlanService;
 
@@ -16,14 +17,16 @@ public class TeachingPlanLoaderService : ITeachingPlanLoaderService
         _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
     }
 
-    public async Task<TeachingPlanLoadResult> LoadLatestAsync()
+    public async Task<OperationResult<TeachingPlanData>> LoadLatestAsync()
     {
         try
         {
             var notifications = await _resourceService.GetNotificationsAsync();
             if (notifications is null || notifications.Count == 0)
             {
-                return TeachingPlanLoadResult.Failed("Không lấy được thông báo");
+                return OperationResult<TeachingPlanData>.Failed(
+                    new OperationError("TeachingPlan.NotificationsMissing", "Không lấy được thông báo"),
+                    OperationFailureReason.Network);
             }
             
             var target = notifications.FirstOrDefault(item =>
@@ -32,32 +35,44 @@ public class TeachingPlanLoaderService : ITeachingPlanLoaderService
 
             if (target is null)
             {
-                return TeachingPlanLoadResult.Failed("Không có kế hoạch giảng dạy");
+                return OperationResult<TeachingPlanData>.Failed(
+                    new OperationError("TeachingPlan.NotFound", "Không có kế hoạch giảng dạy"),
+                    OperationFailureReason.NotFound);
             }
 
             if (string.IsNullOrWhiteSpace(target.PdfUrl))
             {
-                return TeachingPlanLoadResult.Failed("Không tải được file PDF");
+                return OperationResult<TeachingPlanData>.Failed(
+                    new OperationError("TeachingPlan.PdfMissing", "Không tải được file PDF"),
+                    OperationFailureReason.System);
             }
 
             var filePath = await _resourceService.DownloadPdfAsync(target.PdfUrl);
             if (string.IsNullOrWhiteSpace(filePath))
             {
-                return TeachingPlanLoadResult.Failed("Không tải được file PDF");
+                return OperationResult<TeachingPlanData>.Failed(
+                    new OperationError("TeachingPlan.DownloadFailed", "Không tải được file PDF"),
+                    OperationFailureReason.Network);
             }
 
             var data = await _resourceService.ExtractTeachingPlanAsync(filePath);
             if (data is null)
             {
-                return TeachingPlanLoadResult.Failed("Không đọc được nội dung file");
+                return OperationResult<TeachingPlanData>.Failed(
+                    new OperationError("TeachingPlan.ExtractFailed", "Không đọc được nội dung file"),
+                    OperationFailureReason.System);
             }
 
             data.Title = string.IsNullOrWhiteSpace(data.Title) ? target.Title : data.Title;
-            return TeachingPlanLoadResult.Success(data);
+            return OperationResult<TeachingPlanData>.Success(data);
         }
-        catch
+        catch (Exception ex)
         {
-            return TeachingPlanLoadResult.Failed("Không đọc được nội dung file");
+            return OperationResult<TeachingPlanData>.FromException(
+                ex,
+                "Không đọc được nội dung file",
+                "TeachingPlan.Unexpected",
+                OperationFailureReason.System);
         }
     }
 }
