@@ -25,7 +25,6 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
     private static readonly Regex DateRangeRegex = new(@"(\d{1,2}/\d{1,2}/\d{4})\s*[-–]\s*(\d{1,2}/\d{1,2}/\d{4})",
         RegexOptions.Compiled);
     private static readonly Regex SingleDateRegex = new(@"(\d{1,2}/\d{1,2}/\d{4})", RegexOptions.Compiled);
-    private static readonly Regex ItemStartRegex = new(@"\b\d{1,2}\s+(?=\p{L})", RegexOptions.Compiled);
 
     private readonly IWebDriverService _webDriverService;
     private readonly ILogger<TeachingPlanResourceService> _logger;
@@ -192,8 +191,7 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
         return await Task.Run(() =>
         {
             using var document = PdfDocument.Open(filePath);
-            var text = string.Join("\n", document.GetPages().Select(p => p.Text ?? string.Empty));
-
+            var text = string.Join(" ", document.GetPages().Select(p => p.Text ?? string.Empty));
             var data = new TeachingPlanData();
 
             var semesterMatch = SemesterRegex.Match(text);
@@ -208,39 +206,52 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
                 data.SchoolYear = $"{yearMatch.Groups[1].Value}-{yearMatch.Groups[2].Value}";
             }
 
-            var lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var line in lines.Select(l => l.Trim()).Where(l => l.Length > 0))
+            var startTag = "NỘI DUNG CÔNG VIỆC THỜI GIAN THỰC HIỆN";
+            var endTag = "Lưu ý:";
+            
+            var startIndex = text.IndexOf(startTag, StringComparison.OrdinalIgnoreCase);
+            var endIndex = text.IndexOf(endTag, StringComparison.OrdinalIgnoreCase);
+
+            if (startIndex == -1) return data;
+            if (endIndex == -1) endIndex = text.Length;
+
+            var tableContent = text.Substring(startIndex + startTag.Length, endIndex - (startIndex + startTag.Length)).Trim();
+            
+            var rowRegex = new Regex(@"(?<id>\d{1,2})\s+(?<content>.+?)\s+(?<date>\d{1,2}/\d{1,2}/\d{4}(?:\s*[-–]\s*\d{1,2}/\d{1,2}/\d{4})?)", RegexOptions.Singleline);
+            
+            var matches = rowRegex.Matches(tableContent);
+            
+            foreach (Match match in matches)
             {
-                var rangeMatches = DateRangeRegex.Matches(line);
+                var content = match.Groups["content"].Value;
+                var dateStr = match.Groups["date"].Value;
+
+                var rangeMatches = DateRangeRegex.Matches(dateStr);
                 if (rangeMatches.Count > 0)
                 {
-                    foreach (Match match in rangeMatches)
+                    if (TryParseDate(rangeMatches[0].Groups[1].Value, out var start) &&
+                        TryParseDate(rangeMatches[0].Groups[2].Value, out var end))
                     {
-                        if (TryParseDate(match.Groups[1].Value, out var start) &&
-                            TryParseDate(match.Groups[2].Value, out var end))
+                        data.RegistrationTimeline.Add(new RegistrationTimelineItem
                         {
-                            data.RegistrationTimeline.Add(new RegistrationTimelineItem
-                            {
-                                Description = BuildDescription(line, match.Index, match.Length),
-                                StartDate = start,
-                                EndDate = end
-                            });
-                        }
+                            Description = NormalizeWhitespace(content),
+                            StartDate = start,
+                            EndDate = end
+                        });
                     }
-
-                    continue;
                 }
-
-                var singleMatches = SingleDateRegex.Matches(line);
-                if (singleMatches.Count == 1 && TryParseDate(singleMatches[0].Value, out var singleDate))
+                else
                 {
-                    var match = singleMatches[0];
-                    data.RegistrationTimeline.Add(new RegistrationTimelineItem
+                    var singleMatches = SingleDateRegex.Matches(dateStr);
+                    if (singleMatches.Count > 0 && TryParseDate(singleMatches[0].Groups[1].Value, out var singleDate))
                     {
-                        Description = BuildDescription(line, match.Index, match.Length),
-                        StartDate = singleDate,
-                        EndDate = singleDate
-                    });
+                        data.RegistrationTimeline.Add(new RegistrationTimelineItem
+                        {
+                            Description = NormalizeWhitespace(content),
+                            StartDate = singleDate,
+                            EndDate = singleDate
+                        });
+                    }
                 }
             }
 
@@ -248,60 +259,16 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
         });
     }
 
-    private static string BuildDescription(string line, int matchIndex, int matchLength)
-    {
-        if (string.IsNullOrWhiteSpace(line)) return string.Empty;
-
-        var segment = TryExtractItemSegment(line, matchIndex) ?? line;
-        var normalized = NormalizeWhitespace(segment);
-
-        if (normalized.Length > 240)
-        {
-            normalized = normalized.Substring(0, 240).Trim() + " ...";
-        }
-
-        return normalized;
-    }
-
-    private static string? TryExtractItemSegment(string line, int matchIndex)
-    {
-        var matches = ItemStartRegex.Matches(line);
-        if (matches.Count == 0) return null;
-
-        var startIndex = -1;
-        var endIndex = line.Length;
-
-        foreach (Match match in matches)
-        {
-            if (match.Index <= matchIndex)
-            {
-                startIndex = match.Index;
-                continue;
-            }
-
-            endIndex = match.Index;
-            break;
-        }
-
-        if (startIndex < 0) return null;
-
-        var length = Math.Max(0, endIndex - startIndex);
-        if (length == 0) return null;
-
-        return line.Substring(startIndex, length);
-    }
-
     private static string NormalizeWhitespace(string input)
     {
         return Regex.Replace(input, "\\s+", " ").Trim();
     }
 
-    private static bool TryParseDate(string value, out DateTimeOffset? date)
+    private static bool TryParseDate(string value, out DateOnly? date)
     {
-        if (DateTime.TryParseExact(value, "d/M/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt) ||
-            DateTime.TryParseExact(value, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out dt))
+        if (DateOnly.TryParseExact(value, new[] { "d/M/yyyy", "dd/MM/yyyy" }, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt))
         {
-            date = new DateTimeOffset(dt);
+            date = dt;
             return true;
         }
 
