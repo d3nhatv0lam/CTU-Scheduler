@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
+using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Shared.Results;
@@ -52,10 +53,14 @@ public class CourseCatalogService : ICourseCatalogService
             await _catalogPage.WaitForReadyAsync();
             return OperationResult.Success();
         }
+        catch (NoInternetException)
+        {
+            return OperationResult.Failed("Không có kết nối mạng!", kind: OperationFailureReason.Network);
+        }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "fail to navigate to course catalog");
-            return OperationResult.Failed("Trang chưa sẵn sàng", kind: OperationFailureReason.Network);
+            return OperationResult.FromException(ex, "Trang chưa sẵn sàng", kind: OperationFailureReason.System);
         }
     }
 

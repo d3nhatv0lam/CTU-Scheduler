@@ -4,8 +4,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Presentation.Features.Pagination.Interfaces;
 using CTUScheduler.Presentation.Features.Pagination.Models;
 using CTUScheduler.Presentation.Shared.Interfaces;
@@ -52,7 +50,7 @@ public class SelectablePaginationViewModel<T> : PaginationViewModel<T>, ISelecta
         SelectedItemCountChanged = _selectedListCache.CountChanged;
 
         _selectedItemCount = SelectedItemCountChanged
-            .ToProperty(this, nameof(SelectedItemCount), scheduler: RxApp.MainThreadScheduler)
+            .ToProperty(this, nameof(SelectedItemCount), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
     }
 

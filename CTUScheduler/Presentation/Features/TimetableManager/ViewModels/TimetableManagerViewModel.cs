@@ -29,6 +29,7 @@ using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Shells;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
+using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 {
@@ -45,6 +46,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly IUserSessionService _userSessionService;
         private readonly IWorkspaceStore _workspaceStore;
         private readonly IViewModelFactory _viewModelFactory;
+        private readonly ILogger<TimetableManagerViewModel> _logger;
 
         private readonly ReadOnlyObservableCollection<TimetableEditorViewModel> _bindableTimetableLayouts;
 
@@ -84,7 +86,8 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             IExcelExporterService excelExporterService,
             IViewModelFactory viewModelFactory,
             IUserInteractionService userInteractionService,
-            INavigationRegionManager navigationRegionManager) : base(userInteractionService, navigationRegionManager)
+            INavigationRegionManager navigationRegionManager,
+            ILogger<TimetableManagerViewModel> logger) : base(userInteractionService, navigationRegionManager, connectivityService)
         {
             HostScreen = hostScreen;
             _connectivityService = connectivityService;
@@ -96,6 +99,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             _scheduleRegistrationService = scheduleRegistrationService;
             _excelExporterService = excelExporterService;
             _viewModelFactory = viewModelFactory;
+            _logger = logger;
 
 
             _profileQueryService.ConnectProfiles()
@@ -282,6 +286,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         public void Dispose()
         {
             _disposables.Dispose();
+            _logger.LogDebug("{this}: Disposed", nameof(TimetableManagerViewModel));
         }
     }
 }

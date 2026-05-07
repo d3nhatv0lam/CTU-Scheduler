@@ -102,12 +102,12 @@
                 <Border Classes="Card card-item-1">
                     <Grid RowDefinitions="Auto, Auto, Auto">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Thông tin đăng ký" />
-                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoading}" IsActive="True">
+                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsInitialLoading}" IsActive="True">
                                 <TextBlock x:Name="txtRegistrationInfo" Classes="ContentText" Text="Học kỳ: ..."
                                        LineHeight="24" />
                         </u:Skeleton>
 
-                        <u:Skeleton Grid.Row="2" Margin="0,25,0,0" IsLoading="{Binding IsLoading}" IsActive="True">
+                        <u:Skeleton Grid.Row="2" Margin="0,25,0,0" IsLoading="{Binding IsInitialLoading}" IsActive="True">
                                 <ContentControl Content="{Binding RegistrationInfo.UserPeriod}">
                                     <ContentControl.ContentTemplate>
                                         <DataTemplate x:DataType="model:UserPeriodItem">
@@ -141,7 +141,7 @@
                     <Grid RowDefinitions="Auto, *">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Nhóm của bạn" />
 
-                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoading}" IsActive="True" MinHeight="50">
+                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsInitialLoading}" IsActive="True" MinHeight="50">
                                 <ContentControl Content="{Binding RegistrationInfo.UserPeriod}">
                                     <ContentControl.ContentTemplate>
                                         <DataTemplate x:DataType="model:UserPeriodItem">
@@ -167,7 +167,7 @@
                 <Border Classes="Card card-item-3">
                     <Grid RowDefinitions="Auto, *" ClipToBounds="True">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Các nhóm đơn vị" />
-                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoading}" IsActive="True" MinHeight="50">
+                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsInitialLoading}" IsActive="True" MinHeight="50">
                             <Grid RowDefinitions="Auto, *">
                                 <!-- Header -->
                                 <Grid Grid.Row="0" ColumnDefinitions="80, *" Background="#F9FAFB">
@@ -211,7 +211,7 @@
                 <Border x:Name="Card4" Classes="Card card-item-4">
                     <Grid RowDefinitions="Auto, *">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Lộ trình đăng ký học phần" />
-                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoading}" IsActive="True">
+                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsInitialLoading}" IsActive="True">
                             <u:Timeline Margin="15,0,0,0">
                                 <u:Timeline.Styles>
                                     <Style Selector="u|TimelineItem /template/ TextBlock#PART_Time">

@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Models.Shared.Results;
-using System.Collections.ObjectModel;
-using System.Linq;
+using CTUScheduler.Core.Models.Shared;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
@@ -20,6 +21,7 @@ using CTUScheduler.Presentation.Shared.Dialogs.ViewModels;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using CTUScheduler.Presentation.Shells.MainShell.Models;
 using Material.Icons;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
@@ -30,7 +32,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
         private readonly CompositeDisposable _disposables = new();
         private readonly IMainHomeService _mainHomeService;
 
-        [Reactive] private NavigationItem _selectedItem;
+        [Reactive] private NavigationItem? _selectedItem;
         [Reactive] private string _userName = "họ tên";
         [Reactive] private string _userMSSV = "MSSV";
         [ObservableAsProperty] private string _title = "CTU Scheduler";
@@ -40,17 +42,19 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
         public IScreen HostScreen { get; }
         public IReadOnlyList<NavigationItem> NavigationItems { get; }
 
-        public ReactiveCommand<Unit, string> LoadStudentInfoCommand { get; }
+        public ReactiveCommand<Unit, OperationResult<StudentProfile>> LoadStudentInfoCommand { get; }
         public ReactiveCommand<Unit, Unit> LogoutCommand { get; }
 
 
         public MainShellViewModel(IScreen hostScreen,
             IMainHomeService mainHomeService,
             INavigationRegionManager navigationRegionManager,
-            IUserInteractionService userInteractionService) : base(userInteractionService, navigationRegionManager)
+            IUserInteractionService userInteractionService,
+            IConnectivityService connectivityService) : base(userInteractionService, navigationRegionManager, connectivityService)
         {
             HostScreen = hostScreen;
             _mainHomeService = mainHomeService;
+
 
             NavigationRegionManager.Register(RegionIds.Main, this)
                 .DisposeWith(_disposables);
@@ -63,32 +67,53 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             ];
 
             this.WhenAnyValue(x => x.SelectedItem)
-                .WhereNotNull()
+                .Where(x => x.HasValue)
+                .Select(x => x!.Value)
                 .Subscribe(OnNavigatePage)
                 .DisposeWith(_disposables);
 
             _titleHelper = this.WhenAnyValue(x => x.SelectedItem)
-                .WhereNotNull()
-                .Select(x => x.Title)
+                .Where(x => x.HasValue)
+                .Select(x => x!.Value.Title)
                 .ToProperty(this, nameof(Title))
                 .DisposeWith(_disposables);
 
             SelectedItem = NavigationItems[0];
             // SelectedItem = NavigationItems[1];
 
-            LoadStudentInfoCommand = ReactiveCommand.CreateFromTask(_mainHomeService.GetStudentIdAsync)
+            LoadStudentInfoCommand = ReactiveCommand.CreateFromObservable(() =>
+                    Observable.FromAsync(ct => _mainHomeService.GetStudentProfileAsync(ct))
+                        .Expand(result =>
+                        {
+                            if (result.IsSuccess || result.Kind == OperationFailureReason.Unauthorized)
+                                return Observable.Empty<OperationResult<StudentProfile>>();
+                            
+                            return Observable.Timer(TimeSpan.FromSeconds(1), RxApp.TaskpoolScheduler)
+                                .SelectMany(_ =>
+                                    Observable.FromAsync(ct => _mainHomeService.GetStudentProfileAsync(ct)));
+                        })
+                        .Take(10)
+                        .LastAsync())
                 .DisposeWith(_disposables);
 
             LoadStudentInfoCommand
-                .Catch((Exception _) => Observable.Return(string.Empty))
-                .Where(x => !string.IsNullOrWhiteSpace(x))
-                .Select(x => x.Split(" "))
-                .ObserveOn(RxSchedulers.MainThreadScheduler)
-                .Subscribe(arr =>
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(result =>
                 {
-                    UserName = string.Join(' ', arr[..^1]);
-                    UserMSSV = arr[^1];
-                }).DisposeWith(_disposables);
+                    result.Match(
+                        onSuccess: profile =>
+                        {
+                            UserName = profile.Name;
+                            UserMSSV = profile.Mssv;
+                        },
+                        onFailure: (errors, _) =>
+                        {
+                            var errorStr = string.Join('\n', errors.Select(x => x.FormattedMessage));
+                            Debug.WriteLine(errorStr);
+                        }
+                    );
+                })
+                .DisposeWith(_disposables);
 
             LogoutCommand = ReactiveCommand.CreateFromTask(async () =>
             {

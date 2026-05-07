@@ -1,22 +1,17 @@
 using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using System.Reactive.Linq;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
 using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
-using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using ReactiveUI;
-using ReactiveUI.SourceGenerators;
 using Serilog;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Presentation.Features.Home.ViewModels;
 
@@ -25,19 +20,24 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
     private readonly IRegistrationRulesService _registrationRulesService;
     private readonly CompositeDisposable _disposable = new();
     private readonly ObservableAsPropertyHelper<RegistrationInformation?> _registrationInfo;
+    private readonly ILogger<HomeViewModel> _logger;
 
     public string UrlPathSegment => nameof(HomeViewModel);
     public IScreen HostScreen { get; }
     public RegistrationInformation? RegistrationInfo => _registrationInfo.Value;
+    protected override bool HasData => RegistrationInfo is not null;
 
     public HomeViewModel(IScreen hostScreen,
         IUserSessionService userSessionService,
         IRegistrationRulesService registrationRulesService,
         IUserInteractionService userInteractionService,
-        INavigationRegionManager navigationRegionManager) : base(userInteractionService, navigationRegionManager)
+        INavigationRegionManager navigationRegionManager,
+        IConnectivityService connectivityService,
+        ILogger<HomeViewModel> logger) : base(userInteractionService, navigationRegionManager, connectivityService)
     {
         HostScreen = hostScreen;
         _registrationRulesService = registrationRulesService;
+        _logger = logger;
 
         registrationRulesService.RegistrationInfoChanged
             .Subscribe(userSessionService.UpdateServerInfo)
@@ -45,6 +45,10 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
 
         _registrationInfo = userSessionService.RegistrationInfoChanged
             .ToProperty(this, nameof(RegistrationInfo), scheduler: RxApp.MainThreadScheduler)
+            .DisposeWith(_disposable);
+
+        this.WhenAnyValue(x => x.RegistrationInfo)
+            .Subscribe(_ => this.RaisePropertyChanged(nameof(HasData)))
             .DisposeWith(_disposable);
     }
 
@@ -56,6 +60,6 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
     public void Dispose()
     {
         _disposable.Dispose();
-        Log.Debug(nameof(HomeViewModel) + ": Disposed");
+        _logger.LogDebug("{this}: Disposed", nameof(HomeViewModel));
     }
 }

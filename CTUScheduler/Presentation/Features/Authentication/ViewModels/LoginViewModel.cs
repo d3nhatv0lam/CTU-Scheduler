@@ -14,6 +14,7 @@ using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
@@ -25,6 +26,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         private readonly IUserInteractionService _userInteractionService;
         private readonly INavigationRegionManager _navigationRegionManager;
         private readonly IUserSettingService _userSettingService;
+        private readonly ILogger<LoginViewModel> _logger;
 
         private string _userName = string.Empty;
         private string _password = string.Empty;
@@ -59,13 +61,15 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
             ILoginService loginService,
             IUserInteractionService userInteractionService,
             INavigationRegionManager navigationRegionManager,
-            IUserSettingService userSettingService)
+            IUserSettingService userSettingService,
+            ILogger<LoginViewModel> logger)
         {
             HostScreen = hostScreen;
             _userInteractionService = userInteractionService;
             _navigationRegionManager = navigationRegionManager;
             _loginService = loginService;
             _userSettingService = userSettingService;
+            _logger = logger;
 
             _userSettingService.AuthSettingsChanged
                 .Subscribe(authSettings =>
@@ -75,7 +79,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                         UserName = authSettings.SavedUserName;
                 })
                 .DisposeWith(_disposables);
-            
+
             PrewarmBrowserCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 await _loginService.EnsureReadyAsync();
@@ -116,13 +120,13 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                 Auth = new AuthSettings { IsSaveUsername = IsSaveUsername, SavedUserName = UserName }
             });
             Password = string.Empty;
-            RxApp.MainThreadScheduler.Schedule(() =>
-                _navigationRegionManager.NavigateAndResetTo<MainShellViewModel>(RegionIds.Root));
+            _navigationRegionManager.NavigateAndResetTo<MainShellViewModel>(RegionIds.Root);
         }
 
         public void Dispose()
         {
             _disposables.Dispose();
+            _logger.LogDebug("{this}: Disposed", nameof(LoginViewModel));
         }
     }
 }
