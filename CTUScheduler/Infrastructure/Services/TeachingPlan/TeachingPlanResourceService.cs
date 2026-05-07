@@ -9,7 +9,6 @@ using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Models;
 using CTUScheduler.Core.Models.TeachingPlan;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using UglyToad.PdfPig;
 
@@ -27,7 +26,6 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
     private static readonly Regex SingleDateRegex = new(@"(\d{1,2}/\d{1,2}/\d{4})", RegexOptions.Compiled);
 
     private readonly IWebDriverService _webDriverService;
-    private readonly ILogger<TeachingPlanResourceService> _logger;
 
     private sealed class AnchorInfo
     {
@@ -43,32 +41,24 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
     }
 
     public TeachingPlanResourceService(
-        IWebDriverService webDriverService,
-        ILogger<TeachingPlanResourceService> logger)
+        IWebDriverService webDriverService)
     {
         _webDriverService = webDriverService ?? throw new ArgumentNullException(nameof(webDriverService));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public async Task<IReadOnlyList<NotificationItem>> GetNotificationsAsync()
     {
-        _logger.LogInformation("TeachingPlan: opening notifications page {Url}", NotificationsUrl);
         await _webDriverService.InitBrowserAsync();
 
         await using var tab = await _webDriverService.CreateTabAsync();
         var page = tab.NativePage;
 
-        var response = await page.GotoAsync(NotificationsUrl, new PageGotoOptions
+        await page.GotoAsync(NotificationsUrl, new PageGotoOptions
         {
             WaitUntil = WaitUntilState.DOMContentLoaded
         });
 
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-        _logger.LogInformation(
-            "TeachingPlan: navigated to {Url} (status={Status})",
-            response?.Url ?? page.Url,
-            response?.Status);
 
         var anchors = await page.EvalOnSelectorAllAsync<AnchorInfo[]>(
             "a[href]",
@@ -91,10 +81,6 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
             items.Add(new NotificationItem { Title = title, PdfUrl = pdfUrl });
         }
 
-        _logger.LogInformation(
-            "TeachingPlan: found {Count} PDF link(s)",
-            items.Count);
-
         return items;
     }
 
@@ -105,7 +91,6 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
         var fileName = $"teaching-plan-{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
         var filePath = Path.Combine(Path.GetTempPath(), fileName);
 
-        _logger.LogInformation("TeachingPlan: downloading PDF {Url}", pdfUrl);
         await _webDriverService.InitBrowserAsync();
         await using var tab = await _webDriverService.CreateTabAsync();
         var page = tab.NativePage;
@@ -118,21 +103,14 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
             await download.SaveAsAsync(filePath);
 
             var downloadedBytes = new FileInfo(filePath).Length;
-            _logger.LogInformation(
-                "TeachingPlan: saved PDF via download to {Path} ({Bytes} bytes)",
-                filePath,
-                downloadedBytes);
-
             if (downloadedBytes >= 1024)
             {
                 return filePath;
             }
-
-            _logger.LogWarning("TeachingPlan: download file too small, using fetch fallback");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _logger.LogWarning("TeachingPlan: download event not triggered ({Message}), using fetch fallback", ex.Message);
+            // fall back to fetch
         }
 
         var fetchResult = await page.EvaluateAsync<FetchResult>(@"async url => {
@@ -150,7 +128,6 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
 
         if (fetchResult is null)
         {
-            _logger.LogWarning("TeachingPlan: fetch download failed (no result)");
             return string.Empty;
         }
 
@@ -163,21 +140,10 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
             !fetchResult.ContentType.Contains("pdf", StringComparison.OrdinalIgnoreCase) ||
             fetchedBytes.Length < 1024)
         {
-            _logger.LogWarning(
-                "TeachingPlan: fetch not a PDF (status={Status}, content-type={ContentType}, bytes={Bytes})",
-                fetchResult.Status,
-                fetchResult.ContentType,
-                fetchedBytes.Length);
             return string.Empty;
         }
 
         await File.WriteAllBytesAsync(filePath, fetchedBytes);
-        _logger.LogInformation(
-            "TeachingPlan: saved PDF via fetch to {Path} ({Bytes} bytes, status={Status})",
-            filePath,
-            fetchedBytes.Length,
-            fetchResult.Status);
-
         return filePath;
     }
 
