@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using CTUScheduler.Core.Models.Shared.Results;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -18,91 +21,74 @@ using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using CTUScheduler.Presentation.Shells.MainShell.Models;
 using Material.Icons;
 using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 {
-    public class MainShellViewModel: ViewModelBase, IScreen , IRoutableViewModel, IDisposable
+    public partial class MainShellViewModel : WebSyncViewModelBase, IScreen, IRoutableViewModel, IDisposable
     {
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private readonly CompositeDisposable _disposables = new();
         private readonly IMainHomeService _mainHomeService;
-        private readonly IUserInteractionService _userInteractionService;
-        private readonly INavigationRegionManager _navigationRegionManager;
-        private NavigationItem _selectedItem;
-        private string _userName = "họ tên";
-        private string _userMSSV = "MSSV";
-        private string _title = "";
 
-        public string? UrlPathSegment => "MainLayout";
-        public RoutingState Router { get; } = new RoutingState();
+        [Reactive] private NavigationItem _selectedItem;
+        [Reactive] private string _userName = "họ tên";
+        [Reactive] private string _userMSSV = "MSSV";
+        [ObservableAsProperty] private string _title = "CTU Scheduler";
+
+        public string UrlPathSegment => nameof(MainShellViewModel);
+        public RoutingState Router { get; } = new();
         public IScreen HostScreen { get; }
-        public ObservableCollection<NavigationItem> NavigationItems { get; }
-        public NavigationItem SelectedItem
-        {
-            get => _selectedItem;
-            set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
-        }
-        public string UserName
-        {
-            get => _userName;
-            set => this.RaiseAndSetIfChanged(ref _userName, value);
-        }
-        public string UserMSSV
-        {
-            get => _userMSSV;
-            set => this.RaiseAndSetIfChanged(ref _userMSSV, value);
-        }
-        public string Title
-        {
-            get => _title;
-            set => this.RaiseAndSetIfChanged(ref _title, value);
-        }
+        public IReadOnlyList<NavigationItem> NavigationItems { get; }
+
+        public ReactiveCommand<Unit, string> LoadStudentInfoCommand { get; }
         public ReactiveCommand<Unit, Unit> LogoutCommand { get; }
 
-        public MainShellViewModel()
-        {
-
-        }
 
         public MainShellViewModel(IScreen hostScreen,
             IMainHomeService mainHomeService,
             INavigationRegionManager navigationRegionManager,
-            IUserInteractionService userInteractionService)
+            IUserInteractionService userInteractionService) : base(userInteractionService, navigationRegionManager)
         {
             HostScreen = hostScreen;
             _mainHomeService = mainHomeService;
-            _navigationRegionManager = navigationRegionManager;
-            _userInteractionService = userInteractionService;
 
-            _navigationRegionManager.Register(RegionIds.Main, this)
+            NavigationRegionManager.Register(RegionIds.Main, this)
                 .DisposeWith(_disposables);
 
-            Observable.Defer(() => Observable.StartAsync(_ => _mainHomeService.EnsureReadyAsync())
-                    .Where(x => x.IsSuccess))
-                .SelectMany(_ =>_mainHomeService.GetStudentIdAsync())
-                .Catch((Exception ex) => Observable.Return(string.Empty))
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(userText =>
-                {
-                    if (string.IsNullOrWhiteSpace(userText)) return;
-                    string[] userInfoArray = userText.Split(" ");
-                    UserName = string.Join(' ', userInfoArray[..^1]);
-                    UserMSSV = userInfoArray[^1];
-                }).DisposeWith(_disposables);
-            
-            NavigationItems = new ObservableCollection<NavigationItem>
-            {
-                new NavigationItem("Trang chủ",MaterialIconKind.HomeOutline,typeof(HomeViewModel)),
-                new NavigationItem("Học phần", MaterialIconKind.TableCog,typeof(TimetableManagerViewModel)),
+            NavigationItems =
+            [
+                new NavigationItem("Trang chủ", MaterialIconKind.HomeOutline, typeof(HomeViewModel)),
+                new NavigationItem("Học phần", MaterialIconKind.TableCog, typeof(TimetableManagerViewModel))
                 // new NavigationItem("Cài đặt", MaterialIconKind.CogOutline,typeof(SettingViewModel))
-            };
+            ];
 
             this.WhenAnyValue(x => x.SelectedItem)
                 .WhereNotNull()
-                .Subscribe(item => OnNavigatePage(item))
+                .Subscribe(OnNavigatePage)
+                .DisposeWith(_disposables);
+
+            _titleHelper = this.WhenAnyValue(x => x.SelectedItem)
+                .WhereNotNull()
+                .Select(x => x.Title)
+                .ToProperty(this, nameof(Title))
                 .DisposeWith(_disposables);
 
             SelectedItem = NavigationItems[0];
             // SelectedItem = NavigationItems[1];
+
+            LoadStudentInfoCommand = ReactiveCommand.CreateFromTask(_mainHomeService.GetStudentIdAsync)
+                .DisposeWith(_disposables);
+
+            LoadStudentInfoCommand
+                .Catch((Exception _) => Observable.Return(string.Empty))
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Select(x => x.Split(" "))
+                .ObserveOn(RxSchedulers.MainThreadScheduler)
+                .Subscribe(arr =>
+                {
+                    UserName = string.Join(' ', arr[..^1]);
+                    UserMSSV = arr[^1];
+                }).DisposeWith(_disposables);
 
             LogoutCommand = ReactiveCommand.CreateFromTask(async () =>
             {
@@ -121,32 +107,37 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                     CanLightDismiss = true,
                     HostId = DialogIds.Root
                 };
-                
-                bool isAcceptLogout = await _userInteractionService.Dialog.ShowModal<ConfirmDialogViewModel,bool>(confirmViewModel,options);
-             
+
+                bool isAcceptLogout =
+                    await UserInteractionService.Dialog.ShowModal<ConfirmDialogViewModel, bool>(confirmViewModel,
+                        options);
+
                 if (isAcceptLogout)
                 {
-                    var currentStack = Router.NavigationStack.ToList();
-                    foreach (var vm in currentStack)
-                    {
-                        if (vm is IDisposable disposable) disposable.Dispose();
-                    }
-
-                    await _navigationRegionManager.NavigateAndResetTo<LoginViewModel>(RegionIds.Root);
-                    Dispose();
+                    await NavigationRegionManager.NavigateAndResetTo<LoginViewModel>(RegionIds.Root);
                 }
             }).DisposeWith(_disposables);
         }
 
-       
+
         private void OnNavigatePage(NavigationItem item)
         {
-            Title = item.Title;
             var oldPage = Router.GetCurrentViewModel();
-            _navigationRegionManager.NavigateAndResetTo(RegionIds.Main, item.ViewModelType);
-                    
+            NavigationRegionManager.NavigateAndResetTo(RegionIds.Main, item.ViewModelType);
+
             if (oldPage is IDisposable disposable)
                 disposable.Dispose();
+        }
+
+
+        protected override async Task<OperationResult> ExecuteWebSyncTaskAsync()
+        {
+            return await _mainHomeService.EnsureReadyAsync();
+        }
+
+        protected override void OnWebSyncSuccess()
+        {
+            LoadStudentInfoCommand.Execute().Subscribe().DisposeWith(_disposables);
         }
 
         public void Dispose()

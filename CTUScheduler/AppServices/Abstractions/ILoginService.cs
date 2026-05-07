@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using CTUScheduler.Core.Models.Shared.Results;
 
 namespace CTUScheduler.AppServices.Abstractions;

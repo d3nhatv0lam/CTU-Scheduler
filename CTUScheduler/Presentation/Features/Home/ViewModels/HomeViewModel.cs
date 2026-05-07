@@ -16,71 +16,41 @@ using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 using Serilog;
+using System.Threading.Tasks;
 
 namespace CTUScheduler.Presentation.Features.Home.ViewModels;
 
-public partial class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivatableViewModel, IDisposable
+public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, IDisposable
 {
+    private readonly IRegistrationRulesService _registrationRulesService;
     private readonly CompositeDisposable _disposable = new();
     private readonly ObservableAsPropertyHelper<RegistrationInformation?> _registrationInfo;
 
     public string UrlPathSegment => nameof(HomeViewModel);
     public IScreen HostScreen { get; }
-    public ViewModelActivator Activator { get; } = new();
     public RegistrationInformation? RegistrationInfo => _registrationInfo.Value;
-
-    [Reactive] private bool _isLoading;
 
     public HomeViewModel(IScreen hostScreen,
         IUserSessionService userSessionService,
         IRegistrationRulesService registrationRulesService,
         IUserInteractionService userInteractionService,
-        INavigationRegionManager navigationRegionManager,
-        ICourseRegistrationService courseRegistrationService)
+        INavigationRegionManager navigationRegionManager) : base(userInteractionService, navigationRegionManager)
     {
         HostScreen = hostScreen;
+        _registrationRulesService = registrationRulesService;
 
         registrationRulesService.RegistrationInfoChanged
             .Subscribe(userSessionService.UpdateServerInfo)
             .DisposeWith(_disposable);
 
-        IsLoading = true;
-
-        Observable.StartAsync(async _ => await registrationRulesService.EnsureReadyAsync())
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(
-                result =>
-                {
-                    IsLoading = false;
-
-                    result.Match(
-                        () => { },
-                        (errors, _) =>
-                        {
-                            var errorsString = String.Join('\n', errors.Select(x => x.FormattedMessage));
-                            userInteractionService.Notification.Light.Error(errorsString);
-                            navigationRegionManager.NavigateAndResetTo<LoginViewModel>(RegionIds.Root);
-
-                            if (RegistrationInfo?.UserPeriod is { } period)
-                            {
-                                Console.WriteLine(
-                                    $"Group: '{string.Join(", ", period.AllowedGroups)}' | Titles: {string.Join(", ", RegistrationInfo.Groups?.Select(g => $"'{g.Name}'") ?? [])}");
-                            }
-                        },
-                        ex => { Debug.WriteLine(ex, "Lỗi khi _registrationRulesService.EnsureReadyAsync"); }
-                    );
-                },
-                ex =>
-                {
-                    IsLoading = false;
-                    Debug.WriteLine(ex, "Lỗi Runtime khi chạy EnsureReadyAsync");
-                }
-            )
-            .DisposeWith(_disposable);
-
         _registrationInfo = userSessionService.RegistrationInfoChanged
             .ToProperty(this, nameof(RegistrationInfo), scheduler: RxApp.MainThreadScheduler)
             .DisposeWith(_disposable);
+    }
+
+    protected override async Task<OperationResult> ExecuteWebSyncTaskAsync()
+    {
+        return await _registrationRulesService.EnsureReadyAsync();
     }
 
     public void Dispose()

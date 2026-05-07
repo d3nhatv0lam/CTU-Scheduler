@@ -1,4 +1,6 @@
-﻿using System;
+using System;
+using CTUScheduler.Core.Models.Shared.Results;
+using CTUScheduler.Presentation.Services.Navigation;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -13,8 +15,6 @@ using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Infrastructure.Excel;
-using CTUScheduler.Infrastructure.Services.Network;
-using CTUScheduler.Infrastructure.Services.Registration;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Services.Factories;
@@ -32,7 +32,7 @@ using CTUScheduler.Presentation.Shared.Models.Identifiers;
 
 namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 {
-    public class TimetableManagerViewModel : ViewModelBase, IRoutableViewModel, IDisposable
+    public class TimetableManagerViewModel : WebSyncViewModelBase, IRoutableViewModel, IDisposable
     {
         private readonly CompositeDisposable _disposables = new();
         private readonly IConnectivityService _connectivityService;
@@ -83,7 +83,8 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             IScheduleRegistrationService scheduleRegistrationService,
             IExcelExporterService excelExporterService,
             IViewModelFactory viewModelFactory,
-            IUserInteractionService userInteractionService)
+            IUserInteractionService userInteractionService,
+            INavigationRegionManager navigationRegionManager) : base(userInteractionService, navigationRegionManager)
         {
             HostScreen = hostScreen;
             _connectivityService = connectivityService;
@@ -95,7 +96,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             _scheduleRegistrationService = scheduleRegistrationService;
             _excelExporterService = excelExporterService;
             _viewModelFactory = viewModelFactory;
-            _userInteractionService = userInteractionService;
 
 
             _profileQueryService.ConnectProfiles()
@@ -140,8 +140,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 .ToProperty(this, nameof(IsExpiredSaved), scheduler: RxSchedulers.MainThreadScheduler)
                 .DisposeWith(_disposables);
 
-            GoToCourseCatalogPage();
-
             var canInteractUi = this.WhenAnyValue(x => x.IsExpiredSaved, expired => !expired);
             ShowAddCourseDialogCommand = ReactiveCommand.CreateFromTask(OpenAddCourseDialog, canInteractUi)
                 .DisposeWith(_disposables);
@@ -176,7 +174,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     };
 
                     var result =
-                        await _userInteractionService.Dialog
+                        await UserInteractionService.Dialog
                             .ShowModal<ConfirmDialogViewModel, bool>(confirmViewModel, options);
 
                     if (result)
@@ -223,7 +221,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                         CanLightDismiss = true,
                         HostId = DialogIds.Root
                     };
-                    await _userInteractionService.Dialog.ShowModal<TimetableLayoutBaseViewModel, Unit>(
+                    await UserInteractionService.Dialog.ShowModal<TimetableLayoutBaseViewModel, Unit>(
                         timetableLayoutViewModel, options);
                 })
                 .DisposeWith(_disposables);
@@ -268,19 +266,12 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 CanLightDismiss = false,
                 HostId = DialogIds.Root
             };
-            await _userInteractionService.Dialog.ShowModal<SchedulingDialogViewModel, Unit>(viewModel, options);
+            await UserInteractionService.Dialog.ShowModal<SchedulingDialogViewModel, Unit>(viewModel, options);
         }
 
-        private async void GoToCourseCatalogPage()
+        protected override async Task<OperationResult> ExecuteWebSyncTaskAsync()
         {
-            try
-            {
-                await _courseCatalogService.EnsureReadyAsync();
-            }
-            catch
-            {
-                // ignored
-            }
+            return await _courseCatalogService.EnsureReadyAsync();
         }
 
         private string FormatTime(DateTimeOffset time)
