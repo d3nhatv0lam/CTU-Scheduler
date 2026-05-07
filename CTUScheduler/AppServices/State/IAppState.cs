@@ -1,11 +1,11 @@
 ﻿using System;
-using CTUScheduler.AppServices.Models;
-using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
-using CTUScheduler.Core.Models.Settings;
-using DynamicData;
+using CTUScheduler.Core.Models.TeachingPlan;
 
 namespace CTUScheduler.AppServices.State;
 
 public interface IAppState
 {
+    IObservable<TeachingPlanData?> TeachingPlanChanged { get; }
+    TeachingPlanData? TeachingPlan { get; }
+    void SetTeachingPlan(TeachingPlanData? data);
 }
