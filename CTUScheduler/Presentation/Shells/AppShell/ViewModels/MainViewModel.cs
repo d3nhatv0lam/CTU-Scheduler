@@ -5,6 +5,7 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Helpers;
+using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
@@ -29,6 +30,7 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
     private readonly IUserInteractionService _userInteractionService;
     private readonly ITeachingPlanLoaderService _teachingPlanLoaderService;
     private readonly ILogger<MainViewModel> _logger;
+    private readonly AppState _appState;
 
     private readonly NotificationOptions _internetNotificationOptions = new() { Expiration = TimeSpan.FromSeconds(10), ShowIcon = true};
 
@@ -49,13 +51,15 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
         IViewContextService viewContextService,
         IUserInteractionService userInteractionService,
         ITeachingPlanLoaderService teachingPlanLoaderService,
-        ILogger<MainViewModel> logger)
+        ILogger<MainViewModel> logger,
+        AppState appState)
     {
         _connectivityService = connectivityService;
         _navigationRegionManager = navigationRegionManager;
         _userInteractionService = userInteractionService;
         _teachingPlanLoaderService = teachingPlanLoaderService;
         _logger = logger;
+        _appState = appState;
         ViewContext = viewContextService;
 
         _navigationRegionManager.Register(_regionId, this)
@@ -81,6 +85,7 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
                     }
 
                     var data = result.Content;
+                    _appState.SetTeachingPlan(data);
                     _logger.LogInformation(
                         "TeachingPlanData: Title={Title}; Semester={Semester}; SchoolYear={SchoolYear}; TimelineCount={Count}",
                         data.Title,
