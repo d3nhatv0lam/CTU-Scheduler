@@ -5,7 +5,6 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Helpers;
-using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
@@ -16,7 +15,6 @@ using CTUScheduler.Presentation.Services.UserInteractionService.Models;
 using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
-using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
@@ -29,8 +27,6 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
     private readonly INavigationRegionManager _navigationRegionManager;
     private readonly IUserInteractionService _userInteractionService;
     private readonly ITeachingPlanLoaderService _teachingPlanLoaderService;
-    private readonly ILogger<MainViewModel> _logger;
-    private readonly AppState _appState;
 
     private readonly NotificationOptions _internetNotificationOptions = new() { Expiration = TimeSpan.FromSeconds(10), ShowIcon = true};
 
@@ -50,16 +46,12 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
         INavigationRegionManager navigationRegionManager,
         IViewContextService viewContextService,
         IUserInteractionService userInteractionService,
-        ITeachingPlanLoaderService teachingPlanLoaderService,
-        ILogger<MainViewModel> logger,
-        AppState appState)
+        ITeachingPlanLoaderService teachingPlanLoaderService)
     {
         _connectivityService = connectivityService;
         _navigationRegionManager = navigationRegionManager;
         _userInteractionService = userInteractionService;
         _teachingPlanLoaderService = teachingPlanLoaderService;
-        _logger = logger;
-        _appState = appState;
         ViewContext = viewContextService;
 
         _navigationRegionManager.Register(_regionId, this)
@@ -81,27 +73,6 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
                     {
                         var message = result.FirstErrorMessage ?? "Không tải được kế hoạch giảng dạy";
                         _userInteractionService.Notification.Light.Warning(message);
-                        return;
-                    }
-
-                    var data = result.Content;
-                    _appState.SetTeachingPlan(data);
-                    _logger.LogInformation(
-                        "TeachingPlanData: Title={Title}; Semester={Semester}; SchoolYear={SchoolYear}; TimelineCount={Count}",
-                        data.Title,
-                        data.Semester,
-                        data.SchoolYear,
-                        data.RegistrationTimeline.Count);
-
-                    for (var i = 0; i < data.RegistrationTimeline.Count; i++)
-                    {
-                        var item = data.RegistrationTimeline[i];
-                        _logger.LogInformation(
-                            "TeachingPlanTimeline[{Index}]: {Description} (Start={Start}, End={End})",
-                            i + 1,
-                            item.Description,
-                            item.StartDate,
-                            item.EndDate);
                     }
                 })
                 .DisposeWith(disposables);

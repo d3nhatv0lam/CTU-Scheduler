@@ -8,7 +8,6 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.UserSessionService;
-using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
 using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Core.Models.TeachingPlan;
@@ -27,15 +26,14 @@ public partial class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivat
 {
     private readonly CompositeDisposable _disposable = new();
     private readonly ObservableAsPropertyHelper<RegistrationInformation?> _registrationInfo;
-    private readonly ObservableAsPropertyHelper<IReadOnlyList<RegistrationTimelineItem>> _teachingPlanTimeline;
 
     public string UrlPathSegment => nameof(HomeViewModel);
     public IScreen HostScreen { get; }
     public ViewModelActivator Activator { get; } = new();
     public RegistrationInformation? RegistrationInfo => _registrationInfo.Value;
-    public IReadOnlyList<RegistrationTimelineItem> TeachingPlanTimeline => _teachingPlanTimeline.Value;
 
     [Reactive] private bool _isLoading;
+    [Reactive] private IReadOnlyList<RegistrationTimelineItem> _teachingPlanTimeline = new List<RegistrationTimelineItem>();
 
     public HomeViewModel(IScreen hostScreen,
         IUserSessionService userSessionService,
@@ -43,7 +41,7 @@ public partial class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivat
         IUserInteractionService userInteractionService,
         INavigationRegionManager navigationRegionManager,
         ICourseRegistrationService courseRegistrationService,
-        AppState appState)
+        ITeachingPlanLoaderService teachingPlanLoaderService)
     {
         HostScreen = hostScreen;
 
@@ -89,10 +87,17 @@ public partial class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivat
             .ToProperty(this, nameof(RegistrationInfo), scheduler: RxApp.MainThreadScheduler)
             .DisposeWith(_disposable);
 
-        _teachingPlanTimeline = appState.TeachingPlanChanged
-            .Select(plan => (IReadOnlyList<RegistrationTimelineItem>)(plan?.RegistrationTimeline ?? new List<RegistrationTimelineItem>()))
+        Observable.StartAsync(async _ => await teachingPlanLoaderService.LoadLatestAsync())
             .ObserveOn(RxApp.MainThreadScheduler)
-            .ToProperty(this, nameof(TeachingPlanTimeline), scheduler: RxApp.MainThreadScheduler)
+            .Subscribe(result =>
+            {
+                if (result.IsFailed)
+                {
+                    return;
+                }
+
+                TeachingPlanTimeline = result.Content.RegistrationTimeline;
+            })
             .DisposeWith(_disposable);
     }
 
