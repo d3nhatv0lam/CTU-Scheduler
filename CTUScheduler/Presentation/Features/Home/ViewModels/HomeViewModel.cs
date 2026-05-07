@@ -1,91 +1,65 @@
 using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using System.Reactive.Linq;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
 using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
-using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using ReactiveUI;
-using ReactiveUI.SourceGenerators;
 using Serilog;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Presentation.Features.Home.ViewModels;
 
-public partial class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivatableViewModel, IDisposable
+public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, IDisposable
 {
+    private readonly IRegistrationRulesService _registrationRulesService;
     private readonly CompositeDisposable _disposable = new();
     private readonly ObservableAsPropertyHelper<RegistrationInformation?> _registrationInfo;
+    private readonly ILogger<HomeViewModel> _logger;
 
     public string UrlPathSegment => nameof(HomeViewModel);
     public IScreen HostScreen { get; }
-    public ViewModelActivator Activator { get; } = new();
     public RegistrationInformation? RegistrationInfo => _registrationInfo.Value;
-
-    [Reactive] private bool _isLoading;
+    protected override bool HasData => RegistrationInfo is not null;
 
     public HomeViewModel(IScreen hostScreen,
         IUserSessionService userSessionService,
         IRegistrationRulesService registrationRulesService,
         IUserInteractionService userInteractionService,
         INavigationRegionManager navigationRegionManager,
-        ICourseRegistrationService courseRegistrationService)
+        IConnectivityService connectivityService,
+        ILogger<HomeViewModel> logger) : base(userInteractionService, navigationRegionManager, connectivityService)
     {
         HostScreen = hostScreen;
+        _registrationRulesService = registrationRulesService;
+        _logger = logger;
 
         registrationRulesService.RegistrationInfoChanged
             .Subscribe(userSessionService.UpdateServerInfo)
             .DisposeWith(_disposable);
 
-        IsLoading = true;
-
-        Observable.StartAsync(async _ => await registrationRulesService.EnsureReadyAsync())
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(
-                result =>
-                {
-                    IsLoading = false;
-
-                    result.Match(
-                        () => { },
-                        (errors, _) =>
-                        {
-                            var errorsString = String.Join('\n', errors.Select(x => x.FormattedMessage));
-                            userInteractionService.Notification.Light.Error(errorsString);
-                            navigationRegionManager.NavigateAndResetTo<LoginViewModel>(RegionIds.Root);
-
-                            if (RegistrationInfo?.UserPeriod is { } period)
-                            {
-                                Console.WriteLine(
-                                    $"Group: '{string.Join(", ", period.AllowedGroups)}' | Titles: {string.Join(", ", RegistrationInfo.Groups?.Select(g => $"'{g.Name}'") ?? [])}");
-                            }
-                        },
-                        ex => { Debug.WriteLine(ex, "Lỗi khi _registrationRulesService.EnsureReadyAsync"); }
-                    );
-                },
-                ex =>
-                {
-                    IsLoading = false;
-                    Debug.WriteLine(ex, "Lỗi Runtime khi chạy EnsureReadyAsync");
-                }
-            )
-            .DisposeWith(_disposable);
-
         _registrationInfo = userSessionService.RegistrationInfoChanged
             .ToProperty(this, nameof(RegistrationInfo), scheduler: RxApp.MainThreadScheduler)
             .DisposeWith(_disposable);
+
+        this.WhenAnyValue(x => x.RegistrationInfo)
+            .Subscribe(_ => this.RaisePropertyChanged(nameof(HasData)))
+            .DisposeWith(_disposable);
+    }
+
+    protected override async Task<OperationResult> ExecuteWebSyncTaskAsync()
+    {
+        return await _registrationRulesService.EnsureReadyAsync();
     }
 
     public void Dispose()
     {
         _disposable.Dispose();
-        Log.Debug(nameof(HomeViewModel) + ": Disposed");
+        _logger.LogDebug("{this}: Disposed", nameof(HomeViewModel));
     }
 }
