@@ -41,6 +41,7 @@
             </Style>
             <Style Selector="^ Border.card-item-4">
                 <Setter Property="Grid.Row" Value="3" />
+                <Setter Property="Padding" Value="10" />
             </Style>
         </Style>
 
@@ -212,7 +213,7 @@
                 <Border x:Name="Card4" Classes="Card card-item-4">
                     <Grid RowDefinitions="Auto, *">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Lộ trình đăng ký học phần" />
-                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoading}" IsActive="True">
+                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsTeachingPlanLoading}" IsActive="True">
             
                             <u:Timeline Margin="0,0,0,0" ItemsSource="{Binding TeachingPlanTimeline}">
                                 <u:Timeline.Styles>
@@ -226,13 +227,13 @@
 
                                 <u:Timeline.ItemTemplate>
                                     <DataTemplate x:DataType="tp:RegistrationTimelineItem">
-            
-                                        <Grid MaxWidth="{Binding $parent[u:Timeline].Bounds.Width}" Margin="0,25,0,25" RowDefinitions="Auto, Auto">
-                
-                                            <TextBlock Grid.Row="0" Text="{Binding Description}" FontSize="16"
+
+                                        <Grid MaxWidth="{Binding $parent[u:TimelineItem].Bounds.Width}" Margin="0,25,0,25" RowDefinitions="Auto, Auto">
+
+                                            <TextBlock Grid.Row="0" Text="{Binding Description}" FontSize="15"
                                                        FontWeight="SemiBold" Foreground="#111827" Margin="0,0,0,6"
-                                                       TextWrapping="Wrap" 
-                                                       MaxLines="2" 
+                                                       TextWrapping="Wrap"
+                                                       MaxLines="2"
                                                        TextTrimming="CharacterEllipsis"
                                                        ToolTip.Tip="{Binding Description}" />
                                             <TextBlock Grid.Row="1" FontSize="14" Foreground="#6B7280">
@@ -242,9 +243,8 @@
                                                     <Run Text="{Binding EndDate, StringFormat='dd/MM/yyyy'}" />
                                                 </TextBlock.Inlines>
                                             </TextBlock>
-                
                                         </Grid>
-            
+
                                     </DataTemplate>
                                 </u:Timeline.ItemTemplate>
                             </u:Timeline>
@@ -256,3 +256,4 @@
         </Border>
     </Grid>
 </rxui:ReactiveUserControl>
+

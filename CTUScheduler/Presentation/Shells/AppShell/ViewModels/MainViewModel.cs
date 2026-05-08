@@ -26,7 +26,6 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
     private readonly IConnectivityService _connectivityService;
     private readonly INavigationRegionManager _navigationRegionManager;
     private readonly IUserInteractionService _userInteractionService;
-    private readonly ITeachingPlanLoaderService _teachingPlanLoaderService;
 
     private readonly NotificationOptions _internetNotificationOptions = new() { Expiration = TimeSpan.FromSeconds(10), ShowIcon = true};
 
@@ -45,13 +44,11 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
         IConnectivityService connectivityService,
         INavigationRegionManager navigationRegionManager,
         IViewContextService viewContextService,
-        IUserInteractionService userInteractionService,
-        ITeachingPlanLoaderService teachingPlanLoaderService)
+        IUserInteractionService userInteractionService)
     {
         _connectivityService = connectivityService;
         _navigationRegionManager = navigationRegionManager;
         _userInteractionService = userInteractionService;
-        _teachingPlanLoaderService = teachingPlanLoaderService;
         ViewContext = viewContextService;
 
         _navigationRegionManager.Register(_regionId, this)
@@ -65,18 +62,6 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
         
         this.WhenActivated((CompositeDisposable disposables) =>
         {
-            Observable.StartAsync(async _ => await _teachingPlanLoaderService.LoadLatestAsync())
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(result =>
-                {
-                    if (result.IsFailed)
-                    {
-                        var message = result.FirstErrorMessage ?? "Không tải được kế hoạch giảng dạy";
-                        _userInteractionService.Notification.Light.Warning(message);
-                    }
-                })
-                .DisposeWith(disposables);
-
             _connectivityService.IsInternetAvailable
                 .DistinctUntilChanged()
                 .ObserveOn(RxApp.MainThreadScheduler)

@@ -33,6 +33,7 @@ public partial class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivat
     public RegistrationInformation? RegistrationInfo => _registrationInfo.Value;
 
     [Reactive] private bool _isLoading;
+    [Reactive] private bool _isTeachingPlanLoading;
     [Reactive] private IReadOnlyList<RegistrationTimelineItem> _teachingPlanTimeline = new List<RegistrationTimelineItem>();
 
     public HomeViewModel(IScreen hostScreen,
@@ -40,7 +41,6 @@ public partial class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivat
         IRegistrationRulesService registrationRulesService,
         IUserInteractionService userInteractionService,
         INavigationRegionManager navigationRegionManager,
-        ICourseRegistrationService courseRegistrationService,
         ITeachingPlanLoaderService teachingPlanLoaderService)
     {
         HostScreen = hostScreen;
@@ -50,6 +50,7 @@ public partial class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivat
             .DisposeWith(_disposable);
 
         IsLoading = true;
+        IsTeachingPlanLoading = true;
 
         Observable.StartAsync(async _ => await registrationRulesService.EnsureReadyAsync())
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -59,9 +60,33 @@ public partial class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivat
                     IsLoading = false;
 
                     result.Match(
-                        () => { },
+                        () =>
+                        {
+                            IsTeachingPlanLoading = true;
+
+                            Observable.StartAsync(async _ => await teachingPlanLoaderService.LoadLatestAsync())
+                                .ObserveOn(RxApp.MainThreadScheduler)
+                                .Subscribe(loadResult =>
+                                {
+                                    IsTeachingPlanLoading = false;
+
+                                    if (loadResult.IsFailed)
+                                    {
+                                        return;
+                                    }
+
+                                    TeachingPlanTimeline = loadResult.Content.RegistrationTimeline;
+                                },
+                                ex =>
+                                {
+                                    IsTeachingPlanLoading = false;
+                                    Debug.WriteLine(ex, "Lỗi Runtime khi chạy LoadLatestAsync");
+                                })
+                                .DisposeWith(_disposable);
+                        },
                         (errors, _) =>
                         {
+                            IsTeachingPlanLoading = false;
                             var errorsString = String.Join('\n', errors.Select(x => x.FormattedMessage));
                             userInteractionService.Notification.Light.Error(errorsString);
                             navigationRegionManager.NavigateAndResetTo<LoginViewModel>(RegionIds.Root);
@@ -72,12 +97,17 @@ public partial class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivat
                                     $"Group: '{string.Join(", ", period.AllowedGroups)}' | Titles: {string.Join(", ", RegistrationInfo.Groups?.Select(g => $"'{g.Name}'") ?? [])}");
                             }
                         },
-                        ex => { Debug.WriteLine(ex, "Lỗi khi _registrationRulesService.EnsureReadyAsync"); }
+                        ex =>
+                        {
+                            IsTeachingPlanLoading = false;
+                            Debug.WriteLine(ex, "Lỗi khi _registrationRulesService.EnsureReadyAsync");
+                        }
                     );
                 },
                 ex =>
                 {
                     IsLoading = false;
+                    IsTeachingPlanLoading = false;
                     Debug.WriteLine(ex, "Lỗi Runtime khi chạy EnsureReadyAsync");
                 }
             )
@@ -85,19 +115,6 @@ public partial class HomeViewModel : ViewModelBase, IRoutableViewModel, IActivat
 
         _registrationInfo = userSessionService.RegistrationInfoChanged
             .ToProperty(this, nameof(RegistrationInfo), scheduler: RxApp.MainThreadScheduler)
-            .DisposeWith(_disposable);
-
-        Observable.StartAsync(async _ => await teachingPlanLoaderService.LoadLatestAsync())
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(result =>
-            {
-                if (result.IsFailed)
-                {
-                    return;
-                }
-
-                TeachingPlanTimeline = result.Content.RegistrationTimeline;
-            })
             .DisposeWith(_disposable);
     }
 
