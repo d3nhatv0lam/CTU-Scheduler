@@ -72,7 +72,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
             );
 
             _searchedCourseHelper = SearchCommand
-                .ToProperty(this, nameof(SearchedCourse), scheduler: RxApp.MainThreadScheduler)
+                .ToProperty(this, nameof(SearchedCourse), scheduler: RxSchedulers.MainThreadScheduler)
                 .DisposeWith(_disposables);
 
             #endregion
@@ -83,7 +83,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
                 .Select(course => course is null
                     ? (IReadOnlyList<SelectableCourseSection>)[]
                     : course.Sections.Select(s => new SelectableCourseSection(s)).ToList())
-                .ToProperty(this, nameof(SearchedCourseSections), scheduler: RxApp.MainThreadScheduler)
+                .ToProperty(this, nameof(SearchedCourseSections), scheduler: RxSchedulers.MainThreadScheduler)
                 .DisposeWith(_disposables);
 
             _filteredCourseSectionsHelper = this.WhenAnyValue(x => x.ShowOnlyAvailableSections,
@@ -95,7 +95,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
                     ? tuple.searchedCourseSections
                         .Where(section => section.Item.RemainingStudents > 0).ToList()
                     : tuple.searchedCourseSections)
-                .ToProperty(this, nameof(FilteredCourseSections), scheduler: RxApp.MainThreadScheduler)
+                .ToProperty(this, nameof(FilteredCourseSections), scheduler: RxSchedulers.MainThreadScheduler)
                 .DisposeWith(_disposables);
 
             #endregion
@@ -129,7 +129,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
             // Handle user selecting a suggestion
             this.WhenAnyValue(x => x.SelectedQuickSelectDmhpCourse)
                 .WhereNotNull()
-                .ObserveOn(RxApp.MainThreadScheduler)
+                .ObserveOn(RxSchedulers.MainThreadScheduler)
                 .Subscribe(selectedQuickSelectCourse =>
                 {
                     TxtInputCourseKey = selectedQuickSelectCourse.CourseCode;
@@ -153,7 +153,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
             // Delay closing the popup on lost focus to allow popup clicks to register
             this.WhenAnyValue(x => x.IsTextBoxFocused)
                 .Where(focused => !focused)
-                .Delay(TimeSpan.FromMilliseconds(150), RxApp.MainThreadScheduler)
+                .Delay(TimeSpan.FromMilliseconds(150), RxSchedulers.MainThreadScheduler)
                 .Subscribe(_ => TryOpenQuickSelectPopup())
                 .DisposeWith(_disposables);
 

@@ -29,7 +29,7 @@ public class TimetableViewModel: ViewModelBase, IDisposable
         
         renderStream
             .TransformMany(item => item.Cells)
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Bind(out _scheduleCells)
             .Subscribe()
             .DisposeWith(_disposables);
@@ -37,7 +37,7 @@ public class TimetableViewModel: ViewModelBase, IDisposable
         // show all courses
         // renderStream
         //     .Transform(item => item.SharedData)
-        //     .ObserveOn(RxApp.MainThreadScheduler)
+        //     .ObserveOn(RxSchedulers.MainThreadScheduler)
         //     .Bind(out _courseList)
         //     .Subscribe()
         //     .DisposeWith(_disposables);
@@ -45,7 +45,7 @@ public class TimetableViewModel: ViewModelBase, IDisposable
         renderStream
             .Filter(item => item.Cells is { Count: 0 })
             .Transform(item => item.SharedData)
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Bind(out _unscheduledCourses)
             .Subscribe()
             .DisposeWith(_disposables);

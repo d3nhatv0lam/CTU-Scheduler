@@ -31,7 +31,7 @@ public partial class SplashScreenWindow : ReactiveUrsaWindow<SplashScreenViewMod
                 .Throttle(TimeSpan.FromMilliseconds(16))
                 .DistinctUntilChanged()
                 .Where(size => size is { Item1: > 0, Item2: > 0 })
-                .ObserveOn(RxApp.MainThreadScheduler)
+                .ObserveOn(RxSchedulers.MainThreadScheduler)
                 .Select(tuple => Observable.FromAsync(ct => AnimateToSizeAsync(new Size(tuple.Item1, tuple.Item2), ct)))
                 .Switch()
                 .Subscribe()

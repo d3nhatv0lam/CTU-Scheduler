@@ -9,7 +9,6 @@ using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using ReactiveUI;
-using Serilog;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -44,7 +43,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
             .DisposeWith(_disposable);
 
         _registrationInfo = userSessionService.RegistrationInfoChanged
-            .ToProperty(this, nameof(RegistrationInfo), scheduler: RxApp.MainThreadScheduler)
+            .ToProperty(this, nameof(RegistrationInfo), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(_disposable);
 
         this.WhenAnyValue(x => x.RegistrationInfo)
