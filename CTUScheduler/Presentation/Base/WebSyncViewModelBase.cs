@@ -21,11 +21,9 @@ public abstract partial class WebSyncViewModelBase : ViewModelBase, IActivatable
     protected readonly IUserInteractionService UserInteractionService;
     protected readonly INavigationRegionManager NavigationRegionManager;
     protected readonly IConnectivityService ConnectivityService;
-    [ObservableAsProperty(ReadOnly = false)] private bool _isInitialLoading;
-    [Reactive] private bool _isLoading = false;
+    
+    [Reactive] private bool _isLoading;
 
-
-    protected virtual bool HasData => true;
     public ViewModelActivator Activator { get; } = new();
     public ReactiveCommand<Unit, OperationResult> SyncWebSessionCommand { get; }
 
@@ -71,16 +69,10 @@ public abstract partial class WebSyncViewModelBase : ViewModelBase, IActivatable
             );
         });
 
-        this.WhenActivated((CompositeDisposable disposables) =>
+        this.WhenActivated(disposables =>
         {
             OnWebSyncStarted();
             
-            // Chỉ hiện Loading ban đầu nếu (Đang chạy lệnh AND Chưa có dữ liệu cache)
-            _isInitialLoadingHelper = this.WhenAnyValue(x => x.IsLoading, x => x.HasData,
-                    (loading, hasData) => loading && !hasData)
-                .ToProperty(this, nameof(IsInitialLoading))
-                .DisposeWith(disposables);
-
             Observable.Return(Unit.Default)
                 .InvokeCommand(SyncWebSessionCommand)
                 .DisposeWith(disposables);
