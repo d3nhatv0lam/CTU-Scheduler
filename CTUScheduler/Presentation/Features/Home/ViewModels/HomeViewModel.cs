@@ -30,6 +30,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
     private readonly ObservableAsPropertyHelper<RegistrationInformation?> _registrationInfo;
     [ObservableAsProperty] private IReadOnlyList<PlannedCourse>? _plannedCourses;
     [ObservableAsProperty] private bool _isInitialLoading;
+    [ObservableAsProperty] private bool _isLoadingPlannedCourses;
 
     public string UrlPathSegment => nameof(HomeViewModel);
     public IScreen HostScreen { get; }
@@ -68,6 +69,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
             .CreateFromTask(ct => _courseRegistrationService.FetchPlannedCourseAsync(token: ct))
             .DisposeWith(_disposable);
 
+        // TODO: Cached lại ở service ở lần phát triển tiếp theo
         _plannedCoursesHelper = LoadPlannedCoursesCommand
             .Where(x => x.IsSuccess)
             .Select(x => x.Content)
@@ -78,15 +80,22 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
             .Select(_ => Unit.Default)
             .InvokeCommand(LoadPlannedCoursesCommand)
             .DisposeWith(_disposable);
+
+        // hoạt động tốt khi cached lại! hiện tại loading mỗi lần mở view
+        _isLoadingPlannedCoursesHelper = this.WhenAnyValue(x => x.IsInitialLoading, x => x.PlannedCourses)
+            .CombineLatest(LoadPlannedCoursesCommand.IsExecuting,
+                (state, isExecuting) =>
+                {
+                    var (isInitial, plannedCourses) = state;
+                    return isInitial || (isExecuting && plannedCourses is null);
+                })
+            .ToProperty(this, nameof(IsLoadingPlannedCourses))
+            .DisposeWith(_disposable);
     }
 
     protected override async Task<OperationResult> ExecuteWebSyncTaskAsync()
     {
         return await _registrationRulesService.EnsureReadyAsync();
-    }
-
-    protected override void OnWebSyncSuccess()
-    {
     }
 
     public void Dispose()

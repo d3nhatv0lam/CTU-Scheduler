@@ -283,7 +283,7 @@
                     <Grid RowDefinitions="Auto, *" ClipToBounds="True">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Danh sách học phần theo KHHT" />
 
-                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsInitialLoading}" IsActive="True" MinHeight="50">
+                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoadingPlannedCourses}" IsActive="True" MinHeight="50">
                             <Grid RowDefinitions="Auto, *">
 
                                 <!-- HEADER -->
