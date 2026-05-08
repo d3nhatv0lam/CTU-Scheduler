@@ -41,7 +41,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly IProfileQueryService _profileQueryService;
         private readonly IScheduleSyncService _scheduleSyncService;
         private readonly IScheduleRegistrationService _scheduleRegistrationService;
-        private readonly IUserInteractionService _userInteractionService;
         private readonly IExcelExporterService _excelExporterService;
         private readonly IUserSessionService _userSessionService;
         private readonly IWorkspaceStore _workspaceStore;
@@ -87,7 +86,8 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             IViewModelFactory viewModelFactory,
             IUserInteractionService userInteractionService,
             INavigationRegionManager navigationRegionManager,
-            ILogger<TimetableManagerViewModel> logger) : base(userInteractionService, navigationRegionManager, connectivityService)
+            ILogger<TimetableManagerViewModel> logger) : base(userInteractionService, navigationRegionManager,
+            connectivityService)
         {
             HostScreen = hostScreen;
             _connectivityService = connectivityService;
@@ -194,27 +194,27 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 .DisposeWith(_disposables);
 
             ExportSelectedTimetablesCommand = ReactiveCommand.CreateFromTask(async () =>
-            {
-                var selectedTimetables = TimetableLayouts.Where(x => x.IsSelected).ToList();
-                if (selectedTimetables.Count == 0) return;
+                {
+                    var selectedTimetables = TimetableLayouts.Where(x => x.IsSelected).ToList();
+                    if (selectedTimetables.Count == 0) return;
 
-                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-                string fileName = $"CTU_Scheduler_TKB_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
-                string fullPath = System.IO.Path.Combine(desktopPath, fileName);
+                    string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                    string fileName = $"CTU_Scheduler_TKB_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                    string fullPath = System.IO.Path.Combine(desktopPath, fileName);
 
-                var blueprints = selectedTimetables
-                    .Select((layout, index) =>
-                    {
-                        var sheetName = string.IsNullOrWhiteSpace(layout.Name)
-                            ? $"TKB_{index + 1}"
-                            : layout.Name;
-                        return (Blueprint: layout.ToScheduleBlueprint(), SheetName: sheetName);
-                    })
-                    .ToList();
+                    var blueprints = selectedTimetables
+                        .Select((layout, index) =>
+                        {
+                            var sheetName = string.IsNullOrWhiteSpace(layout.Name)
+                                ? $"TKB_{index + 1}"
+                                : layout.Name;
+                            return (Blueprint: layout.ToScheduleBlueprint(), SheetName: sheetName);
+                        })
+                        .ToList();
 
-                await _excelExporterService.ExportTimetablesAsync(blueprints, fullPath);
-            }, this.WhenAnyValue(x => x.HasSelectedTimetable))
-            .DisposeWith(_disposables);
+                    await _excelExporterService.ExportTimetablesAsync(blueprints, fullPath);
+                }, this.WhenAnyValue(x => x.HasSelectedTimetable))
+                .DisposeWith(_disposables);
 
             ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<TimetableLayoutBaseViewModel>(async
                     timetableLayoutViewModel =>
@@ -233,12 +233,17 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             SaveScheduleCommand = ReactiveCommand.CreateFromTask<IStorageFile>(async file =>
             {
                 var filePath = file.Path.LocalPath;
-                if (await workspaceStore.SaveAsync(filePath))
-                {
-                }
-                else
-                {
-                }
+                var result = await workspaceStore.SaveAsync(filePath);
+
+                result.Match(
+                    onSuccess: () =>
+                    {
+                        _logger.LogInformation("Lưu thời khóa biểu thành công vào {Path}", filePath);
+                        UserInteractionService.Toast.Light.Success("Lưu dữ liệu thành công!");
+                    },
+                    onFailure: (errors, _) =>
+                        UserInteractionService.Notification.Light.Error("Lỗi lưu file",
+                            string.Join("\n", errors.Select(e => e.FormattedMessage))));
             }).DisposeWith(_disposables);
 
             LoadScheduleCommand = ReactiveCommand.CreateFromTask<IReadOnlyList<IStorageFile>>(async files =>
@@ -246,13 +251,18 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     foreach (var file in files)
                     {
                         var filePath = file.Path.LocalPath;
-                        var isLoaded = await workspaceStore.LoadAsync(filePath);
-                        if (isLoaded)
-                        {
-                        }
-                        else
-                        {
-                        }
+                        var result = await workspaceStore.LoadAsync(filePath);
+
+                        result.Match(
+                            onSuccess: () =>
+                            {
+                                _logger.LogInformation("Nạp thời khóa biểu thành công từ {Path}", filePath);
+                                UserInteractionService.Toast.Light.Success("Nạp dữ liệu thành công!");
+                            },
+                            onFailure: (errors, _) =>
+                                UserInteractionService.Notification.Light.Error("Lỗi nạp file",
+                                    string.Join("\n", errors.Select(x => x.FormattedMessage)))
+                        );
 
                         break;
                     }
