@@ -66,14 +66,14 @@ public class LimitedSelectionPaginationViewModel<T> : SelectablePaginationViewMo
         : base(sourceList, options, ownsData)
     {
         _maxItemCanSelect = maxItemCanSelectObservable
-            .ToProperty(this, nameof(MaxItemCanSelect), scheduler: RxApp.MainThreadScheduler)
+            .ToProperty(this, nameof(MaxItemCanSelect), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
 
         // chuyển page
         PagedData.ToObservableChangeSet().Select(_ => Unit.Default)
             // có item select/unselect
             .Merge(SelectedItemCountChanged.Select(_ => Unit.Default))
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Subscribe(_ => UpdateItemsEnableState())
             .DisposeWith(Disposables);
     }

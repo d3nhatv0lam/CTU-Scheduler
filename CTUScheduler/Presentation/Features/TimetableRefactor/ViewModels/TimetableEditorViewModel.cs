@@ -46,7 +46,7 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
 
         var savedRef = scheduleProfile.SavedCourseGroupKeys;
         var sharedCourse = courseQueryService.ConnectCourses()
-            .SubscribeOn(RxApp.TaskpoolScheduler)
+            .SubscribeOn(RxSchedulers.TaskpoolScheduler)
             .Filter(x => savedRef.ContainsKey(x.Code))
             .MergeMany(runtimeCourse =>
             {
@@ -72,19 +72,19 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
             .AutoRefresh(shared => shared.Credits)
             .Transform(shared => shared.Credits ,transformOnRefresh:true)
             .Sum(credit => credit) 
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Subscribe(sum => TotalCredits = sum)
             .DisposeWith(Disposables);
         
         sharedCourse.CountChanged
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Subscribe(count => SubjectsCount = count)
             .DisposeWith(Disposables);
 
         sharedCourse.Connect()
             .Throttle(TimeSpan.FromSeconds(1))
             .Skip(1)
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Subscribe(_ =>
             {
                 LastUpdated = DateTimeOffset.Now;
@@ -107,7 +107,7 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
                 SaveCommand.Select(_ => false),
                 CancelCommand.Select(_ => false)
             )
-            .ToProperty(this, nameof(IsEditing), initialValue: false, scheduler: RxApp.MainThreadScheduler)
+            .ToProperty(this, nameof(IsEditing), initialValue: false, scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
     }
 

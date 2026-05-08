@@ -88,7 +88,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                             if (result.IsSuccess || result.Kind == OperationFailureReason.Unauthorized)
                                 return Observable.Empty<OperationResult<StudentProfile>>();
                             
-                            return Observable.Timer(TimeSpan.FromSeconds(1), RxApp.TaskpoolScheduler)
+                            return Observable.Timer(TimeSpan.FromSeconds(1), RxSchedulers.TaskpoolScheduler)
                                 .SelectMany(_ =>
                                     Observable.FromAsync(ct => _mainHomeService.GetStudentProfileAsync(ct)));
                         })
@@ -97,7 +97,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                 .DisposeWith(_disposables);
 
             LoadStudentInfoCommand
-                .ObserveOn(RxApp.MainThreadScheduler)
+                .ObserveOn(RxSchedulers.MainThreadScheduler)
                 .Subscribe(result =>
                 {
                     result.Match(

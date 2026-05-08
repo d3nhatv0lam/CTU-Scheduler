@@ -88,7 +88,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
 
             var canSignIn = PrewarmBrowserCommand.IsExecuting
                 .Select(isPrewarming => !isPrewarming)
-                .ObserveOn(RxApp.MainThreadScheduler);
+                .ObserveOn(RxSchedulers.MainThreadScheduler);
 
             SignInCommand = ReactiveCommand.CreateFromTask(async () =>
                 {
