@@ -1,0 +1,27 @@
+<rxui:ReactiveUserControl
+    x:TypeArguments="vm:ContactViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:rxui="http://reactiveui.net"
+    xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Contact.ViewModels;assembly=CTUScheduler"
+    x:DataType="vm:ContactViewModel"
+    x:CompileBindings="True"
+    x:Class="CTUScheduler.Presentation.Features.Contact.Views.ContactView">
+
+    <Grid>
+        <Border Background="White" CornerRadius="12" Padding="25" Margin="10" BoxShadow="0 4 15 0 #0D000000">
+            <StackPanel Spacing="15" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="Trang Liên Hệ" 
+                           FontFamily="{StaticResource Ctu-Title-Font}" 
+                           FontSize="28" 
+                           FontWeight="Bold" 
+                           Foreground="{StaticResource PrimaryColor}" 
+                           HorizontalAlignment="Center" />
+                <TextBlock Text="Khởi tạo giao diên trang liên hệ hihihi" 
+                           FontSize="16" 
+                           Foreground="#555555" 
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</rxui:ReactiveUserControl>

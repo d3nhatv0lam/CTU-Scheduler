@@ -39,7 +39,7 @@ public static class AppConstants
             StandardPathBuilder.GetRoamingPath(PublisherConstants.Name, AppNameWindows, AppNameUnix);
 
         public static string BaseAppContext => StandardPathBuilder.GetAppBaseDirectory();
-        
+
         // public static string BaseLocalPath =>
         //     StandardPathBuilder.GetLocalCachePath(PublisherConstants.Name, AppNameWindows, AppNameUnix);
 
@@ -88,12 +88,14 @@ public static class AppConstants
                 Id: "loc",
                 Name: "Nguyễn Phước Lộc",
                 Tier: ContributorTier.Maintainer,
-                Nickname: "LIPEPXIT",
+                Nickname: "LEXIPIT3268",
                 Bio: "Đụng là cọc",
                 AvatarUrl: null,
                 SocialLinks: new Dictionary<SocialPlatform, string>
                 {
-                    // thêm
+                    [SocialPlatform.Facebook] = "https://www.facebook.com/lexipit3268",
+                    [SocialPlatform.YouTube] = "https://www.youtube.com/@lexipit3268",
+                    [SocialPlatform.GitHub] = "https://github.com/lexipit3268"
                 },
                 Roles: new List<ContributorRole>
                 {
