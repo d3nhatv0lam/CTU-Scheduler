@@ -20,18 +20,12 @@
         <converters:EnumToBoolConverter x:Key="BuiltInEnumToBool"></converters:EnumToBoolConverter>
     </rxui:ReactiveUserControl.Resources>
 
-    <Border CornerRadius="16"
-            Padding="20">
-
+    <Border CornerRadius="16" Padding="20">
         <StackPanel Spacing="18">
-            <ItemsControl ItemsSource="{Binding Nodes}">
+            <ItemsControl ItemsSource="{Binding Nodes}" ClipToBounds="False">
                 <ItemsControl.ItemTemplate>
-
-                    <DataTemplate x:DataType="timeline:TimelineNodeViewModel">
-
-                        <Grid ColumnDefinitions="24,*"
-                              Margin="0,0,0,14">
-
+                    <DataTemplate x:DataType="vm:TimelineNodeViewModel">
+                        <Grid ColumnDefinitions="24,*" Margin="0,0,0,14">
                             <!-- Timeline rail -->
                             <Grid>
                                 <Border Width="2"
@@ -41,81 +35,63 @@
 
                                 <Ellipse Width="14"
                                          Height="14"
-                                         Classes.upcoming="{Binding State, Converter={StaticResource BuiltInEnumToBool}, ConverterParameter=Upcoming}"
-                                         Classes.active="{Binding State, Converter={StaticResource BuiltInEnumToBool}, ConverterParameter=Active}"
-                                         Classes="active"
+                                         Fill="{Binding ProgressBrush, Mode=OneWay}"
                                          VerticalAlignment="Top">
-                                    
+
                                     <Ellipse.Transitions>
                                         <Transitions>
                                             <BrushTransition Property="Fill" Duration="0:0:0.3" />
-                                            <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.3"/>
                                         </Transitions>
                                     </Ellipse.Transitions>
+                                </Ellipse>
 
-                                    <Ellipse.Styles>
-                                        <!-- Style mặc định (Completed) -->
-                                        <Style Selector="Ellipse">
-                                            <Setter Property="Fill" Value="#6B7280" />
-                                            <Setter Property="RenderTransform">
-                                                <ScaleTransform ScaleX="1" ScaleY="1" />
-                                            </Setter>
-                                        </Style>
-                                        
-                                        <!-- Upcoming State -->
-                                        <Style Selector="Ellipse.upcoming">
-                                            <Setter Property="Fill" Value="#9CA3AF" />
-                                            <Setter Property="ScaleTransform.ScaleX" Value="0.85" />
-                                            <Setter Property="ScaleTransform.ScaleY" Value="0.85" />
-                                            <Setter Property="Opacity" Value="0.6"/>
-                                        </Style>
-
-                                        <!-- Active State -->
-                                        <Style Selector="Ellipse.active">
-                                            <Setter Property="Fill" Value="Green" />
-                                            <Setter Property="Opacity" Value="1"/>
+                                <!-- Lớp hiệu ứng "Tỏa Sáng" đặt bên dưới Ellipse -->
+                                <Border Width="20"
+                                        Height="20"
+                                        CornerRadius="14"
+                                        Background="Transparent"
+                                        VerticalAlignment="Top"
+                                        BoxShadow="{Binding GlowStart}"
+                                        IsVisible="{Binding State, Converter={StaticResource BuiltInEnumToBool}, ConverterParameter={x:Static vm:TimelineState.Active}}"
+                                        IsHitTestVisible="False">
+                                    <Border.Styles>
+                                        <Style Selector="Border">
                                             <Style.Animations>
-                                                <!-- Animation lặp lại vô hạn, kéo dài 2 giây -->
-                                                <Animation Duration="0:0:2" IterationCount="Infinite" PlaybackDirection="Alternate">
+                                                <Animation Duration="0:0:1.5"
+                                                           IterationCount="INFINITE">
                                                     <KeyFrame Cue="0%">
-                                                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
-                                                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
-                                                        <Setter Property="Opacity" Value="1"/>
+                                                        <Setter Property="ScaleTransform.ScaleX" Value="0.8" />
+                                                        <Setter Property="ScaleTransform.ScaleY" Value="0.8" />
+                                                        <Setter Property="BoxShadow" Value="{Binding GlowStart}" />
                                                     </KeyFrame>
                                                     <KeyFrame Cue="100%">
-                                                        <Setter Property="ScaleTransform.ScaleX" Value="1.3"/>
-                                                        <Setter Property="ScaleTransform.ScaleY" Value="1.3"/>
-                                                        <Setter Property="Opacity" Value="1"/>
+                                                        <Setter Property="ScaleTransform.ScaleX" Value="1.5" />
+                                                        <Setter Property="ScaleTransform.ScaleY" Value="1.5" />
+                                                        <Setter Property="BoxShadow"
+                                                                Value="{Binding GlowEnd}" />
                                                     </KeyFrame>
                                                 </Animation>
                                             </Style.Animations>
                                         </Style>
-                                    </Ellipse.Styles>
-                                </Ellipse>
+                                    </Border.Styles>
+                                </Border>
                             </Grid>
 
                             <!-- Content -->
                             <StackPanel Grid.Column="1"
-                                        Spacing="4">
-
+                                        Spacing="4"
+                                        VerticalAlignment="Center">
                                 <TextBlock Text="{Binding Title}"
                                            FontWeight="SemiBold" />
-
                                 <TextBlock Text="{Binding DateRange}"
                                            Opacity="0.65"
                                            FontSize="12" />
-
                             </StackPanel>
-
                         </Grid>
-
                     </DataTemplate>
-
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-
         </StackPanel>
-
     </Border>
 
 </rxui:ReactiveUserControl>
