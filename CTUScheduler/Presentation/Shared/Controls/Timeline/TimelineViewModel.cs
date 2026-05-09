@@ -11,7 +11,7 @@ using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Shared.Controls.Timeline;
 
-public class TimelineViewModel : ReactiveObject
+public class TimelineViewModel : ReactiveObject, IDisposable
 {
     public ObservableCollection<TimelineNodeViewModel> Nodes { get; }
 
@@ -57,6 +57,11 @@ public class TimelineViewModel : ReactiveObject
                 .OrderBy(x => x.StartDate)
                 .ThenBy(x => x.EndDate)
                 .Select(x => new TimelineNodeViewModel(x)));
+    }
+
+    public void Dispose()
+    {
+        foreach (var node in Nodes) node.Dispose();
     }
 }
 
@@ -172,7 +177,7 @@ public sealed partial class TimelineNodeViewModel : ReactiveObject, IDisposable
 
                 // đã trôi qua
                 var elapsed = today.DayNumber - range.Item1.DayNumber;
-                return Math.Clamp(elapsed / total, 0, 1);
+                return Math.Clamp((double)elapsed / total, 0, 1);
             })
             .DistinctUntilChanged()
             .ToProperty(this, nameof(Progress))
