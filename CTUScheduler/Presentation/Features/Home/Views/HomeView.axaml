@@ -14,6 +14,7 @@
     xmlns:shared="clr-namespace:CTUScheduler.Presentation.Shared"
     xmlns:plannedCourse="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.CourseData"
     xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:timeline="clr-namespace:CTUScheduler.Presentation.Shared.Controls.Timeline"
     x:Class="CTUScheduler.Presentation.Features.Home.Views.HomeView">
 
     <!-- <Design.DataContext> -->
@@ -283,7 +284,8 @@
                     <Grid RowDefinitions="Auto, *" ClipToBounds="True">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Danh sách học phần theo KHHT" />
 
-                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoadingPlannedCourses}" IsActive="True" MinHeight="50">
+                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoadingPlannedCourses}" IsActive="True"
+                                    MinHeight="50">
                             <Grid RowDefinitions="Auto, *">
 
                                 <!-- HEADER -->
@@ -367,58 +369,10 @@
                 <Border x:Name="Card4" Classes="Card card-item-4">
                     <Grid RowDefinitions="Auto, *">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Lộ trình đăng ký học phần" />
-                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsInitialLoading}" IsActive="True">
-                            <u:Timeline Margin="15,0,0,0">
-                                <u:Timeline.Styles>
-                                    <Style Selector="u|TimelineItem /template/ TextBlock#PART_Time">
-                                        <Setter Property="IsVisible" Value="False" />
-                                    </Style>
-                                </u:Timeline.Styles>
-                                <u:TimelineItem Classes="Primary">
-                                    <u:TimelineItem.Content>
-                                        <Grid MaxWidth="480" Margin="0,0,45,25" RowDefinitions="Auto, Auto">
-                                            <TextBlock Grid.Row="0" Text="Đăng ký học phần (đợt 1)" FontSize="16"
-                                                       FontWeight="SemiBold" Foreground="#111827" Margin="0,0,0,6"
-                                                       TextWrapping="Wrap" />
-                                            <TextBlock Grid.Row="1" Text="06/08/1999 - 03/02/2000" FontSize="14"
-                                                       Foreground="#6B7280" />
-                                        </Grid>
-                                    </u:TimelineItem.Content>
-                                </u:TimelineItem>
-                                <u:TimelineItem Classes="Primary">
-                                    <u:TimelineItem.Content>
-                                        <Grid MaxWidth="480" Margin="0,0,45,25" RowDefinitions="Auto, Auto">
-                                            <TextBlock Grid.Row="0" Text="Đăng ký học phần (đợt 1)" FontSize="16"
-                                                       FontWeight="SemiBold" Foreground="#111827" Margin="0,0,0,6"
-                                                       TextWrapping="Wrap" />
-                                            <TextBlock Grid.Row="1" Text="06/08/1999 - 03/02/2000" FontSize="14"
-                                                       Foreground="#6B7280" />
-                                        </Grid>
-                                    </u:TimelineItem.Content>
-                                </u:TimelineItem>
-                                <u:TimelineItem Classes="Success">
-                                    <u:TimelineItem.Content>
-                                        <Grid MaxWidth="480" Margin="0,0,45,25" RowDefinitions="Auto, Auto">
-                                            <TextBlock Grid.Row="0" Text="Đăng ký học phần (đợt 1)" FontSize="16"
-                                                       FontWeight="SemiBold" Foreground="#111827" Margin="0,0,0,6"
-                                                       TextWrapping="Wrap" />
-                                            <TextBlock Grid.Row="1" Text="06/08/1999 - 03/02/2000" FontSize="14"
-                                                       Foreground="#6B7280" />
-                                        </Grid>
-                                    </u:TimelineItem.Content>
-                                </u:TimelineItem>
-                                <u:TimelineItem>
-                                    <u:TimelineItem.Content>
-                                        <Grid MaxWidth="480" Margin="0,0,45,25" RowDefinitions="Auto, Auto">
-                                            <TextBlock Grid.Row="0" Text="Đăng ký học phần (đợt 1)" FontSize="16"
-                                                       FontWeight="SemiBold" Foreground="#111827" Margin="0,0,0,6"
-                                                       TextWrapping="Wrap" />
-                                            <TextBlock Grid.Row="1" Text="06/08/1999 - 03/02/2000" FontSize="14"
-                                                       Foreground="#6B7280" />
-                                        </Grid>
-                                    </u:TimelineItem.Content>
-                                </u:TimelineItem>
-                            </u:Timeline>
+                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsInitialLoading}" IsActive="True" ClipToBounds="False">
+                            <timeline:TimelineControl DataContext="{Binding TimelineViewModel}"
+                                                      ClipToBounds="False"
+                                                      VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
                         </u:Skeleton>
                     </Grid>
                 </Border>

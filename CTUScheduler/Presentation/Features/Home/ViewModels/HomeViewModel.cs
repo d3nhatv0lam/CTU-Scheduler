@@ -14,6 +14,7 @@ using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using ReactiveUI;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
+using CTUScheduler.Presentation.Shared.Controls.Timeline;
 using Microsoft.Extensions.Logging;
 using ReactiveUI.SourceGenerators;
 
@@ -34,6 +35,8 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
     public string UrlPathSegment => nameof(HomeViewModel);
     public IScreen HostScreen { get; }
     public RegistrationInformation? RegistrationInfo => _registrationInfo.Value;
+    
+    public TimelineViewModel TimelineViewModel { get; } = new();
 
     public ReactiveCommand<Unit, OperationResult<IReadOnlyList<PlannedCourse>>> LoadPlannedCoursesCommand { get; }
 
@@ -100,6 +103,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
     public void Dispose()
     {
         _disposable.Dispose();
+        TimelineViewModel.Dispose();
         _logger.LogDebug("{this}: Disposed", nameof(HomeViewModel));
     }
 }
