@@ -54,7 +54,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
         ICourseRegistrationService courseRegistrationService,
         IUserInteractionService userInteractionService,
         INavigationRegionManager navigationRegionManager,
-        ITeachingPlanLoaderService teachingPlanLoaderService)
+        ITeachingPlanLoaderService teachingPlanLoaderService,
         IConnectivityService connectivityService,
         ILogger<HomeViewModel> logger) : base(userInteractionService, navigationRegionManager, connectivityService)
     {
@@ -85,21 +85,21 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
                             Observable.StartAsync(async _ => await teachingPlanLoaderService.LoadLatestAsync())
                                 .ObserveOn(RxApp.MainThreadScheduler)
                                 .Subscribe(loadResult =>
-                                {
-                                    IsTeachingPlanLoading = false;
-
-                                    if (loadResult.IsFailed)
                                     {
-                                        return;
-                                    }
+                                        IsTeachingPlanLoading = false;
 
-                                    TeachingPlanTimeline = loadResult.Content.RegistrationTimeline;
-                                },
-                                ex =>
-                                {
-                                    IsTeachingPlanLoading = false;
-                                    Debug.WriteLine(ex, "Lỗi Runtime khi chạy LoadLatestAsync");
-                                })
+                                        if (loadResult.IsFailed)
+                                        {
+                                            return;
+                                        }
+
+                                        TeachingPlanTimeline = loadResult.Content.RegistrationTimeline;
+                                    },
+                                    ex =>
+                                    {
+                                        IsTeachingPlanLoading = false;
+                                        Debug.WriteLine(ex, "Lỗi Runtime khi chạy LoadLatestAsync");
+                                    })
                                 .DisposeWith(_disposable);
                         },
                         (errors, _) =>
@@ -107,7 +107,6 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
                             IsTeachingPlanLoading = false;
                             var errorsString = String.Join('\n', errors.Select(x => x.FormattedMessage));
                             userInteractionService.Notification.Light.Error(errorsString);
-                            navigationRegionManager.NavigateAndResetTo<LoginViewModel>(RegionIds.Root);
 
                             if (RegistrationInfo?.UserPeriod is { } period)
                             {
@@ -128,7 +127,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
                     IsTeachingPlanLoading = false;
                     Debug.WriteLine(ex, "Lỗi Runtime khi chạy EnsureReadyAsync");
                 }
-            )
+            );
         _registrationInfo = userSessionService.RegistrationInfoChanged
             .ToProperty(this, nameof(RegistrationInfo), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(_disposable);
