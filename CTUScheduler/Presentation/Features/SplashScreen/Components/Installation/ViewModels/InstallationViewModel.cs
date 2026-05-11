@@ -37,7 +37,7 @@ public class InstallationViewModel : ViewModelBase, IDisposable
             .Buffer(TimeSpan.FromMilliseconds(50))
             .Where(x => x.Count > 0)
             .Select(x => string.Concat(x))
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Subscribe(ProcessLogChunk);
     }
 

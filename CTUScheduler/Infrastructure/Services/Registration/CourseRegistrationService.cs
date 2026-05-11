@@ -37,7 +37,7 @@ public class CourseRegistrationService : ICourseRegistrationService
         return Task.FromResult(OperationResult.Success());
     }
 
-    public async Task<OperationResult<List<PlannedCourse>>> FetchPlannedCourseAsync(TimeSpan? timeout = null,
+    public async Task<OperationResult<IReadOnlyList<PlannedCourse>>> FetchPlannedCourseAsync(TimeSpan? timeout = null,
         CancellationToken token = default)
     {
         var finalTimeout = timeout ?? _defaultTimeout;
@@ -55,7 +55,7 @@ public class CourseRegistrationService : ICourseRegistrationService
 
             var isPageReady = await this.ExecuteNavigationAsync(tab);
             if (isPageReady.IsFailed)
-                return OperationResult<List<PlannedCourse>>.FailureFrom(isPageReady);
+                return OperationResult<IReadOnlyList<PlannedCourse>>.FailureFrom(isPageReady);
 
             var plannedCourses = await connectableStream.FirstAsync().ToTask(token);
             return plannedCourses;
@@ -64,7 +64,7 @@ public class CourseRegistrationService : ICourseRegistrationService
         {
             // Lỗi do JSON map thiếu trường bắt buộc (ném từ hàm ToPlannedCourse)
             _logger.LogWarning(ex, "API trả về dữ liệu môn học lỗi hoặc thiếu.");
-            return OperationResult<List<PlannedCourse>>.Failed(
+            return OperationResult<IReadOnlyList<PlannedCourse>>.Failed(
                 "Dữ liệu môn học từ trường không hợp lệ. Vui lòng thử lại.",
                 code: "Mapping.InvalidCourseData",
                 kind: OperationFailureReason.System);
@@ -72,14 +72,14 @@ public class CourseRegistrationService : ICourseRegistrationService
         catch (TimeoutException ex)
         {
             _logger.LogWarning(ex, "Timeout waiting for registration response.");
-            return OperationResult<List<PlannedCourse>>.Failed(
+            return OperationResult<IReadOnlyList<PlannedCourse>>.Failed(
                 "Quá thời gian phản hồi từ hệ thống đăng ký!",
                 kind: OperationFailureReason.Network);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "fail while fetching course registration data");
-            return OperationResult<List<PlannedCourse>>.Failed("Lấy thông tin học phần không thành công!");
+            return OperationResult<IReadOnlyList<PlannedCourse>>.Failed("Lấy thông tin học phần không thành công!");
         }
     }
 

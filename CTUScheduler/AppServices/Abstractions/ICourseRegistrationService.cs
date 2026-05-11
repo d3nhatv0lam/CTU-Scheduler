@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +11,6 @@ public interface ICourseRegistrationService
 {
     Task<OperationResult> EnsureReadyAsync();
 
-    Task<OperationResult<List<PlannedCourse>>> FetchPlannedCourseAsync(TimeSpan? timeout = null,
+    Task<OperationResult<IReadOnlyList<PlannedCourse>>> FetchPlannedCourseAsync(TimeSpan? timeout = null,
         CancellationToken token = default);
 }

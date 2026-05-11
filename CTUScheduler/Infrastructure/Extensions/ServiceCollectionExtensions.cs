@@ -1,4 +1,4 @@
-﻿using CTUScheduler.AppServices.Abstractions;
+using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Infrastructure.DriverCore;
@@ -25,6 +25,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IExcelExporterService, ExcelExporterService>();
 
         // --- File Storage & Preferences ---
+        services.AddSingleton<IWorkspaceRepository, WorkspaceRepository>();
         services.AddSingleton<IWorkspaceStore, WorkspaceStore>();
 
         services.Configure<UserPreferencesOptions>(options =>

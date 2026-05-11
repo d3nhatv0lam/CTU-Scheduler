@@ -81,7 +81,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
             .DisposeWith(_disposables);
 
         _isDownloadingHelper = webDriverInstallerService.IsBusy
-            .ToProperty(this, nameof(IsDownloading), scheduler: RxApp.MainThreadScheduler)
+            .ToProperty(this, nameof(IsDownloading), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(_disposables);
 
         
@@ -90,8 +90,8 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
 
         webDriverInstallerService.StatusMessage
             .Skip(1)
-            .Delay(TimeSpan.FromSeconds(1d), RxApp.MainThreadScheduler)
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .Delay(TimeSpan.FromSeconds(1d), RxSchedulers.MainThreadScheduler)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Subscribe(message => Message = message)
             .DisposeWith(_disposables);
         
@@ -101,7 +101,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
                 (isDownloading, isExpanded) => !isDownloading && isExpanded)
             .Skip(1)
             .Where(x => x)
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Subscribe(_ => ToggleConsole())
             .DisposeWith(_disposables);
         
@@ -117,12 +117,12 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
         _connectivityService.IsInternetAvailable
             .Where(status => status)
             .Take(1)
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Do(_ => Message = "Mạng đã được kết nối!")
-            // .Delay(TimeSpan.FromHours(1.5d), RxApp.MainThreadScheduler)
-            .Delay(TimeSpan.FromSeconds(1.5d), RxApp.MainThreadScheduler)
+            // .Delay(TimeSpan.FromHours(1.5d), RxSchedulers.MainThreadScheduler)
+            .Delay(TimeSpan.FromSeconds(1.5d), RxSchedulers.MainThreadScheduler)
             .Do(_ => Message = "Đang kiểm tra dịch vụ web..")
-            .ObserveOn(RxApp.TaskpoolScheduler)
+            .ObserveOn(RxSchedulers.TaskpoolScheduler)
             .SelectMany(async _ =>
             {
                 if (_localCts.IsCancellationRequested) return Unit.Default;
@@ -139,18 +139,18 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
                 
                 return Unit.Default;
             })
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Do(_ => Message = "dịch vụ web đã hoạt động!")
-            .Delay(TimeSpan.FromSeconds(1.5d), RxApp.MainThreadScheduler)
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .Delay(TimeSpan.FromSeconds(1.5d), RxSchedulers.MainThreadScheduler)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Do(_ => Message = "Đang khởi động ứng dụng...")
-            .Delay(TimeSpan.FromSeconds(2d), RxApp.MainThreadScheduler)
+            .Delay(TimeSpan.FromSeconds(2d), RxSchedulers.MainThreadScheduler)
             .Subscribe(_ => Close(),
                 ex =>
                 {
                     if (ex is OperationCanceledException) return;
                     Message = "Lỗi Khi khởi động, Hãy mở lại app!, tự động tắt sau 30s";
-                    RxApp.MainThreadScheduler.Schedule(TimeSpan.FromSeconds(30), CloseApplication);
+                    RxSchedulers.MainThreadScheduler.Schedule(TimeSpan.FromSeconds(30), CloseApplication);
                 })
             .DisposeWith(_disposables);
     }

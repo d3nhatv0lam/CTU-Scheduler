@@ -1,4 +1,6 @@
-﻿using System;
+using System;
+using CTUScheduler.Core.Models.Shared.Results;
+using CTUScheduler.Presentation.Services.Navigation;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -13,8 +15,6 @@ using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Infrastructure.Excel;
-using CTUScheduler.Infrastructure.Services.Network;
-using CTUScheduler.Infrastructure.Services.Registration;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Services.Factories;
@@ -29,10 +29,11 @@ using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Shells;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
+using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 {
-    public class TimetableManagerViewModel : ViewModelBase, IRoutableViewModel, IDisposable
+    public class TimetableManagerViewModel : WebSyncViewModelBase, IRoutableViewModel, IDisposable
     {
         private readonly CompositeDisposable _disposables = new();
         private readonly IConnectivityService _connectivityService;
@@ -40,11 +41,11 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly IProfileQueryService _profileQueryService;
         private readonly IScheduleSyncService _scheduleSyncService;
         private readonly IScheduleRegistrationService _scheduleRegistrationService;
-        private readonly IUserInteractionService _userInteractionService;
         private readonly IExcelExporterService _excelExporterService;
         private readonly IUserSessionService _userSessionService;
         private readonly IWorkspaceStore _workspaceStore;
         private readonly IViewModelFactory _viewModelFactory;
+        private readonly ILogger<TimetableManagerViewModel> _logger;
 
         private readonly ReadOnlyObservableCollection<TimetableEditorViewModel> _bindableTimetableLayouts;
 
@@ -83,7 +84,10 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             IScheduleRegistrationService scheduleRegistrationService,
             IExcelExporterService excelExporterService,
             IViewModelFactory viewModelFactory,
-            IUserInteractionService userInteractionService)
+            IUserInteractionService userInteractionService,
+            INavigationRegionManager navigationRegionManager,
+            ILogger<TimetableManagerViewModel> logger) : base(userInteractionService, navigationRegionManager,
+            connectivityService)
         {
             HostScreen = hostScreen;
             _connectivityService = connectivityService;
@@ -95,7 +99,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             _scheduleRegistrationService = scheduleRegistrationService;
             _excelExporterService = excelExporterService;
             _viewModelFactory = viewModelFactory;
-            _userInteractionService = userInteractionService;
+            _logger = logger;
 
 
             _profileQueryService.ConnectProfiles()
@@ -140,8 +144,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 .ToProperty(this, nameof(IsExpiredSaved), scheduler: RxSchedulers.MainThreadScheduler)
                 .DisposeWith(_disposables);
 
-            GoToCourseCatalogPage();
-
             var canInteractUi = this.WhenAnyValue(x => x.IsExpiredSaved, expired => !expired);
             ShowAddCourseDialogCommand = ReactiveCommand.CreateFromTask(OpenAddCourseDialog, canInteractUi)
                 .DisposeWith(_disposables);
@@ -176,7 +178,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     };
 
                     var result =
-                        await _userInteractionService.Dialog
+                        await UserInteractionService.Dialog
                             .ShowModal<ConfirmDialogViewModel, bool>(confirmViewModel, options);
 
                     if (result)
@@ -192,27 +194,27 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 .DisposeWith(_disposables);
 
             ExportSelectedTimetablesCommand = ReactiveCommand.CreateFromTask(async () =>
-            {
-                var selectedTimetables = TimetableLayouts.Where(x => x.IsSelected).ToList();
-                if (selectedTimetables.Count == 0) return;
+                {
+                    var selectedTimetables = TimetableLayouts.Where(x => x.IsSelected).ToList();
+                    if (selectedTimetables.Count == 0) return;
 
-                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-                string fileName = $"CTU_Scheduler_TKB_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
-                string fullPath = System.IO.Path.Combine(desktopPath, fileName);
+                    string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                    string fileName = $"CTU_Scheduler_TKB_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                    string fullPath = System.IO.Path.Combine(desktopPath, fileName);
 
-                var blueprints = selectedTimetables
-                    .Select((layout, index) =>
-                    {
-                        var sheetName = string.IsNullOrWhiteSpace(layout.Name)
-                            ? $"TKB_{index + 1}"
-                            : layout.Name;
-                        return (Blueprint: layout.ToScheduleBlueprint(), SheetName: sheetName);
-                    })
-                    .ToList();
+                    var blueprints = selectedTimetables
+                        .Select((layout, index) =>
+                        {
+                            var sheetName = string.IsNullOrWhiteSpace(layout.Name)
+                                ? $"TKB_{index + 1}"
+                                : layout.Name;
+                            return (Blueprint: layout.ToScheduleBlueprint(), SheetName: sheetName);
+                        })
+                        .ToList();
 
-                await _excelExporterService.ExportTimetablesAsync(blueprints, fullPath);
-            }, this.WhenAnyValue(x => x.HasSelectedTimetable))
-            .DisposeWith(_disposables);
+                    await _excelExporterService.ExportTimetablesAsync(blueprints, fullPath);
+                }, this.WhenAnyValue(x => x.HasSelectedTimetable))
+                .DisposeWith(_disposables);
 
             ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<TimetableLayoutBaseViewModel>(async
                     timetableLayoutViewModel =>
@@ -223,7 +225,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                         CanLightDismiss = true,
                         HostId = DialogIds.Root
                     };
-                    await _userInteractionService.Dialog.ShowModal<TimetableLayoutBaseViewModel, Unit>(
+                    await UserInteractionService.Dialog.ShowModal<TimetableLayoutBaseViewModel, Unit>(
                         timetableLayoutViewModel, options);
                 })
                 .DisposeWith(_disposables);
@@ -231,12 +233,17 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             SaveScheduleCommand = ReactiveCommand.CreateFromTask<IStorageFile>(async file =>
             {
                 var filePath = file.Path.LocalPath;
-                if (await workspaceStore.SaveAsync(filePath))
-                {
-                }
-                else
-                {
-                }
+                var result = await workspaceStore.SaveAsync(filePath);
+
+                result.Match(
+                    onSuccess: () =>
+                    {
+                        _logger.LogInformation("Lưu thời khóa biểu thành công vào {Path}", filePath);
+                        UserInteractionService.Toast.Light.Success("Lưu dữ liệu thành công!");
+                    },
+                    onFailure: (errors, _) =>
+                        UserInteractionService.Notification.Light.Error("Lỗi lưu file",
+                            string.Join("\n", errors.Select(e => e.FormattedMessage))));
             }).DisposeWith(_disposables);
 
             LoadScheduleCommand = ReactiveCommand.CreateFromTask<IReadOnlyList<IStorageFile>>(async files =>
@@ -244,13 +251,18 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     foreach (var file in files)
                     {
                         var filePath = file.Path.LocalPath;
-                        var isLoaded = await workspaceStore.LoadAsync(filePath);
-                        if (isLoaded)
-                        {
-                        }
-                        else
-                        {
-                        }
+                        var result = await workspaceStore.LoadAsync(filePath);
+
+                        result.Match(
+                            onSuccess: () =>
+                            {
+                                _logger.LogInformation("Nạp thời khóa biểu thành công từ {Path}", filePath);
+                                UserInteractionService.Toast.Light.Success("Nạp dữ liệu thành công!");
+                            },
+                            onFailure: (errors, _) =>
+                                UserInteractionService.Notification.Light.Error("Lỗi nạp file",
+                                    string.Join("\n", errors.Select(x => x.FormattedMessage)))
+                        );
 
                         break;
                     }
@@ -268,19 +280,12 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 CanLightDismiss = false,
                 HostId = DialogIds.Root
             };
-            await _userInteractionService.Dialog.ShowModal<SchedulingDialogViewModel, Unit>(viewModel, options);
+            await UserInteractionService.Dialog.ShowModal<SchedulingDialogViewModel, Unit>(viewModel, options);
         }
 
-        private async void GoToCourseCatalogPage()
+        protected override async Task<OperationResult> ExecuteWebSyncTaskAsync()
         {
-            try
-            {
-                await _courseCatalogService.EnsureReadyAsync();
-            }
-            catch
-            {
-                // ignored
-            }
+            return await _courseCatalogService.EnsureReadyAsync();
         }
 
         private string FormatTime(DateTimeOffset time)
@@ -291,6 +296,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         public void Dispose()
         {
             _disposables.Dispose();
+            _logger.LogDebug("{this}: Disposed", nameof(TimetableManagerViewModel));
         }
     }
 }

@@ -47,6 +47,14 @@ public static partial class QddkPayloadExtensions
             if (string.IsNullOrEmpty(userGroup))
             {
                 logger?.LogWarning("Could not find a matching registration group for unit: {Unit}", userUnit);
+                return new RegistrationInformation(
+                    rawQddkPayload.NamHoc == 0 ? null : rawQddkPayload.NamHoc,
+                    rawQddkPayload.HocKy,
+                    maxCreditPerSemester,
+                    period,
+                    groups,
+                    null
+                );
             }
 
             var userPeriod = GetUserPeriod(rawQddkPayload, userKey, userGroup, groups, logger);
@@ -143,7 +151,7 @@ public static partial class QddkPayloadExtensions
         if (string.IsNullOrEmpty(userKey) || string.IsNullOrEmpty(group))
             return null;
 
-        // Kiểm tra userKey đã truyêền có đúng dạng "Khóa {number}"
+        // Kiểm tra userKey đã truyền có đúng dạng "Khóa {number}"
         var matchKhoa = KhoaRegex().Match(userKey);
         if (!matchKhoa.Success) return null;
 
@@ -231,8 +239,16 @@ public static partial class QddkPayloadExtensions
                                 group, startDateStr, endDateStr);
                         }
 
+                        // var allowedGroupDescriptions = groups
+                        //     .Where(g =>  allowedGroups.Any(id => g.Name.Contains(id.ToString())))
+                        //     .Select(g => g.Description)
+                        //     .Distinct()
+                        //     .ToList();
+
+                        IReadOnlyList<int> studentGroups = new List<int>(1) { studentGroup };
+
                         var groupDescriptions = groups
-                            .Where(g => allowedGroups.Any(id => g.Name.Contains(id.ToString())))
+                            .Where(g => g.Name.Contains(group))
                             .Select(g => g.Description)
                             .Distinct()
                             .ToList();
@@ -245,9 +261,17 @@ public static partial class QddkPayloadExtensions
                             $"Khóa {studentCohort}",
                             startDate,
                             endDate,
-                            allowedGroups,
+                            studentGroups,
                             finalDescription
                         );
+
+                        // return new UserPeriodItem(
+                        //     $"Khóa {studentCohort}",
+                        //     startDate,
+                        //     endDate,
+                        //     allowedGroups,
+                        //     finalDescription
+                        // );
                     }
                 }
 

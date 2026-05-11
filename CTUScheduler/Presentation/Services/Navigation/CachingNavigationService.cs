@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reactive.Threading.Tasks;
@@ -37,6 +37,8 @@ namespace CTUScheduler.Presentation.Services.Navigation
 
         private async Task ExecuteNavigation(Type vmType, object? args, bool reset)
         {
+            ArgumentNullException.ThrowIfNull(vmType);
+
             if (!typeof(IRoutableViewModel).IsAssignableFrom(vmType))
                 throw new ArgumentException($"{vmType.Name} must implement IRoutableViewModel");
 

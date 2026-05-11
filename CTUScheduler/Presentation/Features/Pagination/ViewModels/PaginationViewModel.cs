@@ -73,7 +73,7 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationVi
         PageRequestSubject = new BehaviorSubject<IPageRequest>(new PageRequest(1, PageSize)).DisposeWith(Disposables);
         
         var connection = DataList.Connect()
-            .SubscribeOn(RxApp.TaskpoolScheduler);
+            .SubscribeOn(RxSchedulers.TaskpoolScheduler);
 
         bool shouldDisposeItems = options.DisposeItemsOnRemove ?? ownsData; 
         if (shouldDisposeItems)
@@ -99,17 +99,17 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationVi
             .StartWith(0)
             .Select(count => (int)Math.Ceiling(count / (double)PageSize))
             .DistinctUntilChanged()
-            .ToProperty(this, nameof(TotalPages), scheduler: RxApp.MainThreadScheduler)
+            .ToProperty(this, nameof(TotalPages), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
 
         _isFirstPage = this.WhenAnyValue(x => x.CurrentPage)
             .Select(page => page <= 1)
-            .ToProperty(this, nameof(IsFirstPage), scheduler: RxApp.MainThreadScheduler)
+            .ToProperty(this, nameof(IsFirstPage), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
 
         _isLastPage = this.WhenAnyValue(x => x.CurrentPage, x => x.TotalPages)
             .Select(tuple => tuple.Item1 >= tuple.Item2)
-            .ToProperty(this, nameof(IsLastPage), scheduler: RxApp.MainThreadScheduler)
+            .ToProperty(this, nameof(IsLastPage), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
 
 
@@ -121,7 +121,7 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationVi
         
 
         DataSharedConnection.Page(PageRequestSubject)
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Bind(out _bindablePagedData)
             .Subscribe()
             .DisposeWith(Disposables);

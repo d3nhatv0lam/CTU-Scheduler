@@ -1,12 +1,13 @@
 using System;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Infrastructure.Sites.Base;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using Microsoft.Extensions.Logging;
 using System.Threading;
+using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
+using Microsoft.Playwright;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Main;
 
@@ -25,11 +26,33 @@ public class MainPage : AppPage, IRequireSession, IMainPage
 
 
 
-    public async Task<string> GetUserInfoAsync(CancellationToken cancellationToken = default)
+    public async Task<StudentProfile?> GetStudentProfileAsync(CancellationToken cancellationToken = default)
     {
-        if (!await IsActiveAsync()) return string.Empty;
+        if (!await IsActiveAsync()) return null;
 
-        return await Tab.NativePage.Locator(UserInfoSelector).InnerTextAsync();
+        var locator = Tab.NativePage.Locator(UserInfoSelector);
+        try
+        {
+            await locator.WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = 5000 });
+            var userText = await locator.InnerTextAsync();
+
+            if (string.IsNullOrWhiteSpace(userText)) return null;
+
+            // Format: "Dương Minh Đức (B2303807)"
+            var parts = userText.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length > 0)
+            {
+                var mssv = parts[^1].Trim('(', ')', ' ', '\t', ',');
+                var name = string.Join(" ", parts[..^1]).Trim();
+                return new StudentProfile(mssv, name);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Fail to get student profile from legacy Home page");
+        }
+
+        return null;
     }
 
     public async Task NavigateToDkmhAsync()

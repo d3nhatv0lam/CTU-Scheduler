@@ -64,7 +64,7 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
         {
             _connectivityService.IsInternetAvailable
                 .DistinctUntilChanged()
-                .ObserveOn(RxApp.MainThreadScheduler)
+                .ObserveOn(RxSchedulers.MainThreadScheduler)
                 .Subscribe(isAvailable =>
                 {
                     WindowTitle = isAvailable ? "CTU Scheduler" : "CTU Scheduler - No Internet";
