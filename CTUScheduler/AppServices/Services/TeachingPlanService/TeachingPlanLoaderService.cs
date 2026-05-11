@@ -63,7 +63,6 @@ public class TeachingPlanLoaderService : ITeachingPlanLoaderService
                     OperationFailureReason.System);
             }
 
-            data.Title = string.IsNullOrWhiteSpace(data.Title) ? target.Title : data.Title;
             return OperationResult<TeachingPlanData>.Success(data);
         }
         catch (Exception ex)

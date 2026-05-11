@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
+using CTUScheduler.Presentation.Shared.Controls.Timeline;
 
 namespace CTUScheduler.Core.Models.TeachingPlan;
 
 public class TeachingPlanData
 {
-    public string Title { get; set; } = string.Empty;
-    public int Semester { get; set; }
-    public string SchoolYear { get; set; } = string.Empty;
-    public List<RegistrationTimelineItem> RegistrationTimeline { get; set; } = new();
+    public List<TimelineNode> RegistrationTimeline { get; set; } = new();
 }

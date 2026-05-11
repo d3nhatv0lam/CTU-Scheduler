@@ -9,6 +9,7 @@ using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Models;
 using CTUScheduler.Core.Models.TeachingPlan;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
+using CTUScheduler.Presentation.Shared.Controls.Timeline;
 using Microsoft.Playwright;
 using UglyToad.PdfPig;
 
@@ -18,9 +19,6 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
 {
     private const string NotificationsUrl = "https://htql.ctu.edu.vn/";
     private static readonly Regex PdfHrefRegex = new("\\.pdf(\\?|$)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-    private static readonly Regex SemesterRegex = new(@"h\s*ọc\s*k\s*ỳ\s*(\d)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-    private static readonly Regex SchoolYearRegex = new(@"n\s*ăm\s*h\s*ọc\s*(\d{4})\s*[-–]\s*(\d{4})",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private static readonly Regex DateRangeRegex = new(@"(\d{1,2}/\d{1,2}/\d{4})\s*[-–]\s*(\d{1,2}/\d{1,2}/\d{4})",
         RegexOptions.Compiled);
     private static readonly Regex SingleDateRegex = new(@"(\d{1,2}/\d{1,2}/\d{4})", RegexOptions.Compiled);
@@ -160,18 +158,6 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
             var text = string.Join(" ", document.GetPages().Select(p => p.Text ?? string.Empty));
             var data = new TeachingPlanData();
 
-            var semesterMatch = SemesterRegex.Match(text);
-            if (semesterMatch.Success && int.TryParse(semesterMatch.Groups[1].Value, out var semester))
-            {
-                data.Semester = semester;
-            }
-
-            var yearMatch = SchoolYearRegex.Match(text);
-            if (yearMatch.Success)
-            {
-                data.SchoolYear = $"{yearMatch.Groups[1].Value}-{yearMatch.Groups[2].Value}";
-            }
-
             var startTag = "NỘI DUNG CÔNG VIỆC THỜI GIAN THỰC HIỆN";
             var endTag = "Lưu ý:";
             
@@ -198,12 +184,10 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
                     if (TryParseDate(rangeMatches[0].Groups[1].Value, out var start) &&
                         TryParseDate(rangeMatches[0].Groups[2].Value, out var end))
                     {
-                        data.RegistrationTimeline.Add(new RegistrationTimelineItem
-                        {
-                            Description = NormalizeWhitespace(content),
-                            StartDate = start,
-                            EndDate = end
-                        });
+                        data.RegistrationTimeline.Add(new TimelineNode(
+                            NormalizeWhitespace(content),
+                            start,
+                            end));
                     }
                 }
                 else
@@ -211,12 +195,10 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
                     var singleMatches = SingleDateRegex.Matches(dateStr);
                     if (singleMatches.Count > 0 && TryParseDate(singleMatches[0].Groups[1].Value, out var singleDate))
                     {
-                        data.RegistrationTimeline.Add(new RegistrationTimelineItem
-                        {
-                            Description = NormalizeWhitespace(content),
-                            StartDate = singleDate,
-                            EndDate = singleDate
-                        });
+                        data.RegistrationTimeline.Add(new TimelineNode(
+                            NormalizeWhitespace(content),
+                            singleDate,
+                            singleDate));
                     }
                 }
             }
@@ -230,7 +212,7 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
         return Regex.Replace(input, "\\s+", " ").Trim();
     }
 
-    private static bool TryParseDate(string value, out DateOnly? date)
+    private static bool TryParseDate(string value, out DateOnly date)
     {
         if (DateOnly.TryParseExact(value, new[] { "d/M/yyyy", "dd/MM/yyyy" }, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt))
         {
@@ -238,7 +220,7 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
             return true;
         }
 
-        date = null;
+        date = default;
         return false;
     }
 }

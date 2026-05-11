@@ -13,55 +13,14 @@ namespace CTUScheduler.Presentation.Shared.Controls.Timeline;
 
 public class TimelineViewModel : ReactiveObject, IDisposable
 {
-    public ObservableCollection<TimelineNodeViewModel> Nodes { get; }
-
-    public TimelineViewModel()
-    {
-        List<TimelineNode> nodes =
-        [
-            new TimelineNode("Công bố thời khóa biểu",
-                new(2026, 3, 30),
-                new(2026, 4, 5)),
-
-            new TimelineNode("Đăng ký học phần đợt 1",
-                new(2026, 4, 6),
-                new(2026, 4, 19)),
-
-            new TimelineNode("Điều chỉnh KHHT",
-                new(2026, 4, 11),
-                new(2026, 4, 19)),
-
-            new TimelineNode("Hạn cuối mở lớp",
-                new(2026, 4, 17),
-                new(2026, 4, 17)),
-
-            new TimelineNode("Xử lý số liệu",
-                new(2026, 4, 20),
-                new(2026, 5, 13)),
-
-            new TimelineNode("Học kỳ 3 diễn ra",
-                new(2026, 5, 11),
-                new(2026, 8, 23)),
-
-            new TimelineNode("Điều chỉnh đợt 2",
-                new(2026, 5, 11),
-                new(2026, 5, 17)),
-
-            new TimelineNode("Mở lại KHHT",
-                new(2026, 5, 14),
-                new(2026, 5, 14))
-        ];
-
-        Nodes = new ObservableCollection<TimelineNodeViewModel>(
-            nodes
-                .OrderBy(x => x.StartDate)
-                .ThenBy(x => x.EndDate)
-                .Select(x => new TimelineNodeViewModel(x)));
-    }
+    public ObservableCollection<TimelineNodeViewModel> Nodes { get; } = new();
 
     public void Dispose()
     {
-        foreach (var node in Nodes) node.Dispose();
+        if (Nodes != null)
+        {
+            foreach (var node in Nodes) node.Dispose();
+        }
     }
 }
 

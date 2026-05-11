@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
@@ -12,7 +9,6 @@ using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
 using CTUScheduler.Core.Models.Shared.Results;
-using CTUScheduler.Core.Models.TeachingPlan;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
@@ -43,9 +39,6 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
     
     public TimelineViewModel TimelineViewModel { get; } = new();
 
-    [Reactive] private bool _isLoading;
-    [Reactive] private bool _isTeachingPlanLoading;
-    [Reactive] private IReadOnlyList<RegistrationTimelineItem> _teachingPlanTimeline = new List<RegistrationTimelineItem>();
     public ReactiveCommand<Unit, OperationResult<IReadOnlyList<PlannedCourse>>> LoadPlannedCoursesCommand { get; }
 
     public HomeViewModel(IScreen hostScreen,
@@ -67,67 +60,61 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
             .Subscribe(userSessionService.UpdateServerInfo)
             .DisposeWith(_disposable);
 
-        IsLoading = true;
-        IsTeachingPlanLoading = true;
+        _isInitialLoading = true;
+        _isLoadingPlannedCourses = true;
 
         Observable.StartAsync(async _ => await registrationRulesService.EnsureReadyAsync())
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(
                 result =>
                 {
-                    IsLoading = false;
+                    _isInitialLoading = false;
 
                     result.Match(
                         () =>
                         {
-                            IsTeachingPlanLoading = true;
+                            _isLoadingPlannedCourses = true;
 
                             Observable.StartAsync(async _ => await teachingPlanLoaderService.LoadLatestAsync())
                                 .ObserveOn(RxApp.MainThreadScheduler)
                                 .Subscribe(loadResult =>
                                     {
-                                        IsTeachingPlanLoading = false;
+                                        _isLoadingPlannedCourses = false;
 
                                         if (loadResult.IsFailed)
                                         {
                                             return;
                                         }
-
-                                        TeachingPlanTimeline = loadResult.Content.RegistrationTimeline;
+                                        
+                                        foreach (var node in TimelineViewModel.Nodes.ToList())
+                                        {
+                                            node.Dispose();
+                                        }
+                                        TimelineViewModel.Nodes.Clear();
+                                        foreach (var item in loadResult.Content.RegistrationTimeline)
+                                        {
+                                            TimelineViewModel.Nodes.Add(new TimelineNodeViewModel(item));
+                                        }
                                     },
                                     ex =>
                                     {
-                                        IsTeachingPlanLoading = false;
-                                        Debug.WriteLine(ex, "Lỗi Runtime khi chạy LoadLatestAsync");
+                                        _isLoadingPlannedCourses = false;
                                     })
                                 .DisposeWith(_disposable);
                         },
                         (errors, _) =>
                         {
-                            IsTeachingPlanLoading = false;
-                            var errorsString = String.Join('\n', errors.Select(x => x.FormattedMessage));
-                            userInteractionService.Notification.Light.Error(errorsString);
-
-                            if (RegistrationInfo?.UserPeriod is { } period)
-                            {
-                                Console.WriteLine(
-                                    $"Group: '{string.Join(", ", period.AllowedGroups)}' | Titles: {string.Join(", ", RegistrationInfo.Groups?.Select(g => $"'{g.Name}'") ?? [])}");
-                            }
-                        },
-                        ex =>
-                        {
-                            IsTeachingPlanLoading = false;
-                            Debug.WriteLine(ex, "Lỗi khi _registrationRulesService.EnsureReadyAsync");
+                            _isLoadingPlannedCourses = false;
                         }
                     );
                 },
                 ex =>
                 {
-                    IsLoading = false;
-                    IsTeachingPlanLoading = false;
-                    Debug.WriteLine(ex, "Lỗi Runtime khi chạy EnsureReadyAsync");
+                    _isInitialLoading = false;
+                    _isLoadingPlannedCourses = false;
                 }
             );
+        
         _registrationInfo = userSessionService.RegistrationInfoChanged
             .ToProperty(this, nameof(RegistrationInfo), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(_disposable);
@@ -161,7 +148,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
                     var (isInitial, plannedCourses) = state;
                     return isInitial || (isExecuting && plannedCourses is null);
                 })
-            .ToProperty(this, nameof(IsLoadingPlannedCourses))
+            .ToProperty(this, nameof(_isLoadingPlannedCourses))
             .DisposeWith(_disposable);
     }
 
