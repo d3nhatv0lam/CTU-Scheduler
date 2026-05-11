@@ -29,13 +29,11 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         {
             HostScreen = hostScreen;
             _navigationRegionManager = navigationRegionManager;
-            
+
             ManualSelectionCommand = ReactiveCommand.Create(() => NavigateToSelection(manualStrategy))
                 .DisposeWith(_disposables);
 
-            var disabledQuickSelection = Observable.Return(false);
-            QuickSelectionCommand = ReactiveCommand
-                .Create(() => NavigateToSelection(quickStrategy), disabledQuickSelection)
+            QuickSelectionCommand = ReactiveCommand.Create(() => NavigateToSelection(quickStrategy))
                 .DisposeWith(_disposables);
         }
 
