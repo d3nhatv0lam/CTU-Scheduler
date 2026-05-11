@@ -64,7 +64,7 @@ public class WebTab : IWebTab
     {
         var routeTask = _page.RouteAsync("**/*", async route =>
         {
-            if (route.Request.ResourceType is "font" or "image" or "stylesheet")
+            if (route.Request.ResourceType is "font" or "stylesheet")
                 await route.AbortAsync();
             else
                 await route.ContinueAsync();
