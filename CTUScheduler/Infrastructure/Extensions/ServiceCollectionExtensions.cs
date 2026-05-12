@@ -31,8 +31,7 @@ public static class ServiceCollectionExtensions
         services.Configure<UserPreferencesOptions>(options =>
         {
             options.FilePath = AppConstants.Paths.UserPreferencesFilePath;
-        });
-        services.AddSingleton<IUserPreferencesRepository, UserPreferencesRepository>();
+        }).AddSingleton<IUserPreferencesRepository, UserPreferencesRepository>();
 
         // --- Playwright / Browser Automation ---
         services.AddSingleton<IWebDriverInstallerService, PlaywrightInstallerService>();

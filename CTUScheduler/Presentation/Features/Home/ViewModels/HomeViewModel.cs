@@ -30,6 +30,9 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
 
     private readonly ObservableAsPropertyHelper<RegistrationInformation?> _registrationInfo;
     [ObservableAsProperty] private IReadOnlyList<PlannedCourse>? _plannedCourses;
+    /// <summary>
+    /// Phải có Init được thì mới có token để get các thông tin khác
+    /// </summary>
     [ObservableAsProperty] private bool _isInitialLoading;
     [ObservableAsProperty] private bool _isLoadingPlannedCourses;
 
@@ -45,6 +48,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
         IUserSessionService userSessionService,
         IRegistrationRulesService registrationRulesService,
         ICourseRegistrationService courseRegistrationService,
+        IPlannedCourseStore plannedCourseStore,
         IUserInteractionService userInteractionService,
         INavigationRegionManager navigationRegionManager,
         ITeachingPlanLoaderService teachingPlanLoaderService,
@@ -59,6 +63,8 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
         registrationRulesService.RegistrationInfoChanged
             .Subscribe(userSessionService.UpdateServerInfo)
             .DisposeWith(_disposable);
+        
+      
 
         _isInitialLoading = true;
         _isLoadingPlannedCourses = true;
@@ -127,12 +133,15 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
         LoadPlannedCoursesCommand = ReactiveCommand
             .CreateFromTask(ct => _courseRegistrationService.FetchPlannedCourseAsync(token: ct))
             .DisposeWith(_disposable);
-
-        // TODO: Cached lại ở service ở lần phát triển tiếp theo
-        _plannedCoursesHelper = LoadPlannedCoursesCommand
+        
+       LoadPlannedCoursesCommand
             .Where(x => x.IsSuccess)
-            .Select(x => x.Content)
-            .ToProperty(this, nameof(PlannedCourses))
+            .Select(x => x.Content!)
+            .Subscribe(plannedCourseStore.Update)
+            .DisposeWith(_disposable);
+       
+        _plannedCoursesHelper = plannedCourseStore.PlannedCoursesChanged
+            .ToProperty(this, nameof(PlannedCourses), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(_disposable);
 
         SyncWebSessionCommand.Where(x => x.IsSuccess)

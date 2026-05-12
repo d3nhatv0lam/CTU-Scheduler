@@ -1,5 +1,16 @@
 ﻿namespace CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 
+/// <summary>
+/// Represents a course that is planned to be registered. Fetched from the CTU Kế hoạch học tập.
+/// </summary>
+/// <param name="Code"></param>
+/// <param name="NameVn"></param>
+/// <param name="Credits"></param>
+/// <param name="Group"></param>
+/// <param name="ScheduleText"></param>
+/// <param name="LecturerName"></param>
+/// <param name="LecturerEmail"></param>
+/// <param name="IsRegistered"></param>
 public record PlannedCourse(
     string Code,
     string NameVn,

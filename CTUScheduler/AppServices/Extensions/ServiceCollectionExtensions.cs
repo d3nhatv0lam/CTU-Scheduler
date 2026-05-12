@@ -7,6 +7,7 @@ using CTUScheduler.AppServices.Services.TimetableGeneratorService;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.AppServices.Services.UserSettingService;
 using CTUScheduler.AppServices.State;
+using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Infrastructure.DriverCore;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
@@ -41,10 +42,14 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ILoginService, LoginService>();
         services.AddTransient<IMainHomeService, MainHomeService>();
         services.AddTransient<IRegistrationRulesService, RegistrationRulesService>();
-        services.AddTransient<ICourseCatalogService, CourseCatalogService>();   
+        services.AddTransient<ICourseCatalogService, CourseCatalogService>();
         services.AddTransient<ICourseRegistrationService, CourseRegistrationService>();
         services.AddTransient<ITeachingPlanLoaderService, TeachingPlanLoaderService>();
         services.AddSingleton<ITimetableGeneratorService, TimetableGeneratorService>();
+
+        services.AddSingleton<PlannedCourseStore>()
+            .AddSingleton<IPlannedCourseStore>(sp => sp.GetRequiredService<PlannedCourseStore>())
+            .AddSingleton<ICleanup>(sp => sp.GetRequiredService<PlannedCourseStore>());
 
         // --- Schedule Manager Pattern ---
         services.AddSingleton<ScheduleManager>()
@@ -53,8 +58,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ICourseQueryService>(sp => sp.GetRequiredService<ScheduleManager>())
             .AddSingleton<IProfileQueryService>(sp => sp.GetRequiredService<ScheduleManager>())
             .AddSingleton<IScheduleSyncService>(sp => sp.GetRequiredService<ScheduleManager>());
-        
-      
+
+        services.AddSingleton<ISessionManager, SessionManager>();
 
         return services;
     }
