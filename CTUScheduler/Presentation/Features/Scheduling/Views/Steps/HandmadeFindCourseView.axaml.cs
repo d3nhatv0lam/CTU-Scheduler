@@ -8,7 +8,7 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.Views.Steps;
 
-public partial class HandmadeFindCourseView : ReactiveUserControl<HandmadeFindCourseViewModel>
+public partial class HandmadeFindCourseView : ReactiveUserControl<FindCourseViewModel>
 {
     public HandmadeFindCourseView()
     {
