@@ -30,16 +30,18 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
 
     private readonly ObservableAsPropertyHelper<RegistrationInformation?> _registrationInfo;
     [ObservableAsProperty] private IReadOnlyList<PlannedCourse>? _plannedCourses;
+
     /// <summary>
     /// Phải có Init được thì mới có token để get các thông tin khác
     /// </summary>
     [ObservableAsProperty] private bool _isInitialLoading;
+
     [ObservableAsProperty] private bool _isLoadingPlannedCourses;
 
     public string UrlPathSegment => nameof(HomeViewModel);
     public IScreen HostScreen { get; }
     public RegistrationInformation? RegistrationInfo => _registrationInfo.Value;
-    
+
     public TimelineViewModel TimelineViewModel { get; } = new();
 
     public ReactiveCommand<Unit, OperationResult<IReadOnlyList<PlannedCourse>>> LoadPlannedCoursesCommand { get; }
@@ -63,64 +65,48 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
         registrationRulesService.RegistrationInfoChanged
             .Subscribe(userSessionService.UpdateServerInfo)
             .DisposeWith(_disposable);
-        
-      
 
-        _isInitialLoading = true;
-        _isLoadingPlannedCourses = true;
+
+        IsLoading = true;
 
         Observable.StartAsync(async _ => await registrationRulesService.EnsureReadyAsync())
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(
                 result =>
                 {
-                    _isInitialLoading = false;
+                    IsLoading = false;
 
                     result.Match(
                         () =>
                         {
-                            _isLoadingPlannedCourses = true;
-
                             Observable.StartAsync(async _ => await teachingPlanLoaderService.LoadLatestAsync())
                                 .ObserveOn(RxApp.MainThreadScheduler)
                                 .Subscribe(loadResult =>
+                                {
+                                    if (loadResult.IsFailed)
                                     {
-                                        _isLoadingPlannedCourses = false;
+                                        return;
+                                    }
 
-                                        if (loadResult.IsFailed)
-                                        {
-                                            return;
-                                        }
-                                        
-                                        foreach (var node in TimelineViewModel.Nodes.ToList())
-                                        {
-                                            node.Dispose();
-                                        }
-                                        TimelineViewModel.Nodes.Clear();
-                                        foreach (var item in loadResult.Content.RegistrationTimeline)
-                                        {
-                                            TimelineViewModel.Nodes.Add(new TimelineNodeViewModel(item));
-                                        }
-                                    },
-                                    ex =>
+                                    foreach (var node in TimelineViewModel.Nodes.ToList())
                                     {
-                                        _isLoadingPlannedCourses = false;
-                                    })
+                                        node.Dispose();
+                                    }
+
+                                    TimelineViewModel.Nodes.Clear();
+                                    foreach (var item in loadResult.Content.RegistrationTimeline)
+                                    {
+                                        TimelineViewModel.Nodes.Add(new TimelineNodeViewModel(item));
+                                    }
+                                })
                                 .DisposeWith(_disposable);
                         },
-                        (errors, _) =>
-                        {
-                            _isLoadingPlannedCourses = false;
-                        }
+                        (errors, _) => { }
                     );
                 },
-                ex =>
-                {
-                    _isInitialLoading = false;
-                    _isLoadingPlannedCourses = false;
-                }
+                ex => { IsLoading = false; }
             );
-        
+
         _registrationInfo = userSessionService.RegistrationInfoChanged
             .ToProperty(this, nameof(RegistrationInfo), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(_disposable);
@@ -133,13 +119,13 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
         LoadPlannedCoursesCommand = ReactiveCommand
             .CreateFromTask(ct => _courseRegistrationService.FetchPlannedCourseAsync(token: ct))
             .DisposeWith(_disposable);
-        
-       LoadPlannedCoursesCommand
+
+        LoadPlannedCoursesCommand
             .Where(x => x.IsSuccess)
             .Select(x => x.Content!)
             .Subscribe(plannedCourseStore.Update)
             .DisposeWith(_disposable);
-       
+
         _plannedCoursesHelper = plannedCourseStore.PlannedCoursesChanged
             .ToProperty(this, nameof(PlannedCourses), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(_disposable);
@@ -157,7 +143,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
                     var (isInitial, plannedCourses) = state;
                     return isInitial || (isExecuting && plannedCourses is null);
                 })
-            .ToProperty(this, nameof(_isLoadingPlannedCourses))
+            .ToProperty(this, nameof(IsLoadingPlannedCourses))
             .DisposeWith(_disposable);
     }
 

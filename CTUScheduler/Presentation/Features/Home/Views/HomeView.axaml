@@ -11,7 +11,6 @@
     xmlns:u="https://irihi.tech/ursa"
     xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Home.ViewModels;assembly=CTUScheduler"
     xmlns:model="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.Registration"
-    xmlns:tp="clr-namespace:CTUScheduler.Core.Models.TeachingPlan"
     xmlns:shared="clr-namespace:CTUScheduler.Presentation.Shared"
     xmlns:plannedCourse="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.CourseData"
     xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
@@ -44,7 +43,6 @@
             </Style>
             <Style Selector="^ Border.card-item-4">
                 <Setter Property="Grid.Row" Value="3" />
-                <Setter Property="Padding" Value="10" />
             </Style>
         </Style>
 
