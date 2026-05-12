@@ -64,7 +64,7 @@
       <DependentUpon>HomeView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Presentation\Features\Scheduling\Views\Steps\HandmadeFindCourseView.axaml.cs">
+    <Compile Update="Presentation\Features\Scheduling\Views\Steps\FindCourseView.axaml.cs">
       <DependentUpon>HandmadeFindCourseView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>

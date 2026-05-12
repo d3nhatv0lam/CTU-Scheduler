@@ -22,11 +22,11 @@ using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
 {
-    public partial class HandmadeFindCourseViewModel : ViewModelBase, IDisposable, IWizardStep,
+    public partial class FindCourseViewModel : ViewModelBase, IDisposable, IWizardStep,
         INeedArgs<SchedulingWizardContext>
     {
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
-        private readonly ILogger<HandmadeFindCourseViewModel> _logger;
+        private readonly ILogger<FindCourseViewModel> _logger;
         [Reactive] private string _txtInputCourseKey = string.Empty;
         [Reactive] private bool _isOpenQuickSelectPopup;
         [Reactive] private bool _showOnlyAvailableSections;
@@ -49,8 +49,8 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         public ReactiveCommand<CourseBlueprint, Unit> TreeRemoveCourseCommand { get; }
         public ReactiveCommand<CourseSection, Unit> TreeRemoveSectionCommand { get; }
 
-        public HandmadeFindCourseViewModel(SchedulingWizardContext context, ICourseCatalogService courseCatalogService,
-            ILogger<HandmadeFindCourseViewModel> logger)
+        public FindCourseViewModel(SchedulingWizardContext context, ICourseCatalogService courseCatalogService,
+            ILogger<FindCourseViewModel> logger)
         {
             _coursesSourceList = context.CourseBlueprints;
             _logger = logger;
@@ -231,7 +231,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         public void Dispose()
         {
             _disposables.Dispose();
-            _logger.LogDebug("{this}: Disposed", nameof(HandmadeFindCourseViewModel));
+            _logger.LogDebug("{this}: Disposed", nameof(FindCourseViewModel));
         }
     }
 }

@@ -100,7 +100,6 @@
 
             <!-- Quick Selection -->
             <Button Classes="SelectionCard" 
-                    IsEnabled="False"
                     Command="{Binding QuickSelectionCommand}">
                 <StackPanel VerticalAlignment="Center">
                     <materialIcons:MaterialIcon Kind="LightningBolt" 

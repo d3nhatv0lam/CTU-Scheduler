@@ -1,12 +1,12 @@
 <rxui:ReactiveUserControl
-    x:TypeArguments="viewModels1:HandmadeFindCourseViewModel"
+    x:TypeArguments="viewModels1:FindCourseViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="500"
     xmlns:rxui="http://reactiveui.net"
-    x:DataType="viewModels1:HandmadeFindCourseViewModel"
+    x:DataType="viewModels1:FindCourseViewModel"
     x:CompileBindings="True"
     xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
     xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
@@ -19,7 +19,7 @@
     xmlns:context="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Models.Context"
     xmlns:curriculumModel="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.CourseData"
     xmlns:qSelectCourse="clr-namespace:CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum"
-    x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.Steps.HandmadeFindCourseView">
+    x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.Steps.FindCourseView">
 
     <rxui:ReactiveUserControl.KeyBindings>
         <KeyBinding Gesture="Enter" Command="{Binding SearchCommand}" />
@@ -313,7 +313,7 @@
                                         <Button Grid.Column="1"
                                                 Classes="BtnRemove"
                                                 Content="{materialIcons:MaterialIconExt Kind=CloseBoxOutline,Size=20}"
-                                                Command="{Binding ViewModel.TreeRemoveCourseCommand , RelativeSource={RelativeSource AncestorType=views1:HandmadeFindCourseView}}"
+                                                Command="{Binding ViewModel.TreeRemoveCourseCommand , RelativeSource={RelativeSource AncestorType=views1:FindCourseView}}"
                                                 CommandParameter="{Binding .}" />
                                     </Grid>
                                 </TreeDataTemplate>
@@ -357,7 +357,7 @@
                                                 Grid.Column="2"
                                                 Classes="BtnRemove"
                                                 Content="{materialIcons:MaterialIconExt Kind=CloseBoxOutline,Size=20}"
-                                                Command="{Binding ViewModel.TreeRemoveSectionCommand , RelativeSource={RelativeSource AncestorType=views1:HandmadeFindCourseView}}"
+                                                Command="{Binding ViewModel.TreeRemoveSectionCommand , RelativeSource={RelativeSource AncestorType=views1:FindCourseView}}"
                                                 CommandParameter="{Binding .}" />
                                     </Grid>
                                 </DataTemplate>

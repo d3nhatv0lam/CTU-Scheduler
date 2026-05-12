@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables.Fluent;
+using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
@@ -9,12 +9,17 @@ using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
 using DynamicData;
+using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
-public class TimetablePreviewViewModel : TimetableLayoutBaseViewModel
+public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel, IScorable
 {
     private readonly List<SectionChoice> _choices = new();
+
+    [Reactive] private double _totalScore;
+    
+    double IScorable.Score => TotalScore;
 
     public TimetablePreviewViewModel(IEnumerable<SectionChoice> choices, IExcelExporterService excelExporter)
         : base(excelExporter)
@@ -64,4 +69,6 @@ public class TimetablePreviewViewModel : TimetableLayoutBaseViewModel
         };
         return new ScheduleBlueprint(courses, profile);
     }
+
+
 }
