@@ -20,12 +20,14 @@
         <converters:EnumToBoolConverter x:Key="BuiltInEnumToBool"></converters:EnumToBoolConverter>
     </rxui:ReactiveUserControl.Resources>
 
-    <Border CornerRadius="16" ClipToBounds="False">
-        <StackPanel Spacing="18">
-            <ItemsControl ItemsSource="{Binding Nodes}" ClipToBounds="False">
+    <Border CornerRadius="16" ClipToBounds="False" Padding="8,4">
+        <Grid>
+            <ItemsControl ItemsSource="{Binding Nodes}"
+                          ClipToBounds="False"
+                          HorizontalAlignment="Stretch">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:TimelineNodeViewModel">
-                        <Grid ColumnDefinitions="24,*" Margin="0,0,0,14">
+                        <Grid ColumnDefinitions="24,*" Margin="0,0,0,10" MinHeight="64">
                             <!-- Timeline rail -->
                             <Grid>
                                 <Border Width="2"
@@ -79,19 +81,22 @@
 
                             <!-- Content -->
                             <StackPanel Grid.Column="1"
-                                        Spacing="4"
+                                        Spacing="12"
                                         VerticalAlignment="Center">
                                 <TextBlock Text="{Binding Title}"
-                                           FontWeight="SemiBold" />
+                                           FontWeight="SemiBold"
+                                           TextWrapping="Wrap" />
                                 <TextBlock Text="{Binding DateRange}"
                                            Opacity="0.65"
-                                           FontSize="12" />
+                                           FontSize="12"
+                                           TextWrapping="Wrap"
+                                           Margin="0,2,0,0" />
                             </StackPanel>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-        </StackPanel>
+        </Grid>
     </Border>
 
 </rxui:ReactiveUserControl>
