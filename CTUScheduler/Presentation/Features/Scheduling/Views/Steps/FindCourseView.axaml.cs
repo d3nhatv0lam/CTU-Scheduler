@@ -1,16 +1,13 @@
-using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using Avalonia;
-using Avalonia.Input;
 using ReactiveUI.Avalonia;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Scheduling.Views.Steps;
 
-public partial class HandmadeFindCourseView : ReactiveUserControl<FindCourseViewModel>
+public partial class FindCourseView : ReactiveUserControl<FindCourseViewModel>
 {
-    public HandmadeFindCourseView()
+    public FindCourseView()
     {
         InitializeComponent();
         this.WhenActivated(disposables =>
