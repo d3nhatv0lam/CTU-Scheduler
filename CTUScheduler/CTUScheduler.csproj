@@ -116,7 +116,6 @@
     <AdditionalFiles Include="Presentation\Features\Authentication\Views\LoginView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Home\Views\HomeView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Scheduling\Shared\Styles\controls.axaml" />
-    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Steps\HandmadeFindCourseView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Steps\TimetableSchedulerView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Steps\SelectionView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Shells\SchedulingDialogView.axaml" />

@@ -60,7 +60,7 @@ public class WorkspaceStore : IWorkspaceStore
 
     public async Task<OperationResult> LoadAsync(string filePath, CancellationToken ct = default)
     {
-        var loadResult = await _workspaceRepository.LoadAsync(filePath, ct);
+        var loadResult = await _workspaceRepository.LoadAsync(filePath, ct).ConfigureAwait(false);
 
         if (loadResult.IsFailed)
         {
