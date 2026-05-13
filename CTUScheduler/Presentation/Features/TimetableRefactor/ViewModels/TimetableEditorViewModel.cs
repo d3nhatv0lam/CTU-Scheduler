@@ -46,7 +46,7 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
 
         var savedRef = scheduleProfile.SavedCourseGroupKeys;
         var sharedCourse = courseQueryService.ConnectCourses()
-            .SubscribeOn(RxSchedulers.TaskpoolScheduler)
+            .ObserveOn(RxSchedulers.TaskpoolScheduler)
             .Filter(x => savedRef.ContainsKey(x.Code))
             .MergeMany(runtimeCourse =>
             {

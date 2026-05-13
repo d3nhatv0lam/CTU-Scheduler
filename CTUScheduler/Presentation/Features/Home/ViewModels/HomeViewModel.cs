@@ -20,9 +20,8 @@ using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Features.Home.ViewModels;
 
-public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, IDisposable
+public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
 {
-    private readonly CompositeDisposable _disposable = new();
     private readonly IRegistrationRulesService _registrationRulesService;
     private readonly ICourseRegistrationService _courseRegistrationService;
     private readonly ILogger<HomeViewModel> _logger;
@@ -60,39 +59,36 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
 
         registrationRulesService.RegistrationInfoChanged
             .Subscribe(userSessionService.UpdateServerInfo)
-            .DisposeWith(_disposable);
+            .DisposeWith(Disposables);
         
-      
-
         _registrationInfo = userSessionService.RegistrationInfoChanged
             .ToProperty(this, nameof(RegistrationInfo), scheduler: RxSchedulers.MainThreadScheduler)
-            .DisposeWith(_disposable);
+            .DisposeWith(Disposables);
 
         _isInitialLoadingHelper = this.WhenAnyValue(x => x.IsLoading, x => x.RegistrationInfo,
                 (isLoading, data) => isLoading && data is null)
             .ToProperty(this, nameof(IsInitialLoading), deferSubscription: true)
-            .DisposeWith(_disposable);
+            .DisposeWith(Disposables);
 
         LoadPlannedCoursesCommand = ReactiveCommand
             .CreateFromTask(ct => _courseRegistrationService.FetchPlannedCourseAsync(token: ct))
-            .DisposeWith(_disposable);
+            .DisposeWith(Disposables);
         
        LoadPlannedCoursesCommand
             .Where(x => x.IsSuccess)
             .Select(x => x.Content!)
             .Subscribe(plannedCourseStore.Update)
-            .DisposeWith(_disposable);
+            .DisposeWith(Disposables);
        
         _plannedCoursesHelper = plannedCourseStore.PlannedCoursesChanged
             .ToProperty(this, nameof(PlannedCourses), scheduler: RxSchedulers.MainThreadScheduler)
-            .DisposeWith(_disposable);
+            .DisposeWith(Disposables);
 
         SyncWebSessionCommand.Where(x => x.IsSuccess)
             .Select(_ => Unit.Default)
             .InvokeCommand(LoadPlannedCoursesCommand)
-            .DisposeWith(_disposable);
+            .DisposeWith(Disposables);
 
-        // hoạt động tốt khi cached lại! hiện tại loading mỗi lần mở view
         _isLoadingPlannedCoursesHelper = this.WhenAnyValue(x => x.IsInitialLoading, x => x.PlannedCourses)
             .CombineLatest(LoadPlannedCoursesCommand.IsExecuting,
                 (state, isExecuting) =>
@@ -101,7 +97,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
                     return isInitial || (isExecuting && plannedCourses is null);
                 })
             .ToProperty(this, nameof(IsLoadingPlannedCourses))
-            .DisposeWith(_disposable);
+            .DisposeWith(Disposables);
     }
 
     protected override async Task<OperationResult> ExecuteWebSyncTaskAsync()
@@ -109,10 +105,14 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel, I
         return await _registrationRulesService.EnsureReadyAsync();
     }
 
-    public void Dispose()
+    protected override void Dispose(bool isDisposing)
     {
-        _disposable.Dispose();
-        TimelineViewModel.Dispose();
-        _logger.LogDebug("{this}: Disposed", nameof(HomeViewModel));
+        if (isDisposing)
+        {
+            TimelineViewModel.Dispose();
+            _logger.LogDebug("{this}: Disposed", nameof(HomeViewModel));
+        }
+     
+        base.Dispose(isDisposing);
     }
 }

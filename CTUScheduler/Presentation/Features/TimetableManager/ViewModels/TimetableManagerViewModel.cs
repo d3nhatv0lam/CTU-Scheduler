@@ -29,13 +29,13 @@ using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Shells;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
+using DocumentFormat.OpenXml.Math;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 {
-    public class TimetableManagerViewModel : WebSyncViewModelBase, IRoutableViewModel, IDisposable
+    public class TimetableManagerViewModel : WebSyncViewModelBase, IRoutableViewModel
     {
-        private readonly CompositeDisposable _disposables = new();
         private readonly IConnectivityService _connectivityService;
         private readonly ICourseCatalogService _courseCatalogService;
         private readonly IProfileQueryService _profileQueryService;
@@ -102,27 +102,34 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             _logger = logger;
 
 
-            _profileQueryService.ConnectProfiles()
+            var sharedViewModelsStream = _profileQueryService.ConnectProfiles()
                 .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .Transform(viewModelFactory.Create<TimetableEditorViewModel, ScheduleProfile>)
                 .DisposeMany()
+                .Publish();
+
+            sharedViewModelsStream
                 .ObserveOn(RxSchedulers.MainThreadScheduler)
                 .Bind(out _bindableTimetableLayouts)
                 .Subscribe()
-                .DisposeWith(_disposables);
+                .DisposeWith(Disposables);
 
-            _hasSelectedTimetable = TimetableLayouts.ToObservableChangeSet()
+            _hasSelectedTimetable = sharedViewModelsStream
                 .AutoRefresh(x => x.IsSelected)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .Filter(x => x.IsSelected)
                 .Count()
-                .Select(count => count > 0)
+                .Select(x => x > 0)
                 .ToProperty(this, nameof(HasSelectedTimetable), scheduler: RxSchedulers.MainThreadScheduler)
-                .DisposeWith(_disposables);
+                .DisposeWith(Disposables);
+
+            sharedViewModelsStream.Connect()
+                .DisposeWith(Disposables);
 
             _timetableLayoutsCount = _profileQueryService.ConnectProfiles()
                 .Count()
                 .ToProperty(this, nameof(TimetableLayoutsCount), scheduler: RxSchedulers.MainThreadScheduler)
-                .DisposeWith(_disposables);
+                .DisposeWith(Disposables);
 
             _lastSavedText = userSessionService.LastSaved
                 .Select(savedTime =>
@@ -133,20 +140,20 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 })
                 .Switch()
                 .ToProperty(this, nameof(LastSaved), scheduler: RxSchedulers.MainThreadScheduler)
-                .DisposeWith(_disposables);
+                .DisposeWith(Disposables);
 
             _isEmptyTimetableLayouts = this.WhenAnyValue(x => x.TimetableLayoutsCount)
                 .Select(count => count == 0)
                 .ToProperty(this, nameof(IsEmptyTimetableLayouts), scheduler: RxSchedulers.MainThreadScheduler)
-                .DisposeWith(_disposables);
+                .DisposeWith(Disposables);
 
             _isExpiredSaved = userSessionService.IsReadonly
                 .ToProperty(this, nameof(IsExpiredSaved), scheduler: RxSchedulers.MainThreadScheduler)
-                .DisposeWith(_disposables);
+                .DisposeWith(Disposables);
 
             var canInteractUi = this.WhenAnyValue(x => x.IsExpiredSaved, expired => !expired);
             ShowAddCourseDialogCommand = ReactiveCommand.CreateFromTask(OpenAddCourseDialog, canInteractUi)
-                .DisposeWith(_disposables);
+                .DisposeWith(Disposables);
 
             var canReloadAllTimetable = _connectivityService.IsInternetAvailable
                 .DistinctUntilChanged()
@@ -157,7 +164,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             {
                 if (IsEmptyTimetableLayouts) return;
                 await _scheduleSyncService.RefreshCoursesAsync();
-            }, canReloadAllTimetable).DisposeWith(_disposables);
+            }, canReloadAllTimetable).DisposeWith(Disposables);
 
             DeleteSelectedTimetablesCommand = ReactiveCommand.CreateFromTask(async () =>
                 {
@@ -191,7 +198,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 
                     return result;
                 }, this.WhenAnyValue(x => x.HasSelectedTimetable))
-                .DisposeWith(_disposables);
+                .DisposeWith(Disposables);
 
             ExportSelectedTimetablesCommand = ReactiveCommand.CreateFromTask(async () =>
                 {
@@ -214,7 +221,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 
                     await _excelExporterService.ExportTimetablesAsync(blueprints, fullPath);
                 }, this.WhenAnyValue(x => x.HasSelectedTimetable))
-                .DisposeWith(_disposables);
+                .DisposeWith(Disposables);
 
             ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<TimetableLayoutBaseViewModel>(async
                     timetableLayoutViewModel =>
@@ -228,12 +235,12 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     await UserInteractionService.Dialog.ShowModal<TimetableLayoutBaseViewModel, Unit>(
                         timetableLayoutViewModel, options);
                 })
-                .DisposeWith(_disposables);
+                .DisposeWith(Disposables);
 
             SaveScheduleCommand = ReactiveCommand.CreateFromTask<IStorageFile>(async file =>
             {
                 var filePath = file.Path.LocalPath;
-                var result = await workspaceStore.SaveAsync(filePath);
+                var result = await Task.Run(() => workspaceStore.SaveAsync(filePath));
 
                 result.Match(
                     onSuccess: () =>
@@ -244,30 +251,29 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     onFailure: (errors, _) =>
                         UserInteractionService.Notification.Light.Error("Lỗi lưu file",
                             string.Join("\n", errors.Select(e => e.FormattedMessage))));
-            }).DisposeWith(_disposables);
+            }).DisposeWith(Disposables);
 
             LoadScheduleCommand = ReactiveCommand.CreateFromTask<IReadOnlyList<IStorageFile>>(async files =>
                 {
-                    foreach (var file in files)
-                    {
-                        var filePath = file.Path.LocalPath;
-                        var result = await workspaceStore.LoadAsync(filePath);
+                    var file = files.FirstOrDefault();
+                    if (file is null) return;
 
-                        result.Match(
-                            onSuccess: () =>
-                            {
-                                _logger.LogInformation("Nạp thời khóa biểu thành công từ {Path}", filePath);
-                                UserInteractionService.Toast.Light.Success("Nạp dữ liệu thành công!");
-                            },
-                            onFailure: (errors, _) =>
-                                UserInteractionService.Notification.Light.Error("Lỗi nạp file",
-                                    string.Join("\n", errors.Select(x => x.FormattedMessage)))
-                        );
+                    var filePath = file.Path.LocalPath;
 
-                        break;
-                    }
+                    var result = await Task.Run(() => workspaceStore.LoadAsync(filePath));
+
+                    result.Match(
+                        onSuccess: () =>
+                        {
+                            _logger.LogInformation("Nạp thời khóa biểu thành công từ {Path}", filePath);
+                            UserInteractionService.Toast.Light.Success("Nạp dữ liệu thành công!");
+                        },
+                        onFailure: (errors, _) =>
+                            UserInteractionService.Notification.Light.Error("Lỗi nạp file",
+                                string.Join("\n", errors.Select(x => x.FormattedMessage)))
+                    );
                 })
-                .DisposeWith(_disposables);
+                .DisposeWith(Disposables);
         }
 
         private async Task OpenAddCourseDialog()
@@ -293,10 +299,14 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             return time.Humanize(culture: new CultureInfo("vi-VN"));
         }
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            _disposables.Dispose();
-            _logger.LogDebug("{this}: Disposed", nameof(TimetableManagerViewModel));
+            if (disposing)
+            {
+                _logger.LogDebug("{this}: Disposed", nameof(TimetableManagerViewModel));
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

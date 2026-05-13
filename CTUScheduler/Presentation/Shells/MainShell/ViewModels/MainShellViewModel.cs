@@ -27,9 +27,8 @@ using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 {
-    public partial class MainShellViewModel : WebSyncViewModelBase, IScreen, IRoutableViewModel, IDisposable
+    public partial class MainShellViewModel : WebSyncViewModelBase, IScreen, IRoutableViewModel
     {
-        private readonly CompositeDisposable _disposables = new();
         private readonly IMainHomeService _mainHomeService;
 
         [Reactive] private NavigationItem? _selectedItem;
@@ -57,7 +56,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 
 
             NavigationRegionManager.Register(RegionIds.Main, this)
-                .DisposeWith(_disposables);
+                .DisposeWith(Disposables);
 
             NavigationItems =
             [
@@ -70,17 +69,18 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                 .Where(x => x.HasValue)
                 .Select(x => x!.Value)
                 .Subscribe(OnNavigatePage)
-                .DisposeWith(_disposables);
+                .DisposeWith(Disposables);
 
             _titleHelper = this.WhenAnyValue(x => x.SelectedItem)
                 .Where(x => x.HasValue)
                 .Select(x => x!.Value.Title)
                 .ToProperty(this, nameof(Title))
-                .DisposeWith(_disposables);
+                .DisposeWith(Disposables);
 
             SelectedItem = NavigationItems[0];
             // SelectedItem = NavigationItems[1];
-
+            
+            
             LoadStudentInfoCommand = ReactiveCommand.CreateFromObservable(() =>
                     Observable.FromAsync(ct => _mainHomeService.GetStudentProfileAsync(ct))
                         .Expand(result =>
@@ -94,7 +94,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                         })
                         .Take(10)
                         .LastAsync())
-                .DisposeWith(_disposables);
+                .DisposeWith(Disposables);
 
             LoadStudentInfoCommand
                 .ObserveOn(RxSchedulers.MainThreadScheduler)
@@ -113,7 +113,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                         }
                     );
                 })
-                .DisposeWith(_disposables);
+                .DisposeWith(Disposables);
 
             LogoutCommand = ReactiveCommand.CreateFromTask(async () =>
             {
@@ -141,7 +141,12 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                 {
                     await NavigationRegionManager.NavigateAndResetTo<LoginViewModel>(RegionIds.Root);
                 }
-            }).DisposeWith(_disposables);
+            }).DisposeWith(Disposables);
+            
+            SyncWebSessionCommand.Where(x => x.IsSuccess)
+                .Select(_ => Unit.Default)
+                .InvokeCommand(LoadStudentInfoCommand)
+                .DisposeWith(Disposables);
         }
 
 
@@ -160,14 +165,9 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             return await _mainHomeService.EnsureReadyAsync();
         }
 
-        protected override void OnWebSyncSuccess()
-        {
-            LoadStudentInfoCommand.Execute().Subscribe().DisposeWith(_disposables);
-        }
-
-        public void Dispose()
-        {
-            _disposables.Dispose();
-        }
+        // protected override void OnWebSyncSuccess()
+        // {
+        //     LoadStudentInfoCommand.Execute().Subscribe().DisposeWith(Disposables);
+        // }
     }
 }
