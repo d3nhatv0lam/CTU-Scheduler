@@ -68,7 +68,7 @@ public static class AppConstants
                 Nickname: "d3nhatv0lam / RxAmethyst",
                 Tier: ContributorTier.Founder,
                 Bio: "Đụng là dứt",
-                AvatarUrl: null,
+                AvatarUrl: "https://avatars.githubusercontent.com/u/110104167?v=4",
                 SocialLinks: new Dictionary<SocialPlatform, string>
                 {
                     [SocialPlatform.Facebook] = "https://www.facebook.com/profile.php?id=100088452777261",
@@ -88,9 +88,9 @@ public static class AppConstants
                 Id: "loc",
                 Name: "Nguyễn Phước Lộc",
                 Tier: ContributorTier.Maintainer,
-                Nickname: "LEXIPIT3268",
+                Nickname: "Lexipit3268",
                 Bio: "Đụng là cọc",
-                AvatarUrl: null,
+                AvatarUrl: "https://avatars.githubusercontent.com/u/62460969?v=4",
                 SocialLinks: new Dictionary<SocialPlatform, string>
                 {
                     [SocialPlatform.Facebook] = "https://www.facebook.com/lexipit3268",
@@ -108,9 +108,9 @@ public static class AppConstants
                 Id: "phuc",
                 Name: "Trần Trọng Phúc",
                 Tier: ContributorTier.Maintainer,
-                Nickname: null,
+                Nickname: "Chez",
                 Bio: "Đụng là cút",
-                AvatarUrl: null,
+                AvatarUrl: "https://avatars.githubusercontent.com/u/152960221?v=4",
                 SocialLinks: new Dictionary<SocialPlatform, string>
                 {
                     [SocialPlatform.GitHub] = "https://github.com/phuctran1501"
@@ -128,7 +128,7 @@ public static class AppConstants
                 Tier: ContributorTier.Maintainer,
                 Nickname: "Kimgion",
                 Bio: "Đụng là tát",
-                AvatarUrl: null,
+                AvatarUrl: "https://avatars.githubusercontent.com/u/154446069?v=4",
                 SocialLinks: new Dictionary<SocialPlatform, string>
                 {
                     [SocialPlatform.GitHub] = "https://github.com/KimgionDev"
