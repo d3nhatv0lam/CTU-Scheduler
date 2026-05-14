@@ -8,6 +8,7 @@ using Serilog;
 using System;
 using System.Reactive;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
 using CTUScheduler.Presentation.Shared.Interfaces;
@@ -28,6 +29,13 @@ public class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        Dispatcher.UIThread.UnhandledException += (sender, e) =>
+        {
+            var uiLog = Log.ForContext("ShortTypeName", "UI");
+            uiLog.Error(e.Exception, "Avalonia UI Thread Unhandled Exception");
+            // e.Handled = true;   // Chỉ bật nếu bạn chắc chắn muốn app tiếp tục (rủi ro cao)
+        };
+        
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var splashScreen = InitSplashScreenWindow(desktop);
@@ -72,24 +80,11 @@ public class App : Application
     
     private void SetupGlobalExceptionHandling()
     {
-        // Bắt lỗi ở các Thread phụ (Background threads)
-        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
-        {
-            var ex = args.ExceptionObject as Exception;
-            Log.Fatal(ex, "APP CRASH: Unhandled Exception on Non-UI Thread");
-        };
-
-        // Bắt lỗi ở Task (Task bị lỗi mà không có await hoặc try-catch)
-        TaskScheduler.UnobservedTaskException += (_, args) =>
-        {
-            Log.Error(args.Exception, "Background Task Error (Unobserved)");
-            args.SetObserved(); // Ngăn app bị crash
-        };
-
         // Bắt lỗi của ReactiveUI
         RxApp.DefaultExceptionHandler = Observer.Create<Exception>(ex => 
         {
-            Log.Error(ex, "ReactiveUI Exception");
+            var rxLog = Log.ForContext("ShortTypeName", "UI");
+            rxLog.Error(ex, "ReactiveUI Pipeline/Command Exception");
             // có thể hiển thị Dialog báo lỗi cho User tại đây
         });
     }

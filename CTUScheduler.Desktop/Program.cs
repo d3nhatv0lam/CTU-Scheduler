@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.Versioning;
-using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -32,6 +31,23 @@ class Program
     public static void Main(string[] args)
     {
         LoggingConfig.Init();
+        
+        // Bắt lỗi ở các Thread phụ (Background threads)
+        AppDomain.CurrentDomain.UnhandledException += (_, appDomainArgs) =>
+        {
+            var ex = appDomainArgs.ExceptionObject as Exception;
+            var logger = Log.ForContext("ShortTypeName", "Application");
+            logger.Fatal(ex, "APP CRASH: Unhandled Exception on Non-UI Thread {IsTerminating}",
+                appDomainArgs.IsTerminating);
+        };
+        
+        // Bắt lỗi ở Task (Task bị lỗi mà không có await hoặc try-catch)
+        TaskScheduler.UnobservedTaskException += (_, taskSchedulerArgs) =>
+        {
+            var logger = Log.ForContext("ShortTypeName", "Application");
+            logger.Error(taskSchedulerArgs.Exception, "Background Task Error (Unobserved)");
+            taskSchedulerArgs.SetObserved();
+        };
 
         ServiceProvider? serviceProvider = null;
 
@@ -51,13 +67,14 @@ class Program
         }
         catch (Exception ex)
         {
-            Log.Fatal(ex, "Application start-up failed");
+            Log.ForContext("ShortTypeName", "Host")
+                .Fatal(ex, "Host terminated unexpectedly during start-up");
         }
         finally
         {
-            var sysLog = Log.ForContext("ShortTypeName", "System");
+            var hostLog = Log.ForContext("ShortTypeName", "Host");
 
-            sysLog.Information("Cleaning up DI and infrastructure resources...");
+            hostLog.Information("Cleaning up DI and infrastructure resources...");
 
             // Sử dụng Task.Run để giải phóng ThreadPool, ngăn chặn rủi ro Deadlock
             Task.Run(async () =>
@@ -68,25 +85,25 @@ class Program
                     {
                         var disposeTask = asyncDisposable.DisposeAsync().AsTask();
                         await disposeTask.WaitAsync(TimeSpan.FromSeconds(15));
-                        sysLog.Information("Shutdown complete successfully.");
+                        hostLog.Information("Shutdown complete successfully.");
                     }
                     else if (serviceProvider is IDisposable disposable)
                     {
                         disposable.Dispose();
-                        sysLog.Information("Shutdown complete successfully.");
+                        hostLog.Information("Shutdown complete successfully.");
                     }
                 }
                 catch (TimeoutException)
                 {
-                    sysLog.Warning("Shutdown timed out (15s)! Một số service chạy quá lâu. Ép buộc tắt...");
+                    hostLog.Warning("Shutdown timed out (15s)! Một số service chạy quá lâu. Ép buộc tắt...");
                 }
                 catch (Exception ex)
                 {
-                    sysLog.Error(ex, "Lỗi khi dọn dẹp tài nguyên DI.");
+                    hostLog.Error(ex, "Lỗi khi dọn dẹp tài nguyên DI.");
                 }
             }).GetAwaiter().GetResult();
 
-            sysLog.Information("================= LOG END =================");
+            hostLog.Information("================= LOG END =================");
             LoggingConfig.CloseAndFlush();
         }
     }
