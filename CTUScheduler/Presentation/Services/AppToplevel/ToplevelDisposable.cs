@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
@@ -37,7 +37,7 @@ public class ToplevelDisposable: IToplevelService, IUiDisposable
     {
         ArgumentNullException.ThrowIfNull(root);
         // loaded
-        if (root.GetVisualRoot() is TopLevel tl)
+        if (TopLevel.GetTopLevel(root) is TopLevel tl)
             RegisterTopLevel(tl);
         // wait for loaded
         else

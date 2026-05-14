@@ -12,6 +12,7 @@ using CTUScheduler.Presentation.Shared.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
+using ReactiveUI.Avalonia.Splat;
 using Serilog;
 using Splat;
 using Splat.Microsoft.Extensions.DependencyInjection;
@@ -56,7 +57,7 @@ class Program
             var services = new ServiceCollection();
             ConfigureServices(services);
             serviceProvider = services.BuildServiceProvider();
-
+            
             App.ServiceProvider = serviceProvider;
 
             var appLifetime = serviceProvider.GetRequiredService<IApplicationLifetime>() as AppLifetimeManager;
@@ -115,16 +116,16 @@ class Program
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace()
-            .UseReactiveUI();
+            .UseReactiveUI(rxui => {});
     }
 
     // Avalonia configuration
-    public static AppBuilder BuildAvaloniaApp(ServiceProvider serviceProvider, AppLifetimeManager appLifetime)
+    public static AppBuilder BuildAvaloniaApp(IServiceProvider serviceProvider, AppLifetimeManager appLifetime)
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace()
-            .UseReactiveUI()
+            .UseReactiveUI(rxui => {})
             .AfterSetup(builder =>
             {
                 if (builder.Instance is App { ApplicationLifetime: IClassicDesktopStyleApplicationLifetime desktop })
@@ -156,7 +157,7 @@ class Program
 
         services.UseMicrosoftDependencyResolver();
         var resolver = Locator.CurrentMutable;
-        resolver.InitializeReactiveUI();
+        resolver.InitializeSplat();
 
         services.AddSingleton<IApplicationLifetime, AppLifetimeManager>();
         services.AddInfrastructureServices();

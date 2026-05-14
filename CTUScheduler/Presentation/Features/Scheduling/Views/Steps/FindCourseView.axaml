@@ -127,7 +127,7 @@
                             <Button
                                 x:Name="btnSearchCourse"
                                 CornerRadius="40"
-                                Content="{materialIcons:MaterialIconExt Kind=Search,Size=30}"
+                                Content="{materialIcons:MaterialIconExt Kind=Search,IconSize=30}"
                                 Width="40"
                                 Height="40"
                                 Margin="5 5 0 0"
@@ -312,7 +312,7 @@
                                         
                                         <Button Grid.Column="1"
                                                 Classes="BtnRemove"
-                                                Content="{materialIcons:MaterialIconExt Kind=CloseBoxOutline,Size=20}"
+                                                Content="{materialIcons:MaterialIconExt Kind=CloseBoxOutline,IconSize=20}"
                                                 Command="{Binding ViewModel.TreeRemoveCourseCommand , RelativeSource={RelativeSource AncestorType=views1:FindCourseView}}"
                                                 CommandParameter="{Binding .}" />
                                     </Grid>
@@ -356,7 +356,7 @@
                                                 Grid.RowSpan="2"
                                                 Grid.Column="2"
                                                 Classes="BtnRemove"
-                                                Content="{materialIcons:MaterialIconExt Kind=CloseBoxOutline,Size=20}"
+                                                Content="{materialIcons:MaterialIconExt Kind=CloseBoxOutline,IconSize=20}"
                                                 Command="{Binding ViewModel.TreeRemoveSectionCommand , RelativeSource={RelativeSource AncestorType=views1:FindCourseView}}"
                                                 CommandParameter="{Binding .}" />
                                     </Grid>

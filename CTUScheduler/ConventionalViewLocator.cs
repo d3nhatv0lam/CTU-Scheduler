@@ -1,4 +1,4 @@
-﻿using ReactiveUI;
+using ReactiveUI;
 using Splat;
 using System;
 
@@ -6,12 +6,20 @@ namespace CTUScheduler
 {
     public class ConventionalViewLocator : IViewLocator
     {
-        public IViewFor? ResolveView<T>(T? viewModel, string? contract = null) 
+        public IViewFor<TViewModel>? ResolveView<TViewModel>(string? contract = null) where TViewModel : class
         {
-            // Find view's by chopping of the 'Model' on the view model name
-            // MyApp.ShellViewModel => MyApp.ShellView
-            var viewModelName = viewModel?.GetType().FullName;
-            var viewTypeName = viewModelName!.Replace("ViewModel","View");
+            return ResolveView(typeof(TViewModel), contract) as IViewFor<TViewModel>;
+        }
+
+        public IViewFor? ResolveView(object? viewModel, string? contract = null) 
+        {
+            if (viewModel is null) return null;
+            
+            var viewModelType = viewModel is Type t ? t : viewModel.GetType();
+            var viewModelName = viewModelType.FullName;
+            var viewTypeName = viewModelName?.Replace("ViewModel", "View");
+
+            if (viewTypeName == null) return null;
 
             try
             {

@@ -55,7 +55,7 @@ public class UrsaDialogService : IDialogService
             control.Unloaded += (_, _) => action();
         }
 
-        OverlayDialog.Show(control, viewModel, hostId: options.HostId, options: MapOptions(in options));
+        OverlayDialog.ShowStandard(control, viewModel, hostId: options.HostId, options: MapOptions(in options));
     }
 
     public Task<TResult?> ShowModal<TViewModel, TResult>(TViewModel viewModel, in DialogOptions options = default)
@@ -74,7 +74,7 @@ public class UrsaDialogService : IDialogService
             control.Unloaded += (_, _) => action();
         }
 
-        return OverlayDialog.ShowCustomModal<TResult>(control, viewModel, hostId: options.HostId,
+        return OverlayDialog.ShowCustomAsync<TResult>(control, viewModel, hostId: options.HostId,
             options: MapOptions(in options));
     }
 

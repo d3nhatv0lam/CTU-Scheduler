@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -81,11 +81,11 @@ public class App : Application
     private void SetupGlobalExceptionHandling()
     {
         // Bắt lỗi của ReactiveUI
-        RxApp.DefaultExceptionHandler = Observer.Create<Exception>(ex => 
-        {
-            var rxLog = Log.ForContext("ShortTypeName", "UI");
-            rxLog.Error(ex, "ReactiveUI Pipeline/Command Exception");
-            // có thể hiển thị Dialog báo lỗi cho User tại đây
-        });
+        // RxApp.DefaultExceptionHandler = Observer.Create<Exception>(ex => 
+        // {
+        //     var rxLog = Log.ForContext("ShortTypeName", "UI");
+        //     rxLog.Error(ex, "ReactiveUI Pipeline/Command Exception");
+        //     // có thể hiển thị Dialog báo lỗi cho User tại đây
+        // });
     }
 }
