@@ -1,4 +1,5 @@
 using System;
+using System.Reactive;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Avalonia;
@@ -10,11 +11,8 @@ using CTUScheduler.Presentation.Extensions;
 using CTUScheduler.Presentation.Services.ApplicationLifetime;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
-using ReactiveUI;
-using ReactiveUI.Avalonia;
 using ReactiveUI.Avalonia.Splat;
 using Serilog;
-using Splat;
 using Splat.Microsoft.Extensions.DependencyInjection;
 using IApplicationLifetime = CTUScheduler.Presentation.Services.ApplicationLifetime.IApplicationLifetime;
 
@@ -25,6 +23,8 @@ namespace CTUScheduler.Desktop;
 [SupportedOSPlatform("macos")]
 class Program
 {
+    private static IServiceProvider? _serviceProvider;
+
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
@@ -32,7 +32,7 @@ class Program
     public static void Main(string[] args)
     {
         LoggingConfig.Init();
-        
+
         // Bắt lỗi ở các Thread phụ (Background threads)
         AppDomain.CurrentDomain.UnhandledException += (_, appDomainArgs) =>
         {
@@ -41,7 +41,7 @@ class Program
             logger.Fatal(ex, "APP CRASH: Unhandled Exception on Non-UI Thread {IsTerminating}",
                 appDomainArgs.IsTerminating);
         };
-        
+
         // Bắt lỗi ở Task (Task bị lỗi mà không có await hoặc try-catch)
         TaskScheduler.UnobservedTaskException += (_, taskSchedulerArgs) =>
         {
@@ -50,20 +50,9 @@ class Program
             taskSchedulerArgs.SetObserved();
         };
 
-        ServiceProvider? serviceProvider = null;
-
         try
         {
-            var services = new ServiceCollection();
-            ConfigureServices(services);
-            serviceProvider = services.BuildServiceProvider();
-            
-            App.ServiceProvider = serviceProvider;
-
-            var appLifetime = serviceProvider.GetRequiredService<IApplicationLifetime>() as AppLifetimeManager;
-            appLifetime?.NotifyStarted();
-
-            BuildAvaloniaApp(serviceProvider, appLifetime!)
+            BuildAvaloniaApp()
                 .StartWithClassicDesktopLifetime(args);
         }
         catch (Exception ex)
@@ -73,95 +62,121 @@ class Program
         }
         finally
         {
-            var hostLog = Log.ForContext("ShortTypeName", "Host");
-
-            hostLog.Information("Cleaning up DI and infrastructure resources...");
-
-            // Sử dụng Task.Run để giải phóng ThreadPool, ngăn chặn rủi ro Deadlock
-            Task.Run(async () =>
-            {
-                try
-                {
-                    if (serviceProvider is IAsyncDisposable asyncDisposable)
-                    {
-                        var disposeTask = asyncDisposable.DisposeAsync().AsTask();
-                        await disposeTask.WaitAsync(TimeSpan.FromSeconds(15));
-                        hostLog.Information("Shutdown complete successfully.");
-                    }
-                    else if (serviceProvider is IDisposable disposable)
-                    {
-                        disposable.Dispose();
-                        hostLog.Information("Shutdown complete successfully.");
-                    }
-                }
-                catch (TimeoutException)
-                {
-                    hostLog.Warning("Shutdown timed out (15s)! Một số service chạy quá lâu. Ép buộc tắt...");
-                }
-                catch (Exception ex)
-                {
-                    hostLog.Error(ex, "Lỗi khi dọn dẹp tài nguyên DI.");
-                }
-            }).GetAwaiter().GetResult();
-
-            hostLog.Information("================= LOG END =================");
+            DisposeServices();
             LoggingConfig.CloseAndFlush();
         }
     }
-
-    public static AppBuilder BuildAvaloniaApp()
-    {
-        // chế độ Design
-        return AppBuilder.Configure<App>()
-            .UsePlatformDetect()
-            .WithInterFont()
-            .LogToTrace()
-            .UseReactiveUI(rxui => {});
-    }
-
+    
     // Avalonia configuration
-    public static AppBuilder BuildAvaloniaApp(IServiceProvider serviceProvider, AppLifetimeManager appLifetime)
+    public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace()
-            .UseReactiveUI(rxui => {})
+            .UseReactiveUIWithMicrosoftDependencyResolver(
+                containerConfig: ConfigureServices,
+                withResolver: sp =>
+                {
+                    _serviceProvider = sp;
+                    App.ServiceProvider = sp!;
+
+                    var appLifetime =
+                        sp?.GetRequiredService<IApplicationLifetime>()
+                            as AppLifetimeManager;
+
+                    appLifetime?.NotifyStarted();
+                }, 
+                 withReactiveUIBuilder: rxui =>
+                 {
+                     rxui.WithExceptionHandler( Observer.Create<Exception>(ex => 
+                     {
+                         var rxLog = Log.ForContext("ShortTypeName", "UI");
+                         rxLog.Error(ex, "ReactiveUI Pipeline/Command Exception");
+                         // có thể hiển thị Dialog báo lỗi cho User tại đây
+                     }));
+                 })
             .AfterSetup(builder =>
             {
-                if (builder.Instance is App { ApplicationLifetime: IClassicDesktopStyleApplicationLifetime desktop })
-                {
-                    appLifetime.ShutdownRequested += () => desktop.Shutdown();
-
-                    desktop.Exit += (_, _) =>
+                if (builder.Instance is not App
                     {
-                        var uiLog = Log.ForContext("ShortTypeName", "UI");
-                        uiLog.Information("UI Phase: Starting disposal of UI services...");
+                        ApplicationLifetime: IClassicDesktopStyleApplicationLifetime desktop
+                    })
+                    return;
 
-                        var disposableUiServices = serviceProvider.GetServices<IUiDisposable>();
-                        int count = 0;
-                        foreach (var service in disposableUiServices)
-                        {
-                            service.Dispose();
-                            count++;
-                        }
+                var serviceProvider = _serviceProvider!;
+                var appLifetime =
+                    serviceProvider.GetRequiredService<IApplicationLifetime>()
+                        as AppLifetimeManager;
 
-                        uiLog.Information("UI Phase: Disposed {Count} UI services successfully.", count);
-                        appLifetime.NotifyStopped();
-                    };
-                }
+                appLifetime!.ShutdownRequested += () => desktop.Shutdown();
+
+                desktop.Exit += (_, _) =>
+                {
+                    var uiLog = Log.ForContext("ShortTypeName", "UI");
+                    uiLog.Information("UI Phase: Starting disposal of UI services...");
+
+                    var disposableUiServices = serviceProvider.GetServices<IUiDisposable>();
+                    int count = 0;
+                    foreach (var service in disposableUiServices)
+                    {
+                        service.Dispose();
+                        count++;
+                    }
+
+                    uiLog.Information("UI Phase: Disposed {Count} UI services successfully.", count);
+                    appLifetime.NotifyStopped();
+                };
             });
+
 
     private static void ConfigureServices(IServiceCollection services)
     {
         services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: false));
 
         services.UseMicrosoftDependencyResolver();
-        var resolver = Locator.CurrentMutable;
-        resolver.InitializeSplat();
 
         services.AddSingleton<IApplicationLifetime, AppLifetimeManager>();
         services.AddInfrastructureServices();
         services.AddApplicationServices();
         services.AddPresentationServices();
+    }
+
+    private static void DisposeServices()
+    {
+        var hostLog = Log.ForContext("ShortTypeName", "Host");
+        if (_serviceProvider is null)
+        {
+            hostLog.Warning("Service provider is null. Skipping disposal.");
+            return;
+        }
+        
+        hostLog.Information("Cleaning up DI and infrastructure resources...");
+
+        // Sử dụng Task.Run để giải phóng ThreadPool, ngăn chặn rủi ro Deadlock
+        Task.Run(async () =>
+        {
+            try
+            {
+                if (_serviceProvider is IAsyncDisposable asyncDisposable)
+                {
+                    var disposeTask = asyncDisposable.DisposeAsync().AsTask();
+                    await disposeTask.WaitAsync(TimeSpan.FromSeconds(15));
+                    hostLog.Information("Shutdown complete successfully.");
+                }
+                else if (_serviceProvider is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                    hostLog.Information("Shutdown complete successfully.");
+                }
+            }
+            catch (TimeoutException)
+            {
+                hostLog.Warning("Shutdown timed out (15s)! Một số service chạy quá lâu. Ép buộc tắt...");
+            }
+            catch (Exception ex)
+            {
+                hostLog.Error(ex, "Lỗi khi dọn dẹp tài nguyên DI.");
+            }
+        }).GetAwaiter().GetResult();
     }
 }

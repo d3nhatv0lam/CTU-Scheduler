@@ -5,7 +5,6 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.VisualTree;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 

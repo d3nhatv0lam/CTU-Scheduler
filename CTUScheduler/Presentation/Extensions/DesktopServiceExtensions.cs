@@ -1,3 +1,6 @@
+using System.Reflection;
+using CTUScheduler.Presentation.Features.Authentication.ViewModels;
+using CTUScheduler.Presentation.Features.Authentication.Views;
 using CTUScheduler.Presentation.Features.Scheduling.Models.Strategies;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
 using CTUScheduler.Presentation.Services.Factories;
@@ -24,7 +27,7 @@ public static class DesktopServiceExtensions
     /// </summary>
     public static IServiceCollection AddPresentationServices(this IServiceCollection services)
     {
-        services.AddSingleton<IViewLocator, ConventionalViewLocator>();
+        // services.AddSingleton<IViewLocator, MsDiViewLocator>();
         
         // --- ViewModel Registration ---
         services.Scan(scan => scan
@@ -47,6 +50,14 @@ public static class DesktopServiceExtensions
             .WithSingletonLifetime()
         );
 
+        // đăng ký ReactiveUI view
+        services.Scan(scan => scan
+            .FromAssemblyOf<LoginView>()
+            .AddClasses(c => c.AssignableTo(typeof(IViewFor<>)))
+            .AsImplementedInterfaces()
+            .WithTransientLifetime() // Có thể đổi thành singleton
+        );
+        
         services.AddSingleton<IViewModelFactory, ViewModelFactory>();
         services.AddSingleton<INavigationRegionManager, NavigationRegionManager>();
         
