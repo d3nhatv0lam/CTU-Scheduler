@@ -25,7 +25,7 @@
             <Button
                 Grid.Row="0"
                 x:Name="BtnClose"
-                Content="{materialIcons:MaterialIconExt Kind=WindowClose,Size=20}"
+                Content="{materialIcons:MaterialIconExt Kind=WindowClose, IconSize=20}"
                 CornerRadius="5"
                 HorizontalAlignment="Right"
                 Command="{Binding CloseDialogCommand}"
