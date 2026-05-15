@@ -21,10 +21,14 @@ namespace CTUScheduler;
 public class App : Application
 {
     public static IServiceProvider ServiceProvider { get; set; } = null!;
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
         SetupGlobalExceptionHandling();
+#if DEBUG
+        this.AttachDeveloperTools();
+#endif
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -35,7 +39,7 @@ public class App : Application
             uiLog.Error(e.Exception, "Avalonia UI Thread Unhandled Exception");
             // e.Handled = true;   // Chỉ bật nếu bạn chắc chắn muốn app tiếp tục (rủi ro cao)
         };
-        
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var splashScreen = InitSplashScreenWindow(desktop);
@@ -47,11 +51,11 @@ public class App : Application
             {
                 DataContext = ServiceProvider.GetService<MainViewModel>()
             };
-            
         }
+
         base.OnFrameworkInitializationCompleted();
     }
-    
+
     private Window InitSplashScreenWindow(IClassicDesktopStyleApplicationLifetime desktop)
     {
         var splashScreenViewModel = ServiceProvider.GetRequiredService<SplashScreenViewModel>();
@@ -65,19 +69,19 @@ public class App : Application
                 requestClose.RequestClose -= handler;
                 MainWindow mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
                 mainWindow.DataContext = ServiceProvider.GetService<MainViewModel>();
-                
+
                 desktop.MainWindow = mainWindow;
                 desktop.MainWindow.Show();
-                
+
                 splashScreen.Close();
             };
             requestClose.RequestClose += handler;
         }
+
         return splashScreen;
     }
 
-  
-    
+
     private void SetupGlobalExceptionHandling()
     {
         // Bắt lỗi của ReactiveUI

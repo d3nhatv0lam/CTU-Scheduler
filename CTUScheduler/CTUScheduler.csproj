@@ -16,8 +16,11 @@
     <PackageReference Include="Avalonia.Controls.ItemsRepeater" Version="12.0.0" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.3" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.3" />
-    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.15" />
+    <!--Condition below is needed to remove AvaloniaUI.DiagnosticsSupport package from build output in Release configuration.-->
+
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport"
+                      Version="2.2.1"
+                      Condition="'$(Configuration)' == 'Debug'" />
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="Humanizer.Core.vi" Version="3.0.10" />
     <PackageReference Include="Irihi.Ursa" Version="2.0.0" />
