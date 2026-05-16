@@ -17,10 +17,10 @@ using CTUScheduler.Infrastructure.Repositories;
 using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.SplashScreen.Components.Installation.ViewModels;
+using CTUScheduler.Presentation.Services.ApplicationLifetime;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
-using IApplicationLifetime = CTUScheduler.Presentation.Services.ApplicationLifetime.IApplicationLifetime;
 
 namespace CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 
@@ -69,7 +69,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
         IWebDriverService webDriverServiceRefactor,
         IWebDriverInstallerService webDriverInstallerService,
         IUserSettingService userSettingService,
-        IApplicationLifetime appLifetime)
+        IAppLifecycleService appLifetime)
     {
         _connectivityService = connectivityService;
         _webDriverServiceRefactor = webDriverServiceRefactor;

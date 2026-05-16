@@ -9,12 +9,12 @@ using CTUScheduler.Desktop.Configs;
 using CTUScheduler.Infrastructure.Extensions;
 using CTUScheduler.Presentation.Extensions;
 using CTUScheduler.Presentation.Services.ApplicationLifetime;
+using CTUScheduler.Presentation.Services.ApplicationStartup;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI.Avalonia.Splat;
 using Serilog;
 using Splat.Microsoft.Extensions.DependencyInjection;
-using IApplicationLifetime = CTUScheduler.Presentation.Services.ApplicationLifetime.IApplicationLifetime;
 
 namespace CTUScheduler.Desktop;
 
@@ -78,11 +78,10 @@ class Program
                 withResolver: sp =>
                 {
                     _serviceProvider = sp;
-                    App.ServiceProvider = sp!;
 
                     var appLifetime =
-                        sp?.GetRequiredService<IApplicationLifetime>()
-                            as AppLifetimeManager;
+                        sp?.GetRequiredService<IAppLifecycleService>()
+                            as AppLifecycleManager;
 
                     appLifetime?.NotifyStarted();
                 }, 
@@ -97,35 +96,42 @@ class Program
                  })
             .AfterSetup(builder =>
             {
-                if (builder.Instance is not App
-                    {
-                        ApplicationLifetime: IClassicDesktopStyleApplicationLifetime desktop
-                    })
+                if (builder.Instance is not App app)
                     return;
 
                 var serviceProvider = _serviceProvider!;
-                var appLifetime =
-                    serviceProvider.GetRequiredService<IApplicationLifetime>()
-                        as AppLifetimeManager;
 
-                appLifetime!.ShutdownRequested += () => desktop.Shutdown();
+                app.Startup = serviceProvider.GetRequiredService<IAppStartup>();
 
-                desktop.Exit += (_, _) =>
+                if (app.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 {
-                    var uiLog = Log.ForContext("ShortTypeName", "UI");
-                    uiLog.Information("UI Phase: Starting disposal of UI services...");
+                    var lifecycleManager =
+                        serviceProvider.GetRequiredService<IAppLifecycleService>()
+                            as AppLifecycleManager;
 
-                    var disposableUiServices = serviceProvider.GetServices<IUiDisposable>();
-                    int count = 0;
-                    foreach (var service in disposableUiServices)
+                    lifecycleManager!.ApplicationStopping.Register(() =>
                     {
-                        service.Dispose();
-                        count++;
-                    }
+                        Avalonia.Threading.Dispatcher.UIThread.Post(() => desktop.Shutdown());
+                    });
+                    
 
-                    uiLog.Information("UI Phase: Disposed {Count} UI services successfully.", count);
-                    appLifetime.NotifyStopped();
-                };
+                    desktop.Exit += (_, _) =>
+                    {
+                        var uiLog = Log.ForContext("ShortTypeName", "UI");
+                        uiLog.Information("UI Phase: Starting disposal of UI services...");
+
+                        var disposableUiServices = serviceProvider.GetServices<IUiDisposable>();
+                        int count = 0;
+                        foreach (var service in disposableUiServices)
+                        {
+                            service.Dispose();
+                            count++;
+                        }
+
+                        uiLog.Information("UI Phase: Disposed {Count} UI services successfully.", count);
+                        lifecycleManager.NotifyStopped();
+                    };
+                }
             });
 
 
@@ -135,7 +141,6 @@ class Program
 
         services.UseMicrosoftDependencyResolver();
 
-        services.AddSingleton<IApplicationLifetime, AppLifetimeManager>();
         services.AddInfrastructureServices();
         services.AddApplicationServices();
         services.AddPresentationServices();
