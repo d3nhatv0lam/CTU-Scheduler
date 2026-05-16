@@ -5,6 +5,7 @@ namespace CTUScheduler.Presentation.Services.ApplicationLifetime;
 
 public sealed class AppLifecycleManager : IAppLifecycleService, IAppLifecycleController, IDisposable
 {
+    public event Action? ShutdownRequested;
     private readonly CancellationTokenSource _startedCts = new();
     private readonly CancellationTokenSource _stoppingCts = new();
     private readonly CancellationTokenSource _stoppedCts = new();
@@ -31,7 +32,7 @@ public sealed class AppLifecycleManager : IAppLifecycleService, IAppLifecycleCon
             _stoppedCts.Cancel();
     }
 
-    public void Shutdown() => NotifyStopping();
+    public void Shutdown() => ShutdownRequested?.Invoke();
 
 
     public void Dispose()

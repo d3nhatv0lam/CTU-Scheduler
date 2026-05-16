@@ -1,7 +1,9 @@
 using System;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
 using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
+using CTUScheduler.Presentation.Services.ApplicationLifetime;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
 using CTUScheduler.Presentation.Shells.AppShell.Views;
@@ -13,16 +15,25 @@ namespace CTUScheduler.Presentation.Services.ApplicationStartup;
 public sealed class AppStartup : IAppStartup
 {
     private readonly IServiceProvider _sp;
+    private readonly IUiShutdownCoordinator _shutdown;
+    private readonly IAppLifecycleController _controller;
 
-    public AppStartup(IServiceProvider sp)
+    public AppStartup(
+        IServiceProvider sp,
+        IUiShutdownCoordinator shutdown,
+        IAppLifecycleController controller)
     {
         _sp = sp;
+        _shutdown = shutdown;
+        _controller = controller;
     }
 
     public void Initialize(IApplicationLifetime lifetime)
     {
         if (lifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            LinkDesktopLifetime(desktop);
+
             var splashScreenViewModel = _sp.GetRequiredService<SplashScreenViewModel>();
             var splashScreen = _sp.GetRequiredService<SplashScreenWindow>();
             splashScreen.DataContext = splashScreenViewModel;
@@ -57,6 +68,18 @@ public sealed class AppStartup : IAppStartup
 
     private void LinkDesktopLifetime(IClassicDesktopStyleApplicationLifetime desktop)
     {
-        
+        // Command flow: VM -> Controller -> AppStartup -> Avalonia
+        _controller.ShutdownRequested += () =>
+        {
+            Dispatcher.UIThread.Post(() => desktop.Shutdown());
+        };
+
+        // Exit flow: Avalonia -> AppStartup -> Controller (State Notifications)
+        desktop.Exit += (_, _) =>
+        {
+            _controller.NotifyStopping();
+            _shutdown.DisposeUiServices();
+            _controller.NotifyStopped();
+        };
     }
 }

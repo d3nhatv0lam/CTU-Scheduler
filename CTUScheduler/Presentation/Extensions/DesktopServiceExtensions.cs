@@ -13,6 +13,7 @@ using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.ViewContext;
 using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
 using CTUScheduler.Presentation.Services.Viewport;
+using CTUScheduler.Presentation.Services.ApplicationLifetime;
 using CTUScheduler.Presentation.Services.ApplicationStartup;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
@@ -30,7 +31,7 @@ public static class DesktopServiceExtensions
     public static IServiceCollection AddPresentationServices(this IServiceCollection services)
     {
         // services.AddSingleton<IViewLocator, MsDiViewLocator>();
-
+        
         // --- ViewModel Registration ---
         services.Scan(scan => scan
             .FromAssemblyOf<MainViewModel>()
@@ -76,6 +77,7 @@ public static class DesktopServiceExtensions
         services.AddSingleton<AppLifecycleManager>()
             .AddSingleton<IAppLifecycleController>(sp => sp.GetRequiredService<AppLifecycleManager>())
             .AddSingleton<IAppLifecycleService>(sp => sp.GetRequiredService<AppLifecycleManager>());
+        services.AddSingleton<IUiShutdownCoordinator, UiShutdownCoordinator>();
         services.AddSingleton<IAppStartup, AppStartup>();
         services.AddTransient<SplashScreenWindow>();
         services.AddTransient<MainWindow>();

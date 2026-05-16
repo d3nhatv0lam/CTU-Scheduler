@@ -30,8 +30,9 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     private readonly IConnectivityService _connectivityService;
     private readonly IWebDriverService _webDriverServiceRefactor;
     private readonly IUserSettingService _userSettingService;
+    private readonly IAppLifecycleService _appLifetime;
     private readonly CancellationTokenSource _localCts;
-    
+
     private bool _isDisposed;
 
     // --- 1. CONSTANTS CHO VIỆC RESIZE ---
@@ -50,7 +51,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
 
     [Reactive(SetModifier = AccessModifier.Private)]
     private InstallationViewModel _installationViewModel;
-    
+
     public string Version => AppConstants.AppVersion;
 
     public ReactiveCommand<Unit, Unit> CloseAppCommand { get; }
@@ -74,9 +75,10 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
         _connectivityService = connectivityService;
         _webDriverServiceRefactor = webDriverServiceRefactor;
         _userSettingService = userSettingService;
-        
+        _appLifetime = appLifetime;
+
         _localCts = CancellationTokenSource.CreateLinkedTokenSource(appLifetime.ApplicationStopping);
-        
+
         _installationViewModel = new InstallationViewModel(webDriverInstallerService.LogStream)
             .DisposeWith(_disposables);
 
@@ -84,7 +86,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
             .ToProperty(this, nameof(IsDownloading), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(_disposables);
 
-        
+
         CloseAppCommand = ReactiveCommand.Create(CloseApplication).DisposeWith(_disposables);
         ToggleConsoleCommand = ReactiveCommand.Create(ToggleConsole).DisposeWith(_disposables);
 
@@ -94,7 +96,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
             .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Subscribe(message => Message = message)
             .DisposeWith(_disposables);
-        
+
         // clean up when download sussess
         this.WhenAnyValue(x => x.IsDownloading,
                 x => x.IsExpanded,
@@ -104,7 +106,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
             .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Subscribe(_ => ToggleConsole())
             .DisposeWith(_disposables);
-        
+
         InitializeStartup();
     }
 
@@ -117,34 +119,20 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
         _connectivityService.IsInternetAvailable
             .Where(status => status)
             .Take(1)
-            .ObserveOn(RxSchedulers.MainThreadScheduler)
-            .Do(_ => Message = "Mạng đã được kết nối!")
-            // .Delay(TimeSpan.FromHours(1.5d), RxSchedulers.MainThreadScheduler)
-            .Delay(TimeSpan.FromSeconds(1.5d), RxSchedulers.MainThreadScheduler)
-            .Do(_ => Message = "Đang kiểm tra dịch vụ web..")
+            .SelectMany(_ =>
+                ShowMessage("Mạng đã được kết nối!",
+                    TimeSpan.FromSeconds(1.5)))
+            .SelectMany(_ =>
+                ShowMessage("Đang kiểm tra dịch vụ web..",
+                    TimeSpan.FromSeconds(1.5)))
             .ObserveOn(RxSchedulers.TaskpoolScheduler)
-            .SelectMany(async _ =>
-            {
-                if (_localCts.IsCancellationRequested) return Unit.Default;
-                
-                try 
-                {
-                    await _userSettingService.InitializeAsync();
-                    await _webDriverServiceRefactor.InitBrowserAsync();
-                }
-                catch (OperationCanceledException)
-                {
-                    // ignored
-                }
-                
-                return Unit.Default;
-            })
-            .ObserveOn(RxSchedulers.MainThreadScheduler)
-            .Do(_ => Message = "dịch vụ web đã hoạt động!")
-            .Delay(TimeSpan.FromSeconds(1.5d), RxSchedulers.MainThreadScheduler)
-            .ObserveOn(RxSchedulers.MainThreadScheduler)
-            .Do(_ => Message = "Đang khởi động ứng dụng...")
-            .Delay(TimeSpan.FromSeconds(2d), RxSchedulers.MainThreadScheduler)
+            .SelectMany(_ => InitializeServices())
+            .SelectMany(_ =>
+                ShowMessage("dịch vụ web đã hoạt động!",
+                    TimeSpan.FromSeconds(1.5)))
+            .SelectMany(_ =>
+                ShowMessage("Đang khởi động ứng dụng...",
+                    TimeSpan.FromSeconds(2)))
             .Subscribe(_ => Close(),
                 ex =>
                 {
@@ -170,29 +158,46 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
         }
     }
 
+    private IObservable<Unit> ShowMessage(
+        string message,
+        TimeSpan? delay = null)
+    {
+        return Observable.Return(Unit.Default)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
+            .Do(_ => Message = message)
+            .Delay(delay ?? TimeSpan.Zero, RxSchedulers.MainThreadScheduler);
+    }
+
+    private IObservable<Unit> InitializeServices()
+    {
+        return Observable.FromAsync(async ct =>
+        {
+            // Giả sử các hàm của bạn có nhận CancellationToken
+            await _userSettingService.InitializeAsync(ct);
+            await _webDriverServiceRefactor.InitBrowserAsync(ct);
+        });
+    }
+
     private void CloseApplication()
     {
-        if (Application.Current!.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            desktop.Shutdown();
-        }
+        _appLifetime.Shutdown();
     }
 
     public void Dispose()
     {
         if (_isDisposed) return;
-        
+
         _isDisposed = true;
-        
-        try 
+
+        try
         {
             if (!_localCts.IsCancellationRequested)
             {
                 _localCts.Cancel();
             }
         }
-        catch (ObjectDisposedException) 
-        { 
+        catch (ObjectDisposedException)
+        {
             // Bỏ qua nếu nó đã lỡ bị dispose ở đâu đó khác
         }
         finally

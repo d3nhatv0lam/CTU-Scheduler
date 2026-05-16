@@ -79,11 +79,8 @@ class Program
                 {
                     _serviceProvider = sp;
 
-                    var appLifetime =
-                        sp?.GetRequiredService<IAppLifecycleService>()
-                            as AppLifecycleManager;
-
-                    appLifetime?.NotifyStarted();
+                    var controller = sp?.GetRequiredService<IAppLifecycleController>();
+                    controller?.NotifyStarted();
                 }, 
                  withReactiveUIBuilder: rxui =>
                  {
@@ -102,36 +99,6 @@ class Program
                 var serviceProvider = _serviceProvider!;
 
                 app.Startup = serviceProvider.GetRequiredService<IAppStartup>();
-
-                if (app.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    var lifecycleManager =
-                        serviceProvider.GetRequiredService<IAppLifecycleService>()
-                            as AppLifecycleManager;
-
-                    lifecycleManager!.ApplicationStopping.Register(() =>
-                    {
-                        Avalonia.Threading.Dispatcher.UIThread.Post(() => desktop.Shutdown());
-                    });
-                    
-
-                    desktop.Exit += (_, _) =>
-                    {
-                        var uiLog = Log.ForContext("ShortTypeName", "UI");
-                        uiLog.Information("UI Phase: Starting disposal of UI services...");
-
-                        var disposableUiServices = serviceProvider.GetServices<IUiDisposable>();
-                        int count = 0;
-                        foreach (var service in disposableUiServices)
-                        {
-                            service.Dispose();
-                            count++;
-                        }
-
-                        uiLog.Information("UI Phase: Disposed {Count} UI services successfully.", count);
-                        lifecycleManager.NotifyStopped();
-                    };
-                }
             });
 
 
