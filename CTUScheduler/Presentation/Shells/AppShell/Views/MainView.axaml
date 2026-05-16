@@ -11,6 +11,7 @@
     xmlns:u="https://irihi.tech/ursa"
     xmlns:ids="clr-namespace:CTUScheduler.Presentation.Shared.Models.Identifiers"
     xmlns:vm="clr-namespace:CTUScheduler.Presentation.Shells.AppShell.ViewModels"
+    xmlns:behaviors="clr-namespace:CTUScheduler.Presentation.Services.UserInteractionService.Behaviors"
     x:Class="CTUScheduler.Presentation.Shells.AppShell.Views.MainView">
 
     <Panel>
@@ -18,7 +19,11 @@
                              VerticalContentAlignment="Stretch"
                              HorizontalContentAlignment="Stretch" />
 
-        <u:OverlayDialogHost HostId="{x:Static ids:DialogIds.Root}" ></u:OverlayDialogHost>
+        <u:OverlayDialogHost HostId="{x:Static ids:DialogIds.Root}">
+            <Interaction.Behaviors>
+                <behaviors:RefreshOnResizeBehavior />
+            </Interaction.Behaviors>
+        </u:OverlayDialogHost>
     </Panel>
 
 

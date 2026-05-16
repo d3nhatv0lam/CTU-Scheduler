@@ -1,5 +1,7 @@
-﻿using System;
+using System;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -84,52 +86,67 @@ public class UrsaDialogService : IDialogService
         var dataTemplate = Application.Current?.DataTemplates.FirstOrDefault(t => t.Match(viewModel));
 
         var control = dataTemplate is not null
-            ? dataTemplate.Build(viewModel) as Control
+            ? dataTemplate.Build(viewModel)
             : _viewLocator.ResolveView(viewModel) as Control;
 
         if (control is null) return null;
 
-        if (options.SizeMode == DialogSizeMode.Absolute)
+        return options.SizeMode switch
         {
-            return new Border
+            DialogSizeMode.Absolute => new Border
             {
                 Child = control,
                 Width = options.Width ?? double.NaN,
                 Height = options.Height ?? double.NaN
-            };
-        }
+            },
 
-        if (options.SizeMode == DialogSizeMode.Responsive)
+            DialogSizeMode.Responsive => CreateResponsiveBorder(control, options),
+
+            _ => control
+        };
+    }
+
+    private static Border CreateResponsiveBorder(
+        Control control,
+        in DialogOptions options)
+    {
+        var horizontalMargin = options.ResponsiveHorizontalMargin;
+        var verticalMargin = options.ResponsiveVerticalMargin;
+        var percentage = options.ResponsivePercentage;
+
+        return new Border
         {
-            var horizontalMargin = options.ResponsiveHorizontalMargin;
-            var verticalMargin = options.ResponsiveVerticalMargin;
-            var percentage = options.ResponsivePercentage;
+            Child = control,
 
-            return new Border
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+
+            [!Layoutable.WidthProperty] = new Binding("ClientSize")
             {
-                Child = control,
-                [!Layoutable.HeightProperty] = new Binding("Bounds.Height")
+                RelativeSource = new RelativeSource(
+                    RelativeSourceMode.FindAncestor)
                 {
-                    RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor)
-                    {
-                        AncestorType = typeof(OverlayDialogHost)
-                    },
-                    Converter = new FuncValueConverter<double, double>(h =>
-                        Math.Max(0, (h * percentage) - verticalMargin))
+                    AncestorType = typeof(TopLevel)
                 },
-                [!Layoutable.WidthProperty] = new Binding("Bounds.Width")
-                {
-                    RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor)
-                    {
-                        AncestorType = typeof(OverlayDialogHost)
-                    },
-                    Converter = new FuncValueConverter<double, double>(w =>
-                        Math.Max(0, (w * percentage) - horizontalMargin))
-                }
-            };
-        }
+                Converter = new FuncValueConverter<Size, double>(s =>
+                    Math.Max(
+                        0,
+                        s.Width * percentage - horizontalMargin))
+            },
 
-        return control;
+            [!Layoutable.HeightProperty] = new Binding("ClientSize")
+            {
+                RelativeSource = new RelativeSource(
+                    RelativeSourceMode.FindAncestor)
+                {
+                    AncestorType = typeof(TopLevel)
+                },
+                Converter = new FuncValueConverter<Size, double>(s =>
+                    Math.Max(
+                        0,
+                        s.Height * percentage - verticalMargin))
+            }
+        };
     }
 
     private OverlayDialogOptions MapOptions(in DialogOptions options)
