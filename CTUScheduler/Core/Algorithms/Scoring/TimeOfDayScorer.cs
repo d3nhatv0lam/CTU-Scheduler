@@ -1,10 +1,16 @@
+using System.Collections.Generic;
+using System.Linq;
+using CTUScheduler.Core.Interfaces;
+using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Extensions;
 using CTUScheduler.Core.Models.Timetable;
 
 namespace CTUScheduler.Core.Algorithms.Scoring;
 
 /// <summary>
-/// Chấm điểm dựa trên mức độ phù hợp với buổi học yêu thích
+/// Chấm điểm dựa trên mức độ phù hợp với buổi học yêu thích.
+/// Thang điểm: 0.0 -> 1.0
+/// Công thức: Số tiết đúng buổi / Tổng số tiết
 /// </summary>
 public class TimeOfDayScorer : IScheduleScorer
 {
@@ -28,8 +34,6 @@ public class TimeOfDayScorer : IScheduleScorer
         foreach (var period in allPeriods)
         {
             totalPeriods += period.PeriodCount;
-            
-            // Sáng 1-5, Chiều 6-9, Tối 10-13
             var session = period.TimeOfDay;
 
             bool isMatch;
@@ -39,7 +43,7 @@ public class TimeOfDayScorer : IScheduleScorer
             }
             else
             {
-                // Chiều và Tối được tính điểm giống
+                // Chiều và Tối được tính điểm giống nhau
                 isMatch = session == TimeOfDay.Afternoon || session == TimeOfDay.Evening;
             }
             
@@ -51,6 +55,7 @@ public class TimeOfDayScorer : IScheduleScorer
 
         if (totalPeriods == 0) return 0;
 
+        // Công thức theo yêu cầu: Số tiết đúng buổi / Tổng số tiết
         return (double)matchingPeriods / totalPeriods;
     }
 }

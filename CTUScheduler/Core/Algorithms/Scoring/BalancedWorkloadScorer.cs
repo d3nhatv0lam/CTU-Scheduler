@@ -7,8 +7,9 @@ using CTUScheduler.Core.Models.Shared;
 namespace CTUScheduler.Core.Algorithms.Scoring;
 
 /// <summary>
-/// Chấm điểm dựa trên sự cân bằng tải trọng học tập giữa các ngày trong tuần
-/// Càng phân bổ đều (độ lệch chuẩn thấp) thì điểm càng cao
+/// Chấm điểm dựa trên sự cân bằng tải trọng học tập giữa các ngày trong tuần.
+/// Thang điểm: 0.0 -> 1.0
+/// Logic: Dựa trên độ lệch chuẩn của số tiết/ngày
 /// </summary>
 public class BalancedWorkloadScorer : IScheduleScorer
 {
@@ -49,9 +50,7 @@ public class BalancedWorkloadScorer : IScheduleScorer
         double sumOfSquares = busyDayLoads.Sum(v => Math.Pow(v - average, 2));
         double standardDeviation = Math.Sqrt(sumOfSquares / busyDayLoads.Count);
 
-        // Chuẩn hóa điểm số:
-        // Giả sử độ lệch chuẩn = 0 (học đều) là 1 điểm
-        // Giả sử độ lệch chuẩn >= 4.0 (lệch rất nặng, ví dụ ngày 10 tiết, ngày 2 tiết) là 0 điểm
+        // Chuẩn hóa điểm số: 0 lệch = 1.0 điểm, lệch >= 4 tiết = 0.0 điểm
         const double maxDeviationThreshold = 4.0;
         double score = 1.0 - (standardDeviation / maxDeviationThreshold);
 

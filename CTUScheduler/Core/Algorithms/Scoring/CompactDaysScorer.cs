@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Shared;
@@ -5,7 +7,9 @@ using CTUScheduler.Core.Models.Shared;
 namespace CTUScheduler.Core.Algorithms.Scoring;
 
 /// <summary>
-/// Chấm điểm dựa trên mật độ ngày học. Càng ít ngày học thì điểm càng cao
+/// Chấm điểm dựa trên mật độ ngày học. Càng ít ngày học thì điểm càng cao.
+/// Thang điểm: 0.0 -> 1.0
+/// Công thức: 1.0 - (Số ngày có lịch / 7)
 /// </summary>
 public class CompactDaysScorer : IScheduleScorer
 {
@@ -29,9 +33,8 @@ public class CompactDaysScorer : IScheduleScorer
 
         if (busyDays == 0) return 0;
 
-        // Công thức: 1.0 - (Số ngày học / Tổng số ngày học tối đa trong tuần)
-        // Lưu ý: Càng ít ngày học thì giá trị càng lớn 
-        double score = 1.0 - ((double)busyDays / ScoringConstants.MaxStudyDaysPerWeek);
+        // Công thức: 1.0 - (Số ngày học / 7)
+        double score = 1.0 - ((double)busyDays / 7.0);
         
         return Math.Clamp(score, ScoringConstants.MinScore, ScoringConstants.MaxScore);
     }
