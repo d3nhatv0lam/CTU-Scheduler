@@ -55,6 +55,6 @@ public sealed class PlannedCourseStore : IPlannedCourseStore, ICleanup, IDisposa
         }
 
         _isDisposed = true;
-        _logger.LogInformation(nameof(PlannedCourseStore) + " disposed!");
+        _logger.LogDebug(nameof(PlannedCourseStore) + " disposed!");
     }
 }
