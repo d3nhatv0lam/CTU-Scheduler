@@ -1,26 +1,14 @@
 using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Microsoft.Extensions.DependencyInjection;
-using ReactiveUI;
 using Serilog;
-using System;
-using System.Reactive;
-using System.Threading.Tasks;
 using Avalonia.Threading;
-using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
-using CTUScheduler.Presentation.Features.SplashScreen.Views;
-using CTUScheduler.Presentation.Shared.Interfaces;
-using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
-using CTUScheduler.Presentation.Shells.AppShell.Views;
-using MainWindow = CTUScheduler.Presentation.Shells.AppShell.Views.MainWindow;
+using CTUScheduler.Presentation.Services.ApplicationStartup;
 
 namespace CTUScheduler;
 
 public class App : Application
 {
-    public static IServiceProvider ServiceProvider { get; set; } = null!;
+    public IAppStartup? Startup { get; set; }
 
     public override void Initialize()
     {
@@ -40,45 +28,12 @@ public class App : Application
             // e.Handled = true;   // Chỉ bật nếu bạn chắc chắn muốn app tiếp tục (rủi ro cao)
         };
 
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        if (ApplicationLifetime is not null)
         {
-            var splashScreen = InitSplashScreenWindow(desktop);
-            desktop.MainWindow = splashScreen;
-        }
-        else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
-        {
-            singleViewPlatform.MainView = new SingleView()
-            {
-                DataContext = ServiceProvider.GetService<MainViewModel>()
-            };
+            Startup?.Initialize(ApplicationLifetime);
         }
 
         base.OnFrameworkInitializationCompleted();
-    }
-
-    private Window InitSplashScreenWindow(IClassicDesktopStyleApplicationLifetime desktop)
-    {
-        var splashScreenViewModel = ServiceProvider.GetRequiredService<SplashScreenViewModel>();
-        var splashScreen = ServiceProvider.GetRequiredService<SplashScreenWindow>();
-        splashScreen.DataContext = splashScreenViewModel;
-        if (splashScreenViewModel is IRequestClose requestClose)
-        {
-            Action<object?>? handler = null;
-            handler = (_) =>
-            {
-                requestClose.RequestClose -= handler;
-                MainWindow mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-                mainWindow.DataContext = ServiceProvider.GetService<MainViewModel>();
-
-                desktop.MainWindow = mainWindow;
-                desktop.MainWindow.Show();
-
-                splashScreen.Close();
-            };
-            requestClose.RequestClose += handler;
-        }
-
-        return splashScreen;
     }
 
 

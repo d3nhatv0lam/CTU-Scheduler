@@ -32,13 +32,13 @@ public class PlaywrightService : IWebDriverService, IAsyncDisposable
         _installer = installer;
     }
 
-    public async Task InitBrowserAsync()
+    public async Task InitBrowserAsync(CancellationToken cancellationToken = default)
     {
-        await _lock.WaitAsync();
+        await _lock.WaitAsync(cancellationToken);
         try
         {
             if (_isInitialized) return;
-            await InitInternalAsync();
+            await InitInternalAsync(cancellationToken);
             _isInitialized = true;
         }
         finally
@@ -80,13 +80,14 @@ public class PlaywrightService : IWebDriverService, IAsyncDisposable
         return await CreateTabInternalAsync();
     }
 
-    private async Task InitInternalAsync()
+    private async Task InitInternalAsync(CancellationToken cancellationToken = default)
     {
-        await _installer.EnsureBrowserInstalledAsync();
-        _playwright = await Playwright.CreateAsync();
-        _browser = await _playwright.Chromium.LaunchAsync(new() { Headless = false });
-        _context = await _browser.NewContextAsync();
-        MainTab = await CreateTabInternalAsync();
+        await _installer.EnsureBrowserInstalledAsync(cancellationToken).ConfigureAwait(false);
+        _playwright = await Playwright.CreateAsync().ConfigureAwait(false);
+        _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = false })
+            .ConfigureAwait(false);
+        _context = await _browser.NewContextAsync().ConfigureAwait(false);
+        MainTab = await CreateTabInternalAsync().ConfigureAwait(false);
         _logger.LogInformation("PlaywrightService Initialized!");
     }
 

@@ -10,16 +10,16 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Presentation.Services.AppToplevel;
 
-public class ToplevelDisposable: IToplevelService, IUiDisposable
+public class ToplevelService: IToplevelService, IUiDisposable
 {
     private readonly CompositeDisposable _disposables = new();
-    private readonly ILogger<ToplevelDisposable> _logger;
+    private readonly ILogger<ToplevelService> _logger;
     private readonly BehaviorSubject<TopLevel?> _toplevelSubject = new(null);
     private bool _isDisposed;
     
     public IObservable<TopLevel?> ToplevelChanges => _toplevelSubject;
 
-    public ToplevelDisposable(ILogger<ToplevelDisposable> logger)
+    public ToplevelService(ILogger<ToplevelService> logger)
     {
         _logger = logger;
     }
@@ -76,7 +76,7 @@ public class ToplevelDisposable: IToplevelService, IUiDisposable
         _toplevelSubject.Dispose();
         _disposables.Dispose();
         
-        _logger.LogInformation("ToplevelService disposed");
+        _logger.LogDebug("ToplevelService disposed");
         _isDisposed = true;
     }
 }
