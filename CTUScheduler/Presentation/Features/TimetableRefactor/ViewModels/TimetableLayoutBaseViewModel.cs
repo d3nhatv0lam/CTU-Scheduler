@@ -23,7 +23,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
     private int _subjectCount = 0;
     private int _totalCredits = 0;
     private DateTimeOffset _lastUpdated = DateTimeOffset.Now;
-    private TimetableViewModel _visualizerVM;
+    private TimetableViewModel? _visualizerVM = null;
     private bool _isSelected;
     private bool _isEnabled = true;
 
@@ -51,7 +51,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
         protected set => this.RaiseAndSetIfChanged(ref _lastUpdated, value);
     }
 
-    public TimetableViewModel VisualizerVM
+    public TimetableViewModel? VisualizerVM
     {
         get => _visualizerVM;
         protected set => this.RaiseAndSetIfChanged(ref _visualizerVM, value);
