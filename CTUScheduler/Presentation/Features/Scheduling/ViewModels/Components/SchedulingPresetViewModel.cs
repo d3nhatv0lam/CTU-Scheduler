@@ -26,42 +26,21 @@ public class SchedulingPresetViewModel : SelectableItem<SchedulingPreset>
             Name = "Chiến thần deadline",
             Icon = "🚀",
             Description = "Dồn lịch vào ít ngày nhất có thể để dành thời gian chạy deadline",
-            Profile = new ScoringProfile 
-            { 
-                Scorers = new List<IScheduleScorer> 
-                { 
-                    new CompactDaysScorer(1.0), 
-                    new MinimizeGapsScorer(0.5) 
-                } 
-            }
+            Profile = ScoringProfile.DeadlineWarrior
         },
         new SchedulingPreset
         {
             Name = "Chill & Cân bằng",
             Icon = "🧘",
             Description = "Phân bổ lịch học đều các ngày, tránh dồn cục gây stress",
-            Profile = new ScoringProfile 
-            { 
-                Scorers = new List<IScheduleScorer> 
-                { 
-                    new BalancedWorkloadScorer(1.0), 
-                    new TimeOfDayScorer(TimeOfDay.Morning, 0.5) 
-                } 
-            }
+            Profile = ScoringProfile.ChillBalanced
         },
         new SchedulingPreset
         {
             Name = "Cú đêm lười biếng",
             Icon = "🦉",
             Description = "Ưu tiên các buổi chiều và tối, tránh dậy sớm",
-            Profile = new ScoringProfile 
-            { 
-                Scorers = new List<IScheduleScorer> 
-                { 
-                    new TimeOfDayScorer(TimeOfDay.Afternoon, 1.0), 
-                    new MinimizeGapsScorer(0.5) 
-                } 
-            }
+            Profile = ScoringProfile.NightOwl
         }
     };
 }
