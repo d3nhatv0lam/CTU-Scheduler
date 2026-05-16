@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Algorithms.Scoring;
+using CTUScheduler.Core.Models.Timetable;
 
 namespace CTUScheduler.Core.Models.Scoring;
 
@@ -10,7 +11,7 @@ namespace CTUScheduler.Core.Models.Scoring;
 public class SchedulingPreset
 {
     public string Name { get; init; } = string.Empty;
-    public string Icon { get; init; } = "📅";
+    public string Icon { get; init; } = "";
     public string Description { get; init; } = string.Empty;
     
     /// <summary>
@@ -23,7 +24,7 @@ public class SchedulingPreset
     public static readonly SchedulingPreset DeadlineWarrior = new()
     {
         Name = "Chiến thần chạy deadline",
-        Icon = "",
+        Icon = "🚀",
         Description = "Thích đi làm thêm",
         Scorers = new List<IScheduleScorer>
         {
@@ -35,12 +36,12 @@ public class SchedulingPreset
     public static readonly SchedulingPreset ChillBalanced = new()
     {
         Name = "Chill & Cân bằng",
-        Icon = "",
+        Icon = "🧘",
         Description = "Tránh stress, tà tà mà học",
         Scorers = new List<IScheduleScorer>
         {
             new BalancedWorkloadScorer(3.0),
-            new TimeOfDayScorer(PreferredTime.Morning, 1.0)
+            new TimeOfDayScorer(TimeOfDay.Morning, 1.0)
         }
     };
 
@@ -51,7 +52,7 @@ public class SchedulingPreset
         Description = "Học xong là về liền",
         Scorers = new List<IScheduleScorer>
         {
-            new TimeOfDayScorer(PreferredTime.Afternoon, 3.0),
+            new TimeOfDayScorer(TimeOfDay.Afternoon, 3.0),
             new MinimizeGapsScorer(2.0)
         }
     };

@@ -12,7 +12,7 @@ public static class ScoringConstants
 
     // Các ngưỡng cấu hình
     public const int MaxStudyDaysPerWeek = 6; // Số ngày học tối đa trong tuần
-    public const int TotalStudyPeriodsPerDay = 9; // Tổng số tiết học tối đa trong một ngày
+    public const int TotalStudyPeriodsPerDay = 13; // Tổng số tiết học tối đa trong một ngày
     public const double MaxGapsThreshold = 4.0; // tiết trống trung bình mỗi ngày được coi là tệ nhất 
     
     // Điểm số tối đa và tối thiểu

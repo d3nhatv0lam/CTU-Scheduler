@@ -1,16 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using CTUScheduler.Core.Interfaces;
-using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Core.Extensions;
+using CTUScheduler.Core.Models.Timetable;
 
 namespace CTUScheduler.Core.Algorithms.Scoring;
-
-public enum PreferredTime
-{
-    Morning,
-    Afternoon
-}
 
 /// <summary>
 /// Chấm điểm dựa trên mức độ phù hợp với buổi học yêu thích
@@ -18,9 +9,9 @@ public enum PreferredTime
 public class TimeOfDayScorer : IScheduleScorer
 {
     public double Weight { get; }
-    public PreferredTime Preference { get; }
+    public TimeOfDay Preference { get; }
 
-    public TimeOfDayScorer(PreferredTime preference, double weight = ScoringConstants.DefaultWeightTimeOfDay)
+    public TimeOfDayScorer(TimeOfDay preference, double weight = ScoringConstants.DefaultWeightTimeOfDay)
     {
         Preference = preference;
         Weight = weight;
@@ -38,11 +29,21 @@ public class TimeOfDayScorer : IScheduleScorer
         {
             totalPeriods += period.PeriodCount;
             
-            // 1 - 5: sáng, 6 - 9: chiều
-            bool isMorning = period.StartPeriod <= 5;
+            // Sáng 1-5, Chiều 6-9, Tối 10-13
+            var session = period.TimeOfDay;
+
+            bool isMatch;
+            if (Preference == TimeOfDay.Morning)
+            {
+                isMatch = session == TimeOfDay.Morning;
+            }
+            else
+            {
+                // Chiều và Tối được tính điểm giống
+                isMatch = session == TimeOfDay.Afternoon || session == TimeOfDay.Evening;
+            }
             
-            if ((Preference == PreferredTime.Morning && isMorning) ||
-                (Preference == PreferredTime.Afternoon && !isMorning))
+            if (isMatch)
             {
                 matchingPeriods += period.PeriodCount;
             }
