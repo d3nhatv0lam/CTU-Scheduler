@@ -60,7 +60,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
         _logger = loggerFactory.CreateLogger<TimetableSchedulerViewModel>();
 
         var courseStream = context.CourseBlueprints.Connect()
-            .SubscribeOn(RxSchedulers.TaskpoolScheduler)
+            .ObserveOn(RxSchedulers.TaskpoolScheduler)
             .AutoRefreshOnObservable(x => x.SectionsSourceChanges.Skip(1))
             .Transform(node => node.CoreCourse.WithSections(node.Sections), transformOnRefresh: true)
             .Transform(course =>
@@ -68,6 +68,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
             .DisposeMany()
             .AsObservableList()
             .DisposeWith(_disposables);
+
         SchedulingCourseCoordinatorVM = new SchedulingCourseCoordinatorViewModel(courseStream,
                 loggerFactory.CreateLogger<SchedulingCourseCoordinatorViewModel>())
             .DisposeWith(_disposables);
@@ -75,6 +76,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
         var maxCanSelect = profileQueryService.ProfileUsageState
             .Select(x => x.Limit - x.Current)
             .DistinctUntilChanged();
+
         PaginationTimeTableViewModel = new TimetablePaginationViewModel(maxCanSelect)
             .DisposeWith(_disposables);
 

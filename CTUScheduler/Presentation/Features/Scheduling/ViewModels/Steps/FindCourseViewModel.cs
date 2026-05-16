@@ -69,7 +69,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
             SearchCommand = ReactiveCommand.CreateFromObservable(() =>
                 courseCatalogService.RequestCourseStream(TxtInputCourseKey)
                     .Catch((Exception _) => Observable.Empty<Course>())
-            );
+            ).DisposeWith(_disposables);
 
             _searchedCourseHelper = SearchCommand
                 .ToProperty(this, nameof(SearchedCourse), scheduler: RxSchedulers.MainThreadScheduler)

@@ -44,6 +44,8 @@ public static class LoggingConfig
 
     public static void CloseAndFlush()
     {
+        Log.ForContext("ShortTypeName", "Host")
+            .Information("================= LOG END =================");
         Log.CloseAndFlush();
     }
 }

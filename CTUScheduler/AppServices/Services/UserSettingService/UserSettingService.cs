@@ -38,7 +38,6 @@ public class UserSettingService : IUserSettingService, IDisposable
         BehaviorSettingsChanged = SettingsChanged.Select(settings => settings.Behavior).DistinctUntilChanged();
 
         _autoSaveSubscription = _settingsSubject
-            .SubscribeOn(RxSchedulers.TaskpoolScheduler)
             .Where(_ => _isInitialized)
             .Throttle(TimeSpan.FromMilliseconds(800))
             .DistinctUntilChanged()

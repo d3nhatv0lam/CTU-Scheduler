@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -8,6 +8,7 @@ using Serilog;
 using System;
 using System.Reactive;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
 using CTUScheduler.Presentation.Shared.Interfaces;
@@ -20,14 +21,25 @@ namespace CTUScheduler;
 public class App : Application
 {
     public static IServiceProvider ServiceProvider { get; set; } = null!;
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
         SetupGlobalExceptionHandling();
+#if DEBUG
+        this.AttachDeveloperTools();
+#endif
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
+        Dispatcher.UIThread.UnhandledException += (sender, e) =>
+        {
+            var uiLog = Log.ForContext("ShortTypeName", "UI");
+            uiLog.Error(e.Exception, "Avalonia UI Thread Unhandled Exception");
+            // e.Handled = true;   // Chỉ bật nếu bạn chắc chắn muốn app tiếp tục (rủi ro cao)
+        };
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var splashScreen = InitSplashScreenWindow(desktop);
@@ -39,11 +51,11 @@ public class App : Application
             {
                 DataContext = ServiceProvider.GetService<MainViewModel>()
             };
-            
         }
+
         base.OnFrameworkInitializationCompleted();
     }
-    
+
     private Window InitSplashScreenWindow(IClassicDesktopStyleApplicationLifetime desktop)
     {
         var splashScreenViewModel = ServiceProvider.GetRequiredService<SplashScreenViewModel>();
@@ -57,40 +69,27 @@ public class App : Application
                 requestClose.RequestClose -= handler;
                 MainWindow mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
                 mainWindow.DataContext = ServiceProvider.GetService<MainViewModel>();
-                
+
                 desktop.MainWindow = mainWindow;
                 desktop.MainWindow.Show();
-                
+
                 splashScreen.Close();
             };
             requestClose.RequestClose += handler;
         }
+
         return splashScreen;
     }
 
-  
-    
+
     private void SetupGlobalExceptionHandling()
     {
-        // Bắt lỗi ở các Thread phụ (Background threads)
-        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
-        {
-            var ex = args.ExceptionObject as Exception;
-            Log.Fatal(ex, "APP CRASH: Unhandled Exception on Non-UI Thread");
-        };
-
-        // Bắt lỗi ở Task (Task bị lỗi mà không có await hoặc try-catch)
-        TaskScheduler.UnobservedTaskException += (_, args) =>
-        {
-            Log.Error(args.Exception, "Background Task Error (Unobserved)");
-            args.SetObserved(); // Ngăn app bị crash
-        };
-
         // Bắt lỗi của ReactiveUI
-        RxApp.DefaultExceptionHandler = Observer.Create<Exception>(ex => 
-        {
-            Log.Error(ex, "ReactiveUI Exception");
-            // có thể hiển thị Dialog báo lỗi cho User tại đây
-        });
+        // RxApp.DefaultExceptionHandler = Observer.Create<Exception>(ex => 
+        // {
+        //     var rxLog = Log.ForContext("ShortTypeName", "UI");
+        //     rxLog.Error(ex, "ReactiveUI Pipeline/Command Exception");
+        //     // có thể hiển thị Dialog báo lỗi cho User tại đây
+        // });
     }
 }

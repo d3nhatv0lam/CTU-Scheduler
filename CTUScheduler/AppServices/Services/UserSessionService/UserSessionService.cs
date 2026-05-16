@@ -38,13 +38,11 @@ public class UserSessionService : IUserSessionService, IDisposable
         RegistrationInfoChanged = _serverInfoSubject.AsObservable();
 
         var isEmptyProfiles = profileQueryService.ConnectProfiles()
-            .SubscribeOn(TaskPoolScheduler.Default)
             .Count()
             .Select(x => x == 0)
             .DistinctUntilChanged()
             .Replay(1)
             .RefCount();
-
 
         IsReadonly = _localContextSubject
             .CombineLatest(_serverInfoSubject, isEmptyProfiles,
