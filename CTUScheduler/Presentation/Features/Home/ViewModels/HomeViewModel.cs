@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
@@ -24,20 +26,23 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
 {
     private readonly IRegistrationRulesService _registrationRulesService;
     private readonly ICourseRegistrationService _courseRegistrationService;
+    private readonly ITuitionFeeService _tuitionFeeService;
     private readonly ILogger<HomeViewModel> _logger;
 
     private readonly ObservableAsPropertyHelper<RegistrationInformation?> _registrationInfo;
     [ObservableAsProperty] private IReadOnlyList<PlannedCourse>? _plannedCourses;
+
     /// <summary>
     /// Phải có Init được thì mới có token để get các thông tin khác
     /// </summary>
     [ObservableAsProperty] private bool _isInitialLoading;
+
     [ObservableAsProperty] private bool _isLoadingPlannedCourses;
 
     public string UrlPathSegment => nameof(HomeViewModel);
     public IScreen HostScreen { get; }
     public RegistrationInformation? RegistrationInfo => _registrationInfo.Value;
-    
+
     public TimelineViewModel TimelineViewModel { get; } = new();
 
     public ReactiveCommand<Unit, OperationResult<IReadOnlyList<PlannedCourse>>> LoadPlannedCoursesCommand { get; }
@@ -47,6 +52,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
         IRegistrationRulesService registrationRulesService,
         ICourseRegistrationService courseRegistrationService,
         IPlannedCourseStore plannedCourseStore,
+        ITuitionFeeService tuitionFeeService,
         IUserInteractionService userInteractionService,
         INavigationRegionManager navigationRegionManager,
         IConnectivityService connectivityService,
@@ -55,12 +61,13 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
         HostScreen = hostScreen;
         _registrationRulesService = registrationRulesService;
         _courseRegistrationService = courseRegistrationService;
+        _tuitionFeeService = tuitionFeeService;
         _logger = logger;
 
         registrationRulesService.RegistrationInfoChanged
             .Subscribe(userSessionService.UpdateServerInfo)
             .DisposeWith(Disposables);
-        
+
         _registrationInfo = userSessionService.RegistrationInfoChanged
             .ToProperty(this, nameof(RegistrationInfo), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
@@ -73,13 +80,13 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
         LoadPlannedCoursesCommand = ReactiveCommand
             .CreateFromTask(ct => _courseRegistrationService.FetchPlannedCourseAsync(token: ct))
             .DisposeWith(Disposables);
-        
-       LoadPlannedCoursesCommand
+
+        LoadPlannedCoursesCommand
             .Where(x => x.IsSuccess)
             .Select(x => x.Content!)
             .Subscribe(plannedCourseStore.Update)
             .DisposeWith(Disposables);
-       
+
         _plannedCoursesHelper = plannedCourseStore.PlannedCoursesChanged
             .ToProperty(this, nameof(PlannedCourses), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
@@ -98,11 +105,25 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
                 })
             .ToProperty(this, nameof(IsLoadingPlannedCourses))
             .DisposeWith(Disposables);
+
+       
     }
 
     protected override async Task<OperationResult> ExecuteWebSyncTaskAsync()
     {
         return await _registrationRulesService.EnsureReadyAsync();
+    }
+
+    protected override void OnWebSyncSuccess()
+    {
+        Observable.StartAsync(ct => _tuitionFeeService.FetchTuitionFeeAsync(ct))
+            .Subscribe(result =>
+            {
+                result.Match(
+                    summary => Console.WriteLine(summary),
+                    (errors, _) => Debug.WriteLine(errors.Select(x => x.FormattedMessage))
+                );
+            }).DisposeWith(Disposables);
     }
 
     protected override void Dispose(bool isDisposing)
@@ -112,7 +133,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
             TimelineViewModel.Dispose();
             _logger.LogDebug("{this}: Disposed", nameof(HomeViewModel));
         }
-     
+
         base.Dispose(isDisposing);
     }
 }

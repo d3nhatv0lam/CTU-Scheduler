@@ -14,10 +14,12 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Pages.Registration;
 
 public class SchedulePage : BaseRegistrationPage, ISchedulePage
 {
+    private const string TuitionFeeTabSelector = ".ant-tabs-tab-btn:has-text('Thông tin học phí')";
+    
     public SchedulePage(IWebTab tab, IConnectivityService connectivityService, ILoggerFactory loggerFactory) : base(tab,
         connectivityService, loggerFactory)
     {
-        HocPhiResponse = tab.JsonResponse.Where(x => x.Url.Contains("/thongtinhocphi"))
+        TuitionFeeResponse = tab.JsonResponse.Where(x => x.Url.Contains("/thongtinhocphi"))
             .FilterPacketJson(x => x["data"]?["chitiethocphi"] is not null)
             .ParseCtuResponse<RawThongTinHocPhiPayload>()
             .Where(x => x is { IsSuccess: true, Content: not null })
@@ -27,7 +29,11 @@ public class SchedulePage : BaseRegistrationPage, ISchedulePage
     public override string PageUrl => CtuRoutes.DkmhSchedule;
     protected override string PageReadySelector => "section.calendar";
     
-    public IObservable<RawThongTinHocPhiPayload> HocPhiResponse { get; }
+    public IObservable<RawThongTinHocPhiPayload> TuitionFeeResponse { get; }
+    public async Task NavigateToTuitionFeeAsync()
+    {
+        await Tab.NativePage.ClickAsync(TuitionFeeTabSelector);
+    }
 
     protected override async Task NavigateToFormSideBarAsync()
     {

@@ -19,9 +19,11 @@ public static partial class TtHocPhiPayLoadExtensions
     public static TuitionFeeSummary? ToSummary(this RawThongTinHocPhiPayload payload, ILogger? logger = null)
     {
         long? semesterTuitionFee = null;
-        bool hasHealthInsuranceFee = false;
+        long healthInsuranceFee = 0;
+        long previousSemesterDebt = 0;
         long? totalPayableAmount = null;
         long? totalPaidAmount = null;
+
 
         if (payload.ChiTietHocPhi is not null)
         {
@@ -34,7 +36,9 @@ public static partial class TtHocPhiPayLoadExtensions
                     if (titleSpan.Equals("tổng cộng", StringComparison.OrdinalIgnoreCase))
                         semesterTuitionFee = ParseMoney(moneyString);
                     else if (titleSpan.Contains("bảo hiểm y tế", StringComparison.OrdinalIgnoreCase))
-                        hasHealthInsuranceFee = true;
+                        healthInsuranceFee = ParseMoney(moneyString) ?? 0;
+                    else if (titleSpan.Contains("Nợ học phí", StringComparison.OrdinalIgnoreCase))
+                        previousSemesterDebt = ParseMoney(moneyString) ?? 0;
                     else if (titleSpan.Equals("tổng cộng các khoản phải đóng", StringComparison.OrdinalIgnoreCase))
                         totalPayableAmount = ParseMoney(moneyString);
                     else if (titleSpan.Equals("tổng cộng đã đóng", StringComparison.OrdinalIgnoreCase))
@@ -85,7 +89,8 @@ public static partial class TtHocPhiPayLoadExtensions
 
         return new TuitionFeeSummary(
             SemesterTuitionFee: semesterTuitionFee.Value,
-            HasHealthInsuranceFee: hasHealthInsuranceFee,
+            HealthInsuranceFee: healthInsuranceFee,
+            PreviousSemesterDebt: previousSemesterDebt,
             TotalPayableAmount: totalPayableAmount.Value,
             TotalPaidAmount: totalPaidAmount.Value,
             PaymentDeadline: paymentDeadline,
