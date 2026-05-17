@@ -47,9 +47,13 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<ITimetableGeneratorService, TimetableGeneratorService>();
 
+        // stores
         services.AddSingleton<PlannedCourseStore>()
             .AddSingleton<IPlannedCourseStore>(sp => sp.GetRequiredService<PlannedCourseStore>())
             .AddSingleton<ICleanup>(sp => sp.GetRequiredService<PlannedCourseStore>());
+        services.AddSingleton<TuitionFeeStore>()
+            .AddSingleton<ITuitionFeeStore>(sp => sp.GetRequiredService<TuitionFeeStore>())
+            .AddSingleton<ICleanup>(sp => sp.GetRequiredService<TuitionFeeStore>());
 
         // --- Schedule Manager Pattern ---
         services.AddSingleton<ScheduleManager>()

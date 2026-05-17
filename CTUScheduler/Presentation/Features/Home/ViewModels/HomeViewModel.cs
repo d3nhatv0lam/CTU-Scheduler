@@ -31,6 +31,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
 
     private readonly ObservableAsPropertyHelper<RegistrationInformation?> _registrationInfo;
     [ObservableAsProperty] private IReadOnlyList<PlannedCourse>? _plannedCourses;
+    [ObservableAsProperty] private TuitionFeeSummary? _tuitionFee;
 
     /// <summary>
     /// Phải có Init được thì mới có token để get các thông tin khác
@@ -38,6 +39,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
     [ObservableAsProperty] private bool _isInitialLoading;
 
     [ObservableAsProperty] private bool _isLoadingPlannedCourses;
+    [ObservableAsProperty] private bool _isLoadingTuitionFee;
 
     public string UrlPathSegment => nameof(HomeViewModel);
     public IScreen HostScreen { get; }
@@ -46,6 +48,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
     public TimelineViewModel TimelineViewModel { get; } = new();
 
     public ReactiveCommand<Unit, OperationResult<IReadOnlyList<PlannedCourse>>> LoadPlannedCoursesCommand { get; }
+    public ReactiveCommand<Unit, OperationResult<TuitionFeeSummary>> LoadTuitionFeeCommand { get; }
 
     public HomeViewModel(IScreen hostScreen,
         IUserSessionService userSessionService,
@@ -53,6 +56,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
         ICourseRegistrationService courseRegistrationService,
         IPlannedCourseStore plannedCourseStore,
         ITuitionFeeService tuitionFeeService,
+        ITuitionFeeStore tuitionFeeStore,
         IUserInteractionService userInteractionService,
         INavigationRegionManager navigationRegionManager,
         IConnectivityService connectivityService,
@@ -87,8 +91,22 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
             .Subscribe(plannedCourseStore.Update)
             .DisposeWith(Disposables);
 
+
         _plannedCoursesHelper = plannedCourseStore.PlannedCoursesChanged
             .ToProperty(this, nameof(PlannedCourses), scheduler: RxSchedulers.MainThreadScheduler)
+            .DisposeWith(Disposables);
+
+        LoadTuitionFeeCommand = ReactiveCommand.CreateFromTask(ct => _tuitionFeeService.FetchTuitionFeeAsync(ct))
+            .DisposeWith(Disposables);
+
+        LoadTuitionFeeCommand
+            .Where(x => x.IsSuccess)
+            .Select(x => x.Content!)
+            .Subscribe(tuitionFeeStore.Update)
+            .DisposeWith(Disposables);
+
+        _tuitionFeeHelper = tuitionFeeStore.TuitionFeeSummaryChanged
+            .ToProperty(this, nameof(TuitionFee), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
 
         SyncWebSessionCommand.Where(x => x.IsSuccess)
@@ -96,36 +114,36 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
             .InvokeCommand(LoadPlannedCoursesCommand)
             .DisposeWith(Disposables);
 
-        _isLoadingPlannedCoursesHelper = this.WhenAnyValue(x => x.IsInitialLoading, x => x.PlannedCourses)
+        SyncWebSessionCommand.Where(x => x.IsSuccess)
+            .Select(_ => Unit.Default)
+            .InvokeCommand(LoadTuitionFeeCommand)
+            .DisposeWith(Disposables);
+
+        _isLoadingPlannedCoursesHelper = this.WhenAnyValue(x => x.IsLoading, x => x.PlannedCourses)
             .CombineLatest(LoadPlannedCoursesCommand.IsExecuting,
                 (state, isExecuting) =>
                 {
-                    var (isInitial, plannedCourses) = state;
-                    return isInitial || (isExecuting && plannedCourses is null);
+                    var (isLoading, plannedCourses) = state;
+                    return isLoading || (isExecuting && plannedCourses is null);
                 })
             .ToProperty(this, nameof(IsLoadingPlannedCourses))
             .DisposeWith(Disposables);
 
-       
+        _isLoadingTuitionFeeHelper = this.WhenAnyValue(x => x.IsLoading, x => x.TuitionFee)
+            .CombineLatest(LoadTuitionFeeCommand.IsExecuting,
+                (state, isExecuting) =>
+                {
+                    var (isLoading, tuitionFee) = state;
+                    return isLoading || (isExecuting && tuitionFee is null);
+                }).ToProperty(this, nameof(IsLoadingTuitionFee))
+            .DisposeWith(Disposables);
     }
 
     protected override async Task<OperationResult> ExecuteWebSyncTaskAsync()
     {
         return await _registrationRulesService.EnsureReadyAsync();
     }
-
-    protected override void OnWebSyncSuccess()
-    {
-        Observable.StartAsync(ct => _tuitionFeeService.FetchTuitionFeeAsync(ct))
-            .Subscribe(result =>
-            {
-                result.Match(
-                    summary => Console.WriteLine(summary),
-                    (errors, _) => Debug.WriteLine(errors.Select(x => x.FormattedMessage))
-                );
-            }).DisposeWith(Disposables);
-    }
-
+    
     protected override void Dispose(bool isDisposing)
     {
         if (isDisposing)

@@ -116,7 +116,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                         onFailure: (errors, _) =>
                         {
                             var errorStr = string.Join('\n', errors.Select(x => x.FormattedMessage));
-                            Debug.WriteLine(errorStr);
+                            _logger.LogError(errorStr);
                         }
                     );
                 })
