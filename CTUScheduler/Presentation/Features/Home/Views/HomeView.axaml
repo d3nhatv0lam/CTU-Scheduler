@@ -372,7 +372,8 @@
                               DataContext="{Binding TuitionFee}"
                               Margin="10,25,10,10"
                               ColumnDefinitions="155, Auto, *"
-                              RowDefinitions="auto auto">
+                              RowDefinitions="auto auto"
+                              IsVisible="{Binding ., Converter={x:Static ObjectConverters.IsNotNull}}">
 
                             <!-- // cột trái // -->
                             <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="8">

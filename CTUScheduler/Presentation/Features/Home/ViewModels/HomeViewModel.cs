@@ -33,11 +33,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
     [ObservableAsProperty] private IReadOnlyList<PlannedCourse>? _plannedCourses;
     [ObservableAsProperty] private TuitionFeeSummary? _tuitionFee;
 
-    /// <summary>
-    /// Phải có Init được thì mới có token để get các thông tin khác
-    /// </summary>
     [ObservableAsProperty] private bool _isInitialLoading;
-
     [ObservableAsProperty] private bool _isLoadingPlannedCourses;
     [ObservableAsProperty] private bool _isLoadingTuitionFee;
 
@@ -124,7 +120,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
                 (state, isExecuting) =>
                 {
                     var (isLoading, plannedCourses) = state;
-                    return isLoading || (isExecuting && plannedCourses is null);
+                    return plannedCourses is null && (isLoading || isExecuting);
                 })
             .ToProperty(this, nameof(IsLoadingPlannedCourses))
             .DisposeWith(Disposables);
@@ -134,7 +130,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
                 (state, isExecuting) =>
                 {
                     var (isLoading, tuitionFee) = state;
-                    return isLoading || (isExecuting && tuitionFee is null);
+                    return tuitionFee is null && (isLoading || isExecuting);
                 }).ToProperty(this, nameof(IsLoadingTuitionFee))
             .DisposeWith(Disposables);
     }
@@ -143,7 +139,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
     {
         return await _registrationRulesService.EnsureReadyAsync();
     }
-    
+
     protected override void Dispose(bool isDisposing)
     {
         if (isDisposing)
