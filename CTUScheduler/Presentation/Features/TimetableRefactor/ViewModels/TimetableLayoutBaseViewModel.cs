@@ -99,7 +99,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
     protected TimetableRenderItem CreateRenderItem(ICourseDisplaySource dataSource)
     {
         string code = "";
-        dataSource.Code.Take(1).Subscribe(c => code = c);
+        using var _ = dataSource.Code.Take(1).Subscribe(c => code = c);
         var color = _colorProvider.GetColorForCourse(code);
 
         var shared = new ScheduleGroupCellShared(dataSource, color);

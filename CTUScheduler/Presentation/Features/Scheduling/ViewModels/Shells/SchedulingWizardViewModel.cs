@@ -103,7 +103,8 @@ public partial class SchedulingWizardViewModel : ViewModelBase,
 
         var canNavigateNext = this.WhenAnyValue(x => x.CurrentWizardStep)
             .Select(step => step?.CanNavigateNext ?? Observable.Return(false))
-            .Switch();
+            .Switch()
+            .ObserveOn(RxSchedulers.MainThreadScheduler);
         NavigateNextCommand = ReactiveCommand.CreateFromTask(NavigateNext, canNavigateNext)
             .DisposeWith(_disposables);
 
