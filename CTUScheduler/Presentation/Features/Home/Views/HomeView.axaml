@@ -281,86 +281,353 @@
                         </Style>
                     </Border.Styles>
 
-                    <Grid RowDefinitions="Auto, *" ClipToBounds="True">
-                        <TextBlock Grid.Row="0" Classes="CardTitle" Text="Danh sách học phần theo KHHT" />
+                    <Grid RowDefinitions="auto auto">
+                        <!-- // Học phần theo KHHT // -->
+                        <Grid Grid.Row="0" RowDefinitions="Auto, *" ClipToBounds="True">
+                            <TextBlock Grid.Row="0" Classes="CardTitle" Text="Danh sách học phần theo KHHT" />
 
-                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoadingPlannedCourses}" IsActive="True"
-                                    MinHeight="50">
-                            <Grid RowDefinitions="Auto, *">
+                            <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoadingPlannedCourses}" IsActive="True"
+                                        MinHeight="50">
+                                <Grid RowDefinitions="Auto, *">
 
-                                <!-- HEADER -->
-                                <Grid Grid.Row="0" Classes="HeaderRow"
-                                      ColumnDefinitions="80, 2*, 50, 60, 1.5*, 1.5*, 70"
-                                      Background="#F9FAFB">
-                                    <Border BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Grid.ColumnSpan="7" />
+                                    <!-- HEADER -->
+                                    <Grid Grid.Row="0" Classes="HeaderRow"
+                                          ColumnDefinitions="80, 2*, 50, 60, 1.5*, 1.5*, 70"
+                                          Background="#F9FAFB">
+                                        <Border BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Grid.ColumnSpan="7" />
 
-                                    <!-- Margin của 2 cột rìa được ghi đè trực tiếp để cách lề đẹp hơn -->
-                                    <TextBlock Grid.Column="0" Text="Mã HP" Margin="15,10,5,10" />
-                                    <TextBlock Grid.Column="1" Text="Tên học phần" />
-                                    <TextBlock Grid.Column="2" Text="TC" TextAlignment="Center" />
-                                    <TextBlock Grid.Column="3" Text="Nhóm" TextAlignment="Center" />
-                                    <TextBlock Grid.Column="4" Text="Giảng viên" />
-                                    <TextBlock Grid.Column="5" Text="Email" />
-                                    <TextBlock Grid.Column="6" Text="Đã ĐK" Margin="5,10,15,10" TextAlignment="Center" />
+                                        <!-- Margin của 2 cột rìa được ghi đè trực tiếp để cách lề đẹp hơn -->
+                                        <TextBlock Grid.Column="0" Text="Mã HP" Margin="15,10,5,10" />
+                                        <TextBlock Grid.Column="1" Text="Tên học phần" />
+                                        <TextBlock Grid.Column="2" Text="TC" TextAlignment="Center" />
+                                        <TextBlock Grid.Column="3" Text="Nhóm" TextAlignment="Center" />
+                                        <TextBlock Grid.Column="4" Text="Giảng viên" />
+                                        <TextBlock Grid.Column="5" Text="Email" />
+                                        <TextBlock Grid.Column="6" Text="Đã ĐK" Margin="5,10,15,10"
+                                                   TextAlignment="Center" />
+                                    </Grid>
+
+                                    <!-- BODY -->
+                                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                        <ItemsRepeater ItemsSource="{Binding PlannedCourses}">
+                                            <ItemsRepeater.ItemTemplate>
+                                                <DataTemplate x:DataType="{x:Type plannedCourse:PlannedCourse}">
+                                                    <Border BorderBrush="#F3F4F6" BorderThickness="0,0,0,1">
+                                                        <Grid Classes="BodyRow"
+                                                              ColumnDefinitions="80, 2*, 50, 60, 1.5*, 1.5*, 70">
+
+                                                            <!-- Code (Ghi đè màu đậm và margin lề trái) -->
+                                                            <SelectableTextBlock Grid.Column="0"
+                                                                    Text="{Binding Code, Mode=OneWay}"
+                                                                    FontWeight="SemiBold" Foreground="#111827"
+                                                                    Margin="15,12,5,12" />
+
+                                                            <!-- Name -->
+                                                            <SelectableTextBlock Grid.Column="1"
+                                                                    Text="{Binding NameVn, Mode=OneWay}" />
+
+                                                            <!-- Credits (Ghi đè căn giữa và chống rớt dòng) -->
+                                                            <TextBlock Grid.Column="2"
+                                                                       Text="{Binding Credits, Mode=OneWay}"
+                                                                       HorizontalAlignment="Center"
+                                                                       TextWrapping="NoWrap" />
+
+                                                            <!-- Group (Ghi đè căn giữa và chống rớt dòng) -->
+                                                            <SelectableTextBlock Grid.Column="3"
+                                                                    Text="{Binding Group, Mode=OneWay}"
+                                                                    HorizontalAlignment="Center"
+                                                                    TextWrapping="NoWrap" />
+
+                                                            <!-- Lecturer Name -->
+                                                            <SelectableTextBlock Grid.Column="4"
+                                                                    Text="{Binding LecturerName, Mode=OneWay}" />
+
+                                                            <!-- Lecturer Email -->
+                                                            <SelectableTextBlock Grid.Column="5"
+                                                                    Text="{Binding LecturerEmail, Mode=OneWay}" />
+
+                                                            <!-- Is Registered (Icon) -->
+                                                            <avalonia:MaterialIcon Grid.Column="6"
+                                                                    Kind="CheckCircleOutline"
+                                                                    Width="20" Height="20"
+                                                                    Foreground="#10B981"
+                                                                    Margin="5,12,15,12"
+                                                                    VerticalAlignment="Center"
+                                                                    HorizontalAlignment="Center"
+                                                                    IsVisible="{Binding IsRegistered, Mode=OneWay}" />
+
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsRepeater.ItemTemplate>
+                                        </ItemsRepeater>
+                                    </ScrollViewer>
+
                                 </Grid>
+                            </u:Skeleton>
+                        </Grid>
 
-                                <!-- BODY -->
-                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                                    <ItemsRepeater ItemsSource="{Binding PlannedCourses}">
-                                        <ItemsRepeater.ItemTemplate>
-                                            <DataTemplate x:DataType="{x:Type plannedCourse:PlannedCourse}">
-                                                <Border BorderBrush="#F3F4F6" BorderThickness="0,0,0,1">
-                                                    <Grid Classes="BodyRow"
-                                                          ColumnDefinitions="80, 2*, 50, 60, 1.5*, 1.5*, 70">
+                        <!-- // Học phí // -->
+                        <Grid Grid.Row="1"
+                              DataContext="{Binding TuitionFee}"
+                              Margin="10,25,10,10"
+                              ColumnDefinitions="155, Auto, *"
+                              RowDefinitions="auto auto"
+                              IsVisible="{Binding ., Converter={x:Static ObjectConverters.IsNotNull}}">
 
-                                                        <!-- Code (Ghi đè màu đậm và margin lề trái) -->
-                                                        <SelectableTextBlock Grid.Column="0"
-                                                                             Text="{Binding Code, Mode=OneWay}"
-                                                                             FontWeight="SemiBold" Foreground="#111827"
-                                                                             Margin="15,12,5,12" />
+                            <!-- // cột trái // -->
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="8">
+                                <TextBlock Text="Học phí"
+                                           FontSize="16"
+                                           FontWeight="Bold"
+                                           Foreground="#111827" />
 
-                                                        <!-- Name -->
-                                                        <SelectableTextBlock Grid.Column="1"
-                                                                             Text="{Binding NameVn, Mode=OneWay}" />
+                                <Border CornerRadius="6"
+                                        Padding="8,4"
+                                        HorizontalAlignment="Left"
+                                        Background="#DEF7EC"
+                                        IsVisible="{Binding !IsInDebt}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <avalonia:MaterialIcon Kind="Check" Width="14" Height="14" Foreground="#03543F" />
+                                        <TextBlock Text="Đủ học phí" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="#03543F" />
+                                    </StackPanel>
+                                </Border>
 
-                                                        <!-- Credits (Ghi đè căn giữa và chống rớt dòng) -->
-                                                        <TextBlock Grid.Column="2"
-                                                                   Text="{Binding Credits, Mode=OneWay}"
-                                                                   HorizontalAlignment="Center" TextWrapping="NoWrap" />
+                                <Border CornerRadius="6"
+                                        Padding="8,4"
+                                        HorizontalAlignment="Left"
+                                        Background="#FEF3C7"
+                                        IsVisible="{Binding IsNormalDebt}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <avalonia:MaterialIcon Kind="ClockOutline" Width="14" Height="14"
+                                                               Foreground="#92400E" />
+                                        <TextBlock Text="Quá hạn đóng học phí" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="#92400E" />
+                                    </StackPanel>
+                                </Border>
 
-                                                        <!-- Group (Ghi đè căn giữa và chống rớt dòng) -->
-                                                        <SelectableTextBlock Grid.Column="3"
-                                                                             Text="{Binding Group, Mode=OneWay}"
-                                                                             HorizontalAlignment="Center"
-                                                                             TextWrapping="NoWrap" />
+                                <Border CornerRadius="6"
+                                        Padding="8,4"
+                                        HorizontalAlignment="Left"
+                                        Background="#FDE8E8"
+                                        IsVisible="{Binding IsCriticalDebt}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <avalonia:MaterialIcon Kind="AlertOctagonOutline" Width="14" Height="14"
+                                                               Foreground="#9B1C1C" />
+                                        <TextBlock Text="Nợ học phí" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="#9B1C1C" />
+                                    </StackPanel>
+                                </Border>
 
-                                                        <!-- Lecturer Name -->
-                                                        <SelectableTextBlock Grid.Column="4"
-                                                                             Text="{Binding LecturerName, Mode=OneWay}" />
+                                <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,2,0,0"
+                                            IsVisible="{Binding HasDeadline}">
+                                    <avalonia:MaterialIcon Kind="CalendarClock" Width="14" Height="14"
+                                                           Foreground="#6B7280" VerticalAlignment="Center" />
+                                    <TextBlock
+                                        Text="{Binding PaymentDeadline, StringFormat='Hạn đóng: \{0:dd/MM/yyyy\}'}"
+                                        FontSize="12"
+                                        Foreground="#6B7280"
+                                        VerticalAlignment="Center" />
+                                </StackPanel>
+                            </StackPanel>
 
-                                                        <!-- Lecturer Email -->
-                                                        <SelectableTextBlock Grid.Column="5"
-                                                                             Text="{Binding LecturerEmail, Mode=OneWay}" />
+                            <Border Grid.Column="1" Width="1" Background="#E5E7EB" Margin="15,5"
+                                    VerticalAlignment="Stretch" />
 
-                                                        <!-- Is Registered (Icon) -->
-                                                        <avalonia:MaterialIcon Grid.Column="6"
-                                                                               Kind="CheckCircleOutline"
-                                                                               Width="20" Height="20"
-                                                                               Foreground="#10B981"
-                                                                               Margin="5,12,15,12"
-                                                                               VerticalAlignment="Center"
-                                                                               HorizontalAlignment="Center"
-                                                                               IsVisible="{Binding IsRegistered, Mode=OneWay}" />
+                            <!-- // cột phải // -->
+                            <Grid Grid.Column="2"
+                                  VerticalAlignment="Center"
+                                  RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto"
+                                  ColumnDefinitions="*, Auto">
 
-                                                    </Grid>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsRepeater.ItemTemplate>
-                                    </ItemsRepeater>
-                                </ScrollViewer>
+                                <Grid.Styles>
+                                    <Style Selector="TextBlock.FeeLabel">
+                                        <Setter Property="Foreground" Value="#6B7280" />
+                                        <Setter Property="Margin" Value="0,4" />
+                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                    </Style>
+                                    <Style Selector="TextBlock.FeeValue">
+                                        <Setter Property="FontWeight" Value="Medium" />
+                                        <Setter Property="Foreground" Value="#111827" />
+                                        <Setter Property="Margin" Value="0,4" />
+                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                    </Style>
+                                </Grid.Styles>
+                                
+                                <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="Học phí học kỳ này:" Classes="FeeLabel" />
 
+                                    <!-- // Đơn giá tín chỉ // -->
+                                    <avalonia:MaterialIcon Kind="InformationOutline"
+                                                           Background="Transparent"
+                                                           Width="14" Height="14"
+                                                           Foreground="#9CA3AF"
+                                                           VerticalAlignment="Center">
+                                        <ToolTip.Tip>
+                                            <StackPanel Spacing="10" Margin="5">
+                                                <StackPanel.Styles>
+                                                    <Style Selector="TextBlock.SubLabel">
+                                                        <Setter Property="Foreground" Value="#9CA3AF" />
+                                                        <Setter Property="FontSize" Value="11" />
+                                                    </Style>
+                                                    <Style Selector="TextBlock.SubValue">
+                                                        <Setter Property="FontSize" Value="11" />
+                                                        <Setter Property="FontWeight" Value="Medium" />
+                                                        <Setter Property="Foreground" Value="#F3F4F6" />
+                                                    </Style>
+                                                </StackPanel.Styles>
+
+                                                <TextBlock Text="Thông tin đơn giá tín chỉ"
+                                                           FontWeight="Bold"
+                                                           FontSize="12"
+                                                           Foreground="#FFFFFF" />
+
+                                                <StackPanel Spacing="4"
+                                                            IsVisible="{Binding GeneralCreditFee, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                    <TextBlock Text="• Môn đại cương chung:"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="#E5E7EB"
+                                                               FontSize="12" />
+
+                                                    <StackPanel Orientation="Horizontal" Margin="12,0,0,0" Spacing="16">
+                                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                                            <TextBlock Text="Học phí gốc:" Classes="SubLabel" />
+                                                            <TextBlock
+                                                                Text="{Binding GeneralCreditFee.FeePerCredit, StringFormat='{}{0:N0} đ/TC'}"
+                                                                Classes="SubValue" Foreground="#F9FAFB" />
+                                                        </StackPanel>
+
+                                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                                            <TextBlock Text="Miễn giảm:" Classes="SubLabel" />
+                                                            <TextBlock
+                                                                Text="{Binding GeneralCreditFee.DiscountPerCredit, StringFormat='{}{0:N0} đ/TC'}"
+                                                                Classes="SubValue" Foreground="#34D399" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </StackPanel>
+
+                                                <StackPanel Spacing="4"
+                                                            IsVisible="{Binding MajorCreditFee, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                    <TextBlock Text="• Môn khối ngành / Chuyên ngành:"
+                                                               FontWeight="SemiBold" Foreground="#E5E7EB" FontSize="12" />
+
+                                                    <StackPanel Orientation="Horizontal" Margin="12,0,0,0" Spacing="16">
+                                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                                            <TextBlock Text="Học phí gốc:" Classes="SubLabel" />
+                                                            <TextBlock
+                                                                Text="{Binding MajorCreditFee.FeePerCredit, StringFormat='{}{0:N0} đ/TC'}"
+                                                                Classes="SubValue" Foreground="#F9FAFB" />
+                                                        </StackPanel>
+
+                                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                                            <TextBlock Text="Miễn giảm:" Classes="SubLabel" />
+                                                            <TextBlock
+                                                                Text="{Binding MajorCreditFee.DiscountPerCredit, StringFormat='{}{0:N0} đ/TC'}"
+                                                                Classes="SubValue" Foreground="#34D399" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </ToolTip.Tip>
+                                    </avalonia:MaterialIcon>
+                                </StackPanel>
+
+                                <TextBlock Grid.Row="0" Grid.Column="1"
+                                           Text="{Binding SemesterTuitionFee, StringFormat='{}{0:N0} đ'}"
+                                           Classes="FeeValue" />
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Phí Bảo hiểm y tế:" Classes="FeeLabel"
+                                           IsVisible="{Binding HasInsuranceFee}" />
+                                <TextBlock Grid.Row="1" Grid.Column="1"
+                                           Text="{Binding HealthInsuranceFee, StringFormat='{}{0:N0} đ'}"
+                                           Classes="FeeValue" IsVisible="{Binding HasInsuranceFee}" />
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Nợ học kỳ trước:"
+                                           Classes="FeeLabel" Foreground="#9B1C1C" IsVisible="{Binding HadOldDebt}" />
+                                <TextBlock Grid.Row="2" Grid.Column="1"
+                                           Text="{Binding PreviousSemesterDebt, StringFormat='{}{0:N0} đ'}"
+                                           Classes="FeeValue" Foreground="#9B1C1C" FontWeight="Bold"
+                                           IsVisible="{Binding HadOldDebt}" />
+
+                                <Border Grid.Row="3" Grid.ColumnSpan="2" Height="1" Background="#F3F4F6" Margin="0,8" />
+
+                                <!-- // Thanh toán // -->
+                                <Grid Grid.Row="4" Grid.ColumnSpan="2" ColumnDefinitions="*, Auto, *, Auto">
+                                    <TextBlock Grid.Column="0" Text="Tổng phải đóng:" Classes="FeeLabel" />
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding TotalPayableAmount, StringFormat='{}{0:N0} đ'}"
+                                               Classes="FeeValue" FontWeight="SemiBold" Margin="0,0,25,0" />
+
+                                    <TextBlock Grid.Column="2" Text="Đã thanh toán:" Classes="FeeLabel"
+                                               Foreground="#047857" />
+                                    <TextBlock Grid.Column="3"
+                                               Text="{Binding TotalPaidAmount, StringFormat='{}{0:N0} đ'}"
+                                               Classes="FeeValue" Foreground="#047857" FontWeight="SemiBold" />
+                                </Grid>
+                                
+                                <StackPanel Grid.Row="5" Grid.ColumnSpan="2"
+                                            Orientation="Horizontal"
+                                            HorizontalAlignment="Right"
+                                            Margin="0,10,0,0"
+                                            IsVisible="{Binding IsInDebt}">
+                                    <TextBlock Text="Số tiền còn lại cần nộp: " VerticalAlignment="Center"
+                                               Foreground="#374151" FontSize="14" />
+                                    <TextBlock Text="{Binding DebtAmount, StringFormat='{}{0:N0} đ'}"
+                                               VerticalAlignment="Center"
+                                               Foreground="#B91C1C"
+                                               FontSize="18"
+                                               FontWeight="Bold" />
+                                </StackPanel>
                             </Grid>
-                        </u:Skeleton>
+
+                            <!-- // An ủi quá hạn đóng học phí // -->
+                            <Border Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3"
+                                    Background="#EFF6FF"
+                                    BorderBrush="#BFDBFE"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="12"
+                                    Margin="0,15,0,0"
+                                    IsVisible="{Binding IsCriticalDebt}">
+                                <Grid ColumnDefinitions="Auto, *">
+                                    <avalonia:MaterialIcon Grid.Column="0" Kind="LightbulbOnOutline" Width="18"
+                                                           Height="18" Foreground="#1D4ED8" VerticalAlignment="Top"
+                                                           Margin="0,1,10,0" />
+
+                                    <TextBlock Grid.Column="1"
+                                               Text="Mình biết học phí là một áp lực rất lớn. Nếu đang gặp khó khăn chưa kịp đóng kỳ này, đừng lo một mình nha bạn ơi. Hãy liên hệ Phòng Tài chính để xin gia hạn kịp thời, tránh ảnh hưởng lịch thi nhé. Cố lên nè! 💙"
+                                               FontSize="12"
+                                               Foreground="#1E40AF"
+                                               TextWrapping="Wrap"
+                                               LineHeight="18" />
+                                </Grid>
+                            </Border>
+
+                            <!-- // Cảnh báo Nợ học phí // -->
+                            <Border Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3"
+                                    Background="#FDF2F2"
+                                    BorderBrush="#F8D7DA"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="12"
+                                    Margin="0,15,0,0"
+                                    IsVisible="{Binding IsCriticalDebt}">
+                                <Grid ColumnDefinitions="Auto, *">
+                                    <avalonia:MaterialIcon Grid.Column="0" Kind="AlertOctagon" Width="18"
+                                                           Height="18" Foreground="#E02424" VerticalAlignment="Top"
+                                                           Margin="0,1,10,0" />
+                            
+                                    <TextBlock Grid.Column="1"
+                                               Text="Khoản nợ học phí từ học kỳ trước hiện đã rơi vào trạng thái quá hạn nguy hiểm. Theo quy chế học vụ, tình trạng này có thể dẫn đến đình chỉ hoặc buộc thôi học. Bạn hãy liên hệ gấp với Phòng Tài chính hoặc Phòng CTSV để được hỗ trợ phương án giải quyết sớm nhất nhé!"
+                                               FontSize="12"
+                                               FontWeight="Medium"
+                                               Foreground="#9B1C1C"
+                                               TextWrapping="Wrap"
+                                               LineHeight="18" />
+                                </Grid>
+                            </Border>
+                        </Grid>
                     </Grid>
                 </Border>
 
@@ -369,7 +636,8 @@
                 <Border x:Name="Card4" Classes="Card card-item-4">
                     <Grid RowDefinitions="Auto, *">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Lộ trình đăng ký học phần" />
-                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsInitialLoading}" IsActive="True" ClipToBounds="False">
+                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsInitialLoading}" IsActive="True"
+                                    ClipToBounds="False">
                             <timeline:TimelineControl DataContext="{Binding TimelineViewModel}"
                                                       ClipToBounds="False"
                                                       VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />

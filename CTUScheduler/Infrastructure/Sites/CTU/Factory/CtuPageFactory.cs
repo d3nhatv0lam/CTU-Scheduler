@@ -12,7 +12,6 @@ public class CtuPageFactory: ICtuPageFactory
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly Dictionary<Type, Type> _pageMappings = new();
-
     
     public CtuPageFactory(IServiceProvider serviceProvider)
     {
