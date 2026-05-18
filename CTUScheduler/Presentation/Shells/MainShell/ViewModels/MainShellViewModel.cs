@@ -12,6 +12,7 @@ using System.Reactive.Linq;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
+using CTUScheduler.Presentation.Features.Contact.ViewModels;
 using CTUScheduler.Presentation.Features.Home.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableManager.ViewModels;
 using CTUScheduler.Presentation.Services.Navigation;
@@ -61,7 +62,8 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
             NavigationItems =
             [
                 new NavigationItem("Trang chủ", MaterialIconKind.HomeOutline, typeof(HomeViewModel)),
-                new NavigationItem("Học phần", MaterialIconKind.TableCog, typeof(TimetableManagerViewModel))
+                new NavigationItem("Học phần", MaterialIconKind.TableCog, typeof(TimetableManagerViewModel)),
+                new NavigationItem("Liên hệ", MaterialIconKind.EmailOutline, typeof(ContactViewModel))
                 // new NavigationItem("Cài đặt", MaterialIconKind.CogOutline,typeof(SettingViewModel))
             ];
 
