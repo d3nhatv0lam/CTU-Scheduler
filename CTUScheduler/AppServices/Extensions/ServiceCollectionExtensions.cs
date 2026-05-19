@@ -46,6 +46,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ICourseRegistrationService, CourseRegistrationService>();
         services.AddTransient<ITuitionFeeService, TuitionFeeService>();
         services.AddTransient<ITeachingPlanLoaderService, TeachingPlanLoaderService>();
+        
         services.AddSingleton<ITimetableGeneratorService, TimetableGeneratorService>();
 
         // stores
