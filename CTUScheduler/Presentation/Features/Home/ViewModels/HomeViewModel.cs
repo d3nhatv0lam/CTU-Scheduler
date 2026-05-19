@@ -17,6 +17,7 @@ using ReactiveUI;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Presentation.Shared.Controls.Timeline;
+using CTUScheduler.Core.Models.TeachingPlan;
 using Microsoft.Extensions.Logging;
 using ReactiveUI.SourceGenerators;
 
@@ -32,6 +33,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
     private readonly ObservableAsPropertyHelper<RegistrationInformation?> _registrationInfo;
     [ObservableAsProperty] private IReadOnlyList<PlannedCourse>? _plannedCourses;
     [ObservableAsProperty] private TuitionFeeSummary? _tuitionFee;
+    [ObservableAsProperty] private TeachingPlanData? _teachingPlan;
 
     [ObservableAsProperty] private bool _isInitialLoading;
     [ObservableAsProperty] private bool _isLoadingPlannedCourses;
@@ -45,6 +47,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
 
     public ReactiveCommand<Unit, OperationResult<IReadOnlyList<PlannedCourse>>> LoadPlannedCoursesCommand { get; }
     public ReactiveCommand<Unit, OperationResult<TuitionFeeSummary>> LoadTuitionFeeCommand { get; }
+    public ReactiveCommand<Unit, OperationResult<TeachingPlanData>> LoadTeachingPlanCommand { get; }
 
     public HomeViewModel(IScreen hostScreen,
         IUserSessionService userSessionService,
@@ -53,6 +56,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
         IPlannedCourseStore plannedCourseStore,
         ITuitionFeeService tuitionFeeService,
         ITuitionFeeStore tuitionFeeStore,
+        ITeachingPlanStore teachingPlanStore,
         IUserInteractionService userInteractionService,
         INavigationRegionManager navigationRegionManager,
         ITeachingPlanLoaderService teachingPlanLoaderService,
@@ -68,44 +72,6 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
         registrationRulesService.RegistrationInfoChanged
             .Subscribe(userSessionService.UpdateServerInfo)
             .DisposeWith(Disposables);
-
-        Observable.StartAsync(async _ => await registrationRulesService.EnsureReadyAsync())
-            .ObserveOn(RxSchedulers.MainThreadScheduler)
-            .Subscribe(
-                result =>
-                {
-                    IsLoading = false;
-
-                    result.Match(
-                        () =>
-                        {
-                            Observable.StartAsync(async _ => await teachingPlanLoaderService.LoadLatestAsync())
-                                .ObserveOn(RxSchedulers.MainThreadScheduler)
-                                .Subscribe(loadResult =>
-                                {
-                                    if (loadResult.IsFailed)
-                                    {
-                                        return;
-                                    }
-
-                                    foreach (var node in TimelineViewModel.Nodes.ToArray())
-                                    {
-                                        node.Dispose();
-                                    }
-
-                                    TimelineViewModel.Nodes.Clear();
-                                    foreach (var item in loadResult.Content.RegistrationTimeline)
-                                    {
-                                        TimelineViewModel.Nodes.Add(new TimelineNodeViewModel(item));
-                                    }
-                                })
-                                .DisposeWith(Disposables);
-                        },
-                        (errors, _) => { }
-                    );
-                },
-                ex => { IsLoading = false; }
-            );
 
         _registrationInfo = userSessionService.RegistrationInfoChanged
             .ToProperty(this, nameof(RegistrationInfo), scheduler: RxSchedulers.MainThreadScheduler)
@@ -144,6 +110,40 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
             .ToProperty(this, nameof(TuitionFee), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
 
+        LoadTeachingPlanCommand = ReactiveCommand
+            .CreateFromTask(_ => teachingPlanLoaderService.LoadLatestAsync())
+            .DisposeWith(Disposables);
+
+        LoadTeachingPlanCommand
+            .Where(x => x.IsSuccess)
+            .Select(x => x.Content!)
+            .Subscribe(teachingPlanStore.Update)
+            .DisposeWith(Disposables);
+
+        _teachingPlanHelper = teachingPlanStore.TeachingPlanChanged
+            .ToProperty(this, nameof(TeachingPlan), scheduler: RxSchedulers.MainThreadScheduler)
+            .DisposeWith(Disposables);
+
+        this.WhenAnyValue(x => x.TeachingPlan)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
+            .Subscribe(ApplyTeachingPlanToTimeline)
+            .DisposeWith(Disposables);
+
+        Observable.StartAsync(async _ => await registrationRulesService.EnsureReadyAsync())
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
+            .Subscribe(
+                result =>
+                {
+                    IsLoading = false;
+
+                    result.Match(
+                        () => LoadTeachingPlanCommand.Execute().Subscribe().DisposeWith(Disposables),
+                        (errors, _) => { }
+                    );
+                },
+                ex => { IsLoading = false; }
+            );
+
         SyncWebSessionCommand.Where(x => x.IsSuccess)
             .Select(_ => Unit.Default)
             .InvokeCommand(LoadPlannedCoursesCommand)
@@ -152,6 +152,11 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
         SyncWebSessionCommand.Where(x => x.IsSuccess)
             .Select(_ => Unit.Default)
             .InvokeCommand(LoadTuitionFeeCommand)
+            .DisposeWith(Disposables);
+
+        SyncWebSessionCommand.Where(x => x.IsSuccess)
+            .Select(_ => Unit.Default)
+            .InvokeCommand(LoadTeachingPlanCommand)
             .DisposeWith(Disposables);
 
         _isLoadingPlannedCoursesHelper = this.WhenAnyValue(x => x.IsLoading, x => x.PlannedCourses)
@@ -177,6 +182,26 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
     protected override async Task<OperationResult> ExecuteWebSyncTaskAsync()
     {
         return await _registrationRulesService.EnsureReadyAsync();
+    }
+
+    private void ApplyTeachingPlanToTimeline(TeachingPlanData? teachingPlan)
+    {
+        foreach (var node in TimelineViewModel.Nodes.ToArray())
+        {
+            node.Dispose();
+        }
+
+        TimelineViewModel.Nodes.Clear();
+
+        if (teachingPlan is null)
+        {
+            return;
+        }
+
+        foreach (var item in teachingPlan.RegistrationTimeline)
+        {
+            TimelineViewModel.Nodes.Add(new TimelineNodeViewModel(item));
+        }
     }
 
     protected override void Dispose(bool isDisposing)

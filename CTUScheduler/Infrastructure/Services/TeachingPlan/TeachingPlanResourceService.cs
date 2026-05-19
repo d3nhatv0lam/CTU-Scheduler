@@ -12,12 +12,15 @@ using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Presentation.Shared.Controls.Timeline;
 using Microsoft.Playwright;
 using UglyToad.PdfPig;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace CTUScheduler.Infrastructure.Services.TeachingPlan;
 
 public class TeachingPlanResourceService : ITeachingPlanResourceService
 {
     private const string NotificationsUrl = "https://htql.ctu.edu.vn/";
+    private const string TeachingPlanCacheFolder = "CTUScheduler\\TeachingPlans";
     private static readonly Regex PdfHrefRegex = new("\\.pdf(\\?|$)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private static readonly Regex DateRangeRegex = new(@"(\d{1,2}/\d{1,2}/\d{4})\s*[-–]\s*(\d{1,2}/\d{1,2}/\d{4})",
         RegexOptions.Compiled);
@@ -86,8 +89,15 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
     {
         if (string.IsNullOrWhiteSpace(pdfUrl)) return string.Empty;
 
-        var fileName = $"teaching-plan-{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
-        var filePath = Path.Combine(Path.GetTempPath(), fileName);
+        var filePath = GetCachedPdfPath(pdfUrl);
+        if (File.Exists(filePath))
+        {
+            var existingBytes = new FileInfo(filePath).Length;
+            if (existingBytes >= 1024)
+            {
+                return filePath;
+            }
+        }
 
         await _webDriverService.InitBrowserAsync();
         await using var tab = await _webDriverService.CreateTabAsync();
@@ -143,6 +153,31 @@ public class TeachingPlanResourceService : ITeachingPlanResourceService
 
         await File.WriteAllBytesAsync(filePath, fetchedBytes);
         return filePath;
+    }
+
+    private static string GetCachedPdfPath(string pdfUrl)
+    {
+        var cacheRoot = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            TeachingPlanCacheFolder);
+        Directory.CreateDirectory(cacheRoot);
+
+        var hash = ComputeSha256(pdfUrl);
+        var fileName = $"teaching-plan-{hash}.pdf";
+        return Path.Combine(cacheRoot, fileName);
+    }
+
+    private static string ComputeSha256(string value)
+    {
+        var bytes = Encoding.UTF8.GetBytes(value);
+        var hashBytes = SHA256.HashData(bytes);
+        var builder = new StringBuilder(hashBytes.Length * 2);
+        foreach (var b in hashBytes)
+        {
+            builder.Append(b.ToString("x2"));
+        }
+
+        return builder.ToString();
     }
 
     public async Task<TeachingPlanData> ExtractTeachingPlanAsync(string filePath)

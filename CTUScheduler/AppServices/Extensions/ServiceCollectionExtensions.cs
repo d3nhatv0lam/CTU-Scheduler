@@ -56,6 +56,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<TuitionFeeStore>()
             .AddSingleton<ITuitionFeeStore>(sp => sp.GetRequiredService<TuitionFeeStore>())
             .AddSingleton<ICleanup>(sp => sp.GetRequiredService<TuitionFeeStore>());
+        services.AddSingleton<TeachingPlanStore>()
+            .AddSingleton<ITeachingPlanStore>(sp => sp.GetRequiredService<TeachingPlanStore>())
+            .AddSingleton<ICleanup>(sp => sp.GetRequiredService<TeachingPlanStore>());
 
         // --- Schedule Manager Pattern ---
         services.AddSingleton<ScheduleManager>()
