@@ -129,20 +129,13 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
             .Subscribe(ApplyTeachingPlanToTimeline)
             .DisposeWith(Disposables);
 
-        Observable.StartAsync(async _ => await registrationRulesService.EnsureReadyAsync())
+        Observable.StartAsync(() => registrationRulesService.EnsureReadyAsync())
             .ObserveOn(RxSchedulers.MainThreadScheduler)
-            .Subscribe(
-                result =>
-                {
-                    IsLoading = false;
-
-                    result.Match(
-                        () => LoadTeachingPlanCommand.Execute().Subscribe().DisposeWith(Disposables),
-                        (errors, _) => { }
-                    );
-                },
-                ex => { IsLoading = false; }
-            );
+            .Finally(() => IsLoading = false)
+            .Where(result => result.IsSuccess)
+            .Select(_ => Unit.Default)
+            .InvokeCommand(LoadTeachingPlanCommand) 
+            .DisposeWith(Disposables);
 
         SyncWebSessionCommand.Where(x => x.IsSuccess)
             .Select(_ => Unit.Default)
@@ -186,14 +179,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
 
     private void ApplyTeachingPlanToTimeline(TeachingPlanData? teachingPlan)
     {
-        foreach (var node in TimelineViewModel.Nodes.ToArray())
-        {
-            node.Dispose();
-        }
-
-        TimelineViewModel.Nodes.Clear();
-
-        if (teachingPlan is null)
+        if (teachingPlan is null || TimelineViewModel.Nodes.Count > 0)
         {
             return;
         }
