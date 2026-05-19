@@ -70,7 +70,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
             .DisposeWith(Disposables);
 
         Observable.StartAsync(async _ => await registrationRulesService.EnsureReadyAsync())
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Subscribe(
                 result =>
                 {
@@ -80,7 +80,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
                         () =>
                         {
                             Observable.StartAsync(async _ => await teachingPlanLoaderService.LoadLatestAsync())
-                                .ObserveOn(RxApp.MainThreadScheduler)
+                                .ObserveOn(RxSchedulers.MainThreadScheduler)
                                 .Subscribe(loadResult =>
                                 {
                                     if (loadResult.IsFailed)
@@ -88,7 +88,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
                                         return;
                                     }
 
-                                    foreach (var node in TimelineViewModel.Nodes.ToList())
+                                    foreach (var node in TimelineViewModel.Nodes.ToArray())
                                     {
                                         node.Dispose();
                                     }
@@ -99,7 +99,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
                                         TimelineViewModel.Nodes.Add(new TimelineNodeViewModel(item));
                                     }
                                 })
-                                .DisposeWith(_disposable);
+                                .DisposeWith(Disposables);
                         },
                         (errors, _) => { }
                     );

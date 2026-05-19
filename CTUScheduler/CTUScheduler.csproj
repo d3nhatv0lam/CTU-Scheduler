@@ -18,9 +18,7 @@
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.3" />
     <!--Condition below is needed to remove AvaloniaUI.DiagnosticsSupport package from build output in Release configuration.-->
 
-    <PackageReference Include="AvaloniaUI.DiagnosticsSupport"
-                      Version="2.2.1"
-                      Condition="'$(Configuration)' == 'Debug'" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1" Condition="'$(Configuration)' == 'Debug'" />
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="Humanizer.Core.vi" Version="3.0.10" />
     <PackageReference Include="Irihi.Ursa" Version="2.0.0" />
@@ -33,6 +31,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.8" />
     <PackageReference Include="Microsoft.Playwright" Version="1.59.0" />
+    <PackageReference Include="PdfPig" Version="0.1.14" />
     <PackageReference Include="ReactiveUI.Avalonia" Version="12.0.1" />
     <PackageReference Include="ReactiveUI.SourceGenerators" Version="2.6.30">
       <PrivateAssets>all</PrivateAssets>
