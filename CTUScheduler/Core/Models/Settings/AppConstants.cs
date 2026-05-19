@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using CTUScheduler.Core.Models.Contributors;
@@ -40,8 +40,8 @@ public static class AppConstants
 
         public static string BaseAppContext => StandardPathBuilder.GetAppBaseDirectory();
 
-        // public static string BaseLocalPath =>
-        //     StandardPathBuilder.GetLocalCachePath(PublisherConstants.Name, AppNameWindows, AppNameUnix);
+        public static string BaseLocalPath =>
+            StandardPathBuilder.GetLocalCachePath(PublisherConstants.Name, AppNameWindows, AppNameUnix);
 
         public static string UserPreferencesFilePath => Path.Combine(BaseAppContext, Files.UserPreferences);
 

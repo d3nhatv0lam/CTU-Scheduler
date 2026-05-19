@@ -454,7 +454,7 @@
                                         <Setter Property="VerticalAlignment" Value="Center" />
                                     </Style>
                                 </Grid.Styles>
-                                
+
                                 <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="6">
                                     <TextBlock Text="Học phí học kỳ này:" Classes="FeeLabel" />
 
@@ -565,7 +565,7 @@
                                                Text="{Binding TotalPaidAmount, StringFormat='{}{0:N0} đ'}"
                                                Classes="FeeValue" Foreground="#047857" FontWeight="SemiBold" />
                                 </Grid>
-                                
+
                                 <StackPanel Grid.Row="5" Grid.ColumnSpan="2"
                                             Orientation="Horizontal"
                                             HorizontalAlignment="Right"
@@ -617,7 +617,7 @@
                                     <avalonia:MaterialIcon Grid.Column="0" Kind="AlertOctagon" Width="18"
                                                            Height="18" Foreground="#E02424" VerticalAlignment="Top"
                                                            Margin="0,1,10,0" />
-                            
+
                                     <TextBlock Grid.Column="1"
                                                Text="Khoản nợ học phí từ học kỳ trước hiện đã rơi vào trạng thái quá hạn nguy hiểm. Theo quy chế học vụ, tình trạng này có thể dẫn đến đình chỉ hoặc buộc thôi học. Bạn hãy liên hệ gấp với Phòng Tài chính hoặc Phòng CTSV để được hỗ trợ phương án giải quyết sớm nhất nhé!"
                                                FontSize="12"
@@ -636,7 +636,7 @@
                 <Border x:Name="Card4" Classes="Card card-item-4">
                     <Grid RowDefinitions="Auto, *">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Lộ trình đăng ký học phần" />
-                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsInitialLoading}" IsActive="True"
+                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoadingTeachingPlan}" IsActive="True"
                                     ClipToBounds="False">
                             <timeline:TimelineControl DataContext="{Binding TimelineViewModel}"
                                                       ClipToBounds="False"

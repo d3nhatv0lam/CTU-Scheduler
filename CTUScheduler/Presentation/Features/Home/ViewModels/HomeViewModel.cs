@@ -26,8 +26,6 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels;
 public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
 {
     private readonly IRegistrationRulesService _registrationRulesService;
-    private readonly ICourseRegistrationService _courseRegistrationService;
-    private readonly ITuitionFeeService _tuitionFeeService;
     private readonly ILogger<HomeViewModel> _logger;
 
     private readonly ObservableAsPropertyHelper<RegistrationInformation?> _registrationInfo;
@@ -38,6 +36,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
     [ObservableAsProperty] private bool _isInitialLoading;
     [ObservableAsProperty] private bool _isLoadingPlannedCourses;
     [ObservableAsProperty] private bool _isLoadingTuitionFee;
+    [ObservableAsProperty] private bool _isLoadingTeachingPlan;
 
     public string UrlPathSegment => nameof(HomeViewModel);
     public IScreen HostScreen { get; }
@@ -65,8 +64,6 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
     {
         HostScreen = hostScreen;
         _registrationRulesService = registrationRulesService;
-        _courseRegistrationService = courseRegistrationService;
-        _tuitionFeeService = tuitionFeeService;
         _logger = logger;
 
         registrationRulesService.RegistrationInfoChanged
@@ -83,7 +80,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
             .DisposeWith(Disposables);
 
         LoadPlannedCoursesCommand = ReactiveCommand
-            .CreateFromTask(ct => _courseRegistrationService.FetchPlannedCourseAsync(token: ct))
+            .CreateFromTask(ct => courseRegistrationService.FetchPlannedCourseAsync(token: ct))
             .DisposeWith(Disposables);
 
         LoadPlannedCoursesCommand
@@ -97,7 +94,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
             .ToProperty(this, nameof(PlannedCourses), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
 
-        LoadTuitionFeeCommand = ReactiveCommand.CreateFromTask(ct => _tuitionFeeService.FetchTuitionFeeAsync(ct))
+        LoadTuitionFeeCommand = ReactiveCommand.CreateFromTask(ct => tuitionFeeService.FetchTuitionFeeAsync(ct))
             .DisposeWith(Disposables);
 
         LoadTuitionFeeCommand
@@ -110,8 +107,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
             .ToProperty(this, nameof(TuitionFee), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
 
-        LoadTeachingPlanCommand = ReactiveCommand
-            .CreateFromTask(_ => teachingPlanLoaderService.LoadLatestAsync())
+        LoadTeachingPlanCommand = ReactiveCommand.CreateFromTask(teachingPlanLoaderService.LoadLatestAsync)
             .DisposeWith(Disposables);
 
         LoadTeachingPlanCommand
@@ -127,14 +123,6 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
         this.WhenAnyValue(x => x.TeachingPlan)
             .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Subscribe(ApplyTeachingPlanToTimeline)
-            .DisposeWith(Disposables);
-
-        Observable.StartAsync(() => registrationRulesService.EnsureReadyAsync())
-            .ObserveOn(RxSchedulers.MainThreadScheduler)
-            .Finally(() => IsLoading = false)
-            .Where(result => result.IsSuccess)
-            .Select(_ => Unit.Default)
-            .InvokeCommand(LoadTeachingPlanCommand) 
             .DisposeWith(Disposables);
 
         SyncWebSessionCommand.Where(x => x.IsSuccess)
@@ -170,11 +158,22 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
                     return tuitionFee is null && (isLoading || isExecuting);
                 }).ToProperty(this, nameof(IsLoadingTuitionFee))
             .DisposeWith(Disposables);
+
+        _isLoadingTeachingPlanHelper = LoadTeachingPlanCommand.IsExecuting
+            .ToProperty(this, nameof(IsLoadingTeachingPlan), scheduler: RxSchedulers.MainThreadScheduler)
+            .DisposeWith(Disposables);
     }
 
     protected override async Task<OperationResult> ExecuteWebSyncTaskAsync()
     {
         return await _registrationRulesService.EnsureReadyAsync();
+    }
+
+    protected override void SetupSubscriptions(CompositeDisposable disposables)
+    {
+        Observable.Return(Unit.Default)
+            .InvokeCommand(LoadTeachingPlanCommand)
+            .DisposeWith(disposables);
     }
 
     private void ApplyTeachingPlanToTimeline(TeachingPlanData? teachingPlan)
@@ -195,7 +194,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
         if (isDisposing)
         {
             TimelineViewModel.Dispose();
-            _logger.LogDebug("{this}: Disposed", nameof(HomeViewModel));
+            _logger.LogDebug("Disposed");
         }
 
         base.Dispose(isDisposing);

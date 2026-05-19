@@ -17,6 +17,7 @@ using CTUScheduler.Infrastructure.Services.Auth;
 using CTUScheduler.Infrastructure.Services.MainHomeService;
 using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Infrastructure.Services.Registration;
+using CTUScheduler.Infrastructure.Services.TeachingPlan;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,6 +57,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<TuitionFeeStore>()
             .AddSingleton<ITuitionFeeStore>(sp => sp.GetRequiredService<TuitionFeeStore>())
             .AddSingleton<ICleanup>(sp => sp.GetRequiredService<TuitionFeeStore>());
+
+        services.AddHttpClient<ISchoolAnnouncementService, SchoolAnnouncementService>();
+        
         services.AddSingleton<TeachingPlanStore>()
             .AddSingleton<ITeachingPlanStore>(sp => sp.GetRequiredService<TeachingPlanStore>())
             .AddSingleton<ICleanup>(sp => sp.GetRequiredService<TeachingPlanStore>());

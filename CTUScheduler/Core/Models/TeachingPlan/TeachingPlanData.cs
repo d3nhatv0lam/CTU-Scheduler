@@ -5,5 +5,5 @@ namespace CTUScheduler.Core.Models.TeachingPlan;
 
 public class TeachingPlanData
 {
-    public List<TimelineNode> RegistrationTimeline { get; set; } = new();
+    public List<TimelineNode> RegistrationTimeline { get; set; } = new List<TimelineNode>();
 }

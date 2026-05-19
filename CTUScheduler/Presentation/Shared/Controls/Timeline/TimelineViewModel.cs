@@ -181,7 +181,32 @@ public sealed partial class TimelineNodeViewModel : ReactiveObject, IDisposable
     }
 }
 
-public record TimelineNode(string Title, DateOnly StartDate, DateOnly EndDate)
+public record TimelineNode(
+    string Title,
+    DateOnly StartDate,
+    DateOnly EndDate,
+    TimelineNodeType Type = TimelineNodeType.Range)
 {
-    public bool IsPoint => StartDate == EndDate;
+    public bool IsRange => Type == TimelineNodeType.Range;
+    public bool IsSinglePoint => Type == TimelineNodeType.SinglePoint;
+    public bool IsDeadline => Type == TimelineNodeType.DeadlineOrEnd;
+    public bool IsStartFrom => Type == TimelineNodeType.StartFrom;
+
+
+    public string DisplayDate => Type switch
+    {
+        TimelineNodeType.SinglePoint => StartDate.ToString("dd/MM/yyyy"),
+        TimelineNodeType.Range => $"{StartDate:dd/MM/yyyy} - {EndDate:dd/MM/yyyy}",
+        TimelineNodeType.DeadlineOrEnd => $"Hạn cuối: {EndDate:dd/MM/yyyy}",
+        TimelineNodeType.StartFrom => $"Bắt đầu từ: {StartDate:dd/MM/yyyy}",
+        _ => string.Empty
+    };
+}
+
+public enum TimelineNodeType
+{
+    Range,
+    SinglePoint,
+    DeadlineOrEnd,
+    StartFrom
 }

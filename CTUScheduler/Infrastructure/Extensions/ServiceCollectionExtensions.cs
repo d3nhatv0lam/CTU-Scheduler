@@ -39,7 +39,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICtuPageFactory, CtuPageFactory>();
 
         // --- Teaching Plan ---
-        services.AddSingleton<ITeachingPlanResourceService, TeachingPlanResourceService>();
+        services.AddHttpClient<ITeachingPlanPdfService, TeachingPlanPdfService>();
 
 
         return services;
