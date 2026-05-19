@@ -44,12 +44,17 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IRegistrationRulesService, RegistrationRulesService>();
         services.AddTransient<ICourseCatalogService, CourseCatalogService>();
         services.AddTransient<ICourseRegistrationService, CourseRegistrationService>();
+        services.AddTransient<ITuitionFeeService, TuitionFeeService>();
         services.AddTransient<ITeachingPlanLoaderService, TeachingPlanLoaderService>();
         services.AddSingleton<ITimetableGeneratorService, TimetableGeneratorService>();
 
+        // stores
         services.AddSingleton<PlannedCourseStore>()
             .AddSingleton<IPlannedCourseStore>(sp => sp.GetRequiredService<PlannedCourseStore>())
             .AddSingleton<ICleanup>(sp => sp.GetRequiredService<PlannedCourseStore>());
+        services.AddSingleton<TuitionFeeStore>()
+            .AddSingleton<ITuitionFeeStore>(sp => sp.GetRequiredService<TuitionFeeStore>())
+            .AddSingleton<ICleanup>(sp => sp.GetRequiredService<TuitionFeeStore>());
 
         // --- Schedule Manager Pattern ---
         services.AddSingleton<ScheduleManager>()

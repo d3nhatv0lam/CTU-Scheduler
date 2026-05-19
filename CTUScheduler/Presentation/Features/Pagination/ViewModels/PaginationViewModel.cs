@@ -73,7 +73,7 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationVi
         PageRequestSubject = new BehaviorSubject<IPageRequest>(new PageRequest(1, PageSize)).DisposeWith(Disposables);
         
         var connection = DataList.Connect()
-            .SubscribeOn(RxSchedulers.TaskpoolScheduler);
+            .ObserveOn(RxSchedulers.TaskpoolScheduler);
 
         bool shouldDisposeItems = options.DisposeItemsOnRemove ?? ownsData; 
         if (shouldDisposeItems)

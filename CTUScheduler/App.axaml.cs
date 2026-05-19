@@ -1,96 +1,50 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia;
 using Avalonia.Markup.Xaml;
-using Microsoft.Extensions.DependencyInjection;
-using ReactiveUI;
 using Serilog;
-using System;
-using System.Reactive;
-using System.Threading.Tasks;
-using CTUScheduler.Presentation.Features.SplashScreen.ViewModels;
-using CTUScheduler.Presentation.Features.SplashScreen.Views;
-using CTUScheduler.Presentation.Shared.Interfaces;
-using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
-using CTUScheduler.Presentation.Shells.AppShell.Views;
-using MainWindow = CTUScheduler.Presentation.Shells.AppShell.Views.MainWindow;
+using Avalonia.Threading;
+using CTUScheduler.Presentation.Services.ApplicationStartup;
 
 namespace CTUScheduler;
 
 public class App : Application
 {
-    public static IServiceProvider ServiceProvider { get; set; } = null!;
+    public IAppStartup? Startup { get; set; }
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
         SetupGlobalExceptionHandling();
+#if DEBUG
+        this.AttachDeveloperTools();
+#endif
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        Dispatcher.UIThread.UnhandledException += (sender, e) =>
         {
-            var splashScreen = InitSplashScreenWindow(desktop);
-            desktop.MainWindow = splashScreen;
-        }
-        else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
+            var uiLog = Log.ForContext("ShortTypeName", "UI");
+            uiLog.Error(e.Exception, "Avalonia UI Thread Unhandled Exception");
+            // e.Handled = true;   // Chỉ bật nếu bạn chắc chắn muốn app tiếp tục (rủi ro cao)
+        };
+
+        if (ApplicationLifetime is not null)
         {
-            singleViewPlatform.MainView = new SingleView()
-            {
-                DataContext = ServiceProvider.GetService<MainViewModel>()
-            };
-            
+            Startup?.Initialize(ApplicationLifetime);
         }
+
         base.OnFrameworkInitializationCompleted();
     }
-    
-    private Window InitSplashScreenWindow(IClassicDesktopStyleApplicationLifetime desktop)
-    {
-        var splashScreenViewModel = ServiceProvider.GetRequiredService<SplashScreenViewModel>();
-        var splashScreen = ServiceProvider.GetRequiredService<SplashScreenWindow>();
-        splashScreen.DataContext = splashScreenViewModel;
-        if (splashScreenViewModel is IRequestClose requestClose)
-        {
-            Action<object?>? handler = null;
-            handler = (_) =>
-            {
-                requestClose.RequestClose -= handler;
-                MainWindow mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-                mainWindow.DataContext = ServiceProvider.GetService<MainViewModel>();
-                
-                desktop.MainWindow = mainWindow;
-                desktop.MainWindow.Show();
-                
-                splashScreen.Close();
-            };
-            requestClose.RequestClose += handler;
-        }
-        return splashScreen;
-    }
 
-  
-    
+
     private void SetupGlobalExceptionHandling()
     {
-        // Bắt lỗi ở các Thread phụ (Background threads)
-        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
-        {
-            var ex = args.ExceptionObject as Exception;
-            Log.Fatal(ex, "APP CRASH: Unhandled Exception on Non-UI Thread");
-        };
-
-        // Bắt lỗi ở Task (Task bị lỗi mà không có await hoặc try-catch)
-        TaskScheduler.UnobservedTaskException += (_, args) =>
-        {
-            Log.Error(args.Exception, "Background Task Error (Unobserved)");
-            args.SetObserved(); // Ngăn app bị crash
-        };
-
         // Bắt lỗi của ReactiveUI
-        RxApp.DefaultExceptionHandler = Observer.Create<Exception>(ex => 
-        {
-            Log.Error(ex, "ReactiveUI Exception");
-            // có thể hiển thị Dialog báo lỗi cho User tại đây
-        });
+        // RxApp.DefaultExceptionHandler = Observer.Create<Exception>(ex => 
+        // {
+        //     var rxLog = Log.ForContext("ShortTypeName", "UI");
+        //     rxLog.Error(ex, "ReactiveUI Pipeline/Command Exception");
+        //     // có thể hiển thị Dialog báo lỗi cho User tại đây
+        // });
     }
 }

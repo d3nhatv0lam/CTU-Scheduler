@@ -25,8 +25,7 @@ public class SchedulingCourseCoordinatorViewModel : ViewModelBase, IDisposable
         ILogger<SchedulingCourseCoordinatorViewModel>? logger)
     {
         var sharedConnect = source.Connect()
-            .Publish()
-            .RefCount();
+            .Publish();
         
         // Bind to the main collection for UI display
         sharedConnect
@@ -40,6 +39,7 @@ public class SchedulingCourseCoordinatorViewModel : ViewModelBase, IDisposable
         sharedConnect
             .AutoRefresh(x => x.IsMainCourse)
             .Filter(x => x.IsMainCourse)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Bind(out var mainCourses)
             .Do(_ => logger?.LogDebug("MainCourses updated"))
             .Subscribe()
@@ -63,6 +63,9 @@ public class SchedulingCourseCoordinatorViewModel : ViewModelBase, IDisposable
                     }
                 }
             })
+            .DisposeWith(_disposables);
+        
+        sharedConnect.Connect()
             .DisposeWith(_disposables);
     }
 

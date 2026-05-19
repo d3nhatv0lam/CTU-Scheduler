@@ -41,6 +41,12 @@ public class ScheduleManager : IScheduleManager, IDisposable
 
         _isRefreshingSubject = new BehaviorSubject<bool>(false)
             .DisposeWith(_disposables);
+        
+        // tự động quản lý dispose của RuntimeCourse
+        _coursesSource.Connect()
+            .DisposeMany()
+            .Subscribe()
+            .DisposeWith(_disposables);
 
         var currentProfileCountStream = _profileSource.Connect()
             .Count()
@@ -82,7 +88,8 @@ public class ScheduleManager : IScheduleManager, IDisposable
 
     public void ImportSchedule(IEnumerable<Course> courses, IEnumerable<ScheduleProfile> profiles)
     {
-        if (courses is null || profiles is null) return;
+        ArgumentNullException.ThrowIfNull(courses);
+        ArgumentNullException.ThrowIfNull(profiles);
 
         _profileSource.Edit(innerCache =>
         {
@@ -90,17 +97,11 @@ public class ScheduleManager : IScheduleManager, IDisposable
             innerCache.AddOrUpdate(profiles);
         });
 
-        var oldCourses = _coursesSource.Items.ToList();
         _coursesSource.Edit(innerCache =>
         {
             innerCache.Clear();
             ApplySnapshotToCourses(innerCache, courses, profiles);
         });
-
-        foreach (var course in oldCourses)
-        {
-            course.Dispose();
-        }
     }
 
     public bool RegisterBlueprint(ScheduleBlueprint blueprint)
@@ -149,7 +150,6 @@ public class ScheduleManager : IScheduleManager, IDisposable
                 bool isEmpty = runtimeCourse.UnregisterSection(group, profileIdString);
                 if (isEmpty)
                 {
-                    runtimeCourse.Dispose();
                     keysToRemove.Add(code);
                 }
             }
@@ -319,6 +319,6 @@ public class ScheduleManager : IScheduleManager, IDisposable
         _isDisposed = true;
 
         _disposables.Dispose();
-        _logger.LogInformation(nameof(ScheduleManager) + " has been disposed.");
+        _logger.LogDebug(nameof(ScheduleManager) + " has been disposed.");
     }
 }

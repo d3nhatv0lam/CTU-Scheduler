@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using CTUScheduler.Presentation.Services.UserInteractionService.Implementations.Ursa.Notifications.Base;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
@@ -34,13 +34,14 @@ public class UrsaNotification(
     protected override void InvokeShow(WindowNotificationManager manager, NotificationType type, object content,
         in NotificationOptions opt)
     {
+        var onCloseAction = opt.OnClose;
         manager.Show(content,
             type,
             expiration: opt.Expiration,
             showIcon: opt.ShowIcon,
             showClose: opt.ShowClose,
             onClick: opt.OnClick,
-            onClose: opt.OnClose,
+            onClose: reason => onCloseAction?.Invoke(MapReason(reason)),
             classes: opt.Classes
         );
     }

@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Xaml.Interactions.Custom;
+using Avalonia.Xaml.Interactivity;
 
 namespace CTUScheduler.Presentation.Shared.Behaviors;
 

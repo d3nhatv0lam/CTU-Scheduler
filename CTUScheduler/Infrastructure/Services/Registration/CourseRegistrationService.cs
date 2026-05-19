@@ -31,11 +31,7 @@ public class CourseRegistrationService : ICourseRegistrationService
         _factory = factory;
         _logger = logger;
     }
-
-    public Task<OperationResult> EnsureReadyAsync()
-    {
-        return Task.FromResult(OperationResult.Success());
-    }
+    
 
     public async Task<OperationResult<IReadOnlyList<PlannedCourse>>> FetchPlannedCourseAsync(TimeSpan? timeout = null,
         CancellationToken token = default)
@@ -94,6 +90,10 @@ public class CourseRegistrationService : ICourseRegistrationService
             await page.CheckSessionAndThrowAsync();
 
             return OperationResult.Success();
+        }
+        catch (NoInternetException ex)
+        {
+            return OperationResult.Failed(ex.Message, kind: OperationFailureReason.Network);
         }
         catch (InvalidOperationException ex)
         {

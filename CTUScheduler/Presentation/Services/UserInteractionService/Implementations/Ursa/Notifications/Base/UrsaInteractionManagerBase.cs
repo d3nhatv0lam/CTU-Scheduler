@@ -8,6 +8,8 @@ using CTUScheduler.Presentation.Services.UserInteractionService.Models;
 using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
+using CTUMessageCloseReason = CTUScheduler.Presentation.Services.UserInteractionService.Models.MessageCloseReason;
+using MessageCloseReason = Ursa.Controls.MessageCloseReason;
 
 namespace CTUScheduler.Presentation.Services.UserInteractionService.Implementations.Ursa.Notifications.Base;
 
@@ -128,4 +130,7 @@ public abstract class UrsaInteractionManagerBase<TManager> : INotificationTypeAc
         Logger.LogDebug("{Service} disposed", GetType().Name);
         _isDisposed = true;
     }
+    
+    protected static CTUMessageCloseReason MapReason(MessageCloseReason reason) => (CTUMessageCloseReason)reason;
+
 }

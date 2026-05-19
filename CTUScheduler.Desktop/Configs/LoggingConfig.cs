@@ -23,7 +23,7 @@ public static class LoggingConfig
             .WriteTo.File(
                 path: logPath,
                 rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 14,
+                retainedFileCountLimit: 7,
                 outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {ShortTypeName,-40} | {Message}{NewLine}{Exception}")
             .CreateLogger();
         LogHeader();
@@ -32,7 +32,7 @@ public static class LoggingConfig
 
     private static void LogHeader()
     {
-        var headerLogger = Log.ForContext("ShortTypeName", "System");
+        var headerLogger = Log.ForContext("ShortTypeName", "Host");
 
         string separator = new string('=', 60);
 
@@ -44,6 +44,8 @@ public static class LoggingConfig
 
     public static void CloseAndFlush()
     {
+        Log.ForContext("ShortTypeName", "Host")
+            .Information("================= LOG END =================");
         Log.CloseAndFlush();
     }
 }
