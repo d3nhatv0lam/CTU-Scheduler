@@ -37,7 +37,9 @@ public static class ServiceCollectionExtensions
         // --- State Management ---
         services.AddSingleton<AppState>();
         services.AddSingleton<IUserSettingService, UserSettingService>();
-        services.AddSingleton<IUserSessionService, UserSessionService>();
+        services.AddSingleton<UserSessionService>()
+            .AddSingleton<IUserSessionService>(sp => sp.GetRequiredService<UserSessionService>())
+            .AddSingleton<ICleanup>(sp => sp.GetRequiredService<UserSessionService>());
 
         // --- App Services / Use Cases ---
         services.AddTransient<ILoginService, LoginService>();
@@ -47,7 +49,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ICourseRegistrationService, CourseRegistrationService>();
         services.AddTransient<ITuitionFeeService, TuitionFeeService>();
         services.AddTransient<ITeachingPlanLoaderService, TeachingPlanLoaderService>();
-        
+
         services.AddSingleton<ITimetableGeneratorService, TimetableGeneratorService>();
 
         // stores
@@ -59,7 +61,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ICleanup>(sp => sp.GetRequiredService<TuitionFeeStore>());
 
         services.AddHttpClient<ISchoolAnnouncementService, SchoolAnnouncementService>();
-        
+
         services.AddSingleton<TeachingPlanStore>()
             .AddSingleton<ITeachingPlanStore>(sp => sp.GetRequiredService<TeachingPlanStore>())
             .AddSingleton<ICleanup>(sp => sp.GetRequiredService<TeachingPlanStore>());

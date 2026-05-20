@@ -172,7 +172,7 @@
                         </u:Skeleton>
                     </Grid>
                 </Border>
-                
+
                 <!--// Card 3: Các nhóm đơn vị //-->
                 <Border Classes="Card card-item-3">
                     <Border.Styles>
@@ -549,12 +549,11 @@
                 <Border x:Name="Card4" Classes="Card card-item-4">
                     <Grid RowDefinitions="Auto, *">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Lộ trình đăng ký học phần" />
-                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoadingTeachingPlan}" IsActive="True"
-                                    ClipToBounds="False">
-                            <timeline:TimelineControl DataContext="{Binding TimelineViewModel}"
-                                                      ClipToBounds="False"
-                                                      VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
-                        </u:Skeleton>
+
+                        <timeline:TimelineControl Grid.Row="1"
+                                                  DataContext="{Binding TimelineViewModel}"
+                                                  ClipToBounds="False"
+                                                  VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
                     </Grid>
                 </Border>
             </Grid>

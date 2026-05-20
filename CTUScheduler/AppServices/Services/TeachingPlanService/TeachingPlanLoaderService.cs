@@ -141,6 +141,9 @@ public class TeachingPlanLoaderService : ITeachingPlanLoaderService
                     OperationFailureReason.System);
             }
 
+            // Đính kèm link từ xa theo đúng kiến trúc Clean Architecture
+            data = data with { PdfUrl = target.Link };
+
             _logger.LogInformation("Successfully parsed teaching plan with {TimelineCount} timeline nodes and {DetailCount} adjustment groups.", data.RegistrationTimeline.Count, data.AdjustmentDetails.Count);
             return OperationResult<TeachingPlanData>.Success(data);
         }

@@ -36,7 +36,6 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
     [ObservableAsProperty] private bool _isLoadingRegistrationInfo;
     [ObservableAsProperty] private bool _isLoadingPlannedCourses;
     [ObservableAsProperty] private bool _isLoadingTuitionFee;
-    [ObservableAsProperty] private bool _isLoadingTeachingPlan;
 
     public string UrlPathSegment => nameof(HomeViewModel);
     public IScreen HostScreen { get; }
@@ -46,7 +45,6 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
 
     public ReactiveCommand<Unit, OperationResult<IReadOnlyList<PlannedCourse>>> LoadPlannedCoursesCommand { get; }
     public ReactiveCommand<Unit, OperationResult<TuitionFeeSummary>> LoadTuitionFeeCommand { get; }
-    public ReactiveCommand<Unit, OperationResult<TeachingPlanData>> LoadTeachingPlanCommand { get; }
 
     public HomeViewModel(IScreen hostScreen,
         IUserSessionService userSessionService,
@@ -107,15 +105,6 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
             .ToProperty(this, nameof(TuitionFee), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
 
-        LoadTeachingPlanCommand = ReactiveCommand.CreateFromTask(teachingPlanLoaderService.LoadLatestAsync)
-            .DisposeWith(Disposables);
-
-        LoadTeachingPlanCommand
-            .Where(x => x.IsSuccess)
-            .Select(x => x.Content!)
-            .Subscribe(teachingPlanStore.Update)
-            .DisposeWith(Disposables);
-
         _teachingPlanHelper = teachingPlanStore.TeachingPlanChanged
             .ToProperty(this, nameof(TeachingPlan), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
@@ -139,7 +128,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
             .Select(_ => Unit.Default)
             .InvokeCommand(LoadTuitionFeeCommand)
             .DisposeWith(Disposables);
-     
+
         _isLoadingPlannedCoursesHelper = this.WhenAnyValue(x => x.IsLoading, x => x.PlannedCourses)
             .CombineLatest(LoadPlannedCoursesCommand.IsExecuting,
                 (state, isExecuting) =>
@@ -158,22 +147,11 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
                     return tuitionFee is null && (isLoading || isExecuting);
                 }).ToProperty(this, nameof(IsLoadingTuitionFee))
             .DisposeWith(Disposables);
-
-        _isLoadingTeachingPlanHelper = LoadTeachingPlanCommand.IsExecuting
-            .ToProperty(this, nameof(IsLoadingTeachingPlan), scheduler: RxSchedulers.MainThreadScheduler)
-            .DisposeWith(Disposables);
     }
 
     protected override async Task<OperationResult> ExecuteWebSyncTaskAsync()
     {
         return await _registrationRulesService.EnsureReadyAsync();
-    }
-
-    protected override void SetupSubscriptions(CompositeDisposable disposables)
-    {
-        Observable.Return(Unit.Default)
-            .InvokeCommand(LoadTeachingPlanCommand)
-            .DisposeWith(disposables);
     }
 
     private void ApplyTeachingPlanToTimeline(TeachingPlanData? teachingPlan)
@@ -207,8 +185,12 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
             if (p.StartDate.HasValue && p.EndDate.HasValue)
             {
                 // Tự động phân phối lịch cá nhân vào đúng đợt đăng ký bằng cách tìm đợt gần nhất (độ lệch ngày nhỏ nhất)
-                double distToDot1 = originalDot1 is not null ? Math.Abs((p.StartDate.Value - originalDot1.StartDate).TotalDays) : double.MaxValue;
-                double distToDot2 = originalDot2 is not null ? Math.Abs((p.StartDate.Value - originalDot2.StartDate).TotalDays) : double.MaxValue;
+                double distToDot1 = originalDot1 is not null
+                    ? Math.Abs((p.StartDate.Value - originalDot1.StartDate).TotalDays)
+                    : double.MaxValue;
+                double distToDot2 = originalDot2 is not null
+                    ? Math.Abs((p.StartDate.Value - originalDot2.StartDate).TotalDays)
+                    : double.MaxValue;
 
                 if (distToDot1 < distToDot2) // Khớp Đợt 1 hơn
                 {
@@ -266,7 +248,8 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
 
         // 2. Cá nhân hóa Đợt điều chỉnh KHTT (Node 3: "Điều chỉnh kế hoạch học tập")
         var khttNode = TimelineViewModel.Nodes.FirstOrDefault(n => n.Title.Contains("Điều chỉnh kế hoạch học tập"));
-        var originalKhtt = TeachingPlan?.RegistrationTimeline?.FirstOrDefault(n => n.Title.Contains("Điều chỉnh kế hoạch học tập"));
+        var originalKhtt =
+            TeachingPlan?.RegistrationTimeline?.FirstOrDefault(n => n.Title.Contains("Điều chỉnh kế hoạch học tập"));
 
         if (khttNode is not null && originalKhtt is not null)
         {

@@ -11,13 +11,14 @@ public record TeachingPlanData(
     IReadOnlyList<TimelineNode> RegistrationTimeline,
     DateTime? SemesterStartDate,
     DateTime? SemesterEndDate,
-    IReadOnlyList<TeachingPlanAdjustmentDetail> AdjustmentDetails
+    IReadOnlyList<TeachingPlanAdjustmentDetail> AdjustmentDetails,
+    string? PdfUrl = null
 )
 {
     /// <summary>
     /// Khởi tạo mặc định khi chưa có dữ liệu.
     /// </summary>
-    public TeachingPlanData() : this(new List<TimelineNode>(), null, null, new List<TeachingPlanAdjustmentDetail>())
+    public TeachingPlanData() : this(new List<TimelineNode>(), null, null, new List<TeachingPlanAdjustmentDetail>(), null)
     {
     }
 
@@ -28,7 +29,8 @@ public record TeachingPlanData(
         builder.Append($"{nameof(SemesterStartDate)} = {SemesterStartDate}, ");
         builder.Append($"{nameof(SemesterEndDate)} = {SemesterEndDate}, ");
         builder.Append(
-            $"{nameof(AdjustmentDetails)} = [{(AdjustmentDetails != null ? string.Join(", ", AdjustmentDetails) : "")}]");
+            $"{nameof(AdjustmentDetails)} = [{(AdjustmentDetails != null ? string.Join(", ", AdjustmentDetails) : "")}], ");
+        builder.Append($"{nameof(PdfUrl)} = {PdfUrl}");
         return true;
     }
 }

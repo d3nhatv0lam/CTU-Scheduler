@@ -13,7 +13,6 @@ using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Core.Models.TeachingPlan;
-using CTUScheduler.Presentation.Shared.Controls.Timeline;
 using Microsoft.Extensions.Logging;
 using UglyToad.PdfPig;
 
@@ -177,7 +176,7 @@ public partial class TeachingPlanPdfService : ITeachingPlanPdfService
         }
     }
 
-    private static string GetCachedPdfPath(string pdfUrl)
+    public string GetCachedPdfPath(string pdfUrl)
     {
         var cacheRoot = Path.Combine(AppConstants.Paths.BaseLocalPath, CacheSubFolder);
         Directory.CreateDirectory(cacheRoot);
@@ -383,13 +382,13 @@ public partial class TeachingPlanPdfService : ITeachingPlanPdfService
                         // Tinh lọc title cực kỳ ngắn gọn, trực quan, bắt mắt cho user
                         var cleanTitle = id switch
                         {
-                            1 => "Công bố TKB & Đề xuất đổi",
+                            1 => "Công bố & Đề xuất đổi TKB",
                             2 => "Đăng ký học phần (Đợt 1)",
                             3 => "Điều chỉnh kế hoạch học tập",
                             4 => "Duyệt mở thêm lớp học phần",
-                            5 => "Đóng cổng & Công bố lớp hủy",
+                            5 => "Đóng KHHT & Công bố xóa lớp",
                             6 => "Bắt đầu học kỳ mới",
-                            7 => "Thay đổi đăng ký HP (Đợt 2)",
+                            7 => "Thay đổi, đăng ký HP (Đợt 2)",
                             8 => "Điều chỉnh KHHT (Bổ sung)",
                             _ => content
                         };

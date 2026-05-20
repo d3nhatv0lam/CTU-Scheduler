@@ -16,4 +16,9 @@ public interface ITeachingPlanPdfService
     Task<TeachingPlanData> ExtractTeachingPlanAsync(string filePath, DateTime? preciseClosingDateTime = null);
     
     Task<DateTime?> ExtractClosingNoticeDateTimeAsync(string filePath);
+
+    /// <summary>
+    /// Lấy đường dẫn file cục bộ đã được cache tương ứng với link từ xa.
+    /// </summary>
+    string GetCachedPdfPath(string pdfUrl);
 }

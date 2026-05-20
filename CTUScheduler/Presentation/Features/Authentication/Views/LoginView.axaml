@@ -1,153 +1,151 @@
-<rxui:ReactiveUserControl 
-		x:TypeArguments="vm:LoginViewModel"
-		xmlns="https://github.com/avaloniaui"
-		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-		mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
-		xmlns:rxui="http://reactiveui.net"
-		xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-		xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Authentication.ViewModels"
-		xmlns:u="https://irihi.tech/ursa"
-		xmlns:semi="https://irihi.tech/semi"
-		x:CompileBindings="True"
-		x:DataType="vm:LoginViewModel"
-		Focusable="True"
-		x:Class="CTUScheduler.Presentation.Features.Authentication.Views.LoginView">
-	
-	<rxui:ReactiveUserControl.KeyBindings>
-		<KeyBinding Gesture="Enter" Command="{Binding SignInCommand}" />
-	</rxui:ReactiveUserControl.KeyBindings>
+<rxui:ReactiveUserControl
+    x:TypeArguments="vm:LoginViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+    xmlns:rxui="http://reactiveui.net"
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Authentication.ViewModels"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:semi="https://irihi.tech/semi"
+    x:CompileBindings="True"
+    x:DataType="vm:LoginViewModel"
+    Focusable="True"
+    x:Class="CTUScheduler.Presentation.Features.Authentication.Views.LoginView">
 
-	<rxui:ReactiveUserControl.Styles>
-		<Style Selector="TextBlock">
-			<Setter Property="FontFamily" Value="{StaticResource Ctu-Text-Font}"/>
-		</Style>
-		<Style Selector="Button#LoginButton.ripple">
-			<Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
-			<Setter Property="Foreground" Value="White"/>
-			<Setter Property="FontSize" Value="16"/>
-			<Setter Property="FontWeight" Value="Bold"/>
-		</Style>
-		<Style Selector="Button#LoginButton:pointerover">
-			<Setter Property="Background" Value="{DynamicResource ButtonHoverBrush}"/>
-			<Setter Property="Foreground" Value="White"/>
-		</Style>
-	</rxui:ReactiveUserControl.Styles>
+    <rxui:ReactiveUserControl.KeyBindings>
+        <KeyBinding Gesture="Enter" Command="{Binding SignInCommand}" />
+    </rxui:ReactiveUserControl.KeyBindings>
 
-	<Grid Background="{StaticResource PrimaryColor}"
-		  ColumnDefinitions="0.85* *">
-		
-		<Grid Grid.Column="0" RowDefinitions="20 * *">
-			
-			<!--// Logo //-->
-			<Image 
-				Grid.Row="1" 
-				Source="avares://CTUScheduler/Assets/Images/CTU Logo/CTU_logo_200x200.png" 
-				Height="280" Width="280" Stretch="Uniform"
-				   />
-			<!--// Title //-->
-			<StackPanel Grid.Row="2"
-						VerticalAlignment="Top"
-						HorizontalAlignment="Center">
-				<StackPanel.Styles>
-					<Style Selector="TextBlock">
-						<Setter Property="VerticalAlignment" Value="Top"/>
-						<Setter Property="HorizontalAlignment" Value="Center"/>
-						<Setter Property="Foreground" Value="White"/>
-					</Style>
-				</StackPanel.Styles>
-				
-				<TextBlock
-						   Text="CTU Scheduler"
-						   FontSize="45"
-						   Margin="0 20 0 0"
-						   FontFamily="{StaticResource Ctu-Title-Font}"
-						   FontWeight="Bold"/>
-				<TextBlock Text="Student's project"
-						   Margin="0 15 0 0"
-						   FontSize="24"
-						   FontWeight="Bold"
-						   />
-			</StackPanel>
-			
-		</Grid>
-	
-		<!--// right side //-->
-		<Border Grid.Column="1" 
-				Background="White"
-				CornerRadius="40 0 0 40"
-				BorderThickness="0"
-				>
-			<Grid RowDefinitions="Auto *" ColumnDefinitions="0.2* * 0.2*">
-				<StackPanel Grid.Row="1" Grid.Column="1" Margin="0 60 0 0">
-					<TextBlock Text="Đăng nhập" 
-							   HorizontalAlignment="Center" 
-							   FontSize="40" 
-							   FontWeight="Black"
-							   Margin="0 0 0 10"/>
+    <rxui:ReactiveUserControl.Styles>
+        <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource Ctu-Text-Font}" />
+        </Style>
+        <Style Selector="Button#LoginButton.ripple">
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+        <Style Selector="Button#LoginButton:pointerover">
+            <Setter Property="Background" Value="{DynamicResource ButtonHoverBrush}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+    </rxui:ReactiveUserControl.Styles>
 
-					<!-- MSSV -->
-					<TextBox x:Name="txtUsername"
-					         Classes="input floating"
-							 Watermark="MSSV"
-							 Margin="0 15 0 0"
-							 HorizontalAlignment="Stretch"/>
+    <Grid Background="{StaticResource PrimaryColor}"
+          ColumnDefinitions="0.85* *">
 
-					<!-- Password -->
-					<TextBox x:Name="txtPassword"
-							 Watermark="Mật khẩu" 
-							 Classes="input floating reveal"
-							 PasswordChar="*"
-							 Margin="0 20 0 0"
-							 HorizontalAlignment="Stretch"/>
+        <Grid Grid.Column="0" RowDefinitions="20 * *">
 
-					<CheckBox 
-						x:Name="chkSaveUsername"
-						Content="Lưu MSSV cho lần đăng nhập kế"  
-						Margin="0 25 0 0"/>
-				
-					<Button x:Name="LoginButton"
-					        Classes="ripple login-button"
-							Content="Đăng nhập"
-							HorizontalAlignment="Stretch"
-							Margin="0 40 0 0"
-							Height="45"
-							Cursor="Hand"
-							CornerRadius="8"
-					/>
+            <!--// Logo //-->
+            <Image
+                Grid.Row="1"
+                Source="avares://CTUScheduler/Assets/Images/CTU Logo/CTU_logo_200x200.png"
+                Height="280" Width="280" Stretch="Uniform" />
+            <!--// Title //-->
+            <StackPanel Grid.Row="2"
+                        VerticalAlignment="Top"
+                        HorizontalAlignment="Center">
+                <StackPanel.Styles>
+                    <Style Selector="TextBlock">
+                        <Setter Property="VerticalAlignment" Value="Top" />
+                        <Setter Property="HorizontalAlignment" Value="Center" />
+                        <Setter Property="Foreground" Value="White" />
+                    </Style>
+                </StackPanel.Styles>
 
-					<TextBlock 
-							Text="Nếu có phát sinh lỗi, hãy liên hệ mình, cảm ơn bạn.&#x0A;Chúc các bạn sử dụng app vui vẻ!"
-							FontSize="14"
-							FontWeight="Bold"
-							TextAlignment="Center" 
-							TextWrapping="WrapWithOverflow"
-							Margin="0 40 0 0"
-							Foreground="#212529"/>
-					
-					<!-- Button xem kế hoạch -->
-					<Button HorizontalAlignment="Center"
-							Margin="0 20 0 0"
-							Background="#F4F4F5"
-							BorderThickness="0"
-							CornerRadius="8"
-							Padding="16 12"
-							Height="50"
-							Cursor="Hand">
-						<StackPanel Orientation="Horizontal" Spacing="8">
-							<materialIcons:MaterialIcon Kind="CloudDownload" Foreground="{StaticResource PrimaryColor}" Width="20" Height="20"/>
-							<TextBlock Text="Xem kế hoạch giảng dạy &amp; đăng ký học phần" 
-									   VerticalAlignment="Center" 
-									   FontSize="14"
-									   Foreground="{StaticResource PrimaryBrush}"/>
-						</StackPanel>
-					</Button>
-					
-				</StackPanel>
-			</Grid>
-			
-		</Border>
-		
-	</Grid>
+                <TextBlock
+                    Text="CTU Scheduler"
+                    FontSize="45"
+                    Margin="0 20 0 0"
+                    FontFamily="{StaticResource Ctu-Title-Font}"
+                    FontWeight="Bold" />
+                <TextBlock Text="Student's project"
+                           Margin="0 15 0 0"
+                           FontSize="24"
+                           FontWeight="Bold" />
+            </StackPanel>
+
+        </Grid>
+
+        <!--// right side //-->
+        <Border Grid.Column="1"
+                Background="White"
+                CornerRadius="40 0 0 40"
+                BorderThickness="0">
+            <Grid RowDefinitions="Auto *" ColumnDefinitions="0.2* * 0.2*">
+                <StackPanel Grid.Row="1" Grid.Column="1" Margin="0 60 0 0">
+                    <TextBlock Text="Đăng nhập"
+                               HorizontalAlignment="Center"
+                               FontSize="40"
+                               FontWeight="Black"
+                               Margin="0 0 0 10" />
+
+                    <!-- MSSV -->
+                    <TextBox x:Name="txtUsername"
+                             Classes="input floating"
+                             Watermark="MSSV"
+                             Margin="0 15 0 0"
+                             HorizontalAlignment="Stretch" />
+
+                    <!-- Password -->
+                    <TextBox x:Name="txtPassword"
+                             Watermark="Mật khẩu"
+                             Classes="input floating reveal"
+                             PasswordChar="*"
+                             Margin="0 20 0 0"
+                             HorizontalAlignment="Stretch" />
+
+                    <CheckBox
+                        x:Name="chkSaveUsername"
+                        Content="Lưu MSSV cho lần đăng nhập kế"
+                        Margin="0 25 0 0" />
+
+                    <Button x:Name="LoginButton"
+                            Classes="ripple login-button"
+                            Content="Đăng nhập"
+                            HorizontalAlignment="Stretch"
+                            Margin="0 40 0 0"
+                            Height="45"
+                            Cursor="Hand"
+                            CornerRadius="8" />
+
+                    <TextBlock
+                        Text="Nếu có phát sinh lỗi, hãy liên hệ mình, cảm ơn bạn.&#x0A;Chúc các bạn sử dụng app vui vẻ!"
+                        FontSize="14"
+                        FontWeight="Bold"
+                        TextAlignment="Center"
+                        TextWrapping="WrapWithOverflow"
+                        Margin="0 40 0 0"
+                        Foreground="#212529" />
+
+                    <!-- Button xem kế hoạch -->
+                    <Button Classes="ripple"
+                            HorizontalAlignment="Center"
+                            Margin="0 20 0 0"
+                            Background="#F4F4F5"
+                            BorderThickness="0"
+                            CornerRadius="8"
+                            Padding="16 12"
+                            Height="50"
+                            Command="{Binding OpenTeachingPlanCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <materialIcons:MaterialIcon Kind="CloudDownload" Foreground="{StaticResource PrimaryColor}"
+                                                        Width="20" Height="20" />
+                            <TextBlock Text="Xem kế hoạch giảng dạy &amp; đăng ký học phần"
+                                       VerticalAlignment="Center"
+                                       FontSize="14"
+                                       Foreground="{StaticResource PrimaryBrush}" />
+                        </StackPanel>
+                    </Button>
+
+                </StackPanel>
+            </Grid>
+
+        </Border>
+
+    </Grid>
 </rxui:ReactiveUserControl>

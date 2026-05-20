@@ -5,6 +5,7 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.Media;
+using CTUScheduler.Core.Models.TeachingPlan;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
@@ -17,10 +18,7 @@ public class TimelineViewModel : ReactiveObject, IViewModel, IDisposable
 
     public void Dispose()
     {
-        if (Nodes != null)
-        {
-            foreach (var node in Nodes) node.Dispose();
-        }
+        foreach (var node in Nodes) node.Dispose();
     }
 }
 
@@ -82,7 +80,7 @@ public partial class TimelineNodeViewModel : ReactiveObject, IDisposable
 
                     _ => Lerp(
                         Color.Parse("#F59E0B"), // Yellow mid
-                        Color.Parse("#EF4444"), // Red end
+                        Color.Parse("#EF4444"), // Red endW
                         (Progress - 0.5) / 0.5)
                 },
 
@@ -276,41 +274,4 @@ public partial class TimelineNodeViewModel : ReactiveObject, IDisposable
     {
         _disposables.Dispose();
     }
-}
-
-public record TimelineNode(
-    string Title,
-    DateTime StartDate,
-    DateTime EndDate,
-    TimelineNodeType Type = TimelineNodeType.Range,
-    string? Subtitle = null)
-{
-    public bool IsRange => Type == TimelineNodeType.Range;
-    public bool IsSinglePoint => Type == TimelineNodeType.SinglePoint;
-    public bool IsDeadline => Type == TimelineNodeType.DeadlineOrEnd;
-    public bool IsStartFrom => Type == TimelineNodeType.StartFrom;
-
-    private static string FormatDateTimeFull(DateTime dt)
-    {
-        return dt.TimeOfDay == TimeSpan.Zero
-            ? dt.ToString("dd/MM/yyyy")
-            : dt.ToString("HH:mm dd/MM/yyyy");
-    }
-
-    public string DisplayDate => Type switch
-    {
-        TimelineNodeType.SinglePoint => FormatDateTimeFull(StartDate),
-        TimelineNodeType.Range => $"{FormatDateTimeFull(StartDate)} - {FormatDateTimeFull(EndDate)}",
-        TimelineNodeType.DeadlineOrEnd => $"Hạn cuối: {FormatDateTimeFull(EndDate)}",
-        TimelineNodeType.StartFrom => $"Bắt đầu từ: {FormatDateTimeFull(StartDate)}",
-        _ => string.Empty
-    };
-}
-
-public enum TimelineNodeType
-{
-    Range,
-    SinglePoint,
-    DeadlineOrEnd,
-    StartFrom
 }
