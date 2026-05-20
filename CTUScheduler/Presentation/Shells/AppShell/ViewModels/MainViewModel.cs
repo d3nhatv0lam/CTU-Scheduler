@@ -26,7 +26,7 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
     private readonly IConnectivityService _connectivityService;
     private readonly INavigationRegionManager _navigationRegionManager;
     private readonly IUserInteractionService _userInteractionService;
-    
+
     private readonly NotificationOptions _internetNotificationOptions = new() { Expiration = TimeSpan.FromSeconds(10), ShowIcon = true};
 
     private readonly RegionId _regionId = RegionIds.Root;

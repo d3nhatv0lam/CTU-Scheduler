@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,7 +10,6 @@ namespace CTUScheduler.AppServices.Helpers;
 
 public static class ProcessHelper
 {
-    
     /// <summary>
     /// Open url with default browser in Windows, Linux, Mac
     /// </summary>
@@ -20,9 +19,15 @@ public static class ProcessHelper
     /// <exception cref="ArgumentNullException"></exception>
     public static void OpenUrl(string url)
     {
-        if (string.IsNullOrWhiteSpace(url)) throw new ArgumentNullException(nameof(url));
-        if (!Uri.IsWellFormedUriString(url, UriKind.Absolute)) throw new ArgumentException("Invalid url", nameof(url));
-        
+        ArgumentException.ThrowIfNullOrWhiteSpace(url);
+
+        // Nếu không phải là đường dẫn tệp tin hoặc thư mục tồn tại cục bộ, kiểm tra định dạng Uri tuyệt đối
+        if (!File.Exists(url) && !Directory.Exists(url))
+        {
+            if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
+                throw new ArgumentException("Invalid url or local path", nameof(url));
+        }
+
         if (TryOpenUrl(url)) return;
 
         throw new NotSupportedException("Unsupported OS");
@@ -32,9 +37,9 @@ public static class ProcessHelper
     {
         return OperatingSystem.IsWindows() ? OpenUrlInWindows(url) :
             OperatingSystem.IsLinux() ? TryOpenUrlWithLinux(url) :
-            OperatingSystem.IsMacOS() ? TryOpenUrlWithMac(url): false;
+            OperatingSystem.IsMacOS() ? TryOpenUrlWithMac(url) : false;
     }
-    
+
     private static bool OpenUrlInWindows(string url)
     {
         if (!OperatingSystem.IsWindows()) return false;
@@ -72,22 +77,23 @@ public static class ProcessHelper
             }
         }
     }
+
     private static bool TryOpenUrlWithMac(string url)
     {
         if (!OperatingSystem.IsMacOS()) return false;
         Process.Start("open", url);
         return true;
     }
-    
+
     /// <summary>
     /// Chạy script đa nền tảng (Wrapper cho Process)
     /// </summary>
     public static async Task<int> RunScriptAsync(
-        string fileName, 
+        string fileName,
         IEnumerable<string> arguments,
-        string workingDir, 
-        Dictionary<string, string>? envVars, 
-        Action<string> onOutput, 
+        string workingDir,
+        Dictionary<string, string>? envVars,
+        Action<string> onOutput,
         Action<string> onError,
         CancellationToken cancellationToken = default)
     {
@@ -118,8 +124,14 @@ public static class ProcessHelper
         process.StartInfo = startInfo;
 
         // Đăng ký event log
-        process.OutputDataReceived += (s, e) => { if (e.Data != null) onOutput(e.Data); };
-        process.ErrorDataReceived += (s, e) => { if (e.Data != null) onError(e.Data); };
+        process.OutputDataReceived += (s, e) =>
+        {
+            if (e.Data != null) onOutput(e.Data);
+        };
+        process.ErrorDataReceived += (s, e) =>
+        {
+            if (e.Data != null) onError(e.Data);
+        };
 
         process.Start();
         process.BeginOutputReadLine();
@@ -137,22 +149,25 @@ public static class ProcessHelper
                 if (!process.HasExited)
                 {
                     // Kill(true) = Giết cả dòng họ (Process Tree)
-                    process.Kill(true); 
+                    process.Kill(true);
                 }
             }
-            catch 
+            catch
             {
                 // Có thể process vừa tự tắt xong, hoặc không đủ quyền truy cập.
                 // Việc Kill thất bại lúc này không quan trọng, vì mục tiêu là dừng task.
                 // Có thể log warning nhẹ nếu muốn: Debug.WriteLine($"Kill failed: {ex.Message}");
                 // ignore
             }
+
             throw;
         }
+
         return process.ExitCode;
     }
-    
-    public static (string FileName, IEnumerable<string> Args) PrepareShellCommand(string scriptPath, string[] scriptArgs)
+
+    public static (string FileName, IEnumerable<string> Args) PrepareShellCommand(string scriptPath,
+        string[] scriptArgs)
     {
         // 1. Chuẩn hóa đường dẫn tuyệt đối (Xử lý luôn vụ \ hay /)
         string fullPath = Path.GetFullPath(scriptPath);

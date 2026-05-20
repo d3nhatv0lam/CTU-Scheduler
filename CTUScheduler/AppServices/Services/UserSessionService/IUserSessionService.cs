@@ -24,4 +24,5 @@ public interface IUserSessionService
     void UpdateServerInfo(RegistrationInformation info);
     void NotifyModified();
     void SetLastModified(DateTimeOffset? lastSaved);
+    void ClearData();
 }

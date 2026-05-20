@@ -2,6 +2,7 @@
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Models;
 using CTUScheduler.AppServices.Services.ScheduleService;
+using CTUScheduler.AppServices.Services.TeachingPlanService;
 using CTUScheduler.AppServices.Services.TimetableGeneratorService;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.AppServices.Services.UserSettingService;
@@ -16,6 +17,7 @@ using CTUScheduler.Infrastructure.Services.Auth;
 using CTUScheduler.Infrastructure.Services.MainHomeService;
 using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Infrastructure.Services.Registration;
+using CTUScheduler.Infrastructure.Services.TeachingPlan;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,7 +37,9 @@ public static class ServiceCollectionExtensions
         // --- State Management ---
         services.AddSingleton<AppState>();
         services.AddSingleton<IUserSettingService, UserSettingService>();
-        services.AddSingleton<IUserSessionService, UserSessionService>();
+        services.AddSingleton<UserSessionService>()
+            .AddSingleton<IUserSessionService>(sp => sp.GetRequiredService<UserSessionService>())
+            .AddSingleton<ICleanup>(sp => sp.GetRequiredService<UserSessionService>());
 
         // --- App Services / Use Cases ---
         services.AddTransient<ILoginService, LoginService>();
@@ -44,6 +48,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ICourseCatalogService, CourseCatalogService>();
         services.AddTransient<ICourseRegistrationService, CourseRegistrationService>();
         services.AddTransient<ITuitionFeeService, TuitionFeeService>();
+        services.AddTransient<ITeachingPlanLoaderService, TeachingPlanLoaderService>();
 
         services.AddSingleton<ITimetableGeneratorService, TimetableGeneratorService>();
 
@@ -54,6 +59,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<TuitionFeeStore>()
             .AddSingleton<ITuitionFeeStore>(sp => sp.GetRequiredService<TuitionFeeStore>())
             .AddSingleton<ICleanup>(sp => sp.GetRequiredService<TuitionFeeStore>());
+
+        services.AddHttpClient<ISchoolAnnouncementService, SchoolAnnouncementService>();
+
+        services.AddSingleton<TeachingPlanStore>()
+            .AddSingleton<ITeachingPlanStore>(sp => sp.GetRequiredService<TeachingPlanStore>())
+            .AddSingleton<ICleanup>(sp => sp.GetRequiredService<TeachingPlanStore>());
 
         // --- Schedule Manager Pattern ---
         services.AddSingleton<ScheduleManager>()

@@ -16,7 +16,7 @@ namespace CTUScheduler.Infrastructure.Services.Registration;
 
 public class TuitionFeeService : ITuitionFeeService
 {
-    private readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(30);
+    private readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(60);
     private readonly IWebDriverService _webDriverService;
     private readonly ICtuPageFactory _factory;
     private readonly ILogger<TuitionFeeService> _logger;
