@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using CTUScheduler.Core.Interfaces;
@@ -28,6 +29,7 @@ public sealed class TeachingPlanStore : ITeachingPlanStore, ICleanup, IDisposabl
     {
         ArgumentNullException.ThrowIfNull(teachingPlan);
         _subject.OnNext(teachingPlan);
+        Debug.WriteLine(teachingPlan);
     }
 
     public void Clear()

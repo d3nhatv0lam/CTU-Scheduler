@@ -13,5 +13,7 @@ public interface ITeachingPlanPdfService
         CancellationToken cancellationToken = default,
         TimeSpan? timeout = null);
         
-    Task<TeachingPlanData> ExtractTeachingPlanAsync(string filePath);
+    Task<TeachingPlanData> ExtractTeachingPlanAsync(string filePath, DateTime? preciseClosingDateTime = null);
+    
+    Task<DateTime?> ExtractClosingNoticeDateTimeAsync(string filePath);
 }

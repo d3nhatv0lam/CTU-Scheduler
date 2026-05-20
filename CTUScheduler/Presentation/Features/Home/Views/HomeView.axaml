@@ -93,7 +93,7 @@
         <Border>
             <Grid Classes="main-grid" ColumnSpacing="10"
                   RowSpacing="10"
-                  ColumnDefinitions="1.5*, *"
+                  ColumnDefinitions="2*, *"
                   RowDefinitions="Auto, Auto, Auto, Auto">
                 <Interaction.Behaviors>
                     <AdaptiveBehavior>
@@ -105,12 +105,12 @@
                 <Border Classes="Card card-item-1">
                     <Grid RowDefinitions="Auto, Auto, Auto">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Thông tin đăng ký" />
-                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsInitialLoading}" IsActive="True">
+                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoadingRegistrationInfo}" IsActive="True">
                             <SelectableTextBlock x:Name="txtRegistrationInfo" Classes="ContentText" Text="Học kỳ: ..."
                                                  LineHeight="24" />
                         </u:Skeleton>
 
-                        <u:Skeleton Grid.Row="2" Margin="0,25,0,0" IsLoading="{Binding IsInitialLoading}"
+                        <u:Skeleton Grid.Row="2" Margin="0,25,0,0" IsLoading="{Binding IsLoadingRegistrationInfo}"
                                     IsActive="True">
                             <ContentControl Content="{Binding RegistrationInfo.UserPeriod}">
                                 <ContentControl.ContentTemplate>
@@ -150,7 +150,8 @@
                     <Grid RowDefinitions="Auto, *">
                         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Nhóm của bạn" />
 
-                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsInitialLoading}" IsActive="True" MinHeight="50">
+                        <u:Skeleton Grid.Row="1" IsLoading="{Binding IsLoadingRegistrationInfo}" IsActive="True"
+                                    MinHeight="50">
                             <ContentControl Content="{Binding RegistrationInfo.UserPeriod}">
                                 <ContentControl.ContentTemplate>
                                     <DataTemplate x:DataType="model:UserPeriodItem">
@@ -171,96 +172,8 @@
                         </u:Skeleton>
                     </Grid>
                 </Border>
-
+                
                 <!--// Card 3: Các nhóm đơn vị //-->
-                <!-- <Border Classes="Card card-item-3"> -->
-                <!--     <Grid RowDefinitions="Auto, *" ClipToBounds="True"> -->
-                <!--         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Các nhóm đơn vị" /> -->
-                <!--         <u:Skeleton Grid.Row="1" IsLoading="{Binding IsInitialLoading}" IsActive="True" MinHeight="50"> -->
-                <!--             <Grid RowDefinitions="Auto, *"> -->
-                <!--                 ~1~ Header @1@ -->
-                <!--                 <Grid Grid.Row="0" ColumnDefinitions="80, *" Background="#F9FAFB"> -->
-                <!--                     <Border BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Grid.ColumnSpan="2" /> -->
-                <!--                     <TextBlock Grid.Column="0" Text="Nhóm" FontWeight="Bold" Margin="15,10" -->
-                <!--                                Foreground="#374151" FontSize="13" /> -->
-                <!--                     <TextBlock Grid.Column="1" Text="Các trường / khoa" FontWeight="Bold" -->
-                <!--                                Margin="10,10" Foreground="#374151" FontSize="13" /> -->
-                <!--                 </Grid> -->
-                <!-- -->
-                <!--                 ~1~ Body @1@ -->
-                <!--                 <ScrollViewer Grid.Row="1" -->
-                <!--                               VerticalScrollBarVisibility="Auto"> -->
-                <!--                     <ItemsRepeater ItemsSource="{Binding RegistrationInfo.Groups}"> -->
-                <!--                         <ItemsRepeater.ItemTemplate> -->
-                <!--                             <DataTemplate x:DataType="model:GroupItem"> -->
-                <!--                                 <Border BorderBrush="#F3F4F6" BorderThickness="0,0,0,1"> -->
-                <!--                                     <Grid ColumnDefinitions="80, *"> -->
-                <!--                                         <SelectableTextBlock Grid.Column="0" Text="{Binding Name}" -->
-                <!--                                                              FontWeight="SemiBold" Margin="15,12" -->
-                <!--                                                              VerticalAlignment="Center" -->
-                <!--                                                              Foreground="#111827" /> -->
-                <!--                                         <SelectableTextBlock Grid.Column="1" -->
-                <!--                                                              MinWidth="100" -->
-                <!--                                                              Text="{Binding Description}" -->
-                <!--                                                              TextWrapping="Wrap" Margin="10,12" -->
-                <!--                                                              VerticalAlignment="Center" -->
-                <!--                                                              Foreground="#4B5563" /> -->
-                <!--                                     </Grid> -->
-                <!--                                 </Border> -->
-                <!--                             </DataTemplate> -->
-                <!--                         </ItemsRepeater.ItemTemplate> -->
-                <!--                     </ItemsRepeater> -->
-                <!--                 </ScrollViewer> -->
-                <!--             </Grid> -->
-                <!--         </u:Skeleton> -->
-                <!--     </Grid> -->
-                <!-- </Border> -->
-
-                <!-- // Card 3.1:  // -->
-                <!-- <Border Classes="Card card-item-3"> -->
-                <!--     <Grid RowDefinitions="Auto, *" ClipToBounds="True"> -->
-                <!--         <TextBlock Grid.Row="0" Classes="CardTitle" Text="Danh sách học phần theo KHHT" /> -->
-                <!--         <u:Skeleton Grid.Row="1" IsLoading="{Binding IsInitialLoading}" IsActive="True" MinHeight="50"> -->
-                <!--             <Grid RowDefinitions="Auto, *"> -->
-                <!--                 ~1~ Header @1@ -->
-                <!--                 <Grid Grid.Row="0" ColumnDefinitions="80, *" Background="#F9FAFB"> -->
-                <!--                     <Border BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Grid.ColumnSpan="2" /> -->
-                <!--                     <TextBlock Grid.Column="0" Text="Mã học phần" FontWeight="Bold" Margin="15,10" -->
-                <!--                                Foreground="#374151" FontSize="13" /> -->
-                <!--                     <TextBlock Grid.Column="1" Text="Tên học phần" FontWeight="Bold" -->
-                <!--                                Margin="10,10" Foreground="#374151" FontSize="13" /> -->
-                <!--                 </Grid> -->
-                <!-- -->
-                <!--                 ~1~ Body @1@ -->
-                <!--                 <ScrollViewer Grid.Row="1" -->
-                <!--                               VerticalScrollBarVisibility="Auto"> -->
-                <!--                     <ItemsRepeater ItemsSource="{Binding PlannedCourses}"> -->
-                <!--                         <ItemsRepeater.ItemTemplate> -->
-                <!--                             <DataTemplate x:DataType="{x:Type plannedCourse:PlannedCourse}"> -->
-                <!--                                 <Border BorderBrush="#F3F4F6" BorderThickness="0,0,0,1"> -->
-                <!--                                     <Grid ColumnDefinitions="80, *"> -->
-                <!--                                         <SelectableTextBlock Grid.Column="0" -->
-                <!--                                                              Text="{Binding Code,Mode=OneWay}" -->
-                <!--                                                              FontWeight="SemiBold" Margin="15,12" -->
-                <!--                                                              VerticalAlignment="Center" -->
-                <!--                                                              Foreground="#111827" /> -->
-                <!--                                         <SelectableTextBlock Grid.Column="1" -->
-                <!--                                                              MinWidth="100" -->
-                <!--                                                              Text="{Binding NameVn,Mode=OneWay}" -->
-                <!--                                                              TextWrapping="Wrap" Margin="10,12" -->
-                <!--                                                              VerticalAlignment="Center" -->
-                <!--                                                              Foreground="#4B5563" /> -->
-                <!--                                     </Grid> -->
-                <!--                                 </Border> -->
-                <!--                             </DataTemplate> -->
-                <!--                         </ItemsRepeater.ItemTemplate> -->
-                <!--                     </ItemsRepeater> -->
-                <!--                 </ScrollViewer> -->
-                <!--             </Grid> -->
-                <!--         </u:Skeleton> -->
-                <!--     </Grid> -->
-                <!-- </Border> -->
-
                 <Border Classes="Card card-item-3">
                     <Border.Styles>
                         <!-- Style dùng chung cho TextBlock trên Header -->
