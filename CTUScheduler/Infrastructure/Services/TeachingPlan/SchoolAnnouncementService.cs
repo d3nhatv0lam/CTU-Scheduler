@@ -45,7 +45,7 @@ public class SchoolAnnouncementService : ISchoolAnnouncementService
             using var response = await _httpClient.SendAsync(request, linkedCts.Token);
 
             response.EnsureSuccessStatusCode();
-
+            
             var data = await response.Content.ReadFromJsonAsync<List<SchoolAnnouncement>>(cancellationToken);
 
             return data ?? [];

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
@@ -24,7 +25,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
 {
     public partial class LoginViewModel : ViewModelBase, IDisposable, IRoutableViewModel, IActivatableViewModel
     {
-        private readonly CompositeDisposable _disposables = new ();
+        private readonly CompositeDisposable _disposables = new();
         private readonly ILoginService _loginService;
         private readonly IUserInteractionService _userInteractionService;
         private readonly INavigationRegionManager _navigationRegionManager;
@@ -125,6 +126,13 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                 .Subscribe(teachingPlanStore.Update)
                 .DisposeWith(_disposables);
 
+            LoadTeachingPlanCommand.WhenFailed()
+                .Subscribe(_ =>
+                    _userInteractionService.Notification.Light.Error(
+                        title: "Không tại được kế hoạch giảng dạy!",
+                        content: "Bạn nên bật vpn và khởi động lại!"))
+                .DisposeWith(_disposables);
+
             _isLoadedTeachingPlanHelper = LoadTeachingPlanCommand
                 .Select(x => x.IsSuccess)
                 .ToProperty(this, nameof(IsLoadedTeachingPlan), scheduler: RxSchedulers.MainThreadScheduler)
@@ -134,18 +142,11 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
             OpenTeachingPlanCommand = ReactiveCommand.Create(() =>
                     {
                         var pdfUrl = teachingPlanStore.CurrentTeachingPlan?.PdfUrl;
-                        if (!string.IsNullOrEmpty(pdfUrl))
-                        {
-                            var cachedPath = _pdfService.GetCachedPdfPath(pdfUrl);
-                            if (System.IO.File.Exists(cachedPath))
-                            {
-                                ProcessHelper.OpenUrl(cachedPath);
-                            }
-                            else
-                            {
-                                ProcessHelper.OpenUrl(pdfUrl);
-                            }
-                        }
+                        if (string.IsNullOrEmpty(pdfUrl))
+                            return;
+
+                        var cachedPath = _pdfService.GetCachedPdfPath(pdfUrl);
+                        ProcessHelper.OpenUrl(File.Exists(cachedPath) ? cachedPath : pdfUrl);
                     },
                     canOpenTeachingPlan)
                 .DisposeWith(_disposables);
@@ -177,7 +178,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         public void Dispose()
         {
             _disposables.Dispose();
-            _logger.LogDebug("{this}: Disposed", nameof(LoginViewModel));
+            _logger.LogDebug("Disposed");
         }
     }
 }

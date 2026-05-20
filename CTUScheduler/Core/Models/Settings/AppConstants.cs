@@ -71,9 +71,10 @@ public static class AppConstants
                 AvatarUrl: "https://avatars.githubusercontent.com/u/110104167?v=4",
                 SocialLinks: new Dictionary<SocialPlatform, string>
                 {
-                    [SocialPlatform.Facebook] = "https://www.facebook.com/profile.php?id=100088452777261",
+                    [SocialPlatform.Facebook] = "https://www.facebook.com/profile.php?id=61589850129287",
                     [SocialPlatform.YouTube] = "https://www.youtube.com/@ucduong9984",
-                    [SocialPlatform.GitHub] = "https://github.com/d3nhatv0lam"
+                    [SocialPlatform.GitHub] = "https://github.com/d3nhatv0lam",
+                    [SocialPlatform.TikTok] = "https://www.tiktok.com/@c.dng273"
                 },
                 Roles: new List<ContributorRole>
                 {
@@ -113,7 +114,8 @@ public static class AppConstants
                 AvatarUrl: "https://avatars.githubusercontent.com/u/152960221?v=4",
                 SocialLinks: new Dictionary<SocialPlatform, string>
                 {
-                    [SocialPlatform.GitHub] = "https://github.com/phuctran1501"
+                    [SocialPlatform.GitHub] = "https://github.com/phuctran1501",
+                    [SocialPlatform.Facebook] = "https://www.facebook.com/phuctran1501"
                 },
                 Roles: new List<ContributorRole>
                 {
@@ -131,7 +133,8 @@ public static class AppConstants
                 AvatarUrl: "https://avatars.githubusercontent.com/u/154446069?v=4",
                 SocialLinks: new Dictionary<SocialPlatform, string>
                 {
-                    [SocialPlatform.GitHub] = "https://github.com/KimgionDev"
+                    [SocialPlatform.GitHub] = "https://github.com/KimgionDev",
+                    [SocialPlatform.Facebook] = "https://www.facebook.com/kimgion.tp"
                 },
                 Roles: new List<ContributorRole>
                 {
