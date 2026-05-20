@@ -35,15 +35,15 @@ public class RegistrationRulesService : IRegistrationRulesService
         _rulesPage = _factory.GetPage<IRegistrationRulesPage>(webDriverService.MainTab);
 
         RegistrationInfoChanged = _rulesPage.RawRegistrationInformationResponse
-                .SelectMany(async (x, ct) => await ProcessRegistrationInfoAsync(x, ct))
-                .Where(x => x is not null)
-                .Select(x => x!)
-                .Replay(1)
-                .RefCount();
+            .SelectMany(async (x, ct) => await ProcessRegistrationInfoAsync(x, ct))
+            .Where(x => x is not null)
+            .Select(x => x!)
+            .Replay(1)
+            .RefCount();
     }
 
     public IObservable<RegistrationInformation> RegistrationInfoChanged { get; }
-    
+
     // public async Task<OperationResult> EnsureReadyAsync() => OperationResult.Success();
 
     public async Task<OperationResult> EnsureReadyAsync()
@@ -59,12 +59,16 @@ public class RegistrationRulesService : IRegistrationRulesService
                 await _rulesPage.CheckSessionAndThrowAsync();
                 return OperationResult.Success();
             }
-    
+
             await _rulesPage.NavigateToAsync();
             await _rulesPage.WaitForReadyAsync();
             await _rulesPage.CheckSessionAndThrowAsync();
-            
+
             return OperationResult.Success();
+        }
+        catch (NoInternetException ex)
+        {
+            return OperationResult.Failed(ex.Message, kind: OperationFailureReason.Network);
         }
         catch (InvalidOperationException ex)
         {
@@ -77,7 +81,7 @@ public class RegistrationRulesService : IRegistrationRulesService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to navigate to registration rules page");
-            return OperationResult.FromException(ex,"Hệ thống truy cập trang dkmh không thành công!",
+            return OperationResult.FromException(ex, "Hệ thống truy cập trang dkmh không thành công!",
                 kind: OperationFailureReason.System);
         }
     }

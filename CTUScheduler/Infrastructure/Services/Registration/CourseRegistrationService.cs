@@ -22,7 +22,7 @@ public class CourseRegistrationService : ICourseRegistrationService
     private readonly IWebDriverService _webDriverService;
     private readonly ILogger<CourseRegistrationService> _logger;
     private readonly ICtuPageFactory _factory;
-    private readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(15);
+    private readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(60);
 
     public CourseRegistrationService(IWebDriverService webDriverService, ICtuPageFactory factory,
         ILogger<CourseRegistrationService> logger)
@@ -32,10 +32,6 @@ public class CourseRegistrationService : ICourseRegistrationService
         _logger = logger;
     }
 
-    public Task<OperationResult> EnsureReadyAsync()
-    {
-        return Task.FromResult(OperationResult.Success());
-    }
 
     public async Task<OperationResult<IReadOnlyList<PlannedCourse>>> FetchPlannedCourseAsync(TimeSpan? timeout = null,
         CancellationToken token = default)
@@ -94,6 +90,10 @@ public class CourseRegistrationService : ICourseRegistrationService
             await page.CheckSessionAndThrowAsync();
 
             return OperationResult.Success();
+        }
+        catch (NoInternetException ex)
+        {
+            return OperationResult.Failed(ex.Message, kind: OperationFailureReason.Network);
         }
         catch (InvalidOperationException ex)
         {

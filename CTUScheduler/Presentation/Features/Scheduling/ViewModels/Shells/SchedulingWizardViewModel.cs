@@ -113,6 +113,7 @@ public partial class SchedulingWizardViewModel : ViewModelBase,
             if (StepsVM.Length == 0 || context.CourseBlueprints.Count == 0)
             {
                 LoadStepsCommand.Execute()
+                    .ObserveOn(RxSchedulers.MainThreadScheduler)
                     .Subscribe(_ => CurrentStepIndex = strategy.StartStepIndex)
                     .DisposeWith(disposables);
             }

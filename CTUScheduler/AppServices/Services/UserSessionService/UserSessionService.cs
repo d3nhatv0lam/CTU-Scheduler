@@ -6,13 +6,14 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using CTUScheduler.AppServices.Extensions;
 using CTUScheduler.AppServices.Services.ScheduleService;
+using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
 using CTUScheduler.Core.Models.Settings;
 using DynamicData.Aggregation;
 
 namespace CTUScheduler.AppServices.Services.UserSessionService;
 
-public class UserSessionService : IUserSessionService, IDisposable
+public class UserSessionService : IUserSessionService, IDisposable, ICleanup
 {
     private readonly CompositeDisposable _disposable = new();
     private readonly BehaviorSubject<RegistrationInformation?> _serverInfoSubject = new(null);
@@ -102,6 +103,13 @@ public class UserSessionService : IUserSessionService, IDisposable
         else
             _lastSavedSubject.OnNext(time);
     }
+
+    public void ClearData()
+    {
+        _serverInfoSubject.OnNext(null);
+    }
+    
+    public void Cleanup() => ClearData();
 
     public void Dispose()
     {

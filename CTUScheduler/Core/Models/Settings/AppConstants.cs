@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using CTUScheduler.Core.Models.Contributors;
@@ -39,9 +39,9 @@ public static class AppConstants
             StandardPathBuilder.GetRoamingPath(PublisherConstants.Name, AppNameWindows, AppNameUnix);
 
         public static string BaseAppContext => StandardPathBuilder.GetAppBaseDirectory();
-        
-        // public static string BaseLocalPath =>
-        //     StandardPathBuilder.GetLocalCachePath(PublisherConstants.Name, AppNameWindows, AppNameUnix);
+
+        public static string BaseLocalPath =>
+            StandardPathBuilder.GetLocalCachePath(PublisherConstants.Name, AppNameWindows, AppNameUnix);
 
         public static string UserPreferencesFilePath => Path.Combine(BaseAppContext, Files.UserPreferences);
 
@@ -68,12 +68,13 @@ public static class AppConstants
                 Nickname: "d3nhatv0lam / RxAmethyst",
                 Tier: ContributorTier.Founder,
                 Bio: "Đụng là dứt",
-                AvatarUrl: null,
+                AvatarUrl: "https://avatars.githubusercontent.com/u/110104167?v=4",
                 SocialLinks: new Dictionary<SocialPlatform, string>
                 {
-                    [SocialPlatform.Facebook] = "https://www.facebook.com/profile.php?id=100088452777261",
+                    [SocialPlatform.Facebook] = "https://www.facebook.com/profile.php?id=61589850129287",
                     [SocialPlatform.YouTube] = "https://www.youtube.com/@ucduong9984",
-                    [SocialPlatform.GitHub] = "https://github.com/d3nhatv0lam"
+                    [SocialPlatform.GitHub] = "https://github.com/d3nhatv0lam",
+                    [SocialPlatform.TikTok] = "https://www.tiktok.com/@c.dng273"
                 },
                 Roles: new List<ContributorRole>
                 {
@@ -88,12 +89,14 @@ public static class AppConstants
                 Id: "loc",
                 Name: "Nguyễn Phước Lộc",
                 Tier: ContributorTier.Maintainer,
-                Nickname: "LIPEPXIT",
+                Nickname: "Lexipit3268",
                 Bio: "Đụng là cọc",
-                AvatarUrl: null,
+                AvatarUrl: "https://avatars.githubusercontent.com/u/62460969?v=4",
                 SocialLinks: new Dictionary<SocialPlatform, string>
                 {
-                    // thêm
+                    [SocialPlatform.Facebook] = "https://www.facebook.com/lexipit3268",
+                    [SocialPlatform.YouTube] = "https://www.youtube.com/@lexipit3268",
+                    [SocialPlatform.GitHub] = "https://github.com/lexipit3268"
                 },
                 Roles: new List<ContributorRole>
                 {
@@ -106,12 +109,13 @@ public static class AppConstants
                 Id: "phuc",
                 Name: "Trần Trọng Phúc",
                 Tier: ContributorTier.Maintainer,
-                Nickname: null,
+                Nickname: "Chez",
                 Bio: "Đụng là cút",
-                AvatarUrl: null,
+                AvatarUrl: "https://avatars.githubusercontent.com/u/152960221?v=4",
                 SocialLinks: new Dictionary<SocialPlatform, string>
                 {
-                    [SocialPlatform.GitHub] = "https://github.com/phuctran1501"
+                    [SocialPlatform.GitHub] = "https://github.com/phuctran1501",
+                    [SocialPlatform.Facebook] = "https://www.facebook.com/phuctran1501"
                 },
                 Roles: new List<ContributorRole>
                 {
@@ -126,10 +130,11 @@ public static class AppConstants
                 Tier: ContributorTier.Maintainer,
                 Nickname: "Kimgion",
                 Bio: "Đụng là tát",
-                AvatarUrl: null,
+                AvatarUrl: "https://avatars.githubusercontent.com/u/154446069?v=4",
                 SocialLinks: new Dictionary<SocialPlatform, string>
                 {
-                    [SocialPlatform.GitHub] = "https://github.com/KimgionDev"
+                    [SocialPlatform.GitHub] = "https://github.com/KimgionDev",
+                    [SocialPlatform.Facebook] = "https://www.facebook.com/kimgion.tp"
                 },
                 Roles: new List<ContributorRole>
                 {

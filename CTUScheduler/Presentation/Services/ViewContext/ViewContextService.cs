@@ -32,7 +32,7 @@ public class ViewContextService: IViewContextService, IDisposable
     {
         if (_isDisposed) return;
         _toplevelSubject.Dispose();
-        _logger.LogInformation("ViewContextService disposed");
+        _logger.LogDebug("ViewContextService disposed");
         _isDisposed = true;
     }
 }

@@ -15,17 +15,17 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Services.Network;
 
-public class ConnectivityService: IConnectivityService, IDisposable
+public class ConnectivityService : IConnectivityService, IDisposable
 {
     private const string PRIMARY_URI = "http://connectivitycheck.gstatic.com/generate_204";
     private const string BACKUP_URI = "http://www.msftconnecttest.com/connecttest.txt";
-    
+
     private readonly CompositeDisposable _disposables = new();
     private readonly ILogger<ConnectivityService> _logger;
     private readonly BehaviorSubject<bool> _internetSubject;
     private readonly HttpClient _httpClient;
     private readonly TimeSpan _checkInterval = TimeSpan.FromSeconds(5);
-    
+
     public IObservable<bool> IsInternetAvailable { get; }
     public bool HasInternetAccess => _internetSubject.Value;
 
@@ -33,24 +33,30 @@ public class ConnectivityService: IConnectivityService, IDisposable
     {
         _logger = logger;
         var schedulerUsed = scheduler ?? Scheduler.Default;
-        
-        
-        _httpClient = new HttpClient
+
+        var handler = new SocketsHttpHandler()
+        {
+            PooledConnectionLifetime = TimeSpan.FromMinutes(15),
+        };
+
+
+        _httpClient = new HttpClient(handler)
         {
             Timeout = TimeSpan.FromSeconds(3)
         };
-        
+
         // trạng thái đầu tiên là hỏi hệ điều hành
         _internetSubject = new BehaviorSubject<bool>(NetworkInterface.GetIsNetworkAvailable());
         IsInternetAvailable = _internetSubject.AsObservable();
-        
-        var networkChangeStream = Observable.FromEventPattern<NetworkAvailabilityChangedEventHandler, NetworkAvailabilityEventArgs>(
+
+        var networkChangeStream = Observable
+            .FromEventPattern<NetworkAvailabilityChangedEventHandler, NetworkAvailabilityEventArgs>(
                 h => NetworkChange.NetworkAvailabilityChanged += h,
                 h => NetworkChange.NetworkAvailabilityChanged -= h
             )
             .Throttle(TimeSpan.FromMilliseconds(500), schedulerUsed)
             .Select(_ => Unit.Default);
-        
+
         var timerStream = Observable.Interval(_checkInterval, schedulerUsed)
             .Select(_ => Unit.Default);
 
@@ -58,10 +64,10 @@ public class ConnectivityService: IConnectivityService, IDisposable
             .StartWith(Unit.Default)
             .ObserveOn(schedulerUsed)
             .Select(_ => Observable.FromAsync(ct => CheckInternetAccessAsync(ct))
-                .Catch((Exception ex) => 
+                .Catch((Exception ex) =>
                 {
-                    _logger.LogWarning(ex, "Failed to check internet connectivity");                    
-                    return Observable.Return(false); 
+                    _logger.LogWarning(ex, "Failed to check internet connectivity");
+                    return Observable.Return(false);
                 }))
             .Switch()
             .DistinctUntilChanged()
@@ -75,7 +81,7 @@ public class ConnectivityService: IConnectivityService, IDisposable
                 _internetSubject.OnNext(false);
             })
             .DisposeWith(_disposables);
-        
+
         _internetSubject.DisposeWith(_disposables);
         _httpClient.DisposeWith(_disposables);
     }
@@ -84,12 +90,13 @@ public class ConnectivityService: IConnectivityService, IDisposable
     {
         return CheckInternetAccessAsync(CancellationToken.None);
     }
+
     private async Task<bool> CheckInternetAccessAsync(CancellationToken token)
     {
         // hỏi hệ điều hành trước
         if (!NetworkInterface.GetIsNetworkAvailable())
             return false;
-        
+
         // có thì ping thử xem có mạng thật không?
         if (await ProbeUrl(PRIMARY_URI, HttpStatusCode.NoContent, token))
         {
@@ -99,17 +106,18 @@ public class ConnectivityService: IConnectivityService, IDisposable
         // BACKUP_URI này trả về 200 OK
         return await ProbeUrl(BACKUP_URI, HttpStatusCode.OK, token);
     }
-    
+
     private async Task<bool> ProbeUrl(string url, HttpStatusCode expectedCode, CancellationToken token)
     {
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Head, url);
-            
+
             using var timeoutCts = new CancellationTokenSource(2000);
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token, timeoutCts.Token);
-            
-            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, linkedCts.Token);
+
+            using var response =
+                await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, linkedCts.Token);
             return response.StatusCode == expectedCode;
         }
         catch
@@ -117,7 +125,7 @@ public class ConnectivityService: IConnectivityService, IDisposable
             return false;
         }
     }
-    
+
     public void Dispose()
     {
         _disposables.Dispose();

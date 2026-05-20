@@ -1,14 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
-using CTUScheduler.Core.Extensions;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.DriverCore.Extensions;
-using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
 using CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum;

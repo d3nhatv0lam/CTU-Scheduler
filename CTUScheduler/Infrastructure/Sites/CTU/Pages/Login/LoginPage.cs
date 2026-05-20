@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Core.Extensions;
-using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.DriverCore.Extensions;
