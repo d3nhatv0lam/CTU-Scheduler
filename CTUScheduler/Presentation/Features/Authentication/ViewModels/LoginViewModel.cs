@@ -15,6 +15,7 @@ using CTUScheduler.Core.Models.TeachingPlan;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
+using CTUScheduler.Presentation.Services.UserInteractionService.Models;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using Microsoft.Extensions.Logging;
@@ -128,9 +129,17 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
 
             LoadTeachingPlanCommand.WhenFailed()
                 .Subscribe(_ =>
+                {
+                    var options = new NotificationOptions()
+                    {
+                        ShowIcon = true,
+                        Expiration = TimeSpan.FromSeconds(30),
+                    };
                     _userInteractionService.Notification.Light.Error(
                         title: "Không tại được kế hoạch giảng dạy!",
-                        content: "Bạn nên bật vpn và khởi động lại!"))
+                        content: "Bạn nên bật vpn và khởi động lại!",
+                        options: options);
+                })
                 .DisposeWith(_disposables);
 
             _isLoadedTeachingPlanHelper = LoadTeachingPlanCommand
