@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia;
 using Avalonia.Controls;
-using CTUScheduler.Presentation.Services.ViewContext;
 using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -11,20 +12,24 @@ namespace CTUScheduler.Presentation.Services.Viewport
 {
     public class ViewportService : IViewportService, IDisposable
     {
+        private readonly CompositeDisposable _disposables = new();
+        private readonly BehaviorSubject<Size> _sizeSubject = new(new Size(0, 0));
         private readonly ILogger<ViewportService> _logger;
-        private readonly BehaviorSubject<Size> _sizeSubject = new BehaviorSubject<Size>(new Size(0, 0));
-        private IDisposable _subscription = null!;
+        private IDisposable? _subscription;
         public Size CurrentSize => _sizeSubject.Value;
         public IObservable<Size> WhenSizeChanged => _sizeSubject.AsObservable();
         private bool _isDisposed;
 
-        public ViewportService(IViewContextService viewContextService,ILogger<ViewportService> logger)
+        public ViewportService(IViewContextService viewContextService, ILogger<ViewportService> logger)
         {
             _logger = logger;
             viewContextService.WhenTopLevelChanged
                 .Where(x => x is not null)
                 .Select(x => x!)
-                .Subscribe(Initialize);
+                .Subscribe(Initialize)
+                .DisposeWith(_disposables);
+
+            _sizeSubject.DisposeWith(_disposables);
         }
 
         public void Initialize(Control visualRoot)
@@ -40,12 +45,25 @@ namespace CTUScheduler.Presentation.Services.Viewport
                 .Subscribe(size => _sizeSubject.OnNext(size));
         }
 
+        ~ViewportService() => Dispose(false);
+
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool isDisposing)
+        {
             if (_isDisposed) return;
-            _subscription?.Dispose();
-            _sizeSubject.Dispose();
-            _logger.LogInformation("ViewportService disposed");
+
+            if (isDisposing)
+            {
+                _subscription?.Dispose();
+                _disposables.Dispose();
+                _logger.LogDebug("Disposed");
+            }
+
             _isDisposed = true;
         }
     }

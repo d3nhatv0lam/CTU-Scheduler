@@ -10,11 +10,13 @@ public static class LoggingConfig
     public static void Init()
     {
         var logPath = PathProvider.GetLogPath();
+        
+        const string logTemplate = "{Timestamp:HH:mm:ss} [{Level:u3}] {ShortTypeName,-40} | {Message}{NewLine}{Exception}";
 
         Log.Logger = new LoggerConfiguration()
 #if DEBUG
             .MinimumLevel.Debug()
-            .WriteTo.Debug()
+            .WriteTo.Debug(outputTemplate: logTemplate)
 #else
         .MinimumLevel.Information()
 #endif
@@ -24,7 +26,7 @@ public static class LoggingConfig
                 path: logPath,
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 7,
-                outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {ShortTypeName,-40} | {Message}{NewLine}{Exception}")
+                outputTemplate: logTemplate)
             .CreateLogger();
         LogHeader();
         PathProvider.CreateLogShortcut();

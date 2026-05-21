@@ -5,16 +5,10 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading;
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.UserSettingService;
-using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Settings;
-using CTUScheduler.Infrastructure.DriverCore;
 using CTUScheduler.Infrastructure.DriverCore.Abstractions;
-using CTUScheduler.Infrastructure.Repositories;
-using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.SplashScreen.Components.Installation.ViewModels;
 using CTUScheduler.Presentation.Services.ApplicationLifetime;
@@ -63,8 +57,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     {
         RequestClose?.Invoke(null);
     }
-
-
+    
     public SplashScreenViewModel(
         IConnectivityService connectivityService,
         IWebDriverService webDriverServiceRefactor,
@@ -172,7 +165,6 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     {
         return Observable.FromAsync(async ct =>
         {
-            // Giả sử các hàm của bạn có nhận CancellationToken
             await _userSettingService.InitializeAsync(ct);
             await _webDriverServiceRefactor.InitBrowserAsync(ct);
         });

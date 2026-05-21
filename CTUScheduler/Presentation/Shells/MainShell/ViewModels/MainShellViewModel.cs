@@ -172,10 +172,6 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
         {
             return await _mainHomeService.EnsureReadyAsync();
         }
-
-        // protected override void OnWebSyncSuccess()
-        // {
-        //     LoadStudentInfoCommand.Execute().Subscribe().DisposeWith(Disposables);
-        // }
+        
     }
 }
