@@ -103,7 +103,7 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
         if (disposing)
         {
             _disposables.Dispose();
-            _logger.LogDebug("{this}: Disposed", nameof(MainViewModel));
+            _logger.LogDebug("Disposed");
         }
 
         _isDisposed = true;

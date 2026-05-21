@@ -15,7 +15,6 @@ using CTUScheduler.Presentation.Features.Scheduling.Models.Context;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using DynamicData;
-using DynamicData.Binding;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
@@ -25,7 +24,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
     public partial class FindCourseViewModel : ViewModelBase, IDisposable, IWizardStep,
         INeedArgs<SchedulingWizardContext>
     {
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private readonly CompositeDisposable _disposables = new();
         private readonly ILogger<FindCourseViewModel> _logger;
         [Reactive] private string _txtInputCourseKey = string.Empty;
         [Reactive] private bool _isOpenQuickSelectPopup;
@@ -231,7 +230,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         public void Dispose()
         {
             _disposables.Dispose();
-            _logger.LogDebug("{this}: Disposed", nameof(FindCourseViewModel));
+            _logger.LogDebug("Disposed");
         }
     }
 }

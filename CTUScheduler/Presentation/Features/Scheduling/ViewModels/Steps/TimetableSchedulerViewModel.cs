@@ -162,6 +162,6 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
     public void Dispose()
     {
         _disposables.Dispose();
-        _logger.LogDebug("{this}: Disposed", nameof(TimetableSchedulerViewModel));
+        _logger.LogDebug("Disposed");
     }
 }

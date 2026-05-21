@@ -30,7 +30,7 @@ public class UserPreferencesRepository : IUserPreferencesRepository
         ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.FilePath);
         _logger = logger;
         _options = options.Value;
-        _logger.LogDebug("{this} initialized with options: {Options}", nameof(UserPreferencesRepository), _options);
+        _logger.LogDebug("initialized with options: {Options}", _options);
     }
 
     public async Task<OperationResult> SaveAsync(UserPreferences preferences,

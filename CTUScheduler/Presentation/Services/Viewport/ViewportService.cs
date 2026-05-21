@@ -61,7 +61,7 @@ namespace CTUScheduler.Presentation.Services.Viewport
             {
                 _subscription?.Dispose();
                 _disposables.Dispose();
-                _logger.LogDebug("{this}: disposed", nameof(ViewportService));
+                _logger.LogDebug("Disposed");
             }
 
             _isDisposed = true;

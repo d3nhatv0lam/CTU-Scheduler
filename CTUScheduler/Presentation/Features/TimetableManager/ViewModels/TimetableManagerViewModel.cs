@@ -303,7 +303,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         {
             if (disposing)
             {
-                _logger.LogDebug("{this}: Disposed", nameof(TimetableManagerViewModel));
+                _logger.LogDebug("Disposed");
             }
 
             base.Dispose(disposing);
