@@ -15,7 +15,6 @@
                 <ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Fonts.axaml" />
                 <ResourceInclude Source="avares://CTUScheduler/Assets/Localization/Locale.vi-VN.axaml" />
                 <ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Ripple/Theme.axaml" />
-
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
