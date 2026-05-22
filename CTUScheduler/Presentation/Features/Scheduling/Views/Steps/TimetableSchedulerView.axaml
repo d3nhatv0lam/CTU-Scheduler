@@ -18,6 +18,7 @@
     xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.Views"
     xmlns:assists="clr-namespace:CTUScheduler.Presentation.Shared.Styles.Assists"
     xmlns:ripple="clr-namespace:CTUScheduler.Presentation.Shared.Styles.Ripple"
+    xmlns:schedulingModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Models"
     x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.Steps.TimetableSchedulerView">
 
     <rxui:ReactiveUserControl.Resources>
@@ -74,7 +75,7 @@
         <!--// left side //-->
         <Border Grid.Column="0" Padding="0 3 0 3">
             <Border Classes="CornerBorder">
-                <Grid RowDefinitions="auto 1 *" ClipToBounds="True">
+                <Grid RowDefinitions="auto auto 1 *" ClipToBounds="True">
                     <!--// title //-->
                     <TextBlock
                         Grid.Row="0"
@@ -83,12 +84,31 @@
                         HorizontalAlignment="Left"
                         Margin="10 0 0 0"
                         TextWrapping="WrapWithOverflow" />
+                    <!-- // Scoring Preset Selector // -->
+                    <ComboBox Grid.Row="1"
+                              Theme="{StaticResource MaterialOutlineComboBox}"
+                              p1:ComboBoxAssist.Label="Tiêu chí ưu tiên"
+                              Classes="dense"
+                              Margin="10 5 10 10"
+                              HorizontalAlignment="Stretch"
+                              SelectedItem="{Binding SelectedPreset}"
+                              ItemsSource="{Binding Presets, Mode=OneWay}"
+                              ToolTip.Tip="{Binding SelectedPreset.Description}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="schedulingModels:SchedulingPreset">
+                                <StackPanel Orientation="Horizontal" Spacing="8" ToolTip.Tip="{Binding Description}">
+                                    <TextBlock Text="{Binding Icon}" />
+                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                     <!-- //  Separator // -->
-                    <Border Grid.Row="1" Height="1" Padding="10 0 10 0">
+                    <Border Grid.Row="2" Height="1" Padding="10 0 10 0">
                         <Separator Margin="0" Background="#a3a3a3" />
                     </Border>
                     <!-- // Course Edit Tree // -->
-                    <Border Grid.Row="2"
+                    <Border Grid.Row="3"
                             Padding="5"
                             ClipToBounds="True">
                         <ScrollViewer
@@ -229,9 +249,9 @@
                                             <DataTemplate x:DataType="timetableModel:SelectableTimetableLayout">
                                                 <controls:Card
                                                     Width="250"
-                                                    Height="220">
+                                                    Height="240">
                                                     <Grid
-                                                        RowDefinitions="auto auto auto *">
+                                                        RowDefinitions="auto auto auto auto *">
                                                         <CheckBox Grid.Row="0"
                                                                   Classes="accent"
                                                                   IsEnabled="{Binding IsEnabled}"
@@ -243,8 +263,13 @@
                                                         <TextBlock Grid.Row="2"
                                                                    Text="{Binding Item.TotalCredits,StringFormat=Số tín chỉ: {0}}">
                                                         </TextBlock>
+                                                        <TextBlock Grid.Row="3"
+                                                                   Text="{Binding Item.TotalScore, StringFormat=Điểm đánh giá: {0:F2}}"
+                                                                   Foreground="Red"
+                                                                   FontWeight="SemiBold">
+                                                        </TextBlock>
 
-                                                        <Grid Grid.Row="3">
+                                                        <Grid Grid.Row="4">
                                                             <!-- // TimeTable preview // -->
                                                             <Border>
                                                                 <Viewbox Stretch="Uniform">
