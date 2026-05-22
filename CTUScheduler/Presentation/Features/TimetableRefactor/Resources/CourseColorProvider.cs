@@ -9,17 +9,17 @@ public class CourseColorProvider
 {
     private static readonly Lazy<IReadOnlyList<IBrush>> Palette = new(() =>
     [
-        new ImmutableSolidColorBrush(Color.Parse("#ffd1dc")), 
-        new ImmutableSolidColorBrush(Color.Parse("#add8e6")), 
-        new ImmutableSolidColorBrush(Color.Parse("#FFFacd")), 
-        new ImmutableSolidColorBrush(Color.Parse("#e29b9a")),
-        new ImmutableSolidColorBrush(Color.Parse("#7d66ba")),
-        new ImmutableSolidColorBrush(Color.Parse("#d5fad6")), 
-        new ImmutableSolidColorBrush(Color.Parse("#B2f2e9")),
-        new ImmutableSolidColorBrush(Color.Parse("#84aae5")),
-        new ImmutableSolidColorBrush(Color.Parse("#8ad485")),
-        new ImmutableSolidColorBrush(Color.Parse("#007ba7")), 
-        new ImmutableSolidColorBrush(Color.Parse("#d1fff4")),
+        new ImmutableSolidColorBrush(Color.Parse("#D4ECF9")), // xanh lam nhạt 
+        new ImmutableSolidColorBrush(Color.Parse("#A6DEF5")), // xanh lơ nhạt 
+        new ImmutableSolidColorBrush(Color.Parse("#7ED1F1")), // xanh lơ 
+        new ImmutableSolidColorBrush(Color.Parse("#B4C5F0")), // xanh lam ánh tím nhạt
+        new ImmutableSolidColorBrush(Color.Parse("#A7B9EB")), // xanh periwinkle
+        new ImmutableSolidColorBrush(Color.Parse("#859CE0")), // xanh lam xám vừa
+        new ImmutableSolidColorBrush(Color.Parse("#6D84CD")), // xanh lam xám
+        new ImmutableSolidColorBrush(Color.Parse("#5A6EB0")), // xanh chàm 
+        new ImmutableSolidColorBrush(Color.Parse("#415792")), // xanh navy xám 
+        new ImmutableSolidColorBrush(Color.Parse("#364B82")), // xanh navy đậm 
+        new ImmutableSolidColorBrush(Color.Parse("#2D4075")), // xanh lam biển 
     ]);
     
     private readonly Dictionary<string, IBrush> _assignedColors = new();
