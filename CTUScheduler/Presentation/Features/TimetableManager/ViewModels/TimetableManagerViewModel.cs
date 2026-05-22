@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Presentation.Services.Navigation;
 using System.Collections.Generic;
@@ -281,7 +281,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             using var viewModel = _viewModelFactory.Create<SchedulingDialogViewModel>();
             var options = new DialogOptions()
             {
-                SizeMode = DialogSizeMode.Responsive,
+                SizeMode = DialogSizeMode.Content,
                 IsCloseButtonVisible = false,
                 CanLightDismiss = false,
                 HostId = DialogIds.Root

@@ -359,12 +359,14 @@
                                         <Setter Property="Foreground" Value="#6B7280" />
                                         <Setter Property="Margin" Value="0,4" />
                                         <Setter Property="VerticalAlignment" Value="Center" />
+
                                     </Style>
                                     <Style Selector="TextBlock.FeeValue">
                                         <Setter Property="FontWeight" Value="Medium" />
                                         <Setter Property="Foreground" Value="#111827" />
                                         <Setter Property="Margin" Value="0,4" />
                                         <Setter Property="VerticalAlignment" Value="Center" />
+                                        <Setter Property="HorizontalAlignment" Value="Right" />
                                     </Style>
                                 </Grid.Styles>
 
@@ -502,7 +504,7 @@
                                     CornerRadius="6"
                                     Padding="12"
                                     Margin="0,15,0,0"
-                                    IsVisible="{Binding IsCriticalDebt}">
+                                    IsVisible="{Binding IsNormalDebt}">
                                 <Grid ColumnDefinitions="Auto, *">
                                     <avalonia:MaterialIcon Grid.Column="0" Kind="LightbulbOnOutline" Width="18"
                                                            Height="18" Foreground="#1D4ED8" VerticalAlignment="Top"
