@@ -42,7 +42,6 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
     private readonly IScheduleRegistrationService _scheduleRegistrationService;
     private readonly IExcelExporterService _excelExporter;
     private readonly ITimetableGeneratorService _timetableGeneratorService;
-    private readonly Dictionary<TimetablePreviewViewModel, IReadOnlyList<SectionChoice>> _timetableChoicesCache = new();
 
     public IReadOnlyList<SchedulingPreset> Presets { get; } = SchedulingPresetViewModel.DefaultPresets;
     
@@ -110,10 +109,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                     foreach (var layout in PaginationTimeTableViewModel.CurrentData)
                     {
                         var vm = layout.Item;
-                        if (_timetableChoicesCache.TryGetValue(vm, out var choices))
-                        {
-                            vm.TotalScore = CalculateScore(choices, scorers);
-                        }
+                        vm.TotalScore = CalculateScore(vm.Choices, scorers);
                     }
                 }
                 return Comparer<SelectableTimetableLayout>.Create((a, b) =>
@@ -143,7 +139,6 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                     cts =>
                     {
                         PaginationTimeTableViewModel.Clear();
-                        _timetableChoicesCache.Clear();
                         var courseSectionFlatten =
                             CourseSectionsTrackerFlatten(SchedulingCourseCoordinatorVM.GetGroupedCourses());
 
@@ -170,11 +165,10 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
             .Select(x =>
             {
                 var vm = new TimetablePreviewViewModel(x, _excelExporter);
-                _timetableChoicesCache[vm] = x;
                 var scorers = SelectedPreset?.Profile.Scorers;
                 if (scorers != null)
                 {
-                    vm.TotalScore = CalculateScore(x, scorers);
+                    vm.TotalScore = CalculateScore(vm.Choices, scorers);
                 }
                 return new SelectableTimetableLayout(vm);
             })

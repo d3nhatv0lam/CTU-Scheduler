@@ -17,6 +17,8 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel, I
 {
     private readonly List<SectionChoice> _choices = new();
 
+    public IReadOnlyList<SectionChoice> Choices => _choices;
+
     [Reactive] private double _totalScore;
     
     double IScorable.Score => TotalScore;
