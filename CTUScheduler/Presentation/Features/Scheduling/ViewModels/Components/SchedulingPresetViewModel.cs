@@ -25,7 +25,7 @@ public class SchedulingPresetViewModel : SelectableItem<SchedulingPreset>
         {
             Name = "Chiến thần deadline",
             Icon = "🚀",
-            Description = "Dồn lịch vào ít ngày nhất có thể để dành thời gian chạy deadline",
+            Description = "Dồn lịch vào ít ngày nhất có thể để dành thời gian làm việc khác",
             Profile = ScoringProfile.DeadlineWarrior
         },
         new SchedulingPreset

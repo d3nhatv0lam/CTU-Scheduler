@@ -14,7 +14,7 @@ public class ScoringProfile
     public IReadOnlyList<IScheduleScorer> Scorers { get; init; } = new List<IScheduleScorer>();
     
     /// <summary>
-    /// Dồn lịch vào ít ngày nhất có thể để dành thời gian chạy deadline
+    /// Dồn lịch vào ít ngày nhất có thể để dành thời gian làm việc khác
     /// </summary>
     public static readonly ScoringProfile DeadlineWarrior = new()
     {
