@@ -30,8 +30,8 @@ public class SchoolAnnouncementService : ISchoolAnnouncementService
     {
         var finalTimeout = timeout ?? _defaultTimeout;
 
-        var timeoutCts = new CancellationTokenSource(finalTimeout);
-        var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+        using var timeoutCts = new CancellationTokenSource(finalTimeout);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
@@ -45,7 +45,7 @@ public class SchoolAnnouncementService : ISchoolAnnouncementService
             using var response = await _httpClient.SendAsync(request, linkedCts.Token);
 
             response.EnsureSuccessStatusCode();
-            
+
             var data = await response.Content.ReadFromJsonAsync<List<SchoolAnnouncement>>(cancellationToken);
 
             return data ?? [];

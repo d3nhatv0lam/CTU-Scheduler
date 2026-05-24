@@ -23,9 +23,9 @@ public class TeachingPlanLoaderService : ITeachingPlanLoaderService
         ITeachingPlanPdfService pdfService,
         ILogger<TeachingPlanLoaderService> logger)
     {
-        _announcementService = announcementService ?? throw new ArgumentNullException(nameof(announcementService));
-        _pdfService = pdfService ?? throw new ArgumentNullException(nameof(pdfService));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _announcementService = announcementService;
+        _pdfService = pdfService;
+        _logger = logger;
     }
 
     public async Task<OperationResult<TeachingPlanData>> LoadLatestAsync(CancellationToken cancellationToken = default)
@@ -34,16 +34,18 @@ public class TeachingPlanLoaderService : ITeachingPlanLoaderService
         {
             _logger.LogInformation("Starting to load latest teaching plan...");
 
-            // 1. Lấy danh sách thông báo dạng JSON qua HttpClient
+            //  Lấy danh sách thông báo dạng JSON qua HttpClient
             var announcementResult = await _announcementService.FetchAnnouncementsAsync(cancellationToken);
-            if (announcementResult.IsFailed || announcementResult.Content is null || announcementResult.Content.Count == 0)
+            if (announcementResult.IsFailed || announcementResult.Content is null ||
+                announcementResult.Content.Count == 0)
             {
                 return OperationResult<TeachingPlanData>.Failed(
-                    new OperationError("TeachingPlan.NotificationsMissing", "Không lấy được danh sách thông báo từ hệ thống trường"),
+                    new OperationError("TeachingPlan.NotificationsMissing",
+                        "Không lấy được danh sách thông báo từ hệ thống trường"),
                     OperationFailureReason.Network);
             }
-            
-            // 2. Định vị thông báo kế hoạch giảng dạy chính và thông báo đóng website phụ
+
+            //  Định vị thông báo kế hoạch giảng dạy chính và thông báo đóng website phụ
             SchoolAnnouncement? target = null;
             int targetIndex = -1;
 
@@ -66,7 +68,8 @@ public class TeachingPlanLoaderService : ITeachingPlanLoaderService
                     OperationFailureReason.NotFound);
             }
 
-            _logger.LogInformation("Found latest teaching plan announcement: '{Title}' at index {Index}", target.Title, targetIndex);
+            _logger.LogDebug("Found latest teaching plan announcement: '{Title}' at index {Index}", target.Title,
+                targetIndex);
 
             // Tìm kiếm thông báo đóng website phụ xuất hiện sau (có chỉ số index nhỏ hơn trong danh sách sắp xếp giảm dần)
             SchoolAnnouncement? closingTarget = null;
@@ -74,29 +77,22 @@ public class TeachingPlanLoaderService : ITeachingPlanLoaderService
             {
                 var item = announcementResult.Content[i];
                 if (!string.IsNullOrWhiteSpace(item.Title) &&
-                    (item.Title.Contains("đóng website", StringComparison.OrdinalIgnoreCase) ||
-                     item.Title.Contains("đóng cổng", StringComparison.OrdinalIgnoreCase) ||
-                     item.Title.Contains("dừng nhận", StringComparison.OrdinalIgnoreCase)) &&
-                    item.Title.Contains("điều chỉnh", StringComparison.OrdinalIgnoreCase))
+                    item.Title.Contains("đóng website", StringComparison.OrdinalIgnoreCase) &&
+                    item.Title.Contains("kế hoạch học tập", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Thực hiện kiểm tra ngữ nghĩa học kỳ và năm học
-                    if (AreAnnouncementsSemanticallyMatched(target.Title, item.Title))
-                    {
-                        closingTarget = item;
-                        break;
-                    }
+                    closingTarget = item;
+                    break;
                 }
             }
 
-            string? mainPdfPath = null;
-            string? closingPdfPath = null;
+            string? mainPdfPath;
             DateTime? preciseClosingDateTime = null;
 
-            if (closingTarget != null)
+            if (closingTarget is not null)
             {
-                _logger.LogInformation("Detected matching closing notice: '{Title}'. Launching parallel downloads.", closingTarget.Title);
+                _logger.LogDebug("Detected matching closing notice: '{Title}'. Launching parallel downloads.",
+                    closingTarget.Title);
 
-                // Tải song song cả 2 file PDF để tối đa hóa hiệu năng
                 var mainDownloadTask = _pdfService.DownloadPdfAsync(target.Link, cancellationToken);
                 var closingDownloadTask = _pdfService.DownloadPdfAsync(closingTarget.Link, cancellationToken);
 
@@ -109,42 +105,45 @@ public class TeachingPlanLoaderService : ITeachingPlanLoaderService
                 {
                     return OperationResult<TeachingPlanData>.FailureFrom(mainResult);
                 }
+
                 mainPdfPath = mainResult.Content;
 
                 if (closingResult.IsSuccess && !string.IsNullOrWhiteSpace(closingResult.Content))
                 {
-                    closingPdfPath = closingResult.Content;
-                    _logger.LogInformation("Extracting precise closing date/time from secondary notice PDF...");
+                    var closingPdfPath = closingResult.Content;
+                    _logger.LogDebug("Extracting precise closing date/time from secondary notice PDF...");
                     preciseClosingDateTime = await _pdfService.ExtractClosingNoticeDateTimeAsync(closingPdfPath);
                 }
             }
             else
             {
-                _logger.LogInformation("No matching closing notice found. Downloading main plan PDF only.");
-                
+                _logger.LogDebug("No matching closing notice found. Downloading main plan PDF only.");
+
                 var downloadResult = await _pdfService.DownloadPdfAsync(target.Link, cancellationToken);
                 if (downloadResult.IsFailed || string.IsNullOrWhiteSpace(downloadResult.Content))
                 {
                     return OperationResult<TeachingPlanData>.FailureFrom(downloadResult);
                 }
+
                 mainPdfPath = downloadResult.Content;
             }
 
-            // 4. Trích xuất kế hoạch từ PDF và đồng bộ hóa ngày giờ đóng cổng
-            _logger.LogInformation("Parsing main teaching plan PDF...");
+            _logger.LogDebug("Parsing main teaching plan PDF...");
             var data = await _pdfService.ExtractTeachingPlanAsync(mainPdfPath, preciseClosingDateTime);
-            
-            if (data is null || data.RegistrationTimeline.Count == 0)
+
+            if (data.RegistrationTimeline.Count == 0)
             {
                 return OperationResult<TeachingPlanData>.Failed(
-                    new OperationError("TeachingPlan.ExtractFailed", "Không thể trích xuất dữ liệu từ file PDF kế hoạch"),
+                    new OperationError("TeachingPlan.ExtractFailed",
+                        "Không thể trích xuất dữ liệu từ file PDF kế hoạch"),
                     OperationFailureReason.System);
             }
 
-            // Đính kèm link từ xa theo đúng kiến trúc Clean Architecture
             data = data with { PdfUrl = target.Link };
 
-            _logger.LogInformation("Successfully parsed teaching plan with {TimelineCount} timeline nodes and {DetailCount} adjustment groups.", data.RegistrationTimeline.Count, data.AdjustmentDetails.Count);
+            _logger.LogInformation(
+                "Successfully parsed teaching plan with {TimelineCount} timeline nodes and {DetailCount} adjustment groups.",
+                data.RegistrationTimeline.Count, data.AdjustmentDetails.Count);
             return OperationResult<TeachingPlanData>.Success(data);
         }
         catch (OperationCanceledException)
@@ -163,53 +162,5 @@ public class TeachingPlanLoaderService : ITeachingPlanLoaderService
                 "TeachingPlan.Unexpected",
                 OperationFailureReason.System);
         }
-    }
-
-    private static bool AreAnnouncementsSemanticallyMatched(string mainTitle, string closingTitle)
-    {
-        // 1. Trích xuất các năm học học thuật (4 chữ số như 2025, 2026) từ thông báo chính
-        var yearRegex = new Regex(@"\b(20\d{2})\b", RegexOptions.Compiled);
-        var mainYears = yearRegex.Matches(mainTitle).Select(m => m.Value).Distinct().ToList();
-        
-        if (mainYears.Count > 0)
-        {
-            var closingYears = yearRegex.Matches(closingTitle).Select(m => m.Value).Distinct().ToList();
-            // Nếu thông báo chính có năm, thông báo đóng cổng phải khớp ít nhất một năm học
-            if (!mainYears.Any(y => closingYears.Contains(y)))
-            {
-                return false;
-            }
-        }
-
-        // 2. Kiểm tra học kỳ (HK1, HK2, HK3 hoặc tương tự) để tránh nhầm giữa các học kỳ
-        var semesterPatterns = new[] { 
-            "học kỳ 1", "hk 1", "hk1", "học kỳ i ", "học kỳ i\b", 
-            "học kỳ 2", "hk 2", "hk2", "học kỳ ii ", "học kỳ ii\b", 
-            "học kỳ 3", "hk 3", "hk3", "học kỳ iii ", "học kỳ iii\b" 
-        };
-        
-        var mainSemMatch = semesterPatterns.FirstOrDefault(p => mainTitle.Contains(p, StringComparison.OrdinalIgnoreCase));
-        if (mainSemMatch != null)
-        {
-            string GetNormalizedSemester(string title)
-            {
-                if (title.Contains("học kỳ 1", StringComparison.OrdinalIgnoreCase) || title.Contains("hk 1", StringComparison.OrdinalIgnoreCase) || title.Contains("hk1", StringComparison.OrdinalIgnoreCase) || title.Contains("học kỳ i", StringComparison.OrdinalIgnoreCase))
-                    return "HK1";
-                if (title.Contains("học kỳ 2", StringComparison.OrdinalIgnoreCase) || title.Contains("hk 2", StringComparison.OrdinalIgnoreCase) || title.Contains("hk2", StringComparison.OrdinalIgnoreCase) || title.Contains("học kỳ ii", StringComparison.OrdinalIgnoreCase))
-                    return "HK2";
-                if (title.Contains("học kỳ 3", StringComparison.OrdinalIgnoreCase) || title.Contains("hk 3", StringComparison.OrdinalIgnoreCase) || title.Contains("hk3", StringComparison.OrdinalIgnoreCase) || title.Contains("học kỳ iii", StringComparison.OrdinalIgnoreCase))
-                    return "HK3";
-                return string.Empty;
-            }
-
-            var mainSemNorm = GetNormalizedSemester(mainTitle);
-            var closingSemNorm = GetNormalizedSemester(closingTitle);
-            if (!string.IsNullOrEmpty(mainSemNorm) && !string.IsNullOrEmpty(closingSemNorm) && mainSemNorm != closingSemNorm)
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 }
