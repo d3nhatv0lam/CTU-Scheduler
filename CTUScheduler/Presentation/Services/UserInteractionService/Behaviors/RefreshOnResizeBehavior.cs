@@ -1,7 +1,11 @@
-﻿using System;
+using System;
+using System.Runtime.CompilerServices;
+using System.Reactive.Disposables;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Avalonia.Xaml.Interactivity;
 using Ursa.Controls;
 
@@ -11,6 +15,12 @@ public class RefreshOnResizeBehavior : Behavior<OverlayDialogHost>
 {
     private bool _isUpdating;
     private IDisposable? _subscription;
+    private readonly ConditionalWeakTable<Visual, BoxedSize> _lastSizes = new();
+
+    private class BoxedSize
+    {
+        public Size Size { get; set; }
+    }
 
     protected override void OnAttached()
     {
@@ -35,13 +45,48 @@ public class RefreshOnResizeBehavior : Behavior<OverlayDialogHost>
 
     private void OnAttachedToTree(object? sender, VisualTreeAttachmentEventArgs e)
     {
+        if (AssociatedObject is null) return;
+
         var top = TopLevel.GetTopLevel(AssociatedObject);
-
         if (top is null) return;
-
 
         _subscription = top.GetObservable(Visual.BoundsProperty)
             .Subscribe(_ => { ForceUrsaLayoutUpdateAsync(); });
+
+        AssociatedObject.LayoutUpdated += OnHostLayoutUpdated;
+    }
+
+    private void OnHostLayoutUpdated(object? sender, EventArgs e)
+    {
+        if (AssociatedObject is null || _isUpdating) return;
+
+        bool childSizeChanged = false;
+        foreach (var child in AssociatedObject.GetVisualChildren())
+        {
+            var currentSize = child.Bounds.Size;
+            if (_lastSizes.TryGetValue(child, out var boxed))
+            {
+                if (boxed.Size != currentSize)
+                {
+                    boxed.Size = currentSize;
+                    childSizeChanged = true;
+                }
+            }
+            else
+            {
+                _lastSizes.Add(child, new BoxedSize { Size = currentSize });
+                if (currentSize.Width > 0 && currentSize.Height > 0)
+                {
+                    childSizeChanged = true;
+                }
+            }
+        }
+
+        if (childSizeChanged)
+        {
+            // Tự động trigger margin để căn giữa lại khi đổi mode hoặc back về selection view
+            ForceUrsaLayoutUpdateAsync();
+        }
     }
 
     private async void ForceUrsaLayoutUpdateAsync()
@@ -52,7 +97,6 @@ public class RefreshOnResizeBehavior : Behavior<OverlayDialogHost>
             _isUpdating = true;
 
             var old = AssociatedObject.Margin;
-
             AssociatedObject.Margin = new Thickness(old.Left, old.Top + 0.5d, old.Right, old.Bottom);
 
             await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Render);
@@ -74,5 +118,9 @@ public class RefreshOnResizeBehavior : Behavior<OverlayDialogHost>
     {
         _subscription?.Dispose();
         _subscription = null;
+        if (AssociatedObject is not null)
+        {
+            AssociatedObject.LayoutUpdated -= OnHostLayoutUpdated;
+        }
     }
 }

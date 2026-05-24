@@ -16,10 +16,8 @@
     <Design.DataContext>
         <viewModels:SchedulingDialogViewModel />
     </Design.DataContext>
-
-
+    
     <controls:Card x:Name="CardBorder"
-                   MinWidth="850" MinHeight="500"
                    Padding="14">
         <Grid RowDefinitions="auto *">
             <Button

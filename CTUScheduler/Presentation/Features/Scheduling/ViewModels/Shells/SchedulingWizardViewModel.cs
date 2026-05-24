@@ -108,14 +108,14 @@ public partial class SchedulingWizardViewModel : ViewModelBase,
         NavigateNextCommand = ReactiveCommand.CreateFromTask(NavigateNext, canNavigateNext)
             .DisposeWith(_disposables);
 
+        CurrentStepIndex = strategy.StartStepIndex;
 
         this.WhenActivated(disposables =>
         {
             if (StepsVM.Length == 0 || context.CourseBlueprints.Count == 0)
             {
                 LoadStepsCommand.Execute()
-                    .ObserveOn(RxSchedulers.MainThreadScheduler)
-                    .Subscribe(_ => CurrentStepIndex = strategy.StartStepIndex)
+                    .Subscribe()
                     .DisposeWith(disposables);
             }
         });
