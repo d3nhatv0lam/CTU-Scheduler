@@ -13,6 +13,8 @@ internal static class DkmhEndpoints
     private const string DangKyHocPhanBase =
         $"{ApiBase}/v1/dangkyhocphan";
 
+    public static readonly Uri BaseDomain = new(WebBase);
+
     public static readonly Uri Login =
         new($"{WebBase}/htql/dkmh/student/dang_nhap.php");
 

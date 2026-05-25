@@ -11,6 +11,7 @@ using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Infrastructure.Services.Registration;
 using CTUScheduler.Infrastructure.Services.TeachingPlan;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
+using CTUScheduler.Infrastructure.Sites.CTU.Clients;
 using CTUScheduler.Infrastructure.Sites.CTU.Factory;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -40,7 +41,8 @@ public static class ServiceCollectionExtensions
 
         // --- Teaching Plan ---
         services.AddHttpClient<ITeachingPlanPdfService, TeachingPlanPdfService>();
-
+        
+        services.AddTransient<IAuthClient, AuthClient>();
 
         return services;
     }

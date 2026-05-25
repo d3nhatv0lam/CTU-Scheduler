@@ -7,6 +7,8 @@ internal static class HtqlEndpoints
     private const string HtqlBase = "https://htql.ctu.edu.vn";
     private const string AccountsBase = "https://accounts.ctu.edu.vn";
     private const string DkmhBase = "https://dkmh.ctu.edu.vn";
+    
+    public static readonly Uri BaseDomain = new("https://ctu.edu.vn");
 
     public static readonly Uri SessionKey =
         new($"{HtqlBase}/htql/login.php");

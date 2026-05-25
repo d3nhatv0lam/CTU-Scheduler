@@ -131,5 +131,5 @@
   <ItemGroup>
     <Folder Include="Presentation\Shared\Styles\Ripple\" />
   </ItemGroup>
-
+  
 </Project>

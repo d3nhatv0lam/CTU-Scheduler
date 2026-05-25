@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -12,6 +13,7 @@ using CTUScheduler.AppServices.Services.UserSettingService;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Core.Models.TeachingPlan;
+using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
@@ -68,6 +70,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         public ReactiveCommand<Unit, Unit> SignInCommand { get; }
 
 
+
         public LoginViewModel(IScreen hostScreen,
             ILoginService loginService,
             IUserInteractionService userInteractionService,
@@ -85,6 +88,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
             _userSettingService = userSettingService;
             _pdfService = pdfService;
             _logger = logger;
+            
 
             _userSettingService.AuthSettingsChanged
                 .Subscribe(authSettings =>
