@@ -35,20 +35,3 @@ public record StudentProfile(
 {
     public string DisplayName => $"{Name} ({Mssv})";
 }
-
-// Map to StudentProfile
-// using var doc = JsonDocument.Parse(decompressedJson);
-// var root = doc.RootElement;
-// var profile = new StudentProfile(
-//     Mssv: root.GetProperty("sys_manguoidung").GetString() ?? "",
-//     Name: root.GetProperty("sys_hoten").GetString() ?? "",
-//     ClassCode: root.GetProperty("sys_malop").GetString() ?? "",
-//     MajorName: root.GetProperty("sys_tennganh").GetString() ?? "",
-//     DepartmentName: root.GetProperty("sys_tendonvi").GetString() ?? "",
-//     Cohort: root.GetProperty("sys_khoahoc").GetInt32(),
-//     AccumulatedCredits: root.GetProperty("sys_sotinchidat").GetInt32(),
-//     CurrentAcademicYear: root.GetProperty("sys_namhocht").GetInt32(),
-//     CurrentSemester: root.GetProperty("sys_hockyht").GetInt32(),
-//     MaxCreditsMainSemester: root.GetProperty("sys_tcmaxhockychinh").GetInt32(),
-//     MaxCreditsSummerSemester: root.GetProperty("sys_tcmaxhockyhe").GetInt32()
-// );

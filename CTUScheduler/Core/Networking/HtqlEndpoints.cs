@@ -7,8 +7,9 @@ internal static class HtqlEndpoints
     private const string HtqlBase = "https://htql.ctu.edu.vn";
     private const string AccountsBase = "https://accounts.ctu.edu.vn";
     private const string DkmhBase = "https://dkmh.ctu.edu.vn";
-    
+
     public static readonly Uri BaseDomain = new("https://ctu.edu.vn");
+    public static readonly Uri AccountDomain = new($"{AccountsBase}");
 
     public static readonly Uri SessionKey =
         new($"{HtqlBase}/htql/login.php");
@@ -21,4 +22,7 @@ internal static class HtqlEndpoints
 
     public static readonly Uri SsoAuth =
         new($"{DkmhBase}/htql/sinhvien/dang_nhap_sso.php");
+
+    public static readonly Uri StudentHome =
+        new($"{DkmhBase}/htql/sinhvien/hindex.php");
 }

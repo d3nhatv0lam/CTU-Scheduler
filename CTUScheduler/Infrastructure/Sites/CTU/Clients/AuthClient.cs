@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -21,6 +21,13 @@ internal sealed record SamlLoginContext(string LoginSamlResponse);
 
 internal sealed class AuthClient : IAuthClient
 {
+    private readonly HttpClient _pingHttpClient;
+
+    public AuthClient(HttpClient pingHttpClient)
+    {
+        _pingHttpClient = pingHttpClient;
+    }
+
     public async Task<CtuSession> AuthenticateAsync(string username, string password, CancellationToken ct = default)
     {
         var cookiesContainer = new CookieContainer();
@@ -34,25 +41,27 @@ internal sealed class AuthClient : IAuthClient
 
         if (!isAuthenticated)
         {
-            // không thiết lập được Cookie
             throw new SessionExpiredException("Không thể hoàn tất thiết lập phiên Cookie");
         }
 
-        // dịch jwt ra lấy ngày hết hạn, userinfo rồi trả về CtuSession
         var dkmhJwtToken = await GetDkmhJwtTokenAsync(httpClient, cookiesContainer, username, ct);
         var (studentProfile, dkmhJwtExpiresAt) = ParseJwt(dkmhJwtToken);
-
-
+        
         var legacyCookies = new Dictionary<string, string>();
-        // deafault của cookie
         DateTimeOffset cookiesExpiresAt = DateTimeOffset.UtcNow.AddHours(12);
 
-        foreach (Cookie cookie in cookiesContainer.GetCookies(DkmhEndpoints.BaseDomain))
+        var dkmhCookies = cookiesContainer.GetCookies(DkmhEndpoints.BaseDomain);
+        var accountsCookies = cookiesContainer.GetCookies(HtqlEndpoints.AccountDomain);
+
+        var allCookiesList = dkmhCookies.Concat(accountsCookies);
+
+        foreach (Cookie cookie in allCookiesList)
         {
             if (cookie.Name.Equals("access_token", StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            legacyCookies.Add(cookie.Name, cookie.Value);
+            // Sử dụng indexer để tránh ghi đè trùng khóa (nếu có)
+            legacyCookies[cookie.Name] = cookie.Value;
 
             if (cookie.Name.Equals("SESSISID", StringComparison.OrdinalIgnoreCase) &&
                 cookie.Expires != DateTime.MinValue)
@@ -68,6 +77,77 @@ internal sealed class AuthClient : IAuthClient
             LegacyWebCookiesExpiresAt: cookiesExpiresAt,
             Profile: studentProfile
         );
+    }
+
+    public async Task<bool> PingSessionAsync(CancellationToken ct = default)
+    {
+        using var response = await _pingHttpClient.GetAsync(HtqlEndpoints.StudentHome, ct);
+
+        if (!response.IsSuccessStatusCode)
+            return false;
+
+        var htmlContent = await response.Content.ReadAsStringAsync(ct);
+
+        return !htmlContent.Contains("/logout.php") && !htmlContent.Contains("login.php");
+    }
+
+    public async Task<CtuSession?> TrySilentReAuthAsync(CtuSession currentSession, CancellationToken ct = default)
+    {
+        try
+        {
+            var cookiesContainer = new CookieContainer();
+            foreach (var cookie in currentSession.LegacyWebCookies)
+            {
+                var cookieObj = new Cookie(cookie.Key, cookie.Value)
+                {
+                    Domain = ".ctu.edu.vn"
+                };
+                cookiesContainer.Add(cookieObj);
+            }
+
+            using var httpHandler = new HttpClientHandler();
+            httpHandler.CookieContainer = cookiesContainer;
+            using var httpClient = new HttpClient(httpHandler);
+
+            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+            httpClient.DefaultRequestHeaders.Add("Accept-Language", "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7");
+
+            using var ssoRequest = new HttpRequestMessage(HttpMethod.Post, HtqlEndpoints.SsoAuth);
+            ssoRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                { "txtDinhDanh", currentSession.StudentId },
+                { "txtMatKhau", string.Empty }
+            });
+
+            using var response = await httpClient.SendAsync(ssoRequest, ct);
+            if (!response.IsSuccessStatusCode) return null;
+
+            var htmlText = await response.Content.ReadAsStringAsync(ct);
+            System.Diagnostics.Debug.WriteLine($"\n[SSO RESPONSE HTML (1000 chars)]:\n{htmlText.Substring(0, Math.Min(1000, htmlText.Length))}");
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(htmlText);
+
+            string samlResponse = ExtractSamlResponse(doc);
+
+            var samlContext = new SamlLoginContext(samlResponse);
+            bool isSuccess = await CompleteAuthenticationAsync(httpClient, samlContext, ct);
+            if (!isSuccess) return null;
+
+            var newCookies = new Dictionary<string, string>();
+            foreach (Cookie cookie in cookiesContainer.GetCookies(DkmhEndpoints.BaseDomain))
+            {
+                if (cookie.Name.Equals("access_token", StringComparison.OrdinalIgnoreCase)) continue;
+                newCookies.Add(cookie.Name, cookie.Value);
+            }
+
+            return currentSession with { LegacyWebCookies = newCookies };
+        }
+        catch (Exception ex)
+        {
+            return null; // Lỗi mạng hoặc hết hạn 12h
+        }
     }
 
     private static async Task<LoginBootstrapContext> BootstrapAsync(HttpClient httpClient,
@@ -154,17 +234,7 @@ internal sealed class AuthClient : IAuthClient
         await using var contentStream = await confirmResponse.Content.ReadAsStreamAsync(ct);
         doc.Load(contentStream);
 
-        var inputNode =
-            doc.DocumentNode.SelectSingleNode("//form[@id='samlsso-response-form']//input[@name='SAMLResponse']");
-
-        if (inputNode is null)
-            throw new InvalidOperationException(
-                "Không tìm thấy thuộc tính 'SAMLResponse' trong trang.");
-
-        var samlResponse = inputNode.GetAttributeValue("value", string.Empty);
-
-        if (string.IsNullOrEmpty(samlResponse))
-            throw new InvalidOperationException(nameof(samlResponse) + " bị rỗng");
+        var samlResponse = ExtractSamlResponse(doc);
 
         return new SamlLoginContext(samlResponse);
     }
@@ -316,5 +386,21 @@ internal sealed class AuthClient : IAuthClient
 
         int GetInt(string propName) =>
             root.TryGetProperty(propName, out var prop) && prop.ValueKind == JsonValueKind.Number ? prop.GetInt32() : 0;
+    }
+
+    private static string ExtractSamlResponse(HtmlDocument doc)
+    {
+        var samlNode =
+            doc.DocumentNode.SelectSingleNode("//form[@id='samlsso-response-form']//input[@name='SAMLResponse']");
+
+        if (samlNode is null)
+            throw new InvalidOperationException("Không tìm thấy thuộc tính 'SAMLResponse' trong trang phản hồi SSO.");
+
+        var samlResponse = samlNode.GetAttributeValue("value", string.Empty);
+
+        if (string.IsNullOrEmpty(samlResponse))
+            throw new InvalidOperationException(nameof(samlResponse) + " bị rỗng");
+
+        return samlResponse;
     }
 }

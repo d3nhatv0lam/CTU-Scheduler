@@ -40,6 +40,10 @@
 
         <Grid Grid.Column="0" RowDefinitions="20 * *">
 
+            <Button Height="200" Width="400" Background="AntiqueWhite"
+                    Command="{Binding TestCommand}">
+            </Button>
+
             <!--// Logo //-->
             <Image
                 Grid.Row="1"

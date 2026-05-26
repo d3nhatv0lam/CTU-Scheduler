@@ -41,8 +41,13 @@ public static class ServiceCollectionExtensions
 
         // --- Teaching Plan ---
         services.AddHttpClient<ITeachingPlanPdfService, TeachingPlanPdfService>();
-        
-        services.AddTransient<IAuthClient, AuthClient>();
+        services.AddHttpClient<ISchoolAnnouncementService, SchoolAnnouncementService>();
+
+        services.AddTransient<CtuJwtAuthHandler>();
+        services.AddTransient<CtuLegacyCookieHandler>();
+
+        services.AddHttpClient<IAuthClient, AuthClient>()
+            .AddHttpMessageHandler<CtuLegacyCookieHandler>();
 
         return services;
     }
