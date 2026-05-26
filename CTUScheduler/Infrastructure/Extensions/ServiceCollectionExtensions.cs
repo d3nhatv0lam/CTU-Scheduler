@@ -43,6 +43,7 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient<ITeachingPlanPdfService, TeachingPlanPdfService>();
         services.AddHttpClient<ISchoolAnnouncementService, SchoolAnnouncementService>();
 
+
         services.AddTransient<CtuJwtAuthHandler>();
         services.AddTransient<CtuLegacyCookieHandler>();
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace CTUScheduler.Core.Networking;
 
@@ -9,6 +9,8 @@ internal static class HtqlEndpoints
     private const string DkmhBase = "https://dkmh.ctu.edu.vn";
 
     public static readonly Uri BaseDomain = new("https://ctu.edu.vn");
+    public static readonly Uri AccountsDomain = new(AccountsBase);
+    public static readonly Uri HtqlDomain = new(HtqlBase);
     public static readonly Uri AccountDomain = new($"{AccountsBase}");
 
     public static readonly Uri SessionKey =

@@ -10,6 +10,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Abstractions;
+using CTUScheduler.AppServices.Services.CtuSessions;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
@@ -51,7 +52,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
         public MainShellViewModel(IScreen hostScreen,
             IMainHomeService mainHomeService,
             INavigationRegionManager navigationRegionManager,
-            ISessionManager sessionManager,
+            ISessionCoordinator sessionCoordinator,
             IUserInteractionService userInteractionService,
             IConnectivityService connectivityService,
             ILogger<MainShellViewModel> logger) : base(userInteractionService,
@@ -147,7 +148,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                 if (isAcceptLogout)
                 {
                     await NavigationRegionManager.NavigateAndResetTo<LoginViewModel>(RegionIds.Root);
-                    await sessionManager.LogoutAsync();
+                    await sessionCoordinator.LogoutAsync();
                 }
             }).DisposeWith(Disposables);
 

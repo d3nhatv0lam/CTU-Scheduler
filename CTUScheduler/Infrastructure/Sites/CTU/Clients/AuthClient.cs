@@ -41,26 +41,37 @@ internal sealed class AuthClient : IAuthClient
 
         if (!isAuthenticated)
         {
-            throw new SessionExpiredException("Không thể hoàn tất thiết lập phiên Cookie");
+            throw new InvalidOperationException("Không thể hoàn tất thiết lập phiên Cookie trên phân hệ Web.");
         }
 
-        var dkmhJwtToken = await GetDkmhJwtTokenAsync(httpClient, cookiesContainer, username, ct);
-        var (studentProfile, dkmhJwtExpiresAt) = ParseJwt(dkmhJwtToken);
-        
+        var jwtSsoSuccess = await ExecuteDkmhJwtHandshakeAsync(httpClient, cookiesContainer, username, ct);
+        if (!jwtSsoSuccess)
+        {
+            throw new InvalidOperationException(
+                "Bắt tay xác thực SSO API JWT thất bại hoặc máy chủ DKMHBack từ chối kết nối.");
+        }
+
+        //  Lấy tất cả cookies
+        string dkmhJwtToken = string.Empty;
         var legacyCookies = new Dictionary<string, string>();
         DateTimeOffset cookiesExpiresAt = DateTimeOffset.UtcNow.AddHours(12);
 
         var dkmhCookies = cookiesContainer.GetCookies(DkmhEndpoints.BaseDomain);
-        var accountsCookies = cookiesContainer.GetCookies(HtqlEndpoints.AccountDomain);
+        var accountsCookies = cookiesContainer.GetCookies(HtqlEndpoints.AccountsDomain);
+        var baseCookies = cookiesContainer.GetCookies(HtqlEndpoints.BaseDomain);
 
-        var allCookiesList = dkmhCookies.Concat(accountsCookies);
+        var allCookiesList = dkmhCookies.Cast<Cookie>()
+            .Concat(accountsCookies.Cast<Cookie>())
+            .Concat(baseCookies.Cast<Cookie>());
 
         foreach (Cookie cookie in allCookiesList)
         {
             if (cookie.Name.Equals("access_token", StringComparison.OrdinalIgnoreCase))
+            {
+                dkmhJwtToken = cookie.Value;
                 continue;
+            }
 
-            // Sử dụng indexer để tránh ghi đè trùng khóa (nếu có)
             legacyCookies[cookie.Name] = cookie.Value;
 
             if (cookie.Name.Equals("SESSISID", StringComparison.OrdinalIgnoreCase) &&
@@ -69,6 +80,14 @@ internal sealed class AuthClient : IAuthClient
                 cookiesExpiresAt = cookie.Expires;
             }
         }
+
+        if (string.IsNullOrEmpty(dkmhJwtToken))
+        {
+            throw new InvalidOperationException(
+                "Không tìm thấy Cookie 'access_token' trong CookieContainer sau khi đăng nhập.");
+        }
+
+        var (studentProfile, dkmhJwtExpiresAt) = ParseJwt(dkmhJwtToken);
 
         return new CtuSession(
             DkmhApiJwtToken: dkmhJwtToken,
@@ -88,7 +107,7 @@ internal sealed class AuthClient : IAuthClient
 
         var htmlContent = await response.Content.ReadAsStringAsync(ct);
 
-        return !htmlContent.Contains("/logout.php") && !htmlContent.Contains("login.php");
+        return !htmlContent.Contains("location.href='../logout.php'");
     }
 
     public async Task<CtuSession?> TrySilentReAuthAsync(CtuSession currentSession, CancellationToken ct = default)
@@ -96,13 +115,41 @@ internal sealed class AuthClient : IAuthClient
         try
         {
             var cookiesContainer = new CookieContainer();
+            var targetDomains = new[]
+            {
+                HtqlEndpoints.BaseDomain,
+                HtqlEndpoints.AccountsDomain,
+                DkmhEndpoints.BaseDomain,
+                HtqlEndpoints.HtqlDomain
+            };
+
             foreach (var cookie in currentSession.LegacyWebCookies)
             {
-                var cookieObj = new Cookie(cookie.Key, cookie.Value)
+                // truyền cookie vào domain .ctu...
+                try
                 {
-                    Domain = ".ctu.edu.vn"
-                };
-                cookiesContainer.Add(cookieObj);
+                    cookiesContainer.Add(new Cookie(cookie.Key, cookie.Value)
+                    {
+                        Domain = ".ctu.edu.vn"
+                    });
+                }
+                catch
+                {
+                    /* ignore */
+                }
+
+                // force cookie vào từng domain
+                foreach (var uri in targetDomains)
+                {
+                    try
+                    {
+                        cookiesContainer.Add(uri, new Cookie(cookie.Key, cookie.Value));
+                    }
+                    catch
+                    {
+                        /* ignore */
+                    }
+                }
             }
 
             using var httpHandler = new HttpClientHandler();
@@ -113,41 +160,133 @@ internal sealed class AuthClient : IAuthClient
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
             httpClient.DefaultRequestHeaders.Add("Accept-Language", "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7");
 
-            using var ssoRequest = new HttpRequestMessage(HttpMethod.Post, HtqlEndpoints.SsoAuth);
-            ssoRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>
-            {
-                { "txtDinhDanh", currentSession.StudentId },
-                { "txtMatKhau", string.Empty }
-            });
-
-            using var response = await httpClient.SendAsync(ssoRequest, ct);
-            if (!response.IsSuccessStatusCode) return null;
-
-            var htmlText = await response.Content.ReadAsStringAsync(ct);
-            System.Diagnostics.Debug.WriteLine($"\n[SSO RESPONSE HTML (1000 chars)]:\n{htmlText.Substring(0, Math.Min(1000, htmlText.Length))}");
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(htmlText);
-
-            string samlResponse = ExtractSamlResponse(doc);
-
-            var samlContext = new SamlLoginContext(samlResponse);
-            bool isSuccess = await CompleteAuthenticationAsync(httpClient, samlContext, ct);
+            // bắt tay xin lại PHPSESSID
+            bool isSuccess = await ExecuteLegacySsoHandshakeAsync(httpClient, currentSession.StudentId, ct);
             if (!isSuccess) return null;
 
-            var newCookies = new Dictionary<string, string>();
-            foreach (Cookie cookie in cookiesContainer.GetCookies(DkmhEndpoints.BaseDomain))
+            var newCookies = new Dictionary<string, string>(currentSession.LegacyWebCookies);
+
+            // Lấy các cookie từ trang Home sinh viên (ngoại trừ access_token)
+            var studentHomeCookies = cookiesContainer.GetCookies(HtqlEndpoints.StudentHome);
+            foreach (Cookie cookie in studentHomeCookies)
             {
                 if (cookie.Name.Equals("access_token", StringComparison.OrdinalIgnoreCase)) continue;
-                newCookies.Add(cookie.Name, cookie.Value);
+                newCookies[cookie.Name] = cookie.Value;
+            }
+
+            // Lấy thêm các cookie từ SSO Accounts (ngoại trừ access_token)
+            var accountsCookies = cookiesContainer.GetCookies(HtqlEndpoints.AccountsDomain);
+            foreach (Cookie cookie in accountsCookies)
+            {
+                if (cookie.Name.Equals("access_token", StringComparison.OrdinalIgnoreCase)) continue;
+                newCookies[cookie.Name] = cookie.Value;
             }
 
             return currentSession with { LegacyWebCookies = newCookies };
         }
         catch (Exception ex)
         {
-            return null; // Lỗi mạng hoặc hết hạn 12h
+            System.Diagnostics.Debug.WriteLine($"\n[TrySilentReAuthAsync ERROR]: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
+            return null;
         }
+    }
+
+    /// <summary>
+    /// Thực hiện bắt tay SSO Legacy PHP (Gửi định danh rỗng mật khẩu -> Lấy SAML -> POST SAML -> Hoàn tất)
+    /// </summary>
+    private static async Task<bool> ExecuteLegacySsoHandshakeAsync(HttpClient httpClient, string studentId,
+        CancellationToken ct)
+    {
+        // Bước 1: Khởi động SSO chuyển hướng lấy SAML
+        using var ssoRequest = new HttpRequestMessage(HttpMethod.Post, HtqlEndpoints.SsoAuth);
+        ssoRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            { "txtDinhDanh", studentId },
+            { "txtMatKhau", string.Empty }
+        });
+
+        using var response = await httpClient.SendAsync(ssoRequest, ct);
+        if (!response.IsSuccessStatusCode) return false;
+
+        var htmlText = await response.Content.ReadAsStringAsync(ct);
+
+        var doc = new HtmlDocument();
+        doc.LoadHtml(htmlText);
+
+        string samlResponse;
+        try
+        {
+            samlResponse = ExtractSamlResponse(doc);
+        }
+        catch
+        {
+            return false;
+        }
+
+        // Bước 2: Gửi SAML Response để kích hoạt và thiết lập phiên Cookie PHPSESSID
+        var samlContext = new SamlLoginContext(samlResponse);
+        return await CompleteAuthenticationAsync(httpClient, samlContext, ct);
+    }
+
+    /// <summary>
+    /// Thực hiện bắt tay SSO API để nhận cookie access_token (JWT) ngầm
+    /// </summary>
+    private static async Task<bool> ExecuteDkmhJwtHandshakeAsync(
+        HttpClient httpClient,
+        CookieContainer cookieContainer,
+        string username,
+        CancellationToken ct)
+    {
+        // Bước 1: Gửi yêu cầu đăng nhập lấy SAML API
+        var loginRequest = new HttpRequestMessage(HttpMethod.Post, DkmhEndpoints.Login);
+        loginRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>()
+        {
+            { "txtTaiKhoan", username },
+            { "txtMatKhau", "p" }
+        });
+
+        using var loginResponse = await httpClient.SendAsync(loginRequest, ct);
+        if (!loginResponse.IsSuccessStatusCode) return false;
+
+        var doc = new HtmlDocument();
+        using var loginResponseStream = await loginResponse.Content.ReadAsStreamAsync(ct);
+        doc.Load(loginResponseStream);
+
+        var relayStateNode =
+            doc.DocumentNode.SelectSingleNode("//*[@id='samlsso-response-form']//input[@name='RelayState']");
+        var samlResponseNode =
+            doc.DocumentNode.SelectSingleNode("//*[@id='samlsso-response-form']//input[@name='SAMLResponse']");
+
+        if (relayStateNode is null || samlResponseNode is null)
+        {
+            return false;
+        }
+
+        string relayState = relayStateNode.GetAttributeValue("value", string.Empty);
+        string samlResponse = samlResponseNode.GetAttributeValue("value", string.Empty);
+
+        if (string.IsNullOrEmpty(relayState) || string.IsNullOrEmpty(samlResponse))
+        {
+            return false;
+        }
+
+        // Bước 2: Đệ trình SAML để lấy token JWT
+        var jwtRequest = new HttpRequestMessage(HttpMethod.Post, DkmhEndpoints.GetToken);
+        jwtRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>()
+        {
+            { "RelayState", relayState },
+            { "SAMLResponse", samlResponse }
+        });
+        using var jwtResponse = await httpClient.SendAsync(jwtRequest, ct);
+        if (!jwtResponse.IsSuccessStatusCode) return false;
+
+        // Xác thực sự hiện diện của Cookie JWT trong container
+        var jwtToken = cookieContainer.GetCookies(HtqlEndpoints.BaseDomain)
+            .FirstOrDefault(c => c.Name == "access_token")
+            ?.Value;
+
+        return !string.IsNullOrEmpty(jwtToken);
     }
 
     private static async Task<LoginBootstrapContext> BootstrapAsync(HttpClient httpClient,
@@ -239,9 +378,6 @@ internal sealed class AuthClient : IAuthClient
         return new SamlLoginContext(samlResponse);
     }
 
-    /// <summary>
-    /// Gửi SAML Response để kích hoạt và thiết lập phiên Cookie chính thức trên phân hệ DKMH Web.
-    /// </summary>
     private static async Task<bool> CompleteAuthenticationAsync(HttpClient httpClient, SamlLoginContext samlContext,
         CancellationToken ct = default)
     {
@@ -257,84 +393,6 @@ internal sealed class AuthClient : IAuthClient
         return response.IsSuccessStatusCode;
     }
 
-    /// <summary>
-    /// Dùng cookies của CTU để xin jwt
-    /// </summary>
-    /// <param name="httpClient"></param>
-    /// <param name="ct"></param>
-    /// <param name="cookieContainer"></param>
-    /// <param name="username"></param>
-    /// <returns></returns>
-    private static async Task<string> GetDkmhJwtTokenAsync(HttpClient httpClient,
-        CookieContainer cookieContainer,
-        string username,
-        CancellationToken ct = default)
-    {
-        // Gọi lấy relayState và samlResponse
-        // default của body
-        var password = "p";
-        var loginRequest = new HttpRequestMessage(HttpMethod.Post, DkmhEndpoints.Login);
-        loginRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>()
-        {
-            { "txtTaiKhoan", username },
-            { "txtMatKhau", password }
-        });
-
-        using var loginResponse = await httpClient.SendAsync(loginRequest, ct);
-        loginResponse.EnsureSuccessStatusCode();
-
-        await using var loginResponseStream = await loginResponse.Content.ReadAsStreamAsync(ct);
-
-        var doc = new HtmlDocument();
-        doc.Load(loginResponseStream);
-
-        var relayStateNode =
-            doc.DocumentNode.SelectSingleNode("//*[@id='samlsso-response-form']//input[@name='RelayState']");
-        if (relayStateNode is null)
-        {
-            throw new InvalidOperationException("Không tìm thấy thuộc tính 'RelayState' trong trang phản hồi SSO.");
-        }
-
-        string relayState = relayStateNode.GetAttributeValue("value", string.Empty);
-
-        var samlResponseNode =
-            doc.DocumentNode.SelectSingleNode("//*[@id='samlsso-response-form']//input[@name='SAMLResponse']");
-        if (samlResponseNode is null)
-        {
-            throw new InvalidOperationException("Không tìm thấy thuộc tính 'SAMLResponse' trong trang phản hồi SSO.");
-        }
-
-        string samlResponse = samlResponseNode.GetAttributeValue("value", string.Empty);
-
-
-        if (string.IsNullOrEmpty(relayState) || string.IsNullOrEmpty(samlResponse))
-        {
-            throw new InvalidOperationException("Dữ liệu RelayState hoặc SAMLResponse trích xuất bị rỗng.");
-        }
-
-        // xin jwt
-        var jwtRequest = new HttpRequestMessage(HttpMethod.Post, DkmhEndpoints.GetToken);
-        jwtRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>()
-        {
-            { "RelayState", relayState },
-            { "SAMLResponse", samlResponse }
-        });
-        using var jwtResponse = await httpClient.SendAsync(jwtRequest, ct);
-        jwtResponse.EnsureSuccessStatusCode();
-
-        var jwtToken = cookieContainer.GetCookies(HtqlEndpoints.BaseDomain)
-            .FirstOrDefault(c => c.Name == "access_token")
-            ?.Value;
-
-        if (string.IsNullOrEmpty(jwtToken))
-        {
-            throw new InvalidOperationException(
-                "Không tìm thấy Cookie 'access_token' trong CookieContainer sau khi Redirect.");
-        }
-
-        return jwtToken;
-    }
-
     private static (StudentProfile Profile, DateTimeOffset ExpiresAt) ParseJwt(string jwtToken)
     {
         var jwtDecoded = JwtRawDecoder.Decode(jwtToken);
@@ -344,15 +402,12 @@ internal sealed class AuthClient : IAuthClient
 
         using var jwtDoc = JsonDocument.Parse(jwtDecoded);
 
-        // get expiration time
         if (!jwtDoc.RootElement.TryGetProperty("exp", out var expProp) || expProp.ValueKind != JsonValueKind.Number)
             throw new InvalidOperationException("exp không hợp lệ trong JWT");
 
         var expSeconds = expProp.GetInt64();
         var expiresAt = DateTimeOffset.FromUnixTimeSeconds(expSeconds);
 
-
-        // get student profile
         if (!jwtDoc.RootElement.TryGetProperty("user_info", out var userInfoProp))
             throw new InvalidOperationException("Không tìm thấy trường user_info trong JWT");
 

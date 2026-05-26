@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
@@ -71,7 +73,6 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
 
         public ReactiveCommand<Unit, Unit> SignInCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> TestCommand { get; }
 
 
         public LoginViewModel(IScreen hostScreen,
@@ -93,56 +94,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
             _userSettingService = userSettingService;
             _pdfService = pdfService;
             _logger = logger;
-
-            TestCommand = ReactiveCommand.CreateFromTask(async ct =>
-                {
-                    var sessionAuth = await authClient.AuthenticateAsync(UserName, Password, ct);
-
-                    sessionStore.Update(sessionAuth);
-
-                    try
-                    {
-                        var session = sessionStore.CurrentSession;
-                        if (session != null)
-                        {
-                            Debug.WriteLine("====================================================");
-                            Debug.WriteLine("=== BẮT ĐẦU LIVE TEST LUỒNG CỨU PHIÊN THỰC TẾ ===");
-                            Debug.WriteLine($"[1] Đăng nhập thành công! Sinh viên: {session.StudentName}");
-                            Debug.WriteLine($"[2] PHPSESSID gốc: {session.LegacyWebCookies["PHPSESSID"]}");
-                            Debug.WriteLine($"[3] SESSISID (SSO): {session.LegacyWebCookies["SESSISID"]}");
-                            // MÔ PHỎNG SỰ CỐ: Xóa PHPSESSID khỏi RAM để giả lập hết hạn 20 phút
-
-                            var simulatedCookies = new Dictionary<string, string>(session.LegacyWebCookies);
-                            simulatedCookies.Remove("PHPSESSID"); // Chỉ giữ lại SESSISID
-                            var simulatedSession = session with { LegacyWebCookies = simulatedCookies };
-                            sessionStore.Update(simulatedSession);
-                            Debug.WriteLine("\n[4] Đã xóa PHPSESSID khỏi Store. Đang chạy TrySilentReAuthAsync...");
-                            // Bắt đầu gọi hàm cứu phiên ngầm
-                            var refreshedSession = await authClient.TrySilentReAuthAsync(simulatedSession, ct);
-                            if (refreshedSession != null)
-                            {
-                                Debug.WriteLine("\n🎉 🎉 🎉 CỨU PHIÊN THÀNH CÔNG 🎉 🎉 🎉");
-                                Debug.WriteLine(
-                                    $"[5] PHPSESSID mới nhận được từ trường: {refreshedSession.LegacyWebCookies["PHPSESSID"]}");
-
-                                // Cập nhật lại phiên đã được cứu vào hệ thống để dùng tiếp
-                                sessionStore.Update(refreshedSession);
-                            }
-                            else
-                            {
-                                Debug.WriteLine("\n❌ THẤT BẠI: Cổng trường không cấp lại PHPSESSID!");
-                            }
-
-                            Debug.WriteLine("====================================================");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"LỖI LIVE TEST: {ex.Message}");
-                    }
-                })
-                .DisposeWith(_disposables);
-
+            
             _userSettingService.AuthSettingsChanged
                 .Subscribe(authSettings =>
                 {
@@ -216,7 +168,6 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                     },
                     canOpenTeachingPlan)
                 .DisposeWith(_disposables);
-
             this.WhenActivated(disposable =>
             {
                 PrewarmBrowserCommand.Execute()
