@@ -49,6 +49,13 @@ public static class ServiceCollectionExtensions
 
         services.AddHttpClient<IAuthClient, AuthClient>()
             .AddHttpMessageHandler<CtuLegacyCookieHandler>();
+        
+        services.AddHttpClient<CourseRegistrationClient>()
+            .AddHttpMessageHandler<CtuJwtAuthHandler>();
+        services.AddTransient<IRegistrationRulesClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());
+        services.AddTransient<ICourseCatalogClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());
+        services.AddTransient<ICourseRegistrationClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());
+        
 
         return services;
     }
