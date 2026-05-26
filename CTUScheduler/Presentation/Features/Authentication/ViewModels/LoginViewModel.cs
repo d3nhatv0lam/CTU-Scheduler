@@ -74,7 +74,6 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         public ReactiveCommand<Unit, Unit> SignInCommand { get; }
 
 
-
         public LoginViewModel(IScreen hostScreen,
             ILoginService loginService,
             IUserInteractionService userInteractionService,
@@ -83,8 +82,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
             ITeachingPlanLoaderService teachingPlanLoaderService,
             ITeachingPlanPdfService pdfService,
             ITeachingPlanStore teachingPlanStore,
-            IAuthClient authClient,
-            ICtuSessionStore sessionStore,
+            ISessionCoordinator sessionCoordinator,
             ILogger<LoginViewModel> logger)
         {
             HostScreen = hostScreen;
@@ -94,7 +92,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
             _userSettingService = userSettingService;
             _pdfService = pdfService;
             _logger = logger;
-            
+
             _userSettingService.AuthSettingsChanged
                 .Subscribe(authSettings =>
                 {
@@ -114,9 +112,10 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                 .Select(isPrewarming => !isPrewarming)
                 .ObserveOn(RxSchedulers.MainThreadScheduler);
 
-            SignInCommand = ReactiveCommand.CreateFromTask(async () =>
+            SignInCommand = ReactiveCommand.CreateFromTask(async ct =>
                 {
                     var result = await loginService.LoginAsync(UserName, Password);
+                    // var or = await sessionCoordinator.LoginAsync(UserName, Password, ct);
 
                     result.Match(OnLoggedIn
                         , (errors, _) =>
