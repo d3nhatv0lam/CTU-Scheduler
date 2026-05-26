@@ -68,7 +68,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         public ReactiveCommand<Unit, Unit> OpenTeachingPlanCommand { get; }
 
         public ReactiveCommand<Unit, Unit> SignInCommand { get; }
-
+    
 
 
         public LoginViewModel(IScreen hostScreen,
@@ -88,7 +88,6 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
             _userSettingService = userSettingService;
             _pdfService = pdfService;
             _logger = logger;
-            
 
             _userSettingService.AuthSettingsChanged
                 .Subscribe(authSettings =>

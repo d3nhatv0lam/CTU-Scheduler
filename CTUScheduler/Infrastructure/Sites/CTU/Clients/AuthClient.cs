@@ -3,16 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Exceptions;
+using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Networking;
+using CTUScheduler.Core.Utils;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
-using CTUScheduler.Infrastructure.Sites.CTU.Models.Contexts;
 using HtmlAgilityPack;
-using ReactiveUI;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Clients;
+
+internal sealed record LoginBootstrapContext(string SessionDataKey);
+
+internal sealed record SamlLoginContext(string LoginSamlResponse);
 
 internal sealed class AuthClient : IAuthClient
 {
@@ -33,15 +38,20 @@ internal sealed class AuthClient : IAuthClient
             throw new SessionExpiredException("Không thể hoàn tất thiết lập phiên Cookie");
         }
 
+        // dịch jwt ra lấy ngày hết hạn, userinfo rồi trả về CtuSession
         var dkmhJwtToken = await GetDkmhJwtTokenAsync(httpClient, cookiesContainer, username, ct);
-        
+        var (studentProfile, dkmhJwtExpiresAt) = ParseJwt(dkmhJwtToken);
+
+
         var legacyCookies = new Dictionary<string, string>();
-        DateTimeOffset? cookiesExpiresAt = null;
+        // deafault của cookie
+        DateTimeOffset cookiesExpiresAt = DateTimeOffset.UtcNow.AddHours(12);
+
         foreach (Cookie cookie in cookiesContainer.GetCookies(DkmhEndpoints.BaseDomain))
         {
             if (cookie.Name.Equals("access_token", StringComparison.OrdinalIgnoreCase))
                 continue;
-            
+
             legacyCookies.Add(cookie.Name, cookie.Value);
 
             if (cookie.Name.Equals("SESSISID", StringComparison.OrdinalIgnoreCase) &&
@@ -50,11 +60,14 @@ internal sealed class AuthClient : IAuthClient
                 cookiesExpiresAt = cookie.Expires;
             }
         }
-        
-        // dịch jwt ra lấy ngày hết hạn, userinfo rồi trả về CtuSession
-        
 
-        throw new NotImplementedException();
+        return new CtuSession(
+            DkmhApiJwtToken: dkmhJwtToken,
+            DkmhApiJwtExpiresAt: dkmhJwtExpiresAt,
+            LegacyWebCookies: legacyCookies,
+            LegacyWebCookiesExpiresAt: cookiesExpiresAt,
+            Profile: studentProfile
+        );
     }
 
     private static async Task<LoginBootstrapContext> BootstrapAsync(HttpClient httpClient,
@@ -250,5 +263,58 @@ internal sealed class AuthClient : IAuthClient
         }
 
         return jwtToken;
+    }
+
+    private static (StudentProfile Profile, DateTimeOffset ExpiresAt) ParseJwt(string jwtToken)
+    {
+        var jwtDecoded = JwtRawDecoder.Decode(jwtToken);
+
+        if (string.IsNullOrEmpty(jwtDecoded))
+            throw new InvalidOperationException("dkmh jwt token không hợp lệ");
+
+        using var jwtDoc = JsonDocument.Parse(jwtDecoded);
+
+        // get expiration time
+        if (!jwtDoc.RootElement.TryGetProperty("exp", out var expProp) || expProp.ValueKind != JsonValueKind.Number)
+            throw new InvalidOperationException("exp không hợp lệ trong JWT");
+
+        var expSeconds = expProp.GetInt64();
+        var expiresAt = DateTimeOffset.FromUnixTimeSeconds(expSeconds);
+
+
+        // get student profile
+        if (!jwtDoc.RootElement.TryGetProperty("user_info", out var userInfoProp))
+            throw new InvalidOperationException("Không tìm thấy trường user_info trong JWT");
+
+        var userInfoZlib = userInfoProp.GetString();
+        if (string.IsNullOrEmpty(userInfoZlib))
+            throw new InvalidOperationException("user_info bị rỗng");
+
+        var decompressedJson = ZlibHelper.DecompressZlib(userInfoZlib);
+
+        using var profileDoc = JsonDocument.Parse(decompressedJson);
+        var root = profileDoc.RootElement;
+
+        var profile = new StudentProfile(
+            Mssv: GetStr("sys_manguoidung"),
+            Name: GetStr("sys_hoten"),
+            ClassCode: GetStr("sys_malop"),
+            MajorName: GetStr("sys_tennganh"),
+            DepartmentName: GetStr("sys_tendonvi"),
+            Cohort: GetInt("sys_khoahoc"),
+            AccumulatedCredits: GetInt("sys_sotinchidat"),
+            CurrentAcademicYear: GetInt("sys_namhocht"),
+            CurrentSemester: GetInt("sys_hockyht"),
+            MaxCreditsMainSemester: GetInt("sys_tcmaxhockychinh"),
+            MaxCreditsSummerSemester: GetInt("sys_tcmaxhockyhe")
+        );
+
+        return (profile, expiresAt);
+
+        string GetStr(string propName) =>
+            root.TryGetProperty(propName, out var prop) ? prop.GetString() ?? "" : "";
+
+        int GetInt(string propName) =>
+            root.TryGetProperty(propName, out var prop) && prop.ValueKind == JsonValueKind.Number ? prop.GetInt32() : 0;
     }
 }
