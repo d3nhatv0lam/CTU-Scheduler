@@ -27,7 +27,7 @@ public class QuickSchedulingStrategy : SchedulingStrategy
     {
         _courseCatalogService = courseCatalogService;
 
-        var plannedCourses = plannedCourseStore.CurrentPlannedCourses ?? [];
+        var plannedCourses = plannedCourseStore.Current ?? [];
 
         _plannedCoursesCode = plannedCourses
             .Select(x => x.Code)

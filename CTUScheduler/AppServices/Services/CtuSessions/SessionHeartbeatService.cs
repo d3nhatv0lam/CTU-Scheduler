@@ -129,6 +129,7 @@ public class SessionHeartbeatService : ISessionHeartbeatService, IDisposable
 
     public void Dispose()
     {
+        Stop();
         _disposables.Dispose();
     }
 }

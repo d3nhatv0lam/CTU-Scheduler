@@ -88,7 +88,7 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
             .DisposeWith(Disposables);
 
 
-        _plannedCoursesHelper = plannedCourseStore.PlannedCoursesChanged
+        _plannedCoursesHelper = plannedCourseStore.Changed
             .ToProperty(this, nameof(PlannedCourses), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
 
