@@ -18,7 +18,7 @@
             <Setter Property="BorderThickness" Value="1"></Setter>
             <!-- // Default style // -->
             <Style Selector="^ Border.students-remaining-status">
-                <Setter Property="Background" Value="Gray"></Setter>
+                <Setter Property="Background" Value="#D1D5DB"></Setter>
             </Style>
             <Style Selector="^ ScrollViewer StackPanel">
                 <Setter Property="Background" Value="{Binding Shared.BackgroundColor}"></Setter>
@@ -38,13 +38,13 @@
                 <Setter Property="Background" Value="White"></Setter>
             </Style>
             <Style Selector="^.red Border.students-remaining-status">
-                <Setter Property="Background" Value="Red"></Setter>
+                <Setter Property="Background" Value="#F87171"></Setter>
             </Style>
             <Style Selector="^.yellow Border.students-remaining-status">
-                <Setter Property="Background" Value="#FFB302"></Setter>
+                <Setter Property="Background" Value="#FBBF24"></Setter>
             </Style>
             <Style Selector="^.green Border.students-remaining-status">
-                <Setter Property="Background" Value="#00E200"></Setter>
+                <Setter Property="Background" Value="#4ADE80"></Setter>
             </Style>
         </Style>
     </rxui:ReactiveUserControl.Styles>
