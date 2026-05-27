@@ -1,15 +1,16 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using CTUScheduler.Infrastructure.DriverCore.Interfaces;
-using CTUScheduler.Infrastructure.DriverCore.Response;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Response;
 
-public record CtuApiBody<T>: IApiBody<T>
+public record CtuApiBody<T> : IApiBody<T>
 {
     [JsonPropertyName("code")]
     public int Code { get; init; }
+    
     [JsonPropertyName("msg")]
     public string? Message { get; init; } 
+    
     [JsonPropertyName("data")]
     public T? Data { get; init; } 
     

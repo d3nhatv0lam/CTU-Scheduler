@@ -7,6 +7,9 @@ namespace CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 
 public interface ICourseCatalogClient
 {
-    Task<IReadOnlyList<QuickSelectDmhpCourse>> GetAutoCompleteQueryAsync(string keywork, CancellationToken ct = default);
-    Task<RawDmhpPayload> GetCourseRawAsync(string courseCode, CancellationToken ct = default);
+    Task<IReadOnlyList<QuickSelectDmhpCourse>>
+        GetAutoCompleteQueryAsync(string keywork, CancellationToken ct = default);
+
+    Task<RawDmhpPayload> GetCoursesRawAsync(int academicYear, int semester, string courseCode,
+        CancellationToken ct = default);
 }

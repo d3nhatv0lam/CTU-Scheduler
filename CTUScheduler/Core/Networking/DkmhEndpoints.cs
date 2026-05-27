@@ -10,9 +10,12 @@ internal static class DkmhEndpoints
     private const string ApiBase =
         "https://dkmhback.ctu.edu.vn/api";
 
+    private const string ApiBaseWithVersion = 
+        $"{ApiBase}/v1";
+    
     private const string DangKyHocPhanBase =
-        $"{ApiBase}/v1/dangkyhocphan";
-
+        $"{ApiBaseWithVersion}/dangkyhocphan";
+    
     public static readonly Uri BaseDomain = new(WebBase);
 
     public static readonly Uri Login =
@@ -20,7 +23,10 @@ internal static class DkmhEndpoints
 
     public static readonly Uri GetToken =
         new($"{ApiBase}/auth/saml2/acs");
-
+    
+    public static readonly Uri FilterHocPhan =
+        new($"{ApiBaseWithVersion}/getdatafilter");
+    
     public static readonly Uri HocPhan =
         new($"{DangKyHocPhanBase}/sinhvien/danhmuchocphan");
 
