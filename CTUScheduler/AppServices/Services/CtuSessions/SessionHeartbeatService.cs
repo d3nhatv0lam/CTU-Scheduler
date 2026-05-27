@@ -51,7 +51,7 @@ public class SessionHeartbeatService : ISessionHeartbeatService, IDisposable
             _heartbeatSubscription = Observable.Interval(_heartbeatInterval, scheduler: TaskPoolScheduler.Default)
                 .WithLatestFrom(_connectivityService.IsInternetAvailable, (_, isAvailable) => isAvailable)
                 .Where(isAvailable => isAvailable)
-                .Select(_ => _sessionStore.CurrentSession)
+                .Select(_ => _sessionStore.Current)
                 .Where(session => session is not null && !session.IsExpired)
                 .Select(session => Observable.FromAsync(async ct =>
                 {

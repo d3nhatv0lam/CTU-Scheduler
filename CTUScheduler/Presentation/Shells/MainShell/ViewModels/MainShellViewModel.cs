@@ -148,7 +148,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                 if (isAcceptLogout)
                 {
                     await NavigationRegionManager.NavigateAndResetTo<LoginViewModel>(RegionIds.Root);
-                    await sessionCoordinator.LogoutAsync();
+                    await sessionCoordinator.EndSessionAsync();
                 }
             }).DisposeWith(Disposables);
 

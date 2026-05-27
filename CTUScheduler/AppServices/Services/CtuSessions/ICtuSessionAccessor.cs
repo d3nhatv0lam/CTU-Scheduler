@@ -1,8 +1,8 @@
-﻿using CTUScheduler.Core.Networking;
+﻿using CTUScheduler.Core.Interfaces;
+using CTUScheduler.Core.Networking;
 
 namespace CTUScheduler.AppServices.Services.CtuSessions;
 
-public interface ICtuSessionAccessor
+public interface ICtuSessionAccessor: IStateAccessor<CtuSession>
 {
-    CtuSession? CurrentSession { get; }
 }

@@ -36,7 +36,7 @@ public class SessionCoordinator : ISessionCoordinator
         _logger = logger;
     }
 
-    public async Task<OperationResult> LoginAsync(string username, string password, CancellationToken ct = default)
+    public async Task<OperationResult> StartSessionAsync(string username, string password, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             return OperationResult.Failed("Tên đăng nhập và mật khẩu không được để trống", "Auth.Validation",
@@ -89,16 +89,31 @@ public class SessionCoordinator : ISessionCoordinator
         }
     }
 
-    public async Task LogoutAsync()
+    public async Task EndSessionAsync()
     {
+        _heartbeatService.Stop();
         foreach (var cleanup in _cleanupServices)
         {
-            cleanup.Cleanup();
+            try
+            {
+                cleanup.Cleanup();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to cleanup");
+            }
         }
 
         foreach (var asyncCleanup in _asyncCleanupServices)
         {
-            await asyncCleanup.CleanupAsync();
+            try
+            {
+                await asyncCleanup.CleanupAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to cleanupAsync");
+            }
         }
 
         _logger.LogInformation("Logged out! Session data cleared.");

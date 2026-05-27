@@ -6,7 +6,7 @@ namespace CTUScheduler.AppServices.Services.CtuSessions;
 
 public interface ISessionCoordinator
 {
-    Task<OperationResult> LoginAsync(string username, string password, CancellationToken ct = default);
+    Task<OperationResult> StartSessionAsync(string username, string password, CancellationToken ct = default);
 
-    Task LogoutAsync();
+    Task EndSessionAsync();
 }

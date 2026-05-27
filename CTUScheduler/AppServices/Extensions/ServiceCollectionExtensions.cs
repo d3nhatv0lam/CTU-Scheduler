@@ -55,10 +55,10 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<CtuSessionStore>()
             .AddSingleton<ICtuSessionStore>(sp => sp.GetRequiredService<CtuSessionStore>())
-            .AddSingleton<ICleanup>(sp => sp.GetRequiredService<CtuSessionStore>())
             .AddSingleton<ICtuSessionAccessor>(sp => sp.GetRequiredService<CtuSessionStore>())
+            .AddSingleton<ICleanup>(sp => sp.GetRequiredService<CtuSessionStore>())
             .AddSingleton<ISessionHeartbeatService, SessionHeartbeatService>();
-        
+
         services.AddSingleton<TeachingPlanStore>()
             .AddSingleton<ITeachingPlanStore>(sp => sp.GetRequiredService<TeachingPlanStore>())
             .AddSingleton<ICleanup>(sp => sp.GetRequiredService<TeachingPlanStore>());
@@ -72,7 +72,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IScheduleSyncService>(sp => sp.GetRequiredService<ScheduleManager>());
 
         services.AddSingleton<ISessionCoordinator, SessionCoordinator>();
-        
+
 
         return services;
     }

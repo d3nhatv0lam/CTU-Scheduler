@@ -129,6 +129,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="AppServices\Services\StudentAcademicService\" />
     <Folder Include="Presentation\Shared\Styles\Ripple\" />
   </ItemGroup>
   
