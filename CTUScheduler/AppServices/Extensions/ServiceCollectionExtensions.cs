@@ -7,12 +7,16 @@ using CTUScheduler.AppServices.Services.TimetableGeneratorService;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.AppServices.Services.UserSettingService;
 using CTUScheduler.AppServices.Services.CtuSessions;
+using CTUScheduler.AppServices.Services.StudentAcademicService;
 using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Infrastructure.Services.Auth;
 using CTUScheduler.Infrastructure.Services.MainHomeService;
 using CTUScheduler.Infrastructure.Services.Registration;
 using Microsoft.Extensions.DependencyInjection;
+using CourseCatalogService = CTUScheduler.Infrastructure.Services.Registration.CourseCatalogService;
+using CourseRegistrationService = CTUScheduler.Infrastructure.Services.Registration.CourseRegistrationService;
+using RegistrationRulesService = CTUScheduler.Infrastructure.Services.Registration.RegistrationRulesService;
 
 namespace CTUScheduler.AppServices.Extensions;
 
@@ -34,8 +38,12 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ICleanup>(sp => sp.GetRequiredService<UserSessionService>());
 
         // --- App Services / Use Cases ---
-        services.AddTransient<ILoginService, LoginService>();
-        services.AddTransient<IMainHomeService, MainHomeService>();
+        services.AddSingleton<ISessionCoordinator, SessionCoordinator>();
+        services.AddTransient<IRegistrationRulesRefactorService,CTUScheduler.AppServices.Services.StudentAcademicService.RegistrationRulesService>();
+        services.AddTransient<ICourseRegistrationRefactorService, CTUScheduler.AppServices.Services.StudentAcademicService.CourseRegistrationService>();
+        services.AddTransient<ICourseCatalogRefactorService, CTUScheduler.AppServices.Services.StudentAcademicService.CourseCatalogService>();
+        services.AddTransient<ITuitionFeeRefactorService, TuitionFeeRefactorService>();
+
         services.AddTransient<IRegistrationRulesService, RegistrationRulesService>();
         services.AddTransient<ICourseCatalogService, CourseCatalogService>();
         services.AddTransient<ICourseRegistrationService, CourseRegistrationService>();
@@ -71,7 +79,6 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IProfileQueryService>(sp => sp.GetRequiredService<ScheduleManager>())
             .AddSingleton<IScheduleSyncService>(sp => sp.GetRequiredService<ScheduleManager>());
 
-        services.AddSingleton<ISessionCoordinator, SessionCoordinator>();
 
 
         return services;

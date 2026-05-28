@@ -25,6 +25,7 @@ using DynamicData.Binding;
 using Humanizer;
 using ReactiveUI;
 using System.Linq;
+using System.Threading;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Shells;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
@@ -34,7 +35,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
 {
-    public class TimetableManagerViewModel : WebSyncViewModelBase, IRoutableViewModel
+    public class TimetableManagerViewModel : SessionSyncViewModelBase, IRoutableViewModel
     {
         private readonly IConnectivityService _connectivityService;
         private readonly ICourseCatalogService _courseCatalogService;
@@ -289,7 +290,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             await UserInteractionService.Dialog.ShowModal<SchedulingDialogViewModel, Unit>(viewModel, options);
         }
 
-        protected override async Task<OperationResult> ExecuteWebSyncTaskAsync()
+        protected override async Task<OperationResult> ExecuteSyncTaskAsync(CancellationToken cancellationToken)
         {
             return await _courseCatalogService.EnsureReadyAsync();
         }

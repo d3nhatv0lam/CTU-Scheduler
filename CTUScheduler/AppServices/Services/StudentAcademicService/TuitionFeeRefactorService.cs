@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.Core.Exceptions;
-using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Extensions;
@@ -53,6 +52,8 @@ public class TuitionFeeRefactorService : ITuitionFeeRefactorService
 
             if (resolvedYear is null || resolvedSemester is null)
             {
+                _logger.LogWarning("Năm học hoặc học kỳ không hợp lệ: năm - {year}, học kỳ - {semester}.", resolvedYear,
+                    resolvedSemester);
                 return OperationResult.Failed(
                     "Không thể xác định Năm học hoặc Học kỳ. Vui lòng đăng nhập hoặc chọn một học kỳ hợp lệ.",
                     kind: OperationFailureReason.Validation

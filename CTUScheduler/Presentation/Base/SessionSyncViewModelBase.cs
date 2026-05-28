@@ -4,6 +4,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Models.Shared.Results;
@@ -16,7 +17,7 @@ using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Base;
 
-public abstract partial class WebSyncViewModelBase : ViewModelBase, IActivatableViewModel, IDisposable
+public abstract partial class SessionSyncViewModelBase : ViewModelBase, IActivatableViewModel, IDisposable
 {
     protected readonly CompositeDisposable Disposables = new();
     protected readonly IUserInteractionService UserInteractionService;
@@ -28,9 +29,9 @@ public abstract partial class WebSyncViewModelBase : ViewModelBase, IActivatable
     [Reactive] private bool _isLoading;
 
     public ViewModelActivator Activator { get; } = new();
-    public ReactiveCommand<Unit, OperationResult> SyncWebSessionCommand { get; }
+    public ReactiveCommand<Unit, OperationResult> SyncSessionCommand { get; }
 
-    protected WebSyncViewModelBase(
+    protected SessionSyncViewModelBase(
         IUserInteractionService userInteractionService,
         INavigationRegionManager navigationRegionManager,
         IConnectivityService connectivityService)
@@ -42,19 +43,19 @@ public abstract partial class WebSyncViewModelBase : ViewModelBase, IActivatable
         var canSync = ConnectivityService.IsInternetAvailable
             .ObserveOn(RxSchedulers.MainThreadScheduler);
 
-        SyncWebSessionCommand = ReactiveCommand.CreateFromTask(ExecuteWebSyncTaskAsync, canSync)
+        SyncSessionCommand = ReactiveCommand.CreateFromTask(ExecuteSyncTaskAsync, canSync)
             .DisposeWith(Disposables);
 
         this.WhenActivated(disposables =>
         {
-            SyncWebSessionCommand.IsExecuting
+            SyncSessionCommand.IsExecuting
                 .BindTo(this, x => x.IsLoading)
                 .DisposeWith(disposables);
 
-            SyncWebSessionCommand.Subscribe(result =>
+            SyncSessionCommand.Subscribe(result =>
                 {
                     result.Match(
-                        onSuccess: OnWebSyncSuccess,
+                        onSuccess: OnSyncSuccess,
                         onFailure: (errors, reason) =>
                         {
                             // var errorsString = string.Join('\n', errors.Select(e => e.FormattedMessage));
@@ -69,34 +70,34 @@ public abstract partial class WebSyncViewModelBase : ViewModelBase, IActivatable
                                 NavigationRegionManager.NavigateAndResetTo<LoginViewModel>(RegionIds.Root);
                             }
 
-                            OnWebSyncFailed(result);
+                            OnSyncFailed(result);
                         },
-                        onException: _ => OnWebSyncFailed(result)
+                        onException: _ => OnSyncFailed(result)
                     );
                 })
                 .DisposeWith(disposables);
 
-            OnWebSyncStarted();
+            OnSyncStarted();
 
             Observable.Return(Unit.Default)
-                .InvokeCommand(SyncWebSessionCommand)
+                .InvokeCommand(SyncSessionCommand)
                 .DisposeWith(disposables);
 
             SetupSubscriptions(disposables);
         });
     }
 
-    protected abstract Task<OperationResult> ExecuteWebSyncTaskAsync();
+    protected abstract Task<OperationResult> ExecuteSyncTaskAsync(CancellationToken cancellationToken);
 
-    protected virtual void OnWebSyncStarted()
+    protected virtual void OnSyncStarted()
     {
     }
 
-    protected virtual void OnWebSyncSuccess()
+    protected virtual void OnSyncSuccess()
     {
     }
 
-    protected virtual void OnWebSyncFailed(OperationResult result)
+    protected virtual void OnSyncFailed(OperationResult result)
     {
     }
 

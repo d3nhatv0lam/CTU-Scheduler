@@ -43,7 +43,7 @@ public class RegistrationRulesService : IRegistrationRulesRefactorService
                 return OperationResult.Failed("Phiên đăng nhập đã hết hạn!", "Auth.Expired",
                     OperationFailureReason.Unauthorized);
 
-            var cohort = currentSession.Profile.Cohort;
+            var cohort = $"Khóa {currentSession.Profile.Cohort}";
             var unit = currentSession.Profile.DepartmentName;
             var info = rawInfo.ToRegistrationInformation(cohort.ToString(), unit);
 

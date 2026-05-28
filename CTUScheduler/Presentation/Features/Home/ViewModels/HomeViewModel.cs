@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
-using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
+using System.Threading;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.Core.Models.Academic.Curriculum.Registration;
@@ -23,9 +23,11 @@ using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Features.Home.ViewModels;
 
-public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
+public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewModel
 {
-    private readonly IRegistrationRulesService _registrationRulesService;
+    private readonly IRegistrationRulesRefactorService _registrationRulesService;
+    private readonly ICourseRegistrationRefactorService _courseRegistrationService;
+    private readonly ITuitionFeeRefactorService _tuitionFeeService;
     private readonly ILogger<HomeViewModel> _logger;
 
     private readonly ObservableAsPropertyHelper<RegistrationInformation?> _registrationInfo;
@@ -40,33 +42,31 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
     public string UrlPathSegment => nameof(HomeViewModel);
     public IScreen HostScreen { get; }
     public RegistrationInformation? RegistrationInfo => _registrationInfo.Value;
-
     public TimelineViewModel TimelineViewModel { get; } = new();
 
-    public ReactiveCommand<Unit, OperationResult<IReadOnlyList<PlannedCourse>>> LoadPlannedCoursesCommand { get; }
-    public ReactiveCommand<Unit, OperationResult<TuitionFeeSummary>> LoadTuitionFeeCommand { get; }
+
+    public ReactiveCommand<Unit, OperationResult> LoadPlannedCoursesCommand { get; }
+    public ReactiveCommand<Unit, OperationResult> LoadTuitionFeeCommand { get; }
 
     public HomeViewModel(IScreen hostScreen,
         IUserSessionService userSessionService,
-        IRegistrationRulesService registrationRulesService,
-        ICourseRegistrationService courseRegistrationService,
+        IRegistrationRulesRefactorService registrationRulesService,
+        ICourseRegistrationRefactorService courseRegistrationService,
+        ITuitionFeeRefactorService tuitionFeeService,
         IPlannedCourseStore plannedCourseStore,
-        ITuitionFeeService tuitionFeeService,
         ITuitionFeeStore tuitionFeeStore,
         ITeachingPlanStore teachingPlanStore,
         IUserInteractionService userInteractionService,
         INavigationRegionManager navigationRegionManager,
-        ITeachingPlanLoaderService teachingPlanLoaderService,
         IConnectivityService connectivityService,
         ILogger<HomeViewModel> logger) : base(userInteractionService, navigationRegionManager, connectivityService)
     {
         HostScreen = hostScreen;
         _registrationRulesService = registrationRulesService;
-        _logger = logger;
+        _courseRegistrationService = courseRegistrationService;
+        _tuitionFeeService = tuitionFeeService;
 
-        registrationRulesService.RegistrationInfoChanged
-            .Subscribe(userSessionService.UpdateServerInfo)
-            .DisposeWith(Disposables);
+        _logger = logger;
 
         _registrationInfo = userSessionService.RegistrationInfoChanged
             .ToProperty(this, nameof(RegistrationInfo), scheduler: RxSchedulers.MainThreadScheduler)
@@ -78,27 +78,15 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
             .DisposeWith(Disposables);
 
         LoadPlannedCoursesCommand = ReactiveCommand
-            .CreateFromTask(ct => courseRegistrationService.FetchPlannedCourseAsync(token: ct))
+            .CreateFromTask(courseRegistrationService.RefreshPlannedCourseAsync)
             .DisposeWith(Disposables);
-
-        LoadPlannedCoursesCommand
-            .Where(x => x.IsSuccess)
-            .Select(x => x.Content!)
-            .Subscribe(plannedCourseStore.Update)
-            .DisposeWith(Disposables);
-
 
         _plannedCoursesHelper = plannedCourseStore.Changed
             .ToProperty(this, nameof(PlannedCourses), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
 
-        LoadTuitionFeeCommand = ReactiveCommand.CreateFromTask(ct => tuitionFeeService.FetchTuitionFeeAsync(ct))
-            .DisposeWith(Disposables);
-
-        LoadTuitionFeeCommand
-            .Where(x => x.IsSuccess)
-            .Select(x => x.Content!)
-            .Subscribe(tuitionFeeStore.Update)
+        LoadTuitionFeeCommand = ReactiveCommand
+            .CreateFromTask(ct => tuitionFeeService.RefreshTuitionFeeAsync(cancellationToken: ct))
             .DisposeWith(Disposables);
 
         _tuitionFeeHelper = tuitionFeeStore.TuitionFeeSummaryChanged
@@ -117,16 +105,6 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
         userSessionService.RegistrationInfoChanged
             .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Subscribe(PersonalizeTimelineNodesBasedOnUserSession)
-            .DisposeWith(Disposables);
-
-        SyncWebSessionCommand.Where(x => x.IsSuccess)
-            .Select(_ => Unit.Default)
-            .InvokeCommand(LoadPlannedCoursesCommand)
-            .DisposeWith(Disposables);
-
-        SyncWebSessionCommand.Where(x => x.IsSuccess)
-            .Select(_ => Unit.Default)
-            .InvokeCommand(LoadTuitionFeeCommand)
             .DisposeWith(Disposables);
 
         _isLoadingPlannedCoursesHelper = this.WhenAnyValue(x => x.IsLoading, x => x.PlannedCourses)
@@ -149,9 +127,17 @@ public partial class HomeViewModel : WebSyncViewModelBase, IRoutableViewModel
             .DisposeWith(Disposables);
     }
 
-    protected override async Task<OperationResult> ExecuteWebSyncTaskAsync()
+    protected override async Task<OperationResult> ExecuteSyncTaskAsync(CancellationToken cancellationToken)
     {
-        return await _registrationRulesService.EnsureReadyAsync();
+        // lấy registration info trước mới có context học kỳ - năm
+        var rulesResult = await _registrationRulesService.RefreshRegistrationAsync(cancellationToken);
+        if (!rulesResult.IsSuccess) return rulesResult;
+
+        var plannedTask = LoadPlannedCoursesCommand.Execute().ToTask(cancellationToken);
+        var tuitionTask = LoadTuitionFeeCommand.Execute().ToTask(cancellationToken);
+        await Task.WhenAll(plannedTask, tuitionTask);
+
+        return OperationResult.Combine(plannedTask.Result, tuitionTask.Result);
     }
 
     private void ApplyTeachingPlanToTimeline(TeachingPlanData? teachingPlan)
