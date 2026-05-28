@@ -125,7 +125,7 @@ public class SessionCoordinator : ISessionCoordinator
         {
             // lấy current lại vì đa luồng có thể đã thay đổi ở luồng khác
             current = _sessionStore.Current;
-            if (current is not null && current != expiredSession && current.IsExpired)
+            if (current is not null && current != expiredSession && !current.IsExpired)
             {
                 _logger.LogInformation(
                     "Phiên làm việc đã được khôi phục bởi một tác vụ khác trước đó. Sử dụng phiên mới.");
