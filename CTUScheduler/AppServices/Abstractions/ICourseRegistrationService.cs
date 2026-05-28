@@ -9,6 +9,5 @@ namespace CTUScheduler.AppServices.Abstractions;
 
 public interface ICourseRegistrationService
 {
-    Task<OperationResult<IReadOnlyList<PlannedCourse>>> FetchPlannedCourseAsync(TimeSpan? timeout = null,
-        CancellationToken token = default);
+    Task<OperationResult<IReadOnlyList<PlannedCourse>>> FetchPlannedCourseAsync(CancellationToken token = default);
 }

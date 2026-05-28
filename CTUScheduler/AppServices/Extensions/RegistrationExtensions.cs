@@ -10,9 +10,12 @@ public static class RegistrationExtensions
         if (info.AcademicYear is null || string.IsNullOrEmpty(info.Semester) || info.MaxCreditPerSemester is null)
             return null;
 
+        if (!int.TryParse(info.Semester, out var semesterInt))
+            return null;
+
         return new RegistrationContext(
             AcademicYear: info.AcademicYear.Value,
-            Semester: info.Semester,
+            Semester: semesterInt,
             MaxCreditPerSemester: info.MaxCreditPerSemester.Value);
     }
 }

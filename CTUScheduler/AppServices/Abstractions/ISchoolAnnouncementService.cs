@@ -10,6 +10,5 @@ namespace CTUScheduler.AppServices.Abstractions;
 public interface ISchoolAnnouncementService
 {
     Task<OperationResult<IReadOnlyList<SchoolAnnouncement>>> FetchAnnouncementsAsync(
-        CancellationToken cancellationToken = default, 
-        TimeSpan? timeout = null);
+        CancellationToken cancellationToken = default);
 }

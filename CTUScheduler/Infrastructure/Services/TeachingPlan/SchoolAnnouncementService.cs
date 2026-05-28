@@ -17,21 +17,18 @@ public class SchoolAnnouncementService : ISchoolAnnouncementService
     private readonly HttpClient _httpClient;
     private readonly ILogger<SchoolAnnouncementService> _logger;
     private const string ApiUrl = "https://htql.ctu.edu.vn/htql/thongbao.php";
-    private readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(5);
 
     public SchoolAnnouncementService(HttpClient httpClient, ILogger<SchoolAnnouncementService> logger)
     {
         _httpClient = httpClient;
         _logger = logger;
+
+        _httpClient.Timeout = TimeSpan.FromSeconds(15);
     }
 
     public async Task<OperationResult<IReadOnlyList<SchoolAnnouncement>>> FetchAnnouncementsAsync(
-        CancellationToken cancellationToken = default, TimeSpan? timeout = null)
+        CancellationToken cancellationToken = default)
     {
-        var finalTimeout = timeout ?? _defaultTimeout;
-
-        using var timeoutCts = new CancellationTokenSource(finalTimeout);
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
@@ -42,7 +39,7 @@ public class SchoolAnnouncementService : ISchoolAnnouncementService
             request.Headers.Add("Origin", "https://accounts.ctu.edu.vn");
             request.Headers.Add("Accept", "application/json, text/javascript, */*; q=0.01");
 
-            using var response = await _httpClient.SendAsync(request, linkedCts.Token);
+            using var response = await _httpClient.SendAsync(request, cancellationToken);
 
             response.EnsureSuccessStatusCode();
 
@@ -57,9 +54,9 @@ public class SchoolAnnouncementService : ISchoolAnnouncementService
                 return OperationResult<IReadOnlyList<SchoolAnnouncement>>.Failed("User cancelled the operation");
             }
 
-            _logger.LogWarning("Fetch announcements timed out after {Timeout}s", finalTimeout.TotalSeconds);
+            _logger.LogWarning("Fetch announcements timed out ");
             return OperationResult<IReadOnlyList<SchoolAnnouncement>>.Failed(
-                $"Request timed out after {finalTimeout.TotalSeconds} seconds");
+                $"Request timed out after {_httpClient.Timeout.TotalSeconds} seconds");
         }
         catch (Exception ex)
         {
