@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables.Fluent;
 using CTUScheduler.Core.Interfaces;
@@ -16,6 +16,8 @@ namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel, IScorable
 {
     private readonly List<SectionChoice> _choices = new();
+
+    public IReadOnlyList<SectionChoice> Choices => _choices;
 
     [Reactive] private double _totalScore;
     
