@@ -10,13 +10,8 @@ using CTUScheduler.AppServices.Services.CtuSessions;
 using CTUScheduler.AppServices.Services.StudentAcademicService;
 using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Interfaces;
-using CTUScheduler.Infrastructure.Services.Auth;
-using CTUScheduler.Infrastructure.Services.MainHomeService;
-using CTUScheduler.Infrastructure.Services.Registration;
 using Microsoft.Extensions.DependencyInjection;
-using CourseCatalogService = CTUScheduler.Infrastructure.Services.Registration.CourseCatalogService;
-using CourseRegistrationService = CTUScheduler.Infrastructure.Services.Registration.CourseRegistrationService;
-using RegistrationRulesService = CTUScheduler.Infrastructure.Services.Registration.RegistrationRulesService;
+
 
 namespace CTUScheduler.AppServices.Extensions;
 
@@ -39,13 +34,11 @@ public static class ServiceCollectionExtensions
 
         // --- App Services / Use Cases ---
         services.AddSingleton<ISessionCoordinator, SessionCoordinator>();
-        services.AddTransient<IRegistrationRulesRefactorService,CTUScheduler.AppServices.Services.StudentAcademicService.RegistrationRulesService>();
-        services.AddTransient<ICourseRegistrationRefactorService, CTUScheduler.AppServices.Services.StudentAcademicService.CourseRegistrationService>();
-        services.AddTransient<ICourseCatalogRefactorService, CTUScheduler.AppServices.Services.StudentAcademicService.CourseCatalogService>();
-        services.AddTransient<ITuitionFeeRefactorService, TuitionFeeRefactorService>();
-        
+        services.AddTransient<IRegistrationRulesService, RegistrationRulesService>();
+        services.AddTransient<ICourseRegistrationService, CourseRegistrationService>();
+        services.AddTransient<ICourseCatalogService, CourseCatalogService>();
+        services.AddTransient<ITuitionFeeService, TuitionFeeService>();
         services.AddTransient<ITeachingPlanLoaderService, TeachingPlanLoaderService>();
-
         services.AddSingleton<ITimetableGeneratorService, TimetableGeneratorService>();
 
         // stores

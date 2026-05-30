@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.AppServices.Services.StudentAcademicService;
 
-public class RegistrationRulesService : IRegistrationRulesRefactorService
+public class RegistrationRulesService : IRegistrationRulesService
 {
     private readonly IUserSessionService _userSessionService;
     private readonly IRegistrationRulesClient _registrationRulesClient;

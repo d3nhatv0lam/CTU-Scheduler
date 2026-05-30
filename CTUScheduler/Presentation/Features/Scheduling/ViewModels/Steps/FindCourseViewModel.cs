@@ -51,7 +51,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         public ReactiveCommand<CourseSection, Unit> TreeRemoveSectionCommand { get; }
 
         public FindCourseViewModel(SchedulingWizardContext context,
-            ICourseCatalogRefactorService courseCatalogService,
+            ICourseCatalogService courseCatalogService,
             IUserInteractionService userInteractionService,
             ILogger<FindCourseViewModel> logger)
         {

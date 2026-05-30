@@ -16,14 +16,14 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Models.Strategies;
 
 public class QuickSchedulingStrategy : SchedulingStrategy
 {
-    private readonly ICourseCatalogRefactorService _courseCatalogService;
+    private readonly ICourseCatalogService _courseCatalogService;
     private readonly IReadOnlyList<string> _plannedCoursesCode;
     private const string ExceptCode = "SHCVHT";
     public override string Name => nameof(QuickSchedulingStrategy);
     public override int StartStepIndex => 1;
 
     public QuickSchedulingStrategy(IViewModelFactory factory,
-        ICourseCatalogRefactorService courseCatalogService,
+        ICourseCatalogService courseCatalogService,
         IPlannedCourseStore plannedCourseStore) : base(factory)
     {
         _courseCatalogService = courseCatalogService;

@@ -29,13 +29,13 @@ public class ScheduleManager : IScheduleManager, IDisposable
     private readonly SourceCache<RuntimeCourse, string> _coursesSource;
     private readonly SourceCache<ScheduleProfile, Guid> _profileSource;
     private readonly BehaviorSubject<bool> _isRefreshingSubject;
-    private readonly ICourseCatalogRefactorService _catalogService;
+    private readonly ICourseCatalogService _catalogService;
     private readonly ILogger<ScheduleManager> _logger;
     private bool _isDisposed;
 
     public ScheduleManager(AppState appState,
         IUserSettingService settingService,
-        ICourseCatalogRefactorService catalog,
+        ICourseCatalogService catalog,
         ILogger<ScheduleManager> logger)
     {
         _coursesSource = appState.RuntimeCoursesSource;

@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Services.Registration;
 
-public class CourseRegistrationService : ICourseRegistrationService
+public class CourseRegistrationService : OldICourseRegistrationService
 {
     private readonly IWebDriverService _webDriverService;
     private readonly ILogger<CourseRegistrationService> _logger;

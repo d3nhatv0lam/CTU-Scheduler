@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.AppServices.Services.StudentAcademicService;
 
-public class CourseRegistrationService : ICourseRegistrationRefactorService
+public class CourseRegistrationService : ICourseRegistrationService
 {
     private readonly ICourseRegistrationClient _client;
     private readonly IPlannedCourseStore _plannedCourseStore;

@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.AppServices.Services.StudentAcademicService;
 
-public class CourseCatalogService : ICourseCatalogRefactorService
+public class CourseCatalogService : ICourseCatalogService
 {
     private readonly ICourseCatalogClient _client;
     private readonly Lazy<IUserSessionService> _userSessionService;

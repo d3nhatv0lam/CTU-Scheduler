@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Services.Registration;
 
-public class RegistrationRulesService : IRegistrationRulesService
+public class RegistrationRulesService : OldIRegistrationRulesService
 {
     private static readonly TimeSpan DefaultFetchTimeout = TimeSpan.FromSeconds(10);
     private readonly ILogger<RegistrationRulesService> _logger;

@@ -25,7 +25,7 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels;
 
 public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewModel
 {
-    private readonly IRegistrationRulesRefactorService _registrationRulesService;
+    private readonly IRegistrationRulesService _registrationRulesService;
 
     private readonly ObservableAsPropertyHelper<RegistrationInformation?> _registrationInfo;
     [ObservableAsProperty] private IReadOnlyList<PlannedCourse>? _plannedCourses;
@@ -46,9 +46,9 @@ public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewMode
 
     public HomeViewModel(IScreen hostScreen,
         IUserSessionService userSessionService,
-        IRegistrationRulesRefactorService registrationRulesService,
-        ICourseRegistrationRefactorService courseRegistrationService,
-        ITuitionFeeRefactorService tuitionFeeService,
+        IRegistrationRulesService registrationRulesService,
+        ICourseRegistrationService courseRegistrationService,
+        ITuitionFeeService tuitionFeeService,
         IPlannedCourseStore plannedCourseStore,
         ITuitionFeeStore tuitionFeeStore,
         ITeachingPlanStore teachingPlanStore,

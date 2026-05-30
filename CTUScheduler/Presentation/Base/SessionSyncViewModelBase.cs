@@ -47,22 +47,24 @@ public abstract partial class SessionSyncViewModelBase : ViewModelBase, IActivat
         var canSync = ConnectivityService.IsInternetAvailable
             .ObserveOn(RxSchedulers.MainThreadScheduler);
 
-        SyncSessionCommand = ReactiveCommand.CreateFromTask(ExecuteSyncTaskAsync, canSync)
-            .DisposeWith(Disposables);
-        
-        SyncSessionCommand.ThrownExceptions
-            .Subscribe(ex =>
+        SyncSessionCommand = ReactiveCommand.CreateFromTask(async (cancellationToken) =>
+        {
+            try
             {
-                if (ex is OperationCanceledException or TaskCanceledException)
-                {
-                    Logger.LogDebug("Tác vụ đồng bộ phiên bị hủy.");
-                }
-                else
-                {
-                    Logger.LogError(ex, "Lỗi không xác định phát sinh trong SyncSessionCommand.");
-                }
-            })
-            .DisposeWith(Disposables);
+                return await ExecuteSyncTaskAsync(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.LogDebug("Tác vụ đồng bộ phiên bị hủy.");
+                return OperationResult.Failed("Tác vụ đồng bộ phiên bị hủy.", "Sync.Canceled", OperationFailureReason.UserAction);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Lỗi không xác định phát sinh trong tác vụ đồng bộ phiên.");
+                return OperationResult.FromException(ex, "Lỗi không xác định", "Sync.Unexpected", OperationFailureReason.System);
+            }
+        }, canSync).DisposeWith(Disposables);
+        
 
         this.WhenActivated(disposables =>
         {

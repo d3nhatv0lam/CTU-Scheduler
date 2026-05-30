@@ -12,17 +12,17 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.AppServices.Services.StudentAcademicService;
 
-public class TuitionFeeRefactorService : ITuitionFeeRefactorService
+public class TuitionFeeService : ITuitionFeeService
 {
     private readonly ICourseRegistrationClient _client;
     private readonly ITuitionFeeStore _tuitionFeeStore;
     private readonly IUserSessionService _userSessionService;
-    private readonly ILogger<TuitionFeeRefactorService> _logger;
+    private readonly ILogger<TuitionFeeService> _logger;
 
-    public TuitionFeeRefactorService(ICourseRegistrationClient client,
+    public TuitionFeeService(ICourseRegistrationClient client,
         ITuitionFeeStore tuitionFeeStore,
         IUserSessionService userSessionService,
-        ILogger<TuitionFeeRefactorService> logger)
+        ILogger<TuitionFeeService> logger)
     {
         _client = client;
         _tuitionFeeStore = tuitionFeeStore;
