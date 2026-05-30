@@ -47,7 +47,15 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
         get => _name;
         protected set => this.RaiseAndSetIfChanged(ref _name, value);
     }
-
+    
+    private bool _isEditingName;
+    //bien tam de khong bi loi TimeTableLayoutView thoi hihihihihihihihihih
+    public bool IsEditingName
+    {
+        get => _isEditingName;
+        set => this.RaiseAndSetIfChanged(ref _isEditingName, value);
+    }
+    
     public int SubjectsCount
     {
         get => _subjectCount;

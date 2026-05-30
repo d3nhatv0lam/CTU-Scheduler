@@ -46,6 +46,17 @@
             <Setter Property="Foreground" Value="White" />
         </Style>
 
+        <Style Selector="Button.icon-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="CornerRadius" Value="16" />
+        </Style>
+        <Style Selector="Button.icon-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1A1f5ca9" />
+        </Style>
+
         <Style Selector="Border.sidebar">
             <Setter Property="Grid.Row" Value="0" />
             <Setter Property="Grid.Column" Value="0" />
@@ -96,7 +107,8 @@
         <Grid x:Name="ResponsiveLayout" 
               RowDefinitions="Auto, *" 
               ColumnDefinitions="Auto, *"
-              Background="White">
+              Background="White"
+              MaxWidth="{Binding $parent[ScrollViewer].Bounds.Width}">
 
             <Border Classes="sidebar">
                 <Grid RowDefinitions="Auto, *, Auto">
@@ -104,11 +116,54 @@
                     <StackPanel Grid.Row="0" Margin="24, 24, 24, 0" Spacing="16">
                         <StackPanel>
                             <TextBlock Text="Chi tiết thời khóa biểu" FontSize="13" Foreground="{StaticResource DisableColor}" FontWeight="SemiBold"/>
-                            <TextBlock x:Name="TitleTextBlock"
-                                       Text="{Binding Name}" 
-                                       FontSize="22" FontWeight="Bold" 
-                                       Foreground="{StaticResource PrimaryBrush}" 
-                                       TextWrapping="Wrap"/>
+                            
+                            <Panel Margin="0,4,0,0">
+                                <Grid ColumnDefinitions="*, Auto" IsVisible="{Binding !IsEditingName}">
+                                    <TextBlock Grid.Column="0"
+                                               x:Name="TitleTextBlock"
+                                               Text="{Binding Name}" 
+                                               FontSize="22" FontWeight="Bold" 
+                                               Foreground="{StaticResource PrimaryBrush}" 
+                                               TextWrapping="Wrap"
+                                               VerticalAlignment="Center"/>
+                                               
+                                    <Button Grid.Column="1" 
+                                            Classes="icon-btn"
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Center"
+                                            ToolTip.Tip="Đổi tên thời khóa biểu">
+                                        <icon:MaterialIcon Kind="Pencil" Width="20" Height="20" Foreground="{StaticResource PrimaryBrush}"/>
+                                    </Button>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*, Auto, Auto" IsVisible="{Binding IsEditingName}">
+                                    <TextBox Grid.Column="0"
+                                             Text="{Binding Name}"
+                                             FontSize="18" FontWeight="Bold"
+                                             Padding="8,4"
+                                             VerticalAlignment="Center"
+                                             Background="{StaticResource BaseBackgroundColor}"
+                                             BorderThickness="1"
+                                             BorderBrush="{StaticResource PrimaryBrush}"
+                                             CornerRadius="4"/>
+                                             
+                                    <Button Grid.Column="1" 
+                                            Classes="icon-btn"
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Center"
+                                            ToolTip.Tip="Lưu lại">
+                                        <icon:MaterialIcon Kind="Check" Width="24" Height="24" Foreground="Green"/>
+                                    </Button>
+                                    
+                                    <Button Grid.Column="2" 
+                                            Classes="icon-btn"
+                                            Margin="4,0,0,0"
+                                            VerticalAlignment="Center"
+                                            ToolTip.Tip="Hủy bỏ">
+                                        <icon:MaterialIcon Kind="Close" Width="24" Height="24" Foreground="{StaticResource RedColor}"/>
+                                    </Button>
+                                </Grid>
+                            </Panel>
                         </StackPanel>
 
                         <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto">
@@ -141,22 +196,6 @@
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <Grid RowDefinitions="Auto, Auto" Margin="24, 0, 24, 24">
                             
-                            <Grid Grid.Row="0" RowDefinitions="Auto, Auto" Margin="0,0,0,24">
-                                <TextBlock Grid.Row="0" Text="Mô tả" Classes="label"/>
-                                <TextBox Grid.Row="1"
-                                         x:Name="DescriptionTextBox"
-                                         Height="100" 
-                                         HorizontalAlignment="Stretch"
-                                         ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                         AcceptsReturn="True"
-                                         TextWrapping="Wrap"
-                                         PlaceholderText="Ghi chú thêm về thời khóa biểu..."
-                                         Background="{StaticResource BaseBackgroundColor}"
-                                         BorderThickness="0"
-                                         CornerRadius="6"
-                                         Padding="12"/>
-                            </Grid>
-
                             <Grid Grid.Row="1" RowDefinitions="Auto, *">
                                 <TextBlock Grid.Row="0" Text="Môn lịch tự sắp xếp" Classes="label" ToolTip.Tip="Lịch tự dàn xếp với giảng viên" Margin="0,0,0,8"/>
                                 
