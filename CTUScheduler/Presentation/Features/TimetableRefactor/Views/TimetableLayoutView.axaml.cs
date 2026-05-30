@@ -27,19 +27,19 @@ public partial class TimetableLayoutView : ReactiveUserControl<TimetableLayoutBa
             //     v => v.DescriptionTextBox.Text
             //     ).DisposeWith(disposable);
             this.OneWayBind(ViewModel,
-                    x => x.SubjectsCount,
-                    v => v.SubjectsCountTextBlock.Text,
-                    text => $"Số môn: {text}")
+                x => x.SubjectsCount,
+                v => v.SubjectsCountTextBlock.Text,
+                text => $"{text}")
                 .DisposeWith(disposable);
             this.OneWayBind(ViewModel,
                     x => x.TotalCredits,
                     v => v.TotalCreditTextBlock.Text,
-                    text => $"Số tín chỉ: {text}")
+                    text => $"{text}")
                 .DisposeWith(disposable);
             this.OneWayBind(ViewModel,
-                    x => x.LastUpdated,
-                    v => v.LastUpdateTextBlock.Text,
-                    updateTime => $"Lần cuối cập nhật: {updateTime}")
+                x => x.LastUpdated,
+                v => v.LastUpdateTextBlock.Text,
+                updateTime => $"{updateTime}")
                 .DisposeWith(disposable);
 
             ViewModel!.CopyToClipboardInteraction.RegisterHandler(async context =>
