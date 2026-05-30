@@ -26,7 +26,7 @@ public class CourseRegistrationClient : IRegistrationRulesClient, ICourseRegistr
         _httpClient = httpClient;
     }
 
-    
+
     public async Task<RawQddkPayload> GetRegistrationInformationRawAsync(CancellationToken ct = default)
     {
         using var response = await _httpClient.PostAsync(DkmhEndpoints.QuyDinh, null, ct);
@@ -88,9 +88,9 @@ public class CourseRegistrationClient : IRegistrationRulesClient, ICourseRegistr
     {
         var url = DkmhEndpoints.HocPhan.AbsoluteUri.ParseQueryString(new Dictionary<string, string>
         {
-            { "dkmh_tu_dien_hoc_phan_ma", courseCode },
-            { "dkmh_tu_dien_nam_hoc", academicYear.ToString() },
-            { "dkmh_tu_dien_hocky", semester.ToString() }
+            { "dkmh_tu_dien_nien_khoa_nam_hoc", academicYear.ToString() },
+            { "dkmh_tu_dien_hoc_ky_ma", semester.ToString() },
+            { "dkmh_tu_dien_hoc_phan_ma", courseCode }
         });
 
         using var response = await _httpClient.GetAsync(url, ct);

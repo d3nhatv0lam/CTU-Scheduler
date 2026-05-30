@@ -19,8 +19,8 @@ public class SessionCoordinator : ISessionCoordinator
     private readonly IAuthClient _authClient;
     private readonly ICtuSessionStore _sessionStore;
     private readonly ISessionHeartbeatService _heartbeatService;
-    private readonly IEnumerable<ICleanup> _cleanupServices;
-    private readonly IEnumerable<ICleanupAsync> _asyncCleanupServices;
+    private readonly Lazy<IEnumerable<ICleanup>> _cleanupServices;
+    private readonly Lazy<IEnumerable<ICleanupAsync>> _asyncCleanupServices;
     private readonly ILogger<SessionCoordinator> _logger;
 
     private readonly SemaphoreSlim _reAuthLock = new(1, 1);
@@ -33,8 +33,8 @@ public class SessionCoordinator : ISessionCoordinator
         IAuthClient authClient,
         ICtuSessionStore sessionStore,
         ISessionHeartbeatService heartbeatService,
-        IEnumerable<ICleanup> cleanupServices,
-        IEnumerable<ICleanupAsync> asyncCleanupServices,
+        Lazy<IEnumerable<ICleanup>> cleanupServices,
+        Lazy<IEnumerable<ICleanupAsync>> asyncCleanupServices,
         ILogger<SessionCoordinator> logger)
     {
         _authClient = authClient;
@@ -169,7 +169,7 @@ public class SessionCoordinator : ISessionCoordinator
     {
         _heartbeatService.Stop();
 
-        foreach (var cleanup in _cleanupServices)
+        foreach (var cleanup in _cleanupServices.Value)
         {
             try
             {
@@ -181,7 +181,7 @@ public class SessionCoordinator : ISessionCoordinator
             }
         }
 
-        foreach (var asyncCleanup in _asyncCleanupServices)
+        foreach (var asyncCleanup in _asyncCleanupServices.Value)
         {
             try
             {

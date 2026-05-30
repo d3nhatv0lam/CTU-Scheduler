@@ -22,11 +22,12 @@ namespace CTUScheduler.AppServices.Services.StudentAcademicService;
 public class CourseCatalogService : ICourseCatalogRefactorService
 {
     private readonly ICourseCatalogClient _client;
-    private readonly IUserSessionService _userSessionService;
+    private readonly Lazy<IUserSessionService> _userSessionService;
+
     private readonly ILogger<CourseCatalogService> _logger;
 
     public CourseCatalogService(ICourseCatalogClient client,
-        IUserSessionService userSessionService,
+        Lazy<IUserSessionService> userSessionService,
         ILogger<CourseCatalogService> logger)
     {
         _client = client;
@@ -108,7 +109,7 @@ public class CourseCatalogService : ICourseCatalogRefactorService
 
             if (resolvedYear is null || resolvedSemester is null)
             {
-                var context = _userSessionService.CurrentContext;
+                var context = _userSessionService.Value.CurrentContext;
                 if (context is not null)
                 {
                     resolvedYear = context.AcademicYear;
@@ -137,7 +138,7 @@ public class CourseCatalogService : ICourseCatalogRefactorService
                 return OperationResult<Course>.Failed(
                     $"Không thể phân tích thông tin chi tiết cho học phần {courseCode}.",
                     "Catalog.MappingError",
-                    OperationFailureReason.System 
+                    OperationFailureReason.System
                 );
             }
 
@@ -301,6 +302,9 @@ public class CourseCatalogService : ICourseCatalogRefactorService
                 _logger.LogInformation("[Worker {Id}] Bỏ qua môn {Code} do lỗi: {Message}",
                     workerId, courseCode, stringMessage);
             }
+
+            // chèn delay giảm tải cho server của trường
+            await Task.Delay(150, cancellationToken);
         }
     }
 }

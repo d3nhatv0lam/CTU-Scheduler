@@ -12,9 +12,11 @@ using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Models;
 using CTUScheduler.AppServices.Services.UserSettingService;
 using CTUScheduler.AppServices.State;
+using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
+using CTUScheduler.Core.Models.Shared.Results;
 using DynamicData;
 using DynamicData.Aggregation;
 using Microsoft.Extensions.Logging;
@@ -23,15 +25,17 @@ namespace CTUScheduler.AppServices.Services.ScheduleService;
 
 public class ScheduleManager : IScheduleManager, IDisposable
 {
-    private readonly CompositeDisposable _disposables = new CompositeDisposable();
+    private readonly CompositeDisposable _disposables = new();
     private readonly SourceCache<RuntimeCourse, string> _coursesSource;
     private readonly SourceCache<ScheduleProfile, Guid> _profileSource;
     private readonly BehaviorSubject<bool> _isRefreshingSubject;
-    private readonly ICourseCatalogService _catalogService;
+    private readonly ICourseCatalogRefactorService _catalogService;
     private readonly ILogger<ScheduleManager> _logger;
     private bool _isDisposed;
 
-    public ScheduleManager(AppState appState, IUserSettingService settingService, ICourseCatalogService catalog,
+    public ScheduleManager(AppState appState,
+        IUserSettingService settingService,
+        ICourseCatalogRefactorService catalog,
         ILogger<ScheduleManager> logger)
     {
         _coursesSource = appState.RuntimeCoursesSource;
@@ -160,9 +164,12 @@ public class ScheduleManager : IScheduleManager, IDisposable
         _profileSource.Remove(profile.Id);
     }
 
-    public async Task RefreshCoursesAsync(CancellationToken token = default)
+    public async Task<OperationResult> RefreshCoursesAsync(CancellationToken token = default)
+
     {
-        if (_isRefreshingSubject.Value) return;
+        if (_isRefreshingSubject.Value)
+            return OperationResult.Failed("Đang trong tiến trình đồng bộ khác.");
+        
         _isRefreshingSubject.OnNext(true);
         
         // var stopwatch = Stopwatch.StartNew();
@@ -170,6 +177,10 @@ public class ScheduleManager : IScheduleManager, IDisposable
         try
         {
             var coursesDict = _coursesSource.Items.ToDictionary(x => x.Code);
+            
+            if (coursesDict.Count == 0)
+                return OperationResult.Success();
+            
             _logger.LogInformation("Starting refresh for {Count} courses...", coursesDict.Count);
 
             try
@@ -186,39 +197,23 @@ public class ScheduleManager : IScheduleManager, IDisposable
                         runtimeCourse.Merge(course);
                     }
                 }
+                
+                return OperationResult.Success();
             }
             catch (OperationCanceledException)
             {
                 _logger.LogDebug("Refresh operation cancelled.");
-                throw;
+                return OperationResult.Failed("Tác vụ đồng bộ đã bị hủy bởi người dùng.", kind: OperationFailureReason.UserAction);
+            }
+            catch (BatchFetchAbortedException ex)
+            {
+                _logger.LogError(ex, "Batch fetch aborted.");
+                return OperationResult.Failed("Đồng bộ bị dừng đột ngột do lỗi xác thực hoặc lỗi hệ thống nghiêm trọng.", kind: OperationFailureReason.Unauthorized);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to refresh courses batch.");
-            }
-            
-            // cách cũ chạy từng course
-            // var allCourses = _coursesSource.Items.ToList();
-            // foreach (var runtimeCourse in allCourses)
-            // {
-            //     token.ThrowIfCancellationRequested();
-            //     try
-            //     {
-            //         var serverCourse = await _catalogService
-            //             .FetchCourseAsync(runtimeCourse.Code, token)
-            //             .ConfigureAwait(false);
-            //         runtimeCourse.Merge(serverCourse);
-            //     }
-            //     catch (OperationCanceledException)
-            //     {
-            //         _logger.LogDebug("Refresh operation cancelled.");
-            //         throw;
-            //     }
-            //     catch (Exception ex)
-            //     {
-            //         _logger.LogError(ex, "Failed to refresh course: {Code}", runtimeCourse.Code);
-            //     }
-            // }
+                return OperationResult.FromException(ex, "Lỗi kết nối hoặc xử lý dữ liệu môn học.", kind: OperationFailureReason.System);            }
         }
         finally
         {

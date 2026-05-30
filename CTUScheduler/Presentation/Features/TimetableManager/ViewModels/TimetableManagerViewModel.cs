@@ -38,7 +38,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
     public class TimetableManagerViewModel : SessionSyncViewModelBase, IRoutableViewModel
     {
         private readonly IConnectivityService _connectivityService;
-        private readonly ICourseCatalogService _courseCatalogService;
         private readonly IProfileQueryService _profileQueryService;
         private readonly IScheduleSyncService _scheduleSyncService;
         private readonly IScheduleRegistrationService _scheduleRegistrationService;
@@ -77,7 +76,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         public TimetableManagerViewModel(
             IScreen hostScreen,
             IConnectivityService connectivityService,
-            ICourseCatalogService courseCatalogService,
             IUserSessionService userSessionService,
             IWorkspaceStore workspaceStore,
             IProfileQueryService profileQueryService,
@@ -92,7 +90,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         {
             HostScreen = hostScreen;
             _connectivityService = connectivityService;
-            _courseCatalogService = courseCatalogService;
             _userSessionService = userSessionService;
             _workspaceStore = workspaceStore;
             _profileQueryService = profileQueryService;
@@ -164,7 +161,18 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             ReloadAllTimetableCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 if (IsEmptyTimetableLayouts) return;
-                await _scheduleSyncService.RefreshCoursesAsync();
+                var result = await _scheduleSyncService.RefreshCoursesAsync();
+
+                result.Match(
+                    () => UserInteractionService.Toast.Light.Success("Cập nhật thông tin thời khóa biểu thành công!"),
+                    (errors, kind) =>
+                    {
+                        var messages = string.Join("\n", errors.Select(e => e.FormattedMessage));
+                        if (kind == OperationFailureReason.UserAction) return;
+
+                        UserInteractionService.Notification.Light.Error(messages);
+                    }
+                );
             }, canReloadAllTimetable).DisposeWith(Disposables);
 
             DeleteSelectedTimetablesCommand = ReactiveCommand.CreateFromTask(async () =>
@@ -290,9 +298,9 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             await UserInteractionService.Dialog.ShowModal<SchedulingDialogViewModel, Unit>(viewModel, options);
         }
 
-        protected override async Task<OperationResult> ExecuteSyncTaskAsync(CancellationToken cancellationToken)
+        protected override Task<OperationResult> ExecuteSyncTaskAsync(CancellationToken cancellationToken)
         {
-            return await _courseCatalogService.EnsureReadyAsync();
+            return Task.FromResult(OperationResult.Success());
         }
 
         private string FormatTime(DateTimeOffset time)

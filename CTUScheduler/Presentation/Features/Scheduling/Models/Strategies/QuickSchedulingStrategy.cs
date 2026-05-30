@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
+using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.UserSessionService;
@@ -15,14 +16,14 @@ namespace CTUScheduler.Presentation.Features.Scheduling.Models.Strategies;
 
 public class QuickSchedulingStrategy : SchedulingStrategy
 {
-    private readonly ICourseCatalogService _courseCatalogService;
+    private readonly ICourseCatalogRefactorService _courseCatalogService;
     private readonly IReadOnlyList<string> _plannedCoursesCode;
     private const string ExceptCode = "SHCVHT";
     public override string Name => nameof(QuickSchedulingStrategy);
     public override int StartStepIndex => 1;
 
     public QuickSchedulingStrategy(IViewModelFactory factory,
-        ICourseCatalogService courseCatalogService,
+        ICourseCatalogRefactorService courseCatalogService,
         IPlannedCourseStore plannedCourseStore) : base(factory)
     {
         _courseCatalogService = courseCatalogService;
@@ -36,9 +37,10 @@ public class QuickSchedulingStrategy : SchedulingStrategy
     }
 
     public override async Task<IWizardStep[]> CreateStepsAsync(SchedulingWizardContext context,
-        CompositeDisposable disposables)
+        CompositeDisposable disposables,
+        CancellationToken cancellationToken = default)
     {
-        await InjectPlannedCourses(context);
+        await InjectPlannedCourses(context, cancellationToken);
 
         var step1 = Factory.Create<FindCourseViewModel, SchedulingWizardContext>(context)
             .DisposeWith(disposables);
@@ -48,15 +50,17 @@ public class QuickSchedulingStrategy : SchedulingStrategy
         return [step1, step2];
     }
 
-    private async Task InjectPlannedCourses(SchedulingWizardContext context)
+    private async Task InjectPlannedCourses(SchedulingWizardContext context,
+        CancellationToken cancellationToken = default)
     {
         var coursesBlueprints = new List<CourseBlueprint>();
-        await foreach (var course in _courseCatalogService.FetchCoursesBatchAsync(_plannedCoursesCode))
+        await foreach (var course in _courseCatalogService.FetchCoursesBatchAsync(_plannedCoursesCode,
+                           cancellationToken: cancellationToken))
         {
             var courseBlueprint = new CourseBlueprint(course, course.Sections);
             coursesBlueprints.Add(courseBlueprint);
-            // context.CourseBlueprints.Add(courseBlueprint);
         }
+
         context.CourseBlueprints.AddRange(coursesBlueprints);
     }
 }
