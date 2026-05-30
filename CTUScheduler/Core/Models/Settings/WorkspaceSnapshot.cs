@@ -7,8 +7,9 @@ using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 namespace CTUScheduler.Core.Models.Settings;
 
 public record WorkspaceSnapshot(
-    RegistrationContext? Context, 
-    [property:JsonRequired] IReadOnlyList<Course> Courses, 
-    [property:JsonRequired]IReadOnlyList<ScheduleProfile> Profiles, 
-    DateTimeOffset LastModified
+    RegistrationContext? Context,
+    [property: JsonRequired] IReadOnlyList<Course> Courses,
+    [property: JsonRequired] IReadOnlyList<ScheduleProfile> Profiles,
+    DateTimeOffset LastModified,
+    int SchemaVersion = AppConstants.WorkspaceSnapshotVersion
 );

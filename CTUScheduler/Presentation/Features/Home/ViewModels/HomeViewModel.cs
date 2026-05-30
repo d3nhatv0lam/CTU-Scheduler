@@ -26,9 +26,6 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels;
 public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewModel
 {
     private readonly IRegistrationRulesRefactorService _registrationRulesService;
-    private readonly ICourseRegistrationRefactorService _courseRegistrationService;
-    private readonly ITuitionFeeRefactorService _tuitionFeeService;
-    private readonly ILogger<HomeViewModel> _logger;
 
     private readonly ObservableAsPropertyHelper<RegistrationInformation?> _registrationInfo;
     [ObservableAsProperty] private IReadOnlyList<PlannedCourse>? _plannedCourses;
@@ -43,8 +40,7 @@ public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewMode
     public IScreen HostScreen { get; }
     public RegistrationInformation? RegistrationInfo => _registrationInfo.Value;
     public TimelineViewModel TimelineViewModel { get; } = new();
-
-
+    
     public ReactiveCommand<Unit, OperationResult> LoadPlannedCoursesCommand { get; }
     public ReactiveCommand<Unit, OperationResult> LoadTuitionFeeCommand { get; }
 
@@ -59,14 +55,11 @@ public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewMode
         IUserInteractionService userInteractionService,
         INavigationRegionManager navigationRegionManager,
         IConnectivityService connectivityService,
-        ILogger<HomeViewModel> logger) : base(userInteractionService, navigationRegionManager, connectivityService)
+        ILogger<HomeViewModel> logger) : base(userInteractionService, navigationRegionManager, connectivityService,
+        logger)
     {
         HostScreen = hostScreen;
         _registrationRulesService = registrationRulesService;
-        _courseRegistrationService = courseRegistrationService;
-        _tuitionFeeService = tuitionFeeService;
-
-        _logger = logger;
 
         _registrationInfo = userSessionService.RegistrationInfoChanged
             .ToProperty(this, nameof(RegistrationInfo), scheduler: RxSchedulers.MainThreadScheduler)
@@ -130,14 +123,15 @@ public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewMode
     protected override async Task<OperationResult> ExecuteSyncTaskAsync(CancellationToken cancellationToken)
     {
         // lấy registration info trước mới có context học kỳ - năm
-        var rulesResult = await _registrationRulesService.RefreshRegistrationAsync(cancellationToken);
-        if (!rulesResult.IsSuccess) return rulesResult;
-
+        var rulesTask = _registrationRulesService.RefreshRegistrationAsync(cancellationToken);
         var plannedTask = LoadPlannedCoursesCommand.Execute().ToTask(cancellationToken);
-        var tuitionTask = LoadTuitionFeeCommand.Execute().ToTask(cancellationToken);
-        await Task.WhenAll(plannedTask, tuitionTask);
+        await Task.WhenAll(rulesTask, plannedTask);
 
-        return OperationResult.Combine(plannedTask.Result, tuitionTask.Result);
+        if (!rulesTask.Result.IsSuccess) return rulesTask.Result;
+
+        var tuitionResult = await LoadTuitionFeeCommand.Execute().ToTask(cancellationToken);
+
+        return OperationResult.Combine(plannedTask.Result, tuitionResult);
     }
 
     private void ApplyTeachingPlanToTimeline(TeachingPlanData? teachingPlan)
@@ -308,7 +302,6 @@ public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewMode
         if (isDisposing)
         {
             TimelineViewModel.Dispose();
-            _logger.LogDebug("Disposed");
         }
 
         base.Dispose(isDisposing);

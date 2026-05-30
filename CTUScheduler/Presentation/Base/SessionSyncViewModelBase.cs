@@ -12,6 +12,7 @@ using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
@@ -23,6 +24,7 @@ public abstract partial class SessionSyncViewModelBase : ViewModelBase, IActivat
     protected readonly IUserInteractionService UserInteractionService;
     protected readonly INavigationRegionManager NavigationRegionManager;
     protected readonly IConnectivityService ConnectivityService;
+    protected readonly ILogger Logger;
 
     private bool _isDisposed;
 
@@ -34,16 +36,32 @@ public abstract partial class SessionSyncViewModelBase : ViewModelBase, IActivat
     protected SessionSyncViewModelBase(
         IUserInteractionService userInteractionService,
         INavigationRegionManager navigationRegionManager,
-        IConnectivityService connectivityService)
+        IConnectivityService connectivityService,
+        ILogger logger)
     {
         UserInteractionService = userInteractionService;
         NavigationRegionManager = navigationRegionManager;
         ConnectivityService = connectivityService;
-
+        Logger = logger;
+        
         var canSync = ConnectivityService.IsInternetAvailable
             .ObserveOn(RxSchedulers.MainThreadScheduler);
 
         SyncSessionCommand = ReactiveCommand.CreateFromTask(ExecuteSyncTaskAsync, canSync)
+            .DisposeWith(Disposables);
+        
+        SyncSessionCommand.ThrownExceptions
+            .Subscribe(ex =>
+            {
+                if (ex is OperationCanceledException or TaskCanceledException)
+                {
+                    Logger.LogDebug("Tác vụ đồng bộ phiên bị hủy.");
+                }
+                else
+                {
+                    Logger.LogError(ex, "Lỗi không xác định phát sinh trong SyncSessionCommand.");
+                }
+            })
             .DisposeWith(Disposables);
 
         this.WhenActivated(disposables =>
@@ -58,12 +76,6 @@ public abstract partial class SessionSyncViewModelBase : ViewModelBase, IActivat
                         onSuccess: OnSyncSuccess,
                         onFailure: (errors, reason) =>
                         {
-                            // var errorsString = string.Join('\n', errors.Select(e => e.FormattedMessage));
-                            // if (!string.IsNullOrEmpty(errorsString))
-                            // {
-                            //     UserInteractionService.Notification.Light.Error(errorsString);
-                            // }
-
                             if (reason == OperationFailureReason.Unauthorized ||
                                 errors.Any(e => e.Code.Contains("Auth") || e.Code.Contains("Session")))
                             {
@@ -118,6 +130,7 @@ public abstract partial class SessionSyncViewModelBase : ViewModelBase, IActivat
         if (disposing)
         {
             Disposables.Dispose();
+            Logger.LogDebug("Disposed");
         }
 
         _isDisposed = true;

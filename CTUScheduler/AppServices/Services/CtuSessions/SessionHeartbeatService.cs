@@ -158,6 +158,8 @@ public class SessionHeartbeatService : ISessionHeartbeatService, IDisposable
     {
         lock (_gate)
         {
+            if (!_isStarted) return;
+            
             _heartbeatSubscription?.Dispose();
             _heartbeatSubscription = null;
             _isStarted = false;

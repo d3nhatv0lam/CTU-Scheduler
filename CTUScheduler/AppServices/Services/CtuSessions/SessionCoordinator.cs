@@ -46,16 +46,8 @@ public class SessionCoordinator : ISessionCoordinator
 
         _heartbeatService.SessionExpired.Subscribe(async _ =>
         {
-            await _logoutSemaphore.WaitAsync();
-            try
-            {
-                _logger.LogWarning("Nhận được tín hiệu hết hạn phiên từ Heartbeat ngầm. Tiến hành dọn dẹp hệ thống...");
-                await EndSessionAsync();
-            }
-            finally
-            {
-                _logoutSemaphore.Release();
-            }
+            _logger.LogWarning("Nhận được tín hiệu hết hạn phiên từ Heartbeat ngầm. Tiến hành dọn dẹp hệ thống...");
+            await EndSessionAsync();
         });
     }
 
@@ -167,33 +159,43 @@ public class SessionCoordinator : ISessionCoordinator
 
     public async Task EndSessionAsync()
     {
-        _heartbeatService.Stop();
-
-        foreach (var cleanup in _cleanupServices.Value)
+        await _logoutSemaphore.WaitAsync();
+        try
         {
-            try
-            {
-                cleanup.Cleanup();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to cleanup");
-            }
-        }
+            if (_sessionStore.Current is null) return;
 
-        foreach (var asyncCleanup in _asyncCleanupServices.Value)
+            _heartbeatService.Stop();
+
+            foreach (var cleanup in _cleanupServices.Value)
+            {
+                try
+                {
+                    cleanup.Cleanup();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to cleanup");
+                }
+            }
+
+            foreach (var asyncCleanup in _asyncCleanupServices.Value)
+            {
+                try
+                {
+                    await asyncCleanup.CleanupAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to cleanupAsync");
+                }
+            }
+
+            _sessionExpiredSubject.OnNext(Unit.Default);
+            _logger.LogInformation("Logged out! Session data cleared.");
+        }
+        finally
         {
-            try
-            {
-                await asyncCleanup.CleanupAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to cleanupAsync");
-            }
+            _logoutSemaphore.Release();
         }
-
-        _sessionExpiredSubject.OnNext(Unit.Default);
-        _logger.LogInformation("Logged out! Session data cleared.");
     }
 }

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Reactive;
-using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -21,7 +20,6 @@ using CTUScheduler.Presentation.Services.Factories;
 using CTUScheduler.Presentation.Shared.Dialogs.ViewModels;
 using DynamicData;
 using DynamicData.Aggregation;
-using DynamicData.Binding;
 using Humanizer;
 using ReactiveUI;
 using System.Linq;
@@ -30,7 +28,6 @@ using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Shells;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
-using DocumentFormat.OpenXml.Math;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
@@ -45,7 +42,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private readonly IUserSessionService _userSessionService;
         private readonly IWorkspaceStore _workspaceStore;
         private readonly IViewModelFactory _viewModelFactory;
-        private readonly ILogger<TimetableManagerViewModel> _logger;
 
         private readonly ReadOnlyObservableCollection<TimetableEditorViewModel> _bindableTimetableLayouts;
 
@@ -68,7 +64,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         public ReactiveCommand<IStorageFile, Unit> SaveScheduleCommand { get; }
         public ReactiveCommand<Unit, Unit> ReloadAllTimetableCommand { get; }
         public ReactiveCommand<Unit, Unit> ExportSelectedTimetablesCommand { get; }
-
         public ReactiveCommand<Unit, bool> DeleteSelectedTimetablesCommand { get; }
         public ReactiveCommand<TimetableLayoutBaseViewModel, Unit> ShowTimetableDetailsCommand { get; }
 
@@ -86,7 +81,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             IUserInteractionService userInteractionService,
             INavigationRegionManager navigationRegionManager,
             ILogger<TimetableManagerViewModel> logger) : base(userInteractionService, navigationRegionManager,
-            connectivityService)
+            connectivityService, logger)
         {
             HostScreen = hostScreen;
             _connectivityService = connectivityService;
@@ -97,8 +92,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             _scheduleRegistrationService = scheduleRegistrationService;
             _excelExporterService = excelExporterService;
             _viewModelFactory = viewModelFactory;
-            _logger = logger;
-
 
             var sharedViewModelsStream = _profileQueryService.ConnectProfiles()
                 .ObserveOn(RxSchedulers.TaskpoolScheduler)
@@ -254,12 +247,11 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                 result.Match(
                     onSuccess: () =>
                     {
-                        _logger.LogInformation("Lưu thời khóa biểu thành công vào {Path}", filePath);
+                        Logger.LogInformation("Lưu thời khóa biểu thành công vào {Path}", filePath);
                         UserInteractionService.Toast.Light.Success("Lưu dữ liệu thành công!");
                     },
-                    onFailure: (errors, _) =>
-                        UserInteractionService.Notification.Light.Error("Lỗi lưu file",
-                            string.Join("\n", errors.Select(e => e.FormattedMessage))));
+                    onFailure: (_, _) =>
+                        UserInteractionService.Notification.Light.Error("Lỗi lưu file", result.FormattedErrorMessage));
             }).DisposeWith(Disposables);
 
             LoadScheduleCommand = ReactiveCommand.CreateFromTask<IReadOnlyList<IStorageFile>>(async files =>
@@ -274,12 +266,12 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     result.Match(
                         onSuccess: () =>
                         {
-                            _logger.LogInformation("Nạp thời khóa biểu thành công từ {Path}", filePath);
+                            Logger.LogInformation("Nạp thời khóa biểu thành công từ {Path}", filePath);
                             UserInteractionService.Toast.Light.Success("Nạp dữ liệu thành công!");
                         },
-                        onFailure: (errors, _) =>
+                        onFailure: (_, _) =>
                             UserInteractionService.Notification.Light.Error("Lỗi nạp file",
-                                string.Join("\n", errors.Select(x => x.FormattedMessage)))
+                                result.FormattedErrorMessage)
                     );
                 })
                 .DisposeWith(Disposables);
@@ -306,16 +298,6 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
         private string FormatTime(DateTimeOffset time)
         {
             return time.Humanize(culture: new CultureInfo("vi-VN"));
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _logger.LogDebug("Disposed");
-            }
-
-            base.Dispose(disposing);
         }
     }
 }

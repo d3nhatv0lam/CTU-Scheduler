@@ -12,21 +12,25 @@ using CTUScheduler.Core.Models.Contributors;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Presentation.Base;
 using Material.Icons;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.Contact.ViewModels;
 
 public class ContactViewModel : ViewModelBase, IRoutableViewModel, IDisposable
 {
+    private readonly ILogger<ContactViewModel> _logger;
     public string UrlPathSegment => nameof(ContactViewModel);
     public IScreen HostScreen { get; }
 
     public IReadOnlyList<ContributorViewModel> Contributors { get; }
     public ReactiveCommand<string, Unit> OpenUrlCommand { get; }
 
-    public ContactViewModel(IScreen hostScreen)
+    public ContactViewModel(IScreen hostScreen, ILogger<ContactViewModel> logger)
     {
         HostScreen = hostScreen;
+        _logger = logger;
+
         Contributors = AppConstants.AppCredits.AllContributors.Select(c => new ContributorViewModel(c)).ToList();
 
         OpenUrlCommand = ReactiveCommand.Create<string>(url =>
@@ -55,6 +59,8 @@ public class ContactViewModel : ViewModelBase, IRoutableViewModel, IDisposable
         }
 
         OpenUrlCommand.Dispose();
+
+        _logger.LogDebug("Disposed");
     }
 }
 

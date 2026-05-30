@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Models.Shared.Results;
-using CTUScheduler.Core.Models.Shared;
 using System.Reactive;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
@@ -30,8 +28,6 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 {
     public partial class MainShellViewModel : SessionSyncViewModelBase, IScreen, IRoutableViewModel
     {
-        private readonly ILogger<MainShellViewModel> _logger;
-
         [Reactive] private NavigationItem? _selectedItem;
         [Reactive] private string _userName = "họ tên";
         [Reactive] private string _userMSSV = "MSSV";
@@ -44,17 +40,16 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
         public ReactiveCommand<Unit, Unit> LogoutCommand { get; }
 
 
-        public MainShellViewModel(IScreen hostScreen, 
+        public MainShellViewModel(IScreen hostScreen,
             INavigationRegionManager navigationRegionManager,
             ISessionCoordinator sessionCoordinator,
             IUserInteractionService userInteractionService,
             ICtuSessionAccessor ctuSessionAccessor,
             IConnectivityService connectivityService,
             ILogger<MainShellViewModel> logger) : base(userInteractionService,
-            navigationRegionManager, connectivityService)
+            navigationRegionManager, connectivityService, logger)
         {
             HostScreen = hostScreen;
-            _logger = logger;
 
             NavigationRegionManager.Register(RegionIds.Main, this)
                 .DisposeWith(Disposables);
@@ -87,7 +82,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                     UserMSSV = _userMSSV;
                 })
                 .DisposeWith(Disposables);
-            
+
             this.WhenAnyValue(x => x.SelectedItem)
                 .Where(x => x.HasValue)
                 .Select(x => x!.Value)
@@ -102,7 +97,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
 
             SelectedItem = NavigationItems[0];
             // SelectedItem = NavigationItems[1];
-            
+
             LogoutCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 using var confirmViewModel = new ConfirmDialogViewModel
@@ -146,16 +141,6 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
         protected override Task<OperationResult> ExecuteSyncTaskAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(OperationResult.Success());
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _logger.LogDebug("Disposed");
-            }
-            
-            base.Dispose(disposing);
         }
     }
 }

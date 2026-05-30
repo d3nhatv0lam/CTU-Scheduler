@@ -314,6 +314,6 @@ public class ScheduleManager : IScheduleManager, IDisposable
         _isDisposed = true;
 
         _disposables.Dispose();
-        _logger.LogDebug(nameof(ScheduleManager) + " has been disposed.");
+        _logger.LogDebug("has been disposed.");
     }
 }

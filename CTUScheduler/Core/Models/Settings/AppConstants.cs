@@ -18,6 +18,7 @@ public static class AppConstants
     public const string AppNameUnix = "ctu-scheduler";
 
     public const int DefaultMaxScheduleProfiles = 10;
+    public const int WorkspaceSnapshotVersion = 1;
 
     // ====================================================
     // NHÓM FILE (NESTED CLASS)
