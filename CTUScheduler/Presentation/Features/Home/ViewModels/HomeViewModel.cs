@@ -93,7 +93,7 @@ public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewMode
             .ToProperty(this, nameof(TuitionFee), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
 
-        _teachingPlanHelper = teachingPlanStore.TeachingPlanChanged
+        _teachingPlanHelper = teachingPlanStore.Changed
             .ToProperty(this, nameof(TeachingPlan), scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
 

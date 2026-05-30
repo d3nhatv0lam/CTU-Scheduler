@@ -139,7 +139,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
             var canOpenTeachingPlan = this.WhenAnyValue(x => x.IsLoadedTeachingPlan);
             OpenTeachingPlanCommand = ReactiveCommand.Create(() =>
                     {
-                        var pdfUrl = teachingPlanStore.CurrentTeachingPlan?.PdfUrl;
+                        var pdfUrl = teachingPlanStore.Current?.PdfUrl;
                         if (string.IsNullOrEmpty(pdfUrl))
                             return;
 

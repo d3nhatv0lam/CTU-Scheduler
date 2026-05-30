@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Models;
 using CTUScheduler.AppServices.Services.ScheduleService;
@@ -44,10 +44,10 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ICourseCatalogRefactorService, CTUScheduler.AppServices.Services.StudentAcademicService.CourseCatalogService>();
         services.AddTransient<ITuitionFeeRefactorService, TuitionFeeRefactorService>();
 
-        services.AddTransient<IRegistrationRulesService, RegistrationRulesService>();
+        // services.AddTransient<IRegistrationRulesService, RegistrationRulesService>();
         services.AddTransient<ICourseCatalogService, CourseCatalogService>();
-        services.AddTransient<ICourseRegistrationService, CourseRegistrationService>();
-        services.AddTransient<ITuitionFeeService, TuitionFeeService>();
+        // services.AddTransient<ICourseRegistrationService, CourseRegistrationService>();
+        // services.AddTransient<ITuitionFeeService, TuitionFeeService>();
         services.AddTransient<ITeachingPlanLoaderService, TeachingPlanLoaderService>();
 
         services.AddSingleton<ITimetableGeneratorService, TimetableGeneratorService>();
