@@ -2,4 +2,5 @@
   <Folder Name="/Tests/" />
   <Project Path="CTUScheduler.Desktop/CTUScheduler.Desktop.csproj" />
   <Project Path="CTUScheduler/CTUScheduler.csproj" />
+  <Project Path="RxAmethyst.Playwright/RxAmethyst.Playwright.csproj" />
 </Solution>
