@@ -67,9 +67,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ICourseQueryService>(sp => sp.GetRequiredService<ScheduleManager>())
             .AddSingleton<IProfileQueryService>(sp => sp.GetRequiredService<ScheduleManager>())
             .AddSingleton<IScheduleSyncService>(sp => sp.GetRequiredService<ScheduleManager>());
-
-
-
+        
         return services;
     }
 }
