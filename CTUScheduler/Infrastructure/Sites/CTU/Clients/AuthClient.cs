@@ -106,7 +106,6 @@ internal sealed class AuthClient : IAuthClient
             return false;
 
         var htmlContent = await response.Content.ReadAsStringAsync(ct);
-
         return !htmlContent.Contains("location.href='../logout.php'");
     }
 

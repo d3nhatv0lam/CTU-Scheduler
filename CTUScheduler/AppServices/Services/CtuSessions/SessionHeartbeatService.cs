@@ -142,6 +142,10 @@ public class SessionHeartbeatService : ISessionHeartbeatService, IDisposable
                 HandleSessionExpired();
             }
         }
+        else
+        {
+            _logger.LogDebug("Heartbeat thành công, Session vẫn còn sống!");
+        }
     }
 
     private void HandleSessionExpired()
