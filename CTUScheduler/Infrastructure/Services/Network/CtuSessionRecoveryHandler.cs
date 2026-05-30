@@ -73,7 +73,6 @@ public class CtuSessionRecoveryHandler : DelegatingHandler
             {
                 _logger.LogInformation("Khôi phục phiên ngầm tập trung thành công! Tiến hành tạo bản sao và gửi lại request...");
                 
-                
                 var clonedRequest = await CloneHttpRequestMessageAsync(request);
                 
                 // Đánh dấu request retry để chặn vòng lặp vô hạn
@@ -84,12 +83,6 @@ public class CtuSessionRecoveryHandler : DelegatingHandler
                 
                 return await base.SendAsync(clonedRequest, cancellationToken);
             }
-            else
-            {
-                // SSO từ chối bắt tay -> Đăng xuất
-                _logger.LogError("Server SSO từ chối bắt tay. Không thể cứu phiên ngầm. Đăng xuất...");
-                await _sessionCoordinator.EndSessionAsync();
-            }
         }
 
         return response;
@@ -98,7 +91,7 @@ public class CtuSessionRecoveryHandler : DelegatingHandler
     private static async Task<bool> IsSessionExpiredResponseAsync(HttpResponseMessage response, CancellationToken ct)
     {
         // Phân hệ API mới (JWT): Trả về 401 Unauthorized hoặc 403 Forbidden
-        if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.Forbidden)
+        if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {
             return true;
         }

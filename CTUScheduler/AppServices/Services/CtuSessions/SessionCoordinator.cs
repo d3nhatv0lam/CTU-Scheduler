@@ -23,7 +23,7 @@ public class SessionCoordinator : ISessionCoordinator
     private readonly Lazy<IEnumerable<ICleanupAsync>> _asyncCleanupServices;
     private readonly ILogger<SessionCoordinator> _logger;
 
-    private readonly SemaphoreSlim _reAuthLock = new(1, 1);
+    private readonly SemaphoreSlim _sessionLock = new(1, 1);
     private readonly SemaphoreSlim _logoutSemaphore = new SemaphoreSlim(1, 1);
     private readonly Subject<Unit> _sessionExpiredSubject = new();
 
@@ -112,19 +112,21 @@ public class SessionCoordinator : ISessionCoordinator
         // Tránh chạy lại nếu session đã được xoá (đã logout)
         if (current is null) return null;
 
-        await _reAuthLock.WaitAsync(ct);
+        await _sessionLock.WaitAsync(ct);
         try
         {
             // lấy current lại vì đa luồng có thể đã thay đổi ở luồng khác
             current = _sessionStore.Current;
-            if (current is not null && current != expiredSession && !current.IsExpired)
+            if (current is null) return null;
+
+            if (current != expiredSession && !current.IsExpired)
             {
                 _logger.LogInformation(
                     "Phiên làm việc đã được khôi phục bởi một tác vụ khác trước đó. Sử dụng phiên mới.");
                 return current;
             }
 
-            //  chưa được refresh, tiến hành Re-Auth
+            // chưa được refresh, tiến hành Re-Auth
             _logger.LogWarning("Bắt đầu tiến trình khôi phục phiên ngầm tập trung...");
             var refreshedSession = await _authClient.TrySilentReAuthAsync(expiredSession, ct);
 
@@ -136,15 +138,36 @@ public class SessionCoordinator : ISessionCoordinator
             }
             else
             {
-                _logger.LogError("Yêu cầu Re-Auth bị server từ chối. Đăng xuất...");
-                await EndSessionAsync();
+                // Re-Auth thất bại: Lấy trạng thái mới nhất sau khi await (vì trong lúc await có thể đã có logout ở luồng khác)
+                // có thể bị gọi EndSession vì nó không lock chung
+                var latestCurrent = _sessionStore.Current;
+                if (latestCurrent is null)
+                {
+                    return null;
+                }
+
+                if (latestCurrent.IsExpired)
+                {
+                    _logger.LogError("Yêu cầu Re-Auth bị server từ chối và phiên chính đã hết hạn. Đăng xuất...");
+                    await EndSessionAsync();
+                }
+                else
+                {
+                    // Nếu phiên chính (JWT) vẫn sống khỏe mạnh, ta chỉ âm thầm vô hiệu hóa HTQL
+                    if (expiredSession.Htql is null) return null;
+
+                    _logger.LogWarning(
+                        "Không thể khôi phục phân hệ HtqlSession. Vô hiệu hóa phân hệ này nhưng giữ trạng thái đăng nhập JWT.");
+                    InvalidateHtqlSession(expiredSession.Htql);
+                }
+
                 return null;
             }
         }
         catch (OperationCanceledException)
         {
             _logger.LogWarning("Tiến trình khôi phục phiên ngầm bị hủy do timeout mạng.");
-            throw; // Ném ra để luồng gọi tự xử lý bảo lưu
+            throw; // Ném ra để luồng gọi phân biệt được lỗi kết nối mạng (bảo lưu phiên) và bị server từ chối thực tế (logout)
         }
         catch (Exception ex)
         {
@@ -153,7 +176,27 @@ public class SessionCoordinator : ISessionCoordinator
         }
         finally
         {
-            _reAuthLock.Release();
+            _sessionLock.Release();
+        }
+    }
+
+    public void InvalidateHtqlSession(HtqlSession failedSession)
+    {
+        ArgumentNullException.ThrowIfNull(failedSession);
+
+        _sessionLock.Wait();
+        try
+        {
+            var current = _sessionStore.Current;
+            // Chỉ vô hiệu hóa nếu phân hệ HTQL hiện tại trùng khớp với đối tượng báo lỗi lúc phát sinh
+            if (current is null || current.Htql?.InstanceId != failedSession.InstanceId) return;
+
+            _sessionStore.Update(current with { Htql = null });
+            _logger.LogWarning("Đã vô hiệu hóa phân hệ HtqlSession do mất phiên hoặc lỗi kết nối thực tế.");
+        }
+        finally
+        {
+            _sessionLock.Release();
         }
     }
 

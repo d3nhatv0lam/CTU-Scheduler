@@ -12,6 +12,7 @@ using CTUScheduler.Core.Networking;
 using CTUScheduler.Core.Utils;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Clients;
 
@@ -22,21 +23,29 @@ internal sealed record SamlLoginContext(string LoginSamlResponse);
 internal sealed class AuthClient : IAuthClient
 {
     private readonly HttpClient _pingHttpClient;
+    private readonly ILogger<AuthClient> _logger;
 
-    public AuthClient(HttpClient pingHttpClient)
+    public AuthClient(HttpClient pingHttpClient, ILogger<AuthClient> logger)
     {
         _pingHttpClient = pingHttpClient;
+        _logger = logger;
     }
 
     public async Task<CtuSession> AuthenticateAsync(string username, string password, CancellationToken ct = default)
     {
+        _logger.LogInformation("Bắt đầu tiến trình xác thực SSO CTU cho tài khoản {Username}...", username);
         var cookiesContainer = new CookieContainer();
         using var httpHandler = new HttpClientHandler();
         httpHandler.CookieContainer = cookiesContainer;
         using var httpClient = new HttpClient(httpHandler);
 
+        _logger.LogDebug("Khởi tạo session key (Bootstrap)...");
         var bootstrapContext = await BootstrapAsync(httpClient, ct);
+        
+        _logger.LogDebug("Gửi thông tin đăng nhập xác thực SSO...");
         var samlContext = await SubmitCredentialAsync(httpClient, bootstrapContext, username, password, ct);
+        
+        _logger.LogDebug("Hoàn tất thiết lập phiên trên Web HTQL...");
         var isAuthenticated = await CompleteAuthenticationAsync(httpClient, samlContext, ct);
 
         if (!isAuthenticated)
@@ -44,6 +53,7 @@ internal sealed class AuthClient : IAuthClient
             throw new InvalidOperationException("Không thể hoàn tất thiết lập phiên Cookie trên phân hệ Web.");
         }
 
+        _logger.LogDebug("Thực hiện bắt tay SSO lấy Token API JWT...");
         var jwtSsoSuccess = await ExecuteDkmhJwtHandshakeAsync(httpClient, cookiesContainer, username, ct);
         if (!jwtSsoSuccess)
         {
@@ -51,35 +61,20 @@ internal sealed class AuthClient : IAuthClient
                 "Bắt tay xác thực SSO API JWT thất bại hoặc máy chủ DKMHBack từ chối kết nối.");
         }
 
-        //  Lấy tất cả cookies
-        string dkmhJwtToken = string.Empty;
-        var legacyCookies = new Dictionary<string, string>();
-        DateTimeOffset cookiesExpiresAt = DateTimeOffset.UtcNow.AddHours(12);
+        _logger.LogInformation("Xác thực và bắt tay SSO thành công! Bắt đầu trích xuất cookies và token...");
 
-        var dkmhCookies = cookiesContainer.GetCookies(DkmhEndpoints.BaseDomain);
-        var accountsCookies = cookiesContainer.GetCookies(HtqlEndpoints.AccountsDomain);
-        var baseCookies = cookiesContainer.GetCookies(HtqlEndpoints.BaseDomain);
-
-        var allCookiesList = dkmhCookies.Cast<Cookie>()
-            .Concat(accountsCookies.Cast<Cookie>())
-            .Concat(baseCookies.Cast<Cookie>());
-
-        foreach (Cookie cookie in allCookiesList)
+        var targetDomains = new[]
         {
-            if (cookie.Name.Equals("access_token", StringComparison.OrdinalIgnoreCase))
-            {
-                dkmhJwtToken = cookie.Value;
-                continue;
-            }
+            DkmhEndpoints.BaseDomain,
+            HtqlEndpoints.AccountsDomain,
+            HtqlEndpoints.BaseDomain
+        };
 
-            legacyCookies[cookie.Name] = cookie.Value;
-
-            if (cookie.Name.Equals("SESSISID", StringComparison.OrdinalIgnoreCase) &&
-                cookie.Expires != DateTime.MinValue)
-            {
-                cookiesExpiresAt = cookie.Expires;
-            }
-        }
+        // Trích xuất access_token (JWT)
+        string dkmhJwtToken = targetDomains
+            .SelectMany(domain => cookiesContainer.GetCookies(domain))
+            .FirstOrDefault(c => c.Name.Equals("access_token", StringComparison.OrdinalIgnoreCase))
+            ?.Value ?? string.Empty;
 
         if (string.IsNullOrEmpty(dkmhJwtToken))
         {
@@ -87,14 +82,14 @@ internal sealed class AuthClient : IAuthClient
                 "Không tìm thấy Cookie 'access_token' trong CookieContainer sau khi đăng nhập.");
         }
 
+        // Trích xuất các legacy cookies và thời gian hết hạn phiên
+        var (legacyCookies, cookiesExpiresAt) = ExtractLegacyCookies(cookiesContainer, targetDomains);
+
         var (studentProfile, dkmhJwtExpiresAt) = ParseJwt(dkmhJwtToken);
 
         return new CtuSession(
-            DkmhApiJwtToken: dkmhJwtToken,
-            DkmhApiJwtExpiresAt: dkmhJwtExpiresAt,
-            LegacyWebCookies: legacyCookies,
-            LegacyWebCookiesExpiresAt: cookiesExpiresAt,
-            Profile: studentProfile
+            Dkmh: new DkmhSession(dkmhJwtToken, dkmhJwtExpiresAt, studentProfile),
+            Htql: new HtqlSession(legacyCookies, cookiesExpiresAt)
         );
     }
 
@@ -122,7 +117,9 @@ internal sealed class AuthClient : IAuthClient
                 HtqlEndpoints.HtqlDomain
             };
 
-            foreach (var cookie in currentSession.LegacyWebCookies)
+            var sourceCookies = currentSession.Htql?.Cookies ?? new Dictionary<string, string>();
+
+            foreach (var cookie in sourceCookies)
             {
                 // truyền cookie vào domain .ctu...
                 try
@@ -163,34 +160,50 @@ internal sealed class AuthClient : IAuthClient
             bool isSuccess = await ExecuteLegacySsoHandshakeAsync(httpClient, currentSession.StudentId, ct);
             if (!isSuccess) return null;
 
-            var newCookies = new Dictionary<string, string>(currentSession.LegacyWebCookies);
+            // Trích xuất và cập nhật các legacy cookies mới nhận được sau khi re-auth
+            var (newCookies, cookiesExpiresAt) = ExtractLegacyCookies(
+                cookiesContainer,
+                [HtqlEndpoints.StudentHome, HtqlEndpoints.AccountsDomain],
+                sourceCookies);
 
-            // Lấy các cookie từ trang Home sinh viên (ngoại trừ access_token)
-            var studentHomeCookies = cookiesContainer.GetCookies(HtqlEndpoints.StudentHome);
-            foreach (Cookie cookie in studentHomeCookies)
+            var refreshedHtql = new HtqlSession(newCookies, cookiesExpiresAt);
+
+            // thử gia hạn JWT để kéo dài thêm 12 tiếng liên tục
+            DkmhSession? refreshedDkmh = null;
+            try
             {
-                if (cookie.Name.Equals("access_token", StringComparison.OrdinalIgnoreCase)) continue;
-                newCookies[cookie.Name] = cookie.Value;
+                bool jwtSuccess = await ExecuteDkmhJwtHandshakeAsync(httpClient, cookiesContainer, currentSession.StudentId, ct);
+                if (jwtSuccess)
+                {
+                    var dkmhCookies = cookiesContainer.GetCookies(HtqlEndpoints.BaseDomain);
+                    string? newJwtToken = dkmhCookies
+                        .FirstOrDefault(c => c.Name.Equals("access_token", StringComparison.OrdinalIgnoreCase))
+                        ?.Value;
+
+                    if (!string.IsNullOrEmpty(newJwtToken))
+                    {
+                        var (studentProfile, dkmhJwtExpiresAt) = ParseJwt(newJwtToken);
+                        refreshedDkmh = new DkmhSession(newJwtToken, dkmhJwtExpiresAt, studentProfile);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Gia hạn JWT ngầm thất bại (sẽ fallback giữ JWT cũ).");
             }
 
-            // Lấy thêm các cookie từ SSO Accounts (ngoại trừ access_token)
-            var accountsCookies = cookiesContainer.GetCookies(HtqlEndpoints.AccountsDomain);
-            foreach (Cookie cookie in accountsCookies)
+            return currentSession with
             {
-                if (cookie.Name.Equals("access_token", StringComparison.OrdinalIgnoreCase)) continue;
-                newCookies[cookie.Name] = cookie.Value;
-            }
-
-            return currentSession with { LegacyWebCookies = newCookies };
+                Htql = refreshedHtql,
+                Dkmh = refreshedDkmh ?? currentSession.Dkmh
+            };
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"\n[TrySilentReAuthAsync ERROR]: {ex.Message}");
-            System.Diagnostics.Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
+            _logger.LogError(ex, "Lỗi nghiêm trọng khi cố gắng khôi phục phiên ngầm HtqlSession (TrySilentReAuthAsync).");
             return null;
         }
     }
-
     /// <summary>
     /// Thực hiện bắt tay SSO Legacy PHP (Gửi định danh rỗng mật khẩu -> Lấy SAML -> POST SAML -> Hoàn tất)
     /// </summary>
@@ -223,7 +236,7 @@ internal sealed class AuthClient : IAuthClient
             return false;
         }
 
-        // Bước 2: Gửi SAML Response để kích hoạt và thiết lập phiên Cookie PHPSESSID
+        // Gửi SAML Response để kích hoạt và thiết lập phiên Cookie PHPSESSID
         var samlContext = new SamlLoginContext(samlResponse);
         return await CompleteAuthenticationAsync(httpClient, samlContext, ct);
     }
@@ -357,7 +370,7 @@ internal sealed class AuthClient : IAuthClient
                                                   "Mã số đăng nhập hoặc Mật khẩu không đúng.");
         }
 
-        // bước 2: gọi vào cổng SSO PHP của DKMH
+        // gọi vào cổng SSO PHP của DKMH
         using var confirmRequest = new HttpRequestMessage(HttpMethod.Post, HtqlEndpoints.SsoAuth);
 
         confirmRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>()
@@ -456,5 +469,39 @@ internal sealed class AuthClient : IAuthClient
             throw new InvalidOperationException(nameof(samlResponse) + " bị rỗng");
 
         return samlResponse;
+    }
+
+    private static (Dictionary<string, string> Cookies, DateTimeOffset ExpiresAt) ExtractLegacyCookies(
+        CookieContainer cookieContainer,
+        IEnumerable<Uri> domains,
+        IDictionary<string, string>? initialCookies = null)
+    {
+        var cookies = initialCookies is not null
+            ? new Dictionary<string, string>(initialCookies)
+            : new Dictionary<string, string>();
+
+        DateTimeOffset expiresAt = DateTimeOffset.UtcNow.AddHours(12);
+
+        foreach (var domain in domains)
+        {
+            var cookieCollection = cookieContainer.GetCookies(domain);
+            foreach (Cookie cookie in cookieCollection)
+            {
+                if (cookie.Name.Equals("access_token", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                cookies[cookie.Name] = cookie.Value;
+
+                if (cookie.Name.Equals("SESSISID", StringComparison.OrdinalIgnoreCase) &&
+                    cookie.Expires != DateTime.MinValue)
+                {
+                    expiresAt = cookie.Expires;
+                }
+            }
+        }
+
+        return (cookies, expiresAt);
     }
 }

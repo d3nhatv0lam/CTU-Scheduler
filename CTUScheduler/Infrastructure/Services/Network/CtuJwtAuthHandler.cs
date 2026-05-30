@@ -1,4 +1,4 @@
-﻿using System.Net.Http;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,9 +24,9 @@ public class CtuJwtAuthHandler : DelegatingHandler
 
         var currentSession = _sessionAccessor.Current;
 
-        if (currentSession is not null && !string.IsNullOrEmpty(currentSession.DkmhApiJwtToken))
+        if (currentSession is not null && !string.IsNullOrEmpty(currentSession.Dkmh.AccessToken))
         {
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", currentSession.DkmhApiJwtToken);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", currentSession.Dkmh.AccessToken);
         }
 
         return base.SendAsync(request, cancellationToken);

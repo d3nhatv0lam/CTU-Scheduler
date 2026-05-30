@@ -126,10 +126,10 @@ public class SessionHeartbeatService : ISessionHeartbeatService, IDisposable
             {
                 var refreshed = await _sessionCoordinatorLazy.Value.RefreshSessionAsync(currentSession, ct);
                 
-                if (refreshed == null)
+                if (refreshed is null)
                 {
-                    _logger.LogError("Cứu phiên ngầm thất bại (SSO từ chối cấp session mới) cho {StudentId}. Đăng xuất...", currentSession.StudentId);
-                    HandleSessionExpired();
+                    _logger.LogError("Cứu phiên HTQL ngầm thất bại. Dừng heartbeat...");
+                    Stop();
                 }
             }
             catch (OperationCanceledException)
@@ -138,8 +138,12 @@ public class SessionHeartbeatService : ISessionHeartbeatService, IDisposable
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi nghiêm trọng khi cố gắng tự động cứu phiên ngầm.");
-                HandleSessionExpired();
+                _logger.LogError(ex, "Lỗi nghiêm trọng khi cố gắng tự động cứu phiên ngầm. Vô hiệu hóa phân hệ HtqlSession...");
+                if (currentSession.Htql is not null)
+                {
+                    _sessionCoordinatorLazy.Value.InvalidateHtqlSession(currentSession.Htql);
+                }
+                Stop();
             }
         }
         else

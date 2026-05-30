@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,10 +24,10 @@ public class CtuLegacyCookieHandler : DelegatingHandler
 
         var currentSession = _sessionAccessor.Current;
 
-        if (currentSession is not null &&
-            currentSession.LegacyWebCookies.Any())
+        if (currentSession?.Htql is not null &&
+            currentSession.Htql.Cookies.Any())
         {
-            var cookieString = currentSession.LegacyWebCookies
+            var cookieString = currentSession.Htql.Cookies
                 .Select(x => $"{x.Key}={x.Value}");
 
             request.Headers.Add("Cookie", string.Join("; ", cookieString));

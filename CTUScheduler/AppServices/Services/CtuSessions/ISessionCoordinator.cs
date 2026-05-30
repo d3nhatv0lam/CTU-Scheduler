@@ -15,5 +15,7 @@ public interface ISessionCoordinator
     
     Task<CtuSession?> RefreshSessionAsync(CtuSession expiredSession, CancellationToken ct);
 
+    void InvalidateHtqlSession(HtqlSession failedSession);
+
     IObservable<Unit> SessionExpired { get; }
 }
