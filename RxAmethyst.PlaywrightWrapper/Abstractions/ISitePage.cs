@@ -1,7 +1,6 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
-namespace CTUScheduler.Infrastructure.Sites.Base;
+namespace RxAmethyst.PlaywrightWrapper.Abstractions;
 
 /// <summary>
 /// Interface cho các page objects trong kiến trúc mới

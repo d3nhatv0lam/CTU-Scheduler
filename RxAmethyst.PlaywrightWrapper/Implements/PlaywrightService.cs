@@ -1,11 +1,8 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using CTUScheduler.Infrastructure.DriverCore.Abstractions;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
+using RxAmethyst.PlaywrightWrapper.Abstractions;
 
-namespace CTUScheduler.Infrastructure.DriverCore;
+namespace RxAmethyst.PlaywrightWrapper.Implements;
 
 public class PlaywrightService : IWebDriverService, IAsyncDisposable
 {
@@ -83,7 +80,7 @@ public class PlaywrightService : IWebDriverService, IAsyncDisposable
     private async Task InitInternalAsync(CancellationToken cancellationToken = default)
     {
         await _installer.EnsureBrowserInstalledAsync(cancellationToken).ConfigureAwait(false);
-        _playwright = await Playwright.CreateAsync().ConfigureAwait(false);
+        _playwright = await Microsoft.Playwright.Playwright.CreateAsync().ConfigureAwait(false);
         _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = false })
             .ConfigureAwait(false);
         _context = await _browser.NewContextAsync().ConfigureAwait(false);

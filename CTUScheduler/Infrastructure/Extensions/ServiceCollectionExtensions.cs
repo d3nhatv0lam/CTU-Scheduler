@@ -1,8 +1,6 @@
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.Core.Models.Settings;
-using CTUScheduler.Infrastructure.DriverCore;
-using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Infrastructure.Repositories;
 using CTUScheduler.Infrastructure.Services.Network;
@@ -29,11 +27,7 @@ public static class ServiceCollectionExtensions
         {
             options.FilePath = AppConstants.Paths.UserPreferencesFilePath;
         }).AddSingleton<IUserPreferencesRepository, UserPreferencesRepository>();
-
-        // --- Playwright / Browser Automation ---
-        services.AddSingleton<IWebDriverInstallerService, PlaywrightInstallerService>();
-        services.AddSingleton<IWebDriverService, PlaywrightService>();
-
+        
         // --- Teaching Plan ---
         services.AddHttpClient<ITeachingPlanPdfService, TeachingPlanPdfService>();
         services.AddHttpClient<ISchoolAnnouncementService, SchoolAnnouncementService>();

@@ -1,27 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reactive.Linq;
+﻿using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading;
-using System.Threading.Tasks;
-using CTUScheduler.AppServices.Helpers;
-using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
+using RxAmethyst.PlaywrightWrapper.Abstractions;
+using RxAmethyst.PlaywrightWrapper.Helpers;
 
-namespace CTUScheduler.Infrastructure.DriverCore;
+namespace RxAmethyst.PlaywrightWrapper.Implements;
 
-public class PlaywrightInstallerService: IWebDriverInstallerService, IDisposable
+public class PlaywrightInstallerService : IWebDriverInstallerService, IDisposable
 {
     private readonly ILogger<PlaywrightInstallerService> _logger;
     private readonly BehaviorSubject<string> _statusMessageSubject = new("");
     private readonly BehaviorSubject<double?> _progressPercentageSubject = new(null);
     private readonly BehaviorSubject<bool> _isBusySubject = new(false);
     private readonly ReplaySubject<string> _logStreamSubject = new();
-    
+
     private bool _isDisposed;
-    
+
     public IObservable<string> StatusMessage { get; }
     public IObservable<bool> IsBusy { get; }
     public IObservable<double?> ProgressPercentage { get; }
@@ -86,13 +81,14 @@ public class PlaywrightInstallerService: IWebDriverInstallerService, IDisposable
         }
     }
 
-    private async Task RunInstallerProcessAsync(string scriptPath, string browserDir, CancellationToken cancellationToken = default)
+    private async Task RunInstallerProcessAsync(string scriptPath, string browserDir,
+        CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Launching playwright installer for Chromium...");
 
         // Hardcode Chromium như cũ
         string[] installArgs = ["install", "chromium"];
-        var command = ProcessHelper.PrepareShellCommand(scriptPath, installArgs);
+        var command = ShellExecutor.PrepareShellCommand(scriptPath, installArgs);
         string workingDir = Path.GetDirectoryName(scriptPath) ?? AppDomain.CurrentDomain.BaseDirectory;
 
         var envVars = new Dictionary<string, string>
@@ -102,7 +98,7 @@ public class PlaywrightInstallerService: IWebDriverInstallerService, IDisposable
 
         try
         {
-            int exitCode = await ProcessHelper.RunScriptAsync(
+            int exitCode = await ShellExecutor.RunScriptAsync(
                 fileName: command.FileName,
                 arguments: command.Args,
                 workingDir: workingDir,
@@ -127,9 +123,10 @@ public class PlaywrightInstallerService: IWebDriverInstallerService, IDisposable
     {
         try
         {
-            using var playwright = await Playwright.CreateAsync();
-            
-            await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true });
+            using var playwright = await Microsoft.Playwright.Playwright.CreateAsync();
+
+            await using var browser =
+                await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true });
 
             await browser.CloseAsync();
             return true;
@@ -178,13 +175,13 @@ public class PlaywrightInstallerService: IWebDriverInstallerService, IDisposable
         string prefix = isError ? "[SYSTEM ERROR] " : "";
         _logStreamSubject.OnNext($"{prefix}{message}{Environment.NewLine}");
     }
-    
-    
+
+
     public void Dispose()
     {
         if (_isDisposed) return;
         _isDisposed = true;
-       
+
         _statusMessageSubject.Dispose();
         _isBusySubject.Dispose();
         _progressPercentageSubject.Dispose();

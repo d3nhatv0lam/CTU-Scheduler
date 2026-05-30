@@ -1,7 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-
-namespace CTUScheduler.Infrastructure.DriverCore.Abstractions;
+﻿namespace RxAmethyst.PlaywrightWrapper.Abstractions;
 
 public interface IWebDriverService
 {

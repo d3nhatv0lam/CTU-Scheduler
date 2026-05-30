@@ -1,7 +1,6 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
-namespace CTUScheduler.Infrastructure.DriverCore.Extensions;
+namespace RxAmethyst.Playwright.Extensions;
 
 public static class PlaywrightExtensions
 {

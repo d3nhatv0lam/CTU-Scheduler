@@ -1,15 +1,13 @@
-﻿using System;
-using System.Reactive.Linq;
+﻿using System.Reactive.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using CTUScheduler.Infrastructure.DriverCore.Interfaces;
-using CTUScheduler.Infrastructure.DriverCore.Response;
+using RxAmethyst.PlaywrightWrapper.Models;
 
-namespace CTUScheduler.Infrastructure.DriverCore.Extensions;
+namespace RxAmethyst.PlaywrightWrapper.Extensions;
 
 public static class NetworkPacketExtensions
 {
-     /// <summary>
+    /// <summary>
     ///  Filter packets by json keys
     /// </summary>
     /// <param name="source"></param>
@@ -44,35 +42,35 @@ public static class NetworkPacketExtensions
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException">source is null</exception>
-    public static IObservable<IApiBody<T>> ParseResponse<T>(this IObservable<NetworkPacket> source,
+    public static IObservable<RawApiBody<T>> ParseResponse<T>(this IObservable<NetworkPacket> source,
         Func<JsonNode, JsonNode?>? nodeSelector = null)
     {
         return source.Select(packet =>
         {
             if (packet is null || string.IsNullOrWhiteSpace(packet.RawBody))
-                return new RawApiBody<T> { Data = default };
+                return new RawApiBody<T> { Content = default };
 
             try
             {
                 var rootNode = JsonNode.Parse(packet.RawBody);
-                if (rootNode is null) 
-                    return new RawApiBody<T> { Data = default };
+                if (rootNode is null)
+                    return new RawApiBody<T> { Content = default };
 
-                var targetNode = nodeSelector != null 
-                    ? nodeSelector(rootNode) 
+                var targetNode = nodeSelector != null
+                    ? nodeSelector(rootNode)
                     : rootNode;
-                
-                var data = targetNode != null 
-                    ? targetNode.Deserialize<T>() 
+
+                var data = targetNode != null
+                    ? targetNode.Deserialize<T>()
                     : default;
 
-                return new RawApiBody<T> { Data = data };
+                return new RawApiBody<T> { Content = data };
             }
             catch
             {
                 return new RawApiBody<T>
                 {
-                    Data = default,
+                    Content = default,
                 };
             }
         });

@@ -1,15 +1,12 @@
-﻿using System;
-using System.Reactive.Disposables;
+﻿using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading.Tasks;
-using CTUScheduler.Infrastructure.DriverCore.Abstractions;
-using CTUScheduler.Infrastructure.DriverCore.Models;
-using CTUScheduler.Infrastructure.DriverCore.Response;
 using Microsoft.Playwright;
+using RxAmethyst.PlaywrightWrapper.Abstractions;
+using RxAmethyst.PlaywrightWrapper.Models;
 
-namespace CTUScheduler.Infrastructure.DriverCore;
+namespace RxAmethyst.PlaywrightWrapper.Implements;
 
 public class WebTab : IWebTab
 {
@@ -20,7 +17,7 @@ public class WebTab : IWebTab
     private readonly Subject<DialogInfo> _alertSubject = new();
     private readonly Subject<DialogInfo> _confirmSubject = new();
     private readonly Subject<DialogInfo> _promptSubject = new();
-    
+
     private WebTab(IPage page)
     {
         ArgumentNullException.ThrowIfNull(page);
@@ -50,13 +47,13 @@ public class WebTab : IWebTab
     public IObservable<DialogInfo> AlertReceived { get; }
     public IObservable<DialogInfo> ConfirmReceived { get; }
     public IObservable<DialogInfo> PromptReceived { get; }
-    
+
     public static async Task<WebTab> CreateAsync(IPage page)
     {
         var tab = new WebTab(page);
-        
+
         await tab.OptimizePageLoadAsync();
-        
+
         return tab;
     }
 
@@ -69,10 +66,10 @@ public class WebTab : IWebTab
             else
                 await route.ContinueAsync();
         });
-        
-        var mediaTask = NativePage.EmulateMediaAsync(new PageEmulateMediaOptions 
-        { 
-            ReducedMotion = ReducedMotion.Reduce 
+
+        var mediaTask = NativePage.EmulateMediaAsync(new PageEmulateMediaOptions
+        {
+            ReducedMotion = ReducedMotion.Reduce
         });
 
         await Task.WhenAll(routeTask, mediaTask);
@@ -159,8 +156,8 @@ public class WebTab : IWebTab
             .Subscribe()
             .DisposeWith(_disposables);
     }
-    
-    
+
+
     public async ValueTask DisposeAsync()
     {
         _jsonResponseSubject.OnCompleted();

@@ -27,7 +27,6 @@
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.SplashScreen.ViewModels"
     xmlns:gridHelper="clr-namespace:CTUScheduler.Presentation.Shared.Helpers"
-    xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.SplashScreen.Components.Installation.Views"
     x:Class="CTUScheduler.Presentation.Features.SplashScreen.Views.SplashScreenWindow"
     Title="Splash Screen">
 
@@ -48,10 +47,7 @@
         </Style>
         
     </u:ReactiveUrsaWindow.Styles>
-
-
-    <!-- assists:ShadowAssist.ShadowDepth="Depth1" -->
-
+    
     <Border
         x:Name="MainContainer"
         ClipToBounds="True"
@@ -82,14 +78,12 @@
 
         <Grid 
               Classes="Container"
-              Classes.expanded="{Binding IsExpanded}"
               ColumnDefinitions="* auto"
               >
             
             <!-- // Close Button // -->
             <Button
                     Classes="close-button"
-                    Classes.expanded="{Binding IsExpanded}"
                     Name="CloseAppButton"
                     VerticalAlignment="Top"
                     HorizontalAlignment="Right"
@@ -161,26 +155,8 @@
                                Margin="0 5 0 0"/>
                 </Grid>
                 
-                <Button Grid.Row="0" 
-                        Grid.RowSpan="3"
-                        Margin="0 0 5 10"
-                        VerticalAlignment="Bottom"
-                        HorizontalAlignment="Right"
-                        ZIndex="10"
-                        Background="Azure"
-                        Content="{materialIcons:MaterialIconExt Kind=Console}"
-                        ToolTip.Tip="Xem chi tiết tải gói tài nguyên!"
-                        IsVisible="{Binding IsDownloading}"
-                        Command="{Binding ToggleConsoleCommand}">
-                </Button>
             </Grid>
-
-            <!-- // Console // -->
-            <Border Grid.Column="1"
-                    IsVisible="{Binding IsExpanded}">
-                <views:InstallationView 
-                    DataContext="{Binding InstallationViewModel}"/>
-            </Border>
+            
         </Grid>
 
     </Border>

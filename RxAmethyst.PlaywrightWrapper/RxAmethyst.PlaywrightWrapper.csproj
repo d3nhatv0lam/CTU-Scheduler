@@ -7,9 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Abstractions\" />
-      <Folder Include="Extensions\" />
-      <Folder Include="Implements\" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
+      <PackageReference Include="Microsoft.Playwright" Version="1.60.0" />
+      <PackageReference Include="System.Reactive" Version="6.1.0" />
     </ItemGroup>
 
 </Project>

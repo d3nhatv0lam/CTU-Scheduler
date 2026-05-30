@@ -1,4 +1,4 @@
-﻿namespace CTUScheduler.Infrastructure.DriverCore.Response;
+﻿namespace RxAmethyst.PlaywrightWrapper.Models;
 
 public record  NetworkPacket()
 {

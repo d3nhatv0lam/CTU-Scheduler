@@ -1,4 +1,4 @@
-﻿namespace CTUScheduler.Infrastructure.DriverCore.Interfaces;
+﻿namespace CTUScheduler.Core.Interfaces;
 
 public interface IApiBody<out T>
 {
