@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 
 namespace CTUScheduler.AppServices.Services.UserSessionService;
 
-public interface IPlannedCourseStore
+public interface IPlannedCourseStore: IStateStore<IReadOnlyList<PlannedCourse>>
 {
-    IObservable<IReadOnlyList<PlannedCourse>?> PlannedCoursesChanged { get; }
-    IReadOnlyList<PlannedCourse>? CurrentPlannedCourses { get; }
-    void Update(IReadOnlyList<PlannedCourse> courses);
-    void Clear();
+
 }

@@ -4,6 +4,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Models.Shared.Results;
@@ -11,92 +12,106 @@ using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Base;
 
-public abstract partial class WebSyncViewModelBase : ViewModelBase, IActivatableViewModel, IDisposable
+public abstract partial class SessionSyncViewModelBase : ViewModelBase, IActivatableViewModel, IDisposable
 {
     protected readonly CompositeDisposable Disposables = new();
     protected readonly IUserInteractionService UserInteractionService;
     protected readonly INavigationRegionManager NavigationRegionManager;
     protected readonly IConnectivityService ConnectivityService;
+    protected readonly ILogger Logger;
 
     private bool _isDisposed;
 
     [Reactive] private bool _isLoading;
 
     public ViewModelActivator Activator { get; } = new();
-    public ReactiveCommand<Unit, OperationResult> SyncWebSessionCommand { get; }
+    public ReactiveCommand<Unit, OperationResult> SyncSessionCommand { get; }
 
-    protected WebSyncViewModelBase(
+    protected SessionSyncViewModelBase(
         IUserInteractionService userInteractionService,
         INavigationRegionManager navigationRegionManager,
-        IConnectivityService connectivityService)
+        IConnectivityService connectivityService,
+        ILogger logger)
     {
         UserInteractionService = userInteractionService;
         NavigationRegionManager = navigationRegionManager;
         ConnectivityService = connectivityService;
-
+        Logger = logger;
+        
         var canSync = ConnectivityService.IsInternetAvailable
             .ObserveOn(RxSchedulers.MainThreadScheduler);
 
-        SyncWebSessionCommand = ReactiveCommand.CreateFromTask(ExecuteWebSyncTaskAsync, canSync)
-            .DisposeWith(Disposables);
+        SyncSessionCommand = ReactiveCommand.CreateFromTask(async (cancellationToken) =>
+        {
+            try
+            {
+                return await ExecuteSyncTaskAsync(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.LogDebug("Tác vụ đồng bộ phiên bị hủy.");
+                return OperationResult.Failed("Tác vụ đồng bộ phiên bị hủy.", "Sync.Canceled", OperationFailureReason.UserAction);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Lỗi không xác định phát sinh trong tác vụ đồng bộ phiên.");
+                return OperationResult.FromException(ex, "Lỗi không xác định", "Sync.Unexpected", OperationFailureReason.System);
+            }
+        }, canSync).DisposeWith(Disposables);
+        
 
         this.WhenActivated(disposables =>
         {
-            SyncWebSessionCommand.IsExecuting
+            SyncSessionCommand.IsExecuting
                 .BindTo(this, x => x.IsLoading)
                 .DisposeWith(disposables);
 
-            SyncWebSessionCommand.Subscribe(result =>
+            SyncSessionCommand.Subscribe(result =>
                 {
                     result.Match(
-                        onSuccess: OnWebSyncSuccess,
+                        onSuccess: OnSyncSuccess,
                         onFailure: (errors, reason) =>
                         {
-                            // var errorsString = string.Join('\n', errors.Select(e => e.FormattedMessage));
-                            // if (!string.IsNullOrEmpty(errorsString))
-                            // {
-                            //     UserInteractionService.Notification.Light.Error(errorsString);
-                            // }
-
                             if (reason == OperationFailureReason.Unauthorized ||
                                 errors.Any(e => e.Code.Contains("Auth") || e.Code.Contains("Session")))
                             {
                                 NavigationRegionManager.NavigateAndResetTo<LoginViewModel>(RegionIds.Root);
                             }
 
-                            OnWebSyncFailed(result);
+                            OnSyncFailed(result);
                         },
-                        onException: _ => OnWebSyncFailed(result)
+                        onException: _ => OnSyncFailed(result)
                     );
                 })
                 .DisposeWith(disposables);
 
-            OnWebSyncStarted();
+            OnSyncStarted();
 
             Observable.Return(Unit.Default)
-                .InvokeCommand(SyncWebSessionCommand)
+                .InvokeCommand(SyncSessionCommand)
                 .DisposeWith(disposables);
 
             SetupSubscriptions(disposables);
         });
     }
 
-    protected abstract Task<OperationResult> ExecuteWebSyncTaskAsync();
+    protected abstract Task<OperationResult> ExecuteSyncTaskAsync(CancellationToken cancellationToken);
 
-    protected virtual void OnWebSyncStarted()
+    protected virtual void OnSyncStarted()
     {
     }
 
-    protected virtual void OnWebSyncSuccess()
+    protected virtual void OnSyncSuccess()
     {
     }
 
-    protected virtual void OnWebSyncFailed(OperationResult result)
+    protected virtual void OnSyncFailed(OperationResult result)
     {
     }
 
@@ -117,6 +132,7 @@ public abstract partial class WebSyncViewModelBase : ViewModelBase, IActivatable
         if (disposing)
         {
             Disposables.Dispose();
+            Logger.LogDebug("Disposed");
         }
 
         _isDisposed = true;

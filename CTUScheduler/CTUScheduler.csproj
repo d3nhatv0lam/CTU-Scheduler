@@ -20,6 +20,7 @@
 
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1" Condition="'$(Configuration)' == 'Debug'" />
     <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
     <PackageReference Include="Humanizer.Core.vi" Version="3.0.10" />
     <PackageReference Include="Irihi.Ursa" Version="2.0.0" />
     <PackageReference Include="Irihi.Ursa.ReactiveUIExtension" Version="2.0.0" />
@@ -130,5 +131,5 @@
   <ItemGroup>
     <Folder Include="Presentation\Shared\Styles\Ripple\" />
   </ItemGroup>
-
+  
 </Project>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -148,7 +149,8 @@ public abstract class BaseRegistrationPage : AppPage, IRequireSession, IStudentI
             {
                 var name = lines[0].Trim();
                 var mssv = lines[1].Trim('(', ')', ' ');
-                return new StudentProfile(mssv, name);
+                // return new StudentProfile(mssv, name);
+                return null;
             }
         }
         catch (Exception ex)

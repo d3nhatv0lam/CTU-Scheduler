@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Services.Registration;
 
-public class CourseRegistrationService : ICourseRegistrationService
+public class CourseRegistrationService : OldICourseRegistrationService
 {
     private readonly IWebDriverService _webDriverService;
     private readonly ILogger<CourseRegistrationService> _logger;
@@ -33,10 +33,9 @@ public class CourseRegistrationService : ICourseRegistrationService
     }
 
 
-    public async Task<OperationResult<IReadOnlyList<PlannedCourse>>> FetchPlannedCourseAsync(TimeSpan? timeout = null,
+    public async Task<OperationResult<IReadOnlyList<PlannedCourse>>> FetchPlannedCourseAsync(
         CancellationToken token = default)
     {
-        var finalTimeout = timeout ?? _defaultTimeout;
         try
         {
             await using var tab = await _webDriverService.CreateTabAsync();
@@ -44,7 +43,7 @@ public class CourseRegistrationService : ICourseRegistrationService
 
             var connectableStream = page.CourseRegistrationResponse
                 .Select(payloads => payloads.Select(x => x.ToPlannedCourse()).ToList())
-                .Timeout(finalTimeout)
+                .Timeout(_defaultTimeout)
                 .Replay(1);
 
             using var dataSubscription = connectableStream.Connect();

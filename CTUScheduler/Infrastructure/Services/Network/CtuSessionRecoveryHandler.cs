@@ -1,0 +1,156 @@
+using System;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using CTUScheduler.AppServices.Services.CtuSessions;
+using CTUScheduler.Core.Networking;
+using Microsoft.Extensions.Logging;
+
+namespace CTUScheduler.Infrastructure.Services.Network;
+
+public class CtuSessionRecoveryHandler : DelegatingHandler
+{
+    private readonly ICtuSessionStore _sessionStore;
+    private readonly ISessionCoordinator _sessionCoordinator;
+    private readonly ILogger<CtuSessionRecoveryHandler> _logger;
+
+    public CtuSessionRecoveryHandler(
+        ICtuSessionStore sessionStore,
+        ISessionCoordinator sessionCoordinator,
+        ILogger<CtuSessionRecoveryHandler> logger)
+    {
+        _sessionStore = sessionStore;
+        _sessionCoordinator = sessionCoordinator;
+        _logger = logger;
+    }
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        //  có phải là một request đang được retry lần thứ nhất hay không (dùng trong polly hoặc retry ở tầng trên)
+        bool isRetryAttempt = request.Headers.Contains("X-Ctu-Retry-Attempt");
+
+        var response = await base.SendAsync(request, cancellationToken);
+
+        //  Phát hiện session chết thực tế (JWT 401 hoặc Legacy HTML Redirect của PHP Web cũ)
+        if (await IsSessionExpiredResponseAsync(response, cancellationToken))
+        {
+            // khử vòng lặp vô hạn retry nếu request retry vẫn bị báo hết hạn (dùng trong polly hoặc retry ở tầng trên)
+            if (isRetryAttempt)
+            {
+                _logger.LogError("Yêu cầu gửi lại (Retry) vẫn tiếp tục nhận lỗi xác thực từ máy chủ CTU. Chặn đứng để tránh vòng lặp vô hạn.");
+                await _sessionCoordinator.EndSessionAsync();
+                return response;
+            }
+
+            var session = _sessionStore.Current;
+
+            // Nếu đã hết hạn cứng lý thuyết 
+            if (session == null || session.IsExpired)
+            {
+                _logger.LogWarning("Phát hiện phiên làm việc bị từ chối nhưng phiên đã hết hạn cứng lý thuyết. Tiến hành đăng xuất cưỡng bức...");
+                await _sessionCoordinator.EndSessionAsync();
+                return response;
+            }
+
+            _logger.LogWarning("Phát hiện phiên làm việc bị từ chối trên máy chủ! Gọi khôi phục ngầm qua Lock tập trung...");
+
+            CtuSession? refreshedSession = null;
+            try
+            {
+                // Gọi qua lock tập trung duy nhất của SessionCoordinator
+                refreshedSession = await _sessionCoordinator.RefreshSessionAsync(session, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Lỗi mạng hoặc sự cố chập chờn khi khôi phục phiên ngầm qua lock tập trung.");
+                // Trả về response lỗi cũ thay vì logout, để request sau tự phục hồi khi có mạng ổn định
+            }
+
+            // Cứu phiên thành công -> Thực hiện Retry lần duy nhất
+            if (refreshedSession is not null)
+            {
+                _logger.LogInformation("Khôi phục phiên ngầm tập trung thành công! Tiến hành tạo bản sao và gửi lại request...");
+                
+                var clonedRequest = await CloneHttpRequestMessageAsync(request);
+                
+                // Đánh dấu request retry để chặn vòng lặp vô hạn
+                clonedRequest.Headers.TryAddWithoutValidation("X-Ctu-Retry-Attempt", "1");
+                
+                // Giải phóng response lỗi cũ và gửi lại
+                response.Dispose();
+                
+                return await base.SendAsync(clonedRequest, cancellationToken);
+            }
+        }
+
+        return response;
+    }
+
+    private static async Task<bool> IsSessionExpiredResponseAsync(HttpResponseMessage response, CancellationToken ct)
+    {
+        // Phân hệ API mới (JWT): Trả về 401 Unauthorized hoặc 403 Forbidden
+        if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            return true;
+        }
+
+        // Phân hệ Web cũ (PHP): Trả về 200 OK kèm HTML chứa script chuyển hướng logout
+        if (response is { IsSuccessStatusCode: true, Content: not null })
+        {
+            var mediaType = response.Content.Headers.ContentType?.MediaType;
+            if (mediaType != null && mediaType.Contains("text/html", StringComparison.OrdinalIgnoreCase))
+            {
+                // chú ý ở đây khá nặng nếu load trang không phải hết hạn
+                var html = await response.Content.ReadAsStringAsync(ct);
+                if (html.Contains("location.href='../logout.php'"))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static async Task<HttpRequestMessage> CloneHttpRequestMessageAsync(HttpRequestMessage req)
+    {
+        var clone = new HttpRequestMessage(req.Method, req.RequestUri);
+
+        // clone Headers
+        foreach (var header in req.Headers)
+            clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
+
+        foreach (var property in req.Options)
+            clone.Options.Set(new HttpRequestOptionsKey<object?>(property.Key), property.Value);
+
+        // clone Properties
+        clone.Version = req.Version;
+
+        // clone Content
+        if (req.Content != null)
+        {
+            var ms = new MemoryStream();
+            try
+            {
+                await req.Content.CopyToAsync(ms);
+                ms.Position = 0;
+                
+                clone.Content = new StreamContent(ms);
+                
+                // clone content headers
+                foreach (var header in req.Content.Headers)
+                    clone.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
+            catch
+            {
+                await ms.DisposeAsync();
+                clone.Dispose();
+                throw;
+            }
+        }
+
+        return clone;
+    }
+}

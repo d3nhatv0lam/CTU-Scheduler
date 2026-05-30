@@ -7,6 +7,7 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Helpers;
+using CTUScheduler.AppServices.Services.CtuSessions;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.AppServices.Services.UserSettingService;
 using CTUScheduler.Core.Models.Settings;
@@ -27,11 +28,9 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
     public partial class LoginViewModel : ViewModelBase, IDisposable, IRoutableViewModel, IActivatableViewModel
     {
         private readonly CompositeDisposable _disposables = new();
-        private readonly ILoginService _loginService;
         private readonly IUserInteractionService _userInteractionService;
         private readonly INavigationRegionManager _navigationRegionManager;
         private readonly IUserSettingService _userSettingService;
-        private readonly ITeachingPlanPdfService _pdfService;
         private readonly ILogger<LoginViewModel> _logger;
 
         private string _userName = string.Empty;
@@ -61,29 +60,26 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
             set => this.RaiseAndSetIfChanged(ref _isSaveUsername, value);
         }
 
-        public ReactiveCommand<Unit, Unit> PrewarmBrowserCommand { get; }
         public ReactiveCommand<Unit, OperationResult<TeachingPlanData>> LoadTeachingPlanCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenTeachingPlanCommand { get; }
-
         public ReactiveCommand<Unit, Unit> SignInCommand { get; }
 
 
         public LoginViewModel(IScreen hostScreen,
-            ILoginService loginService,
             IUserInteractionService userInteractionService,
             INavigationRegionManager navigationRegionManager,
             IUserSettingService userSettingService,
             ITeachingPlanLoaderService teachingPlanLoaderService,
             ITeachingPlanPdfService pdfService,
             ITeachingPlanStore teachingPlanStore,
+            ISessionCoordinator sessionCoordinator,
+            IConnectivityService connectivityService,
             ILogger<LoginViewModel> logger)
         {
             HostScreen = hostScreen;
             _userInteractionService = userInteractionService;
             _navigationRegionManager = navigationRegionManager;
-            _loginService = loginService;
             _userSettingService = userSettingService;
-            _pdfService = pdfService;
             _logger = logger;
 
             _userSettingService.AuthSettingsChanged
@@ -95,19 +91,12 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                 })
                 .DisposeWith(_disposables);
 
-            PrewarmBrowserCommand = ReactiveCommand.CreateFromTask(async () =>
-            {
-                await _loginService.EnsureReadyAsync();
-            }).DisposeWith(_disposables);
-
-
-            var canSignIn = PrewarmBrowserCommand.IsExecuting
-                .Select(isPrewarming => !isPrewarming)
+            var canSignin = connectivityService.IsInternetAvailable
                 .ObserveOn(RxSchedulers.MainThreadScheduler);
 
-            SignInCommand = ReactiveCommand.CreateFromTask(async () =>
+            SignInCommand = ReactiveCommand.CreateFromTask(async ct =>
                 {
-                    var result = await loginService.LoginAsync(UserName, Password);
+                    var result = await sessionCoordinator.StartSessionAsync(UserName, Password, ct);
 
                     result.Match(OnLoggedIn
                         , (errors, _) =>
@@ -115,7 +104,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                             var errorTexts = errors.Select(e => e.FormattedMessage);
                             _userInteractionService.Notification.Light.Error($"{string.Join('\n', errorTexts)}");
                         });
-                }, canSignIn)
+                }, canSignin)
                 .DisposeWith(_disposables);
 
             LoadTeachingPlanCommand = ReactiveCommand.CreateFromTask(teachingPlanLoaderService.LoadLatestAsync)
@@ -150,11 +139,11 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
             var canOpenTeachingPlan = this.WhenAnyValue(x => x.IsLoadedTeachingPlan);
             OpenTeachingPlanCommand = ReactiveCommand.Create(() =>
                     {
-                        var pdfUrl = teachingPlanStore.CurrentTeachingPlan?.PdfUrl;
+                        var pdfUrl = teachingPlanStore.Current?.PdfUrl;
                         if (string.IsNullOrEmpty(pdfUrl))
                             return;
 
-                        var cachedPath = _pdfService.GetCachedPdfPath(pdfUrl);
+                        var cachedPath = pdfService.GetCachedPdfPath(pdfUrl);
                         ProcessHelper.OpenUrl(File.Exists(cachedPath) ? cachedPath : pdfUrl);
                     },
                     canOpenTeachingPlan)
@@ -162,10 +151,6 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
 
             this.WhenActivated(disposable =>
             {
-                PrewarmBrowserCommand.Execute()
-                    .Subscribe()
-                    .DisposeWith(disposable);
-
                 LoadTeachingPlanCommand.Execute()
                     .Subscribe()
                     .DisposeWith(disposable);

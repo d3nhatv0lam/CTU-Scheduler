@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Services.Registration;
 
-public class TuitionFeeService : ITuitionFeeService
+public class TuitionFeeService : OldITuitionFeeService
 {
     private readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(60);
     private readonly IWebDriverService _webDriverService;

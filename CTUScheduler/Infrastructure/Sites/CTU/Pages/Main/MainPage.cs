@@ -44,7 +44,8 @@ public class MainPage : AppPage, IRequireSession, IMainPage
             {
                 var mssv = parts[^1].Trim('(', ')', ' ', '\t', ',');
                 var name = string.Join(" ", parts[..^1]).Trim();
-                return new StudentProfile(mssv, name);
+                // return new StudentProfile(mssv, name);
+                return null;
             }
         }
         catch (Exception ex)

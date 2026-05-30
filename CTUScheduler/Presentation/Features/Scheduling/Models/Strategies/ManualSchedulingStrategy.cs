@@ -1,5 +1,6 @@
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
+using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Features.Scheduling.Models.Context;
@@ -17,7 +18,8 @@ public class ManualSchedulingStrategy : SchedulingStrategy
     }
 
     public override Task<IWizardStep[]> CreateStepsAsync(SchedulingWizardContext context,
-        CompositeDisposable disposables)
+        CompositeDisposable disposables,
+        CancellationToken cancellationToken = default)
     {
         var step1 = Factory.Create<FindCourseViewModel, SchedulingWizardContext>(context)
             .DisposeWith(disposables);

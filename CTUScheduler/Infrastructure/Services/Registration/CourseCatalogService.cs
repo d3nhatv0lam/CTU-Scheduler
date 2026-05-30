@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Services.Registration;
 
-public class CourseCatalogService : ICourseCatalogService
+public class CourseCatalogService : OldICourseCatalogService
 {
     private static readonly int SequentialThreshold = 15;
     private static readonly TimeSpan DefaultFetchTimeout = TimeSpan.FromSeconds(3);

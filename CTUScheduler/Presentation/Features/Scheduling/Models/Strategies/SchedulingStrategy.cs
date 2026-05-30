@@ -1,4 +1,5 @@
 using System.Reactive.Disposables;
+using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Features.Scheduling.Models.Context;
@@ -18,5 +19,7 @@ public abstract class SchedulingStrategy
         Factory = factory;
     }
 
-    public abstract Task<IWizardStep[]> CreateStepsAsync(SchedulingWizardContext context, CompositeDisposable disposables);
+    public abstract Task<IWizardStep[]> CreateStepsAsync(SchedulingWizardContext context,
+        CompositeDisposable disposables,
+        CancellationToken cancellationToken = default);
 }
