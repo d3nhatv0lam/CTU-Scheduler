@@ -55,8 +55,7 @@
                         Text="Lần cuối lưu dữ liệu:"
                         Margin="10 0 0 0" />
                     <TextBlock x:Name="txtLastSaved"
-                               Margin="5 0 0 0"
-                              />
+                               Margin="5 0 0 0" />
                     <!--// download data button //-->
                     <Border Padding="0 3 0 3" DockPanel.Dock="Right">
                         <Button x:Name="btnSave"
@@ -69,20 +68,19 @@
                                 <TextBlock Text="Tải dữ liệu về máy của bạn!" />
                             </ToolTip.Tip>
                             <Interaction.Behaviors>
-                                <ButtonSaveFilePickerBehavior 
+                                <ButtonSaveFilePickerBehavior
                                     Title="Load dữ liệu"
                                     FileTypeChoices="JSON Files|*.json"
                                     SuggestedFileName="Thời khóa biểu - CTU Scheduler"
-                                    Command="{Binding SaveScheduleCommand}"
-                                    ></ButtonSaveFilePickerBehavior>
+                                    Command="{Binding SaveScheduleCommand}">
+                                </ButtonSaveFilePickerBehavior>
                             </Interaction.Behaviors>
                         </Button>
                     </Border>
                     <!--// load data button //-->
                     <Border Padding="0 3 0 3" DockPanel.Dock="Right">
                         <Button x:Name="btnLoad" DockPanel.Dock="Right"
-                                Margin="10 0 10 0"
-                                >
+                                Margin="10 0 10 0">
                             <StackPanel Orientation="Horizontal">
                                 <materialIcons:MaterialIcon Kind="MonitorShare" />
                                 <TextBlock VerticalAlignment="Center" Text="Tải lên" Margin="5 0 0 0" />
@@ -91,12 +89,12 @@
                                 <TextBlock Text="Nạp dữ liệu của bạn lên ứng dụng!" />
                             </ToolTip.Tip>
                             <Interaction.Behaviors>
-                                <ButtonOpenFilePickerBehavior 
+                                <ButtonOpenFilePickerBehavior
                                     Title="Load dữ liệu"
                                     AllowMultiple="False"
                                     FileTypeFilter="JSON Files|*.json"
-                                    Command="{Binding LoadScheduleCommand}"
-                                    ></ButtonOpenFilePickerBehavior>
+                                    Command="{Binding LoadScheduleCommand}">
+                                </ButtonOpenFilePickerBehavior>
                             </Interaction.Behaviors>
                         </Button>
                     </Border>
@@ -104,14 +102,15 @@
                                DockPanel.Dock="Right"
                                IsVisible="{Binding IsExpiredSaved}"
                                Text="Lưu trữ không phù hợp với học kỳ">
-                               <ToolTip.Tip>
-                                  <StackPanel  Width="300">
-                                      <TextBlock 
-                                          TextWrapping="WrapWithOverflow"
-                                          Text="Bạn sẽ chỉ có thể xem lại các thời khóa biểu của các học kỳ trước, không thể cập nhật hay thêm thời khóa hiểu nữa!"></TextBlock>
-                                  </StackPanel>
-                               </ToolTip.Tip>
-                        </TextBlock>
+                        <ToolTip.Tip>
+                            <StackPanel Width="300">
+                                <TextBlock
+                                    TextWrapping="WrapWithOverflow"
+                                    Text="Bạn sẽ chỉ có thể xem lại các thời khóa biểu của các học kỳ trước, không thể cập nhật hay thêm thời khóa hiểu nữa!">
+                                </TextBlock>
+                            </StackPanel>
+                        </ToolTip.Tip>
+                    </TextBlock>
                 </DockPanel>
             </Border>
         </Border>
@@ -147,7 +146,7 @@
                             <!--// fake radio button //-->
 
                             <!--  UniformSize make all items be same size  -->
-                            </DockPanel.Styles>
+                        </DockPanel.Styles>
 
                         <!--// add schedule tables //-->
                         <Button DockPanel.Dock="Left"
@@ -166,23 +165,26 @@
                                 <materialIcons:MaterialIcon Kind="Reload" Height="20" Width="20" />
                                 <TextBlock VerticalAlignment="Center" Text="Cập nhật thông tin học phần"
                                            Margin="5 0 0 0" />
-                                           
+
                             </StackPanel>
                         </Button>
-                            <Button DockPanel.Dock="Left" x:Name="btnDeleteTables" Command="{Binding DeleteSelectedTimetablesCommand}" IsVisible="{Binding HasSelectedTimetable}"> 
-                            <StackPanel Orientation="Horizontal"> 
-                            <materialIcons:MaterialIcon Kind="Delete" Height="20" Width="20"/> <TextBlock VerticalAlignment="Center" Text="Xóa thời khóa biểu" Margin="5 0 0 0"/>
+                        <Button DockPanel.Dock="Left" x:Name="btnDeleteTables"
+                                Command="{Binding DeleteSelectedTimetablesCommand}"
+                                IsVisible="{Binding HasSelectedTimetable}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialIcons:MaterialIcon Kind="Delete" Height="20" Width="20" />
+                                <TextBlock VerticalAlignment="Center" Text="Xóa thời khóa biểu" Margin="5 0 0 0" />
                             </StackPanel>
                         </Button>
-                                <Button DockPanel.Dock="Left"
-                                        x:Name="btnExportSelectedTables"
-                                        Command="{Binding ExportSelectedTimetablesCommand}"
-                                        IsVisible="{Binding HasSelectedTimetable}">
-                                    <StackPanel Orientation="Horizontal">
-                                                <materialIcons:MaterialIcon Kind="MonitorArrowDownVariant" Height="20" Width="20" />
-                                        <TextBlock VerticalAlignment="Center" Text="Xuất Excel" Margin="5 0 0 0" />
-                                    </StackPanel>
-                                </Button>
+                        <Button DockPanel.Dock="Left"
+                                x:Name="btnExportSelectedTables"
+                                Command="{Binding ExportSelectedTimetablesCommand}"
+                                IsVisible="{Binding HasSelectedTimetable}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialIcons:MaterialIcon Kind="MonitorArrowDownVariant" Height="20" Width="20" />
+                                <TextBlock VerticalAlignment="Center" Text="Xuất Excel" Margin="5 0 0 0" />
+                            </StackPanel>
+                        </Button>
                         <!--// total schedule tables //-->
                         <TextBlock DockPanel.Dock="Left"
                                    x:Name="txtTotalTable"
@@ -198,7 +200,7 @@
                     <Border Grid.Row="2" Classes="CornerBorder">
                         <Panel ClipToBounds="True">
                             <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-                                <ItemsRepeater 
+                                <ItemsRepeater
                                     x:Name="itmRptTables"
                                     ItemsSource="{Binding TimetableLayouts,Mode=OneWay}">
                                     <ItemsRepeater.Layout>
@@ -212,11 +214,12 @@
                                     <ItemsRepeater.ItemTemplate>
                                         <DataTemplate x:DataType="timetableViewModel:TimetableLayoutBaseViewModel">
                                             <Border Classes="Card"
-                                                Width="250"
-                                                Height="220">
+                                                    Width="250"
+                                                    Height="220">
                                                 <Grid
                                                     RowDefinitions="auto auto auto auto *">
-                                                    <CheckBox Grid.Row="0" IsEnabled="{Binding IsEnabled}" IsChecked="{Binding IsSelected}" Content="Chọn!" />
+                                                    <CheckBox Grid.Row="0" IsEnabled="{Binding IsEnabled}"
+                                                              IsChecked="{Binding IsSelected}" Content="Chọn!" />
                                                     <TextBlock Grid.Row="1"
                                                                Text="{Binding Name, StringFormat=Thời khóa biểu: {0}}">
                                                     </TextBlock>
@@ -224,16 +227,23 @@
                                                     <!-- <TextBlock Grid.Row="1" -->
                                                     <!--            Text="{Binding Description,StringFormat=Mô tả: {0}}"> -->
                                                     <!-- </TextBlock> -->
-                                                    <TextBlock Grid.Row="3" Text="{Binding LastUpdated,Mode=OneWay,StringFormat=Lần cuối cập nhật: {0}}"></TextBlock>
+                                                    <TextBlock Grid.Row="3"
+                                                               Text="{Binding LastUpdated,Mode=OneWay,StringFormat=Lần cuối cập nhật: {0}}">
+                                                    </TextBlock>
 
                                                     <Grid Grid.Row="4">
-                                                         <!-- // TimeTable preview // -->
-                                                         <Border CornerRadius="8" ClipToBounds="True">
-                                                             <Image Source="{Binding PreviewImage}" 
-                                                                    Stretch="Uniform"
-                                                                    HorizontalAlignment="Center"
-                                                                    VerticalAlignment="Center"/>
-                                                         </Border>
+                                                        <!-- // TimeTable preview // -->
+
+                                                        <Border>
+                                                            <Viewbox Stretch="Uniform">
+                                                                <Image Source="{Binding PreviewImage}"
+                                                                       Width="1600"
+                                                                       Height="1000"
+                                                                       RenderOptions.BitmapInterpolationMode="HighQuality" />
+                                                            </Viewbox>
+                                                        </Border>
+                                                        
+
                                                         <!-- // Open Timetable View // -->
                                                         <Button Background="Transparent"
                                                                 Padding="0"
@@ -250,12 +260,12 @@
                             </ScrollViewer>
 
                             <!--// empty schedule table popup //-->
-                            <StackPanel VerticalAlignment="Center" 
-                                        HorizontalAlignment="Center" 
-                                        Background="Transparent" 
+                            <StackPanel VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        Background="Transparent"
                                         IsHitTestVisible="False"
                                         IsVisible="{Binding IsEmptyTimetableLayouts}">
-                                
+
                                 <StackPanel.Styles>
                                     <Style Selector="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Center" />

@@ -101,13 +101,20 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
             })
             .DisposeWith(Disposables);
 
+        // Dựng ảnh preview ngay lập tức ngay khi nạp dữ liệu xong
         _sharedCourse.Connect()
+            .Take(1)
             .Throttle(TimeSpan.FromMilliseconds(100))
             .ObserveOn(RxSchedulers.MainThreadScheduler)
-            .Subscribe(async _ =>
-            {
-                await GeneratePreviewAsync();
-            })
+            .Subscribe(async _ => await GeneratePreviewAsync())
+            .DisposeWith(Disposables);
+
+        // Các lần tiếp theo (sửa đổi môn học): Trì hoãn 1 giây (Debounce) để tối ưu hiệu năng khi click liên tục
+        _sharedCourse.Connect()
+            .Skip(1)
+            .Throttle(TimeSpan.FromSeconds(1))
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
+            .Subscribe(async _ => await GeneratePreviewAsync())
             .DisposeWith(Disposables);
 
         StartEditCommand = ReactiveCommand.Create(() => { }).DisposeWith(Disposables);

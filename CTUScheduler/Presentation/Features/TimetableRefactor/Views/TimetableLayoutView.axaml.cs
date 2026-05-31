@@ -44,6 +44,7 @@ public partial class TimetableLayoutView : ReactiveUserControl<TimetableLayoutBa
 
             ViewModel!.CopyToClipboardInteraction.RegisterHandler(async context =>
             {
+                TimetableLayoutView? tempView = null;
                 try
                 {
                     var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
@@ -53,25 +54,35 @@ public partial class TimetableLayoutView : ReactiveUserControl<TimetableLayoutBa
                         return;
                     }
 
-                    var bounds = this.Bounds;
-                    double width = bounds.Width > 0 ? bounds.Width : 1200;
-                    double height = bounds.Height > 0 ? bounds.Height : 800;
+                    // 1. Tạo một bản sao ẩn của View dưới nền
+                    tempView = new TimetableLayoutView
+                    {
+                        DataContext = this.DataContext,
+                        Width = 1600,
+                        Height = 1000
+                    };
 
-                    var dpi = 96.0;
-                    var pixelSize = new PixelSize((int)width, (int)height);
+                    var exportPanel = tempView.FindControl<Control>("ExportPanel");
+                    exportPanel?.IsVisible = false;
 
-                    // bitmap này do avalonia quản lý, không phải memleak của dev
-                    // docs: https://docs.avaloniaui.net/docs/services/clipboard
-                    var bitmap = new RenderTargetBitmap(pixelSize, new Vector(dpi, dpi));
-                    bitmap.Render(this);
+                    // 4. Sử dụng ControlRendererService tối ưu để vẽ ẩn off-screen trực tiếp ra Bitmap (Không qua Stream nén)
+                    var bitmap = await ViewModel.ControlRendererService.RenderToBitmapAsync(
+                        tempView, 
+                        width: 1600, 
+                        height: 1000);
+                        
                     await clipboard.SetBitmapAsync(bitmap);
                     await clipboard.FlushAsync();
 
                     context.SetOutput(true);
                 }
                 catch
-                { 
+                {
                     context.SetOutput(false);
+                }
+                finally
+                {
+                    tempView?.DataContext = null;
                 }
             }).DisposeWith(disposable);
         });

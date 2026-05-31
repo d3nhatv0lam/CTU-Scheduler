@@ -6,7 +6,9 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Presentation.Base;
@@ -26,7 +28,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
     private readonly CourseColorProvider _colorProvider = new();
     protected readonly CompositeDisposable Disposables = new();
     protected readonly IExcelExporterService ExcelExporter;
-    protected readonly IControlRendererService ControlRendererService;
+    public IControlRendererService ControlRendererService { get; }
     protected readonly IUserInteractionService UserInteractionService;
     private string _name = "New Schedule";
     private int _subjectCount = 0;
@@ -105,7 +107,14 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
 
         this.WhenAnyValue(x => x.PreviewImage)
             .PairWithPrevious()
-            .Subscribe(pair => pair.OldValue?.Dispose())
+            .Subscribe(pair =>
+            {
+                if (pair.OldValue != null)
+                {
+                    var oldImage = pair.OldValue;
+                    Dispatcher.UIThread.Post(() => oldImage.Dispose(), DispatcherPriority.Background);
+                }
+            })
             .DisposeWith(Disposables);
 
         CopyToClipboardCommand = ReactiveCommand.CreateFromTask(async () =>
@@ -129,7 +138,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
             var safeName = string.IsNullOrWhiteSpace(this.Name) ? "TKB" : this.Name.Trim();
             string fileName = $"{safeName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-            string fullPath = System.IO.Path.Combine(desktopPath, fileName);
+            string fullPath = Path.Combine(desktopPath, fileName);
 
             await ExcelExporter.ExportTimetableAsync(blueprint, fullPath);
         }).DisposeWith(Disposables);
@@ -139,13 +148,18 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
     {
         if (VisualizerVM is null) return;
 
-        var tempView = new TimetableView { DataContext = VisualizerVM };
+        var tempView = new TimetableLayoutView 
+        { 
+            DataContext = this,
+            Width = 1200,
+            Height = 800
+        };
+        var exportPanel = tempView.FindControl<Control>("ExportPanel");
+        exportPanel?.IsVisible = false;
+
         try
         {
-            using var memoryStream = new MemoryStream();
-            await ControlRendererService.RenderToStreamAsync(tempView, memoryStream);
-            memoryStream.Position = 0;
-            PreviewImage = new Bitmap(memoryStream);
+            PreviewImage = await ControlRendererService.RenderToBitmapAsync(tempView, width: 1600, height: 1000);
         }
         finally
         {

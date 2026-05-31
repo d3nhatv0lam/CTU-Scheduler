@@ -130,6 +130,7 @@
 
                             <!-- // Export Field // -->
                             <StackPanel Grid.Row="3"
+                                        x:Name="ExportPanel"
                                         Classes="export-container"
                                         Orientation="Horizontal" >
                                 <Button

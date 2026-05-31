@@ -272,11 +272,14 @@
                                                         <Grid Grid.Row="4">
                                                             <!-- // TimeTable preview // -->
                                                             <Border>
-                                                                <Image Source="{Binding Item.PreviewImage}"
-                                                                       Stretch="Uniform"
-                                                                       HorizontalAlignment="Center"
-                                                                       VerticalAlignment="Center" />
+                                                                <Viewbox Stretch="Uniform">
+                                                                    <Image Source="{Binding Item.PreviewImage}"
+                                                                           Width="1200"
+                                                                           Height="800"
+                                                                           RenderOptions.BitmapInterpolationMode="HighQuality" />
+                                                                </Viewbox>
                                                             </Border>
+
                                                             <!-- // Open Timetable View // -->
                                                             <Button Classes="ripple"
                                                                     Background="Transparent"
