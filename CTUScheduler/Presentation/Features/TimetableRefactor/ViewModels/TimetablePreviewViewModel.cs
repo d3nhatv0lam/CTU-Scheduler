@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables.Fluent;
+using Avalonia.Threading;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
@@ -8,6 +9,8 @@ using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
+using CTUScheduler.Presentation.Services.ControlRenderer;
+using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using DynamicData;
 using ReactiveUI.SourceGenerators;
 
@@ -23,8 +26,12 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel, I
     
     double IScorable.Score => TotalScore;
 
-    public TimetablePreviewViewModel(IEnumerable<SectionChoice> choices, IExcelExporterService excelExporter)
-        : base(excelExporter)
+    public TimetablePreviewViewModel(
+        IEnumerable<SectionChoice> choices, 
+        IExcelExporterService excelExporter,
+        IControlRendererService controlRendererService,
+        IUserInteractionService userInteractionService)
+        : base(excelExporter, controlRendererService, userInteractionService)
     {
         if (choices is null) 
         {
@@ -50,6 +57,9 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel, I
 
         SubjectsCount = sourceList.Count;
         TotalCredits = sourceList.Items.Sum(x => x.SharedData.Credits);
+
+        // Render preview image upon initialization
+        Dispatcher.UIThread.Post(async () => await GeneratePreviewAsync());
     }
 
     public override ScheduleBlueprint ToScheduleBlueprint()

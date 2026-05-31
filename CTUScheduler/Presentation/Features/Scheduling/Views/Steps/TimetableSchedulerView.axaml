@@ -98,7 +98,7 @@
                             <DataTemplate x:DataType="schedulingModels:SchedulingPreset">
                                 <StackPanel Orientation="Horizontal" Spacing="8" ToolTip.Tip="{Binding Description}">
                                     <TextBlock Text="{Binding Icon}" />
-                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
@@ -273,15 +273,13 @@
                                                             <!-- // TimeTable preview // -->
                                                             <Border>
                                                                 <Viewbox Stretch="Uniform">
-                                                                    <views1:TimetableView
-                                                                        IsHitTestVisible="False"
-                                                                        Width="650"
-                                                                        Height="390"
-                                                                        VerticalAlignment="Stretch"
-                                                                        HorizontalAlignment="Stretch"
-                                                                        DataContext="{Binding Item.VisualizerVM}" />
+                                                                    <Image Source="{Binding Item.PreviewImage}"
+                                                                           Width="1200"
+                                                                           Height="800"
+                                                                           RenderOptions.BitmapInterpolationMode="HighQuality" />
                                                                 </Viewbox>
                                                             </Border>
+
                                                             <!-- // Open Timetable View // -->
                                                             <Button Classes="ripple"
                                                                     Background="Transparent"

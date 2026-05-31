@@ -13,6 +13,7 @@ using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.ViewContext;
 using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
 using CTUScheduler.Presentation.Services.Viewport;
+using CTUScheduler.Presentation.Services.ControlRenderer;
 using CTUScheduler.Presentation.Services.ApplicationStartup;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
@@ -66,7 +67,8 @@ public static class DesktopServiceExtensions
         services.AddSingleton<IViewContextService, ViewContextService>()
             .AddSingleton<IDialogService, UrsaDialogService>()
             .AddSingleton<IUserInteractionService, UserInteractionService>()
-            .AddSingleton<IViewportService, ViewportService>();
+            .AddSingleton<IViewportService, ViewportService>()
+            .AddSingleton<IControlRendererService, ControlRendererService>();
 
         // selection strategy
         services.AddTransient<ManualSchedulingStrategy>();

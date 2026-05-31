@@ -197,6 +197,7 @@
                                     <ScrollViewer
                                         Grid.Column="1"
                                         VerticalScrollBarVisibility="Auto"
+                                        HorizontalScrollBarVisibility="Disabled"
                                         Theme="{StaticResource MaterialModernScrollViewer}">
                                         <StackPanel>
                                             <TextBlock Text="{Binding Shared.CourseCode,Mode=OneWay}"></TextBlock>
