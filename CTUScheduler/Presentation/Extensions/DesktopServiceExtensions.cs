@@ -56,7 +56,7 @@ public static class DesktopServiceExtensions
                 .FromAssemblyOf<LoginView>()
                 .AddClasses(c => c.AssignableTo(typeof(IViewFor<>)))
                 .AsImplementedInterfaces()
-                .WithSingletonLifetime()
+                .WithTransientLifetime()
         );
 
         services.AddSingleton<IViewModelFactory, ViewModelFactory>();
@@ -78,6 +78,7 @@ public static class DesktopServiceExtensions
             .AddSingleton<IAppLifecycleService>(sp => sp.GetRequiredService<AppLifecycleManager>());
         services.AddSingleton<IUiShutdownCoordinator, UiShutdownCoordinator>();
         services.AddSingleton<IAppStartup, AppStartup>();
+        
         services.AddTransient<SplashScreenWindow>();
         services.AddTransient<MainWindow>();
 
