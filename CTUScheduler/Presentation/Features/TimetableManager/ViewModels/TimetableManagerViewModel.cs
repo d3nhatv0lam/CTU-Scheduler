@@ -295,6 +295,21 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             return Task.FromResult(OperationResult.Success());
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_bindableTimetableLayouts != null)
+                {
+                    foreach (var layout in _bindableTimetableLayouts)
+                    {
+                        layout.Dispose();
+                    }
+                }
+            }
+            base.Dispose(disposing);
+        }
+
         private string FormatTime(DateTimeOffset time)
         {
             return time.Humanize(culture: new CultureInfo("vi-VN"));

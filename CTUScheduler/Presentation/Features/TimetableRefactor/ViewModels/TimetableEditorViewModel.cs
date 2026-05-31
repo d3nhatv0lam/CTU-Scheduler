@@ -12,6 +12,7 @@ using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;
+using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
 using DynamicData;
 using ReactiveUI;
 using DynamicData.Aggregation;
@@ -23,7 +24,8 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
     private readonly ScheduleProfile _scheduleProfile;
     private readonly ObservableAsPropertyHelper<bool> _isEditing;
     private readonly ICourseQueryService _courseQueryService;
-    
+    private readonly IObservableList<TimetableRenderItem> _sharedCourse;
+
     public ScheduleProfile ScheduleProfile => _scheduleProfile;
     public bool IsEditing => _isEditing.Value;
     public ReactiveCommand<Unit, Unit> StartEditCommand { get; }
@@ -37,7 +39,7 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
         IExcelExporterService excelExporter) : base(excelExporter)
     {
         ArgumentNullException.ThrowIfNull(scheduleProfile);
-        
+
         _scheduleProfile = scheduleProfile;
         _courseQueryService = courseQueryService;
 
@@ -45,7 +47,7 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
         LastUpdated = _scheduleProfile.LastUpdated;
 
         var savedRef = scheduleProfile.SavedCourseGroupKeys;
-        var sharedCourse = courseQueryService.ConnectCourses()
+        _sharedCourse = courseQueryService.ConnectCourses()
             .ObserveOn(RxSchedulers.TaskpoolScheduler)
             .Filter(x => savedRef.ContainsKey(x.Code))
             .MergeMany(runtimeCourse =>
@@ -64,24 +66,26 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
             .AsObservableList()
             .DisposeWith(Disposables);
 
-        VisualizerVM = new TimetableViewModel(sharedCourse)
+        VisualizerVM = new TimetableViewModel(_sharedCourse)
             .DisposeWith(Disposables);
-        
-        sharedCourse.Connect()
-            .Transform(item => item.SharedData) 
+
+        _sharedCourse.Connect()
+            .Transform(item => item.SharedData)
             .AutoRefresh(shared => shared.Credits)
-            .Transform(shared => shared.Credits ,transformOnRefresh:true)
-            .Sum(credit => credit) 
+            .Transform(shared => shared.Credits, transformOnRefresh: true)
+            .Sum(credit => credit)
+            .Throttle(TimeSpan.FromMilliseconds(50))
             .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Subscribe(sum => TotalCredits = sum)
             .DisposeWith(Disposables);
-        
-        sharedCourse.CountChanged
+
+        _sharedCourse.CountChanged
+            .Throttle(TimeSpan.FromMilliseconds(50))
             .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Subscribe(count => SubjectsCount = count)
             .DisposeWith(Disposables);
 
-        sharedCourse.Connect()
+        _sharedCourse.Connect()
             .Throttle(TimeSpan.FromSeconds(1))
             .Skip(1)
             .ObserveOn(RxSchedulers.MainThreadScheduler)
@@ -120,20 +124,29 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
         {
             var course = _courseQueryService.GetCourseSnapshot(courseCode);
             if (course is null) continue;
-            
+
             var filteredSections = course.Sections
                 .Where(section => string.Equals(section.Group, group, StringComparison.OrdinalIgnoreCase))
                 .ToList();
-            
+
             courses.Add(course.WithSections(filteredSections));
         }
 
         return new ScheduleBlueprint(courses, _scheduleProfile);
     }
 
-    public override void Dispose()
+    protected override void Dispose(bool isDisposing)
     {
-        base.Dispose();
-        Debug.WriteLine($"TimetableEditorViewModel ID: {_scheduleProfile.Id}, Name: {Name} has been disposed");
+        if (isDisposing)
+        {
+            foreach (var item in _sharedCourse.Items)
+            {
+                item.Dispose();
+            }
+
+            Debug.WriteLine($"TimetableEditorViewModel ID: {_scheduleProfile.Id}, Name: {Name} has been disposed");
+        }
+
+        base.Dispose(isDisposing);
     }
 }
