@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -108,20 +108,25 @@ public class TuitionFeeService : ITuitionFeeService
                 kind: OperationFailureReason.Network
             );
         }
-        catch (InvalidOperationException ex)
+        catch (CtuDataContractException ex)
         {
-            _logger.LogError(ex, "Dữ liệu trả về từ CTU không thể phân rã.");
+            _logger.LogError(ex, "Cấu trúc dữ liệu học phí trả về từ CTU không hợp lệ.");
             return OperationResult.Failed(
-                "Hệ thống không thể phân tích dữ liệu quy định của trường. Nhà trường có thể đã cập nhật API mới.",
+                "Lỗi đồng bộ dữ liệu trường. Vui lòng thử lại sau.",
                 kind: OperationFailureReason.System
             );
+        }
+        catch (CtuApiException ex)
+        {
+            _logger.LogWarning(ex, "Lỗi từ hệ thống CTU khi tải thông tin học phí: {Message}", ex.Message);
+            return OperationResult.Failed(ex.Message, kind: OperationFailureReason.System);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Lỗi không xác định khi Refresh Tuition Fee");
             return OperationResult.FromException(
                 ex,
-                "Đồng bộ quy định đăng ký thất bại do lỗi hệ thống chưa xác định.",
+                "Đồng bộ thông tin học phí thất bại do lỗi hệ thống chưa xác định.",
                 kind: OperationFailureReason.System
             );
         }

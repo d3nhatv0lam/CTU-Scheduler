@@ -25,13 +25,6 @@ public static class PathProvider
     }
 
     public static string GetLogPath() => Path.Combine(GetLogFolder(), "log-.txt");
-
-    public static string GetPlaywrightBrowserPath() 
-    {
-        var path = Path.Combine(GetAppDataRoot(), "playwright-browsers");
-        if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-        return path;
-    }
     
     /// <summary>
     /// Tạo file shortcut "Open Logs" ngay cạnh file .exe của App

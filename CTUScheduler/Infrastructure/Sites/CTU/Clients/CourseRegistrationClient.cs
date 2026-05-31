@@ -32,13 +32,14 @@ public class CourseRegistrationClient : IRegistrationRulesClient, ICourseRegistr
         using var response = await _httpClient.PostAsync(DkmhEndpoints.QuyDinh, null, ct);
         response.EnsureSuccessStatusCode();
 
-        // đặc thù của endpoint này luôn trả về 200 ok nhưng data thay vì {} thì thành []
-        var qddk = await response.Content.ReadCtuContentAsync<RawQddkPayload>(ct: ct);
-
-        if (qddk is null)
-            throw new InvalidOperationException("Fail to parse response from CTU.");
-
-        return qddk;
+        try
+        {
+            return await response.Content.ReadCtuContentAsync<RawQddkPayload>(ct: ct);
+        }
+        catch (CtuDataContractException ex) when (ex.Message.Contains("mảng rỗng"))
+        {
+            throw new SessionExpiredException("Phiên đăng ký đã hết hạn hoặc chưa đăng nhập.", ex);
+        }
     }
 
     public async Task<IReadOnlyList<QuickSelectDmhpCourse>> GetAutoCompleteQueryAsync(string keyword,
@@ -70,17 +71,13 @@ public class CourseRegistrationClient : IRegistrationRulesClient, ICourseRegistr
 
         response.EnsureSuccessStatusCode();
 
-        var quickSelectDmhpCourses = await response.Content
+        return await response.Content
             .ReadCtuContentAsync<List<QuickSelectDmhpCourse>>(
-                node => node["data"]?["dkmh_tu_dien_hoc_phan_ma_auto_complete"],
+                element => element.TryGetProperty("data", out var data) &&
+                           data.TryGetProperty("dkmh_tu_dien_hoc_phan_ma_auto_complete", out var auto)
+                    ? auto
+                    : default,
                 ct: ct);
-
-        if (quickSelectDmhpCourses is null)
-        {
-            throw new InvalidOperationException("Fail to parse response from CTU.");
-        }
-
-        return quickSelectDmhpCourses;
     }
 
     public async Task<RawDmhpPayload> GetCoursesRawAsync(int academicYear, int semester, string courseCode,
@@ -102,12 +99,7 @@ public class CourseRegistrationClient : IRegistrationRulesClient, ICourseRegistr
 
         response.EnsureSuccessStatusCode();
 
-        var rawCourse = await response.Content.ReadCtuContentAsync<RawDmhpPayload>(ct: ct);
-
-        if (rawCourse is null)
-            throw new InvalidOperationException("Fail to parse response from CTU.");
-
-        return rawCourse;
+        return await response.Content.ReadCtuContentAsync<RawDmhpPayload>(ct: ct);
     }
 
     public async Task<List<RawDkhpPayload>> GetPlannedCoursesRawAsync(CancellationToken ct = default)
@@ -121,13 +113,12 @@ public class CourseRegistrationClient : IRegistrationRulesClient, ICourseRegistr
 
         response.EnsureSuccessStatusCode();
 
-        var dkhpList =
-            await response.Content.ReadCtuContentAsync<List<RawDkhpPayload>>(node => node["data"]?["data"], ct: ct);
-
-        if (dkhpList is null)
-            throw new InvalidOperationException("Fail to parse response from CTU.");
-
-        return dkhpList;
+        return await response.Content.ReadCtuContentAsync<List<RawDkhpPayload>>(element =>
+                element.TryGetProperty("data", out var data) &&
+                data.TryGetProperty("data", out var value)
+                    ? value
+                    : default
+            , ct: ct);
     }
 
     public async Task<RawThongTinHocPhiPayload> GetTuitionFeeRawAsync(int academicYear, int semester,
@@ -148,11 +139,6 @@ public class CourseRegistrationClient : IRegistrationRulesClient, ICourseRegistr
 
         response.EnsureSuccessStatusCode();
 
-        var rawTuition = await response.Content.ReadCtuContentAsync<RawThongTinHocPhiPayload>(ct: ct);
-
-        if (rawTuition is null)
-            throw new InvalidOperationException("Fail to parse response from CTU.");
-
-        return rawTuition;
+        return await response.Content.ReadCtuContentAsync<RawThongTinHocPhiPayload>(ct: ct);
     }
 }

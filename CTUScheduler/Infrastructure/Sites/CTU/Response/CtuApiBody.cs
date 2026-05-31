@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using CTUScheduler.Infrastructure.DriverCore.Interfaces;
+using CTUScheduler.Core.Interfaces;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Response;
 

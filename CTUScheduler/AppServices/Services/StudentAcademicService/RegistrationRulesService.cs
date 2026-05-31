@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -80,13 +80,18 @@ public class RegistrationRulesService : IRegistrationRulesService
                 kind: OperationFailureReason.Network
             );
         }
-        catch (InvalidOperationException ex)
+        catch (CtuDataContractException ex)
         {
-            _logger.LogError(ex, "Dữ liệu trả về từ CTU không thể phân rã.");
+            _logger.LogError(ex, "Cấu trúc dữ liệu quy định đăng ký trả về từ CTU không hợp lệ.");
             return OperationResult.Failed(
-                "Hệ thống không thể phân tích dữ liệu quy định của trường. Nhà trường có thể đã cập nhật API mới.",
+                "Lỗi đồng bộ dữ liệu trường. Vui lòng thử lại sau.",
                 kind: OperationFailureReason.System
             );
+        }
+        catch (CtuApiException ex)
+        {
+            _logger.LogWarning(ex, "Lỗi từ hệ thống CTU khi tải quy định đăng ký: {Message}", ex.Message);
+            return OperationResult.Failed(ex.Message, kind: OperationFailureReason.System);
         }
         catch (Exception ex)
         {

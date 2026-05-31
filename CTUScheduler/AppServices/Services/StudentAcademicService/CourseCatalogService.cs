@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -78,17 +78,22 @@ public class CourseCatalogService : ICourseCatalogService
                 kind: OperationFailureReason.Network
             );
         }
-        catch (InvalidOperationException ex)
+        catch (CtuDataContractException ex)
         {
-            _logger.LogError(ex, "Dữ liệu trả về từ CTU không thể phân rã.");
+            _logger.LogError(ex, "Cấu trúc dữ liệu gợi ý học phần trả về từ CTU không hợp lệ.");
             return OperationResult<IReadOnlyList<QuickSelectDmhpCourse>>.Failed(
-                "Hệ thống không thể phân tích dữ liệu của trường. Nhà trường có thể đã cập nhật API mới.",
+                "Lỗi đồng bộ dữ liệu trường. Vui lòng thử lại sau.",
                 kind: OperationFailureReason.System
             );
         }
+        catch (CtuApiException ex)
+        {
+            _logger.LogWarning(ex, "Lỗi từ hệ thống CTU khi gợi ý môn học: {Message}", ex.Message);
+            return OperationResult<IReadOnlyList<QuickSelectDmhpCourse>>.Failed(ex.Message, kind: OperationFailureReason.System);
+        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Lỗi không xác định khi Refresh Registration");
+            _logger.LogError(ex, "Lỗi không xác định khi lấy danh sách gợi ý học phần");
             return OperationResult<IReadOnlyList<QuickSelectDmhpCourse>>.FromException(
                 ex,
                 "Lấy danh sách tên học phần thất bại do lỗi hệ thống chưa xác định.",
@@ -175,20 +180,25 @@ public class CourseCatalogService : ICourseCatalogService
                 kind: OperationFailureReason.Network
             );
         }
-        catch (InvalidOperationException ex)
+        catch (CtuDataContractException ex)
         {
-            _logger.LogError(ex, "Dữ liệu trả về từ CTU không thể phân rã.");
+            _logger.LogError(ex, "Cấu trúc dữ liệu chi tiết học phần trả về từ CTU không hợp lệ.");
             return OperationResult<Course>.Failed(
-                "Hệ thống không thể phân tích dữ liệu quy định của trường. Nhà trường có thể đã cập nhật API mới.",
+                "Lỗi đồng bộ dữ liệu trường. Vui lòng thử lại sau.",
                 kind: OperationFailureReason.System
             );
         }
+        catch (CtuApiException ex)
+        {
+            _logger.LogWarning(ex, "Lỗi từ hệ thống CTU khi tải chi tiết môn học: {Message}", ex.Message);
+            return OperationResult<Course>.Failed(ex.Message, kind: OperationFailureReason.System);
+        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Lỗi không xác định khi Refresh Registration");
+            _logger.LogError(ex, "Lỗi không xác định khi tải chi tiết học phần");
             return OperationResult<Course>.FromException(
                 ex,
-                "Đồng bộ quy định đăng ký thất bại do lỗi hệ thống chưa xác định.",
+                "Tải thông tin chi tiết môn học thất bại do lỗi hệ thống chưa xác định.",
                 kind: OperationFailureReason.System
             );
         }

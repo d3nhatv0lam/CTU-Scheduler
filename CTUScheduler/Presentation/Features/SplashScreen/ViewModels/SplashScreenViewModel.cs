@@ -8,9 +8,7 @@ using System.Threading;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.UserSettingService;
 using CTUScheduler.Core.Models.Settings;
-using CTUScheduler.Infrastructure.DriverCore.Abstractions;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Features.SplashScreen.Components.Installation.ViewModels;
 using CTUScheduler.Presentation.Services.ApplicationLifetime;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using ReactiveUI;
@@ -22,7 +20,6 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
 {
     private readonly CompositeDisposable _disposables = new();
     private readonly IConnectivityService _connectivityService;
-    private readonly IWebDriverService _webDriverServiceRefactor;
     private readonly IUserSettingService _userSettingService;
     private readonly IAppLifecycleService _appLifetime;
     private readonly CancellationTokenSource _localCts;
@@ -40,16 +37,10 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
 
     [Reactive] private double _windowWidth = SMALL_WIDTH;
     [Reactive] private double _windowHeight = SMALL_HEIGHT;
-    [Reactive] private bool _isExpanded = false;
-    [ObservableAsProperty] private bool _isDownloading = false;
-
-    [Reactive(SetModifier = AccessModifier.Private)]
-    private InstallationViewModel _installationViewModel;
 
     public string Version => AppConstants.AppVersion;
 
     public ReactiveCommand<Unit, Unit> CloseAppCommand { get; }
-    public ReactiveCommand<Unit, Unit> ToggleConsoleCommand { get; }
 
     public event Action<object?>? RequestClose;
 
@@ -57,48 +48,19 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     {
         RequestClose?.Invoke(null);
     }
-    
+
     public SplashScreenViewModel(
         IConnectivityService connectivityService,
-        IWebDriverService webDriverServiceRefactor,
-        IWebDriverInstallerService webDriverInstallerService,
         IUserSettingService userSettingService,
         IAppLifecycleService appLifetime)
     {
         _connectivityService = connectivityService;
-        _webDriverServiceRefactor = webDriverServiceRefactor;
         _userSettingService = userSettingService;
         _appLifetime = appLifetime;
 
         _localCts = CancellationTokenSource.CreateLinkedTokenSource(appLifetime.ApplicationStopping);
 
-        _installationViewModel = new InstallationViewModel(webDriverInstallerService.LogStream)
-            .DisposeWith(_disposables);
-
-        _isDownloadingHelper = webDriverInstallerService.IsBusy
-            .ToProperty(this, nameof(IsDownloading), scheduler: RxSchedulers.MainThreadScheduler)
-            .DisposeWith(_disposables);
-
-
         CloseAppCommand = ReactiveCommand.Create(CloseApplication).DisposeWith(_disposables);
-        ToggleConsoleCommand = ReactiveCommand.Create(ToggleConsole).DisposeWith(_disposables);
-
-        webDriverInstallerService.StatusMessage
-            .Skip(1)
-            .Delay(TimeSpan.FromSeconds(1d), RxSchedulers.MainThreadScheduler)
-            .ObserveOn(RxSchedulers.MainThreadScheduler)
-            .Subscribe(message => Message = message)
-            .DisposeWith(_disposables);
-
-        // clean up when download sussess
-        this.WhenAnyValue(x => x.IsDownloading,
-                x => x.IsExpanded,
-                (isDownloading, isExpanded) => !isDownloading && isExpanded)
-            .Skip(1)
-            .Where(x => x)
-            .ObserveOn(RxSchedulers.MainThreadScheduler)
-            .Subscribe(_ => ToggleConsole())
-            .DisposeWith(_disposables);
 
         InitializeStartup();
     }
@@ -116,12 +78,12 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
                 ShowMessage("Mạng đã được kết nối!",
                     TimeSpan.FromSeconds(1.5)))
             .SelectMany(_ =>
-                ShowMessage("Đang kiểm tra dịch vụ web..",
+                ShowMessage("Đang kiểm tra dữ liệu",
                     TimeSpan.FromSeconds(1.5)))
             .ObserveOn(RxSchedulers.TaskpoolScheduler)
             .SelectMany(_ => InitializeServices())
             .SelectMany(_ =>
-                ShowMessage("dịch vụ web đã hoạt động!",
+                ShowMessage("Kiểm tra dữ liệu thành công!",
                     TimeSpan.FromSeconds(1.5)))
             .SelectMany(_ =>
                 ShowMessage("Đang khởi động ứng dụng...",
@@ -136,21 +98,6 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
             .DisposeWith(_disposables);
     }
 
-    private void ToggleConsole()
-    {
-        IsExpanded = !IsExpanded;
-        if (!IsExpanded)
-        {
-            WindowHeight = SMALL_HEIGHT;
-            WindowWidth = SMALL_WIDTH;
-        }
-        else
-        {
-            WindowHeight = LARGE_HEIGHT;
-            WindowWidth = LARGE_WIDTH;
-        }
-    }
-
     private IObservable<Unit> ShowMessage(
         string message,
         TimeSpan? delay = null)
@@ -163,11 +110,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
 
     private IObservable<Unit> InitializeServices()
     {
-        return Observable.FromAsync(async ct =>
-        {
-            await _userSettingService.InitializeAsync(ct);
-            await _webDriverServiceRefactor.InitBrowserAsync(ct);
-        });
+        return Observable.FromAsync(async ct => { await _userSettingService.InitializeAsync(ct); });
     }
 
     private void CloseApplication()

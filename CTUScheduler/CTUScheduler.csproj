@@ -32,7 +32,6 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.8" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.8" />
-    <PackageReference Include="Microsoft.Playwright" Version="1.59.0" />
     <PackageReference Include="PdfPig" Version="0.1.14" />
     <PackageReference Include="ReactiveUI.Avalonia" Version="12.0.1" />
     <PackageReference Include="ReactiveUI.SourceGenerators" Version="2.6.30">
@@ -106,10 +105,6 @@
       <DependentUpon>TimetableView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Presentation\Features\SplashScreen\Components\Installation\Views\InstallationView.axaml.cs">
-      <DependentUpon>InstallationView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -121,7 +116,6 @@
     <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Shells\SchedulingDialogView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Shells\SchedulingWizardView.axaml" />
     <AdditionalFiles Include="Presentation\Features\Setting\Views\SettingView.axaml" />
-    <AdditionalFiles Include="Presentation\Features\SplashScreen\Components\Installation\Views\InstallationView.axaml" />
     <AdditionalFiles Include="Presentation\Features\SplashScreen\Views\SplashScreenWindow.axaml" />
     <AdditionalFiles Include="Presentation\Features\TimetableManager\Views\TimetableManagerView.axaml" />
     <AdditionalFiles Include="Presentation\Features\TimetableRefactor\Views\TimetableLayoutView.axaml" />
