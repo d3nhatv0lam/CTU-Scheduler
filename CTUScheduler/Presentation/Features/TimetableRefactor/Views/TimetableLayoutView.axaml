@@ -1,4 +1,4 @@
-﻿<rxui:ReactiveUserControl
+<rxui:ReactiveUserControl
     x:Name="MainTimetableLayout"
     x:TypeArguments="vm:TimetableLayoutBaseViewModel"
     xmlns="https://github.com/avaloniaui"
@@ -134,12 +134,11 @@
                                         Orientation="Horizontal" >
                                 <Button
                                     Classes="export"
-                                    ToolTip.Tip="Xuất thời khóa biểu dưới dạng file ảnh png"
-                                    Command="{Binding ExportToImageCommand}"
-                                    CommandParameter="{Binding #MainTimetableLayout}">
+                                    ToolTip.Tip="Sao chép ảnh thời khóa biểu vào Clipboard (Ctrl+V)"
+                                    Command="{Binding CopyToClipboardCommand}">
                                     <StackPanel Orientation="Horizontal">
-                                        <icon:MaterialIcon Kind="DownloadOutline" />
-                                        <TextBlock Text="IMG"></TextBlock>
+                                        <icon:MaterialIcon Kind="ContentCopy" />
+                                        <TextBlock Text="COPY"></TextBlock>
                                     </StackPanel>
                                 </Button>
                                 <Button

@@ -23,6 +23,7 @@ using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
+using CTUScheduler.Presentation.Services.ControlRenderer;
 using CTUScheduler.Presentation.Shared.Models;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using DynamicData;
@@ -42,6 +43,8 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
     private readonly IScheduleRegistrationService _scheduleRegistrationService;
     private readonly IExcelExporterService _excelExporter;
     private readonly ITimetableGeneratorService _timetableGeneratorService;
+    private readonly IControlRendererService _controlRendererService;
+    private readonly IUserInteractionService _userInteractionService;
 
     public IReadOnlyList<SchedulingPreset> Presets { get; } = SchedulingPresetViewModel.DefaultPresets;
     
@@ -73,11 +76,14 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
         IUserInteractionService userInteractionService,
         IProfileQueryService profileQueryService,
         IExcelExporterService excelExporterService,
+        IControlRendererService controlRendererService,
         ILoggerFactory loggerFactory)
     {
         _scheduleRegistrationService = scheduleRegistrationService;
         _excelExporter = excelExporterService;
         _timetableGeneratorService = timetableGeneratorService;
+        _controlRendererService = controlRendererService;
+        _userInteractionService = userInteractionService;
         _logger = loggerFactory.CreateLogger<TimetableSchedulerViewModel>();
 
         var courseStream = context.CourseBlueprints.Connect()
@@ -164,7 +170,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
         GenerateTimeTableCommand
             .Select(x =>
             {
-                var vm = new TimetablePreviewViewModel(x, _excelExporter);
+                var vm = new TimetablePreviewViewModel(x, _excelExporter, _controlRendererService, _userInteractionService);
                 var scorers = SelectedPreset?.Profile.Scorers;
                 if (scorers != null)
                 {

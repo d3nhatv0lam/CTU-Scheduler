@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using Avalonia.Threading;
 using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
@@ -13,6 +14,8 @@ using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
+using CTUScheduler.Presentation.Services.ControlRenderer;
+using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using DynamicData;
 using ReactiveUI;
 using DynamicData.Aggregation;
@@ -36,7 +39,9 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
     public TimetableEditorViewModel(
         ScheduleProfile scheduleProfile,
         ICourseQueryService courseQueryService,
-        IExcelExporterService excelExporter) : base(excelExporter)
+        IExcelExporterService excelExporter,
+        IControlRendererService controlRendererService,
+        IUserInteractionService userInteractionService) : base(excelExporter, controlRendererService, userInteractionService)
     {
         ArgumentNullException.ThrowIfNull(scheduleProfile);
 
@@ -45,7 +50,7 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
 
         Name = _scheduleProfile.Name;
         LastUpdated = _scheduleProfile.LastUpdated;
-
+        
         var savedRef = scheduleProfile.SavedCourseGroupKeys;
         _sharedCourse = courseQueryService.ConnectCourses()
             .ObserveOn(RxSchedulers.TaskpoolScheduler)
@@ -96,6 +101,15 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
             })
             .DisposeWith(Disposables);
 
+        _sharedCourse.Connect()
+            .Throttle(TimeSpan.FromMilliseconds(100))
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
+            .Subscribe(async _ =>
+            {
+                await GeneratePreviewAsync();
+            })
+            .DisposeWith(Disposables);
+
         StartEditCommand = ReactiveCommand.Create(() => { }).DisposeWith(Disposables);
 
         SaveCommand = ReactiveCommand.Create(() =>
@@ -113,6 +127,7 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
             )
             .ToProperty(this, nameof(IsEditing), initialValue: false, scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
+        
     }
 
     public override ScheduleBlueprint ToScheduleBlueprint()

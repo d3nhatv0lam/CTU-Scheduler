@@ -227,18 +227,13 @@
                                                     <TextBlock Grid.Row="3" Text="{Binding LastUpdated,Mode=OneWay,StringFormat=Lần cuối cập nhật: {0}}"></TextBlock>
 
                                                     <Grid Grid.Row="4">
-                                                        <!-- // TimeTable preview // -->
-                                                        <Border>
-                                                            <Viewbox Stretch="Uniform">
-                                                                <views2:TimetableView
-                                                                    IsHitTestVisible="False"
-                                                                    Width="650"
-                                                                    Height="390"
-                                                                    VerticalAlignment="Stretch"
-                                                                    HorizontalAlignment="Stretch"
-                                                                    DataContext="{Binding VisualizerVM}" />
-                                                            </Viewbox>
-                                                        </Border>
+                                                         <!-- // TimeTable preview // -->
+                                                         <Border CornerRadius="8" ClipToBounds="True">
+                                                             <Image Source="{Binding PreviewImage}" 
+                                                                    Stretch="Uniform"
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center"/>
+                                                         </Border>
                                                         <!-- // Open Timetable View // -->
                                                         <Button Background="Transparent"
                                                                 Padding="0"
