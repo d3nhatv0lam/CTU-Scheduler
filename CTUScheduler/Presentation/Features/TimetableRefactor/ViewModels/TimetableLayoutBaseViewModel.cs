@@ -148,14 +148,12 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
     {
         if (VisualizerVM is null) return;
 
-        var tempView = new TimetableLayoutView 
+        var tempView = new TimetableView 
         { 
-            DataContext = this,
-            Width = 1200,
-            Height = 800
+            DataContext = VisualizerVM,
+            Width = 1600,
+            Height = 1000
         };
-        var exportPanel = tempView.FindControl<Control>("ExportPanel");
-        exportPanel?.IsVisible = false;
 
         try
         {

@@ -65,11 +65,11 @@ public partial class TimetableLayoutView : ReactiveUserControl<TimetableLayoutBa
                     var exportPanel = tempView.FindControl<Control>("ExportPanel");
                     exportPanel?.IsVisible = false;
 
-                    // 4. Sử dụng ControlRendererService tối ưu để vẽ ẩn off-screen trực tiếp ra Bitmap (Không qua Stream nén)
                     var bitmap = await ViewModel.ControlRendererService.RenderToBitmapAsync(
                         tempView, 
                         width: 1600, 
-                        height: 1000);
+                        height: 1000,
+                        scale: 1.5);
                         
                     await clipboard.SetBitmapAsync(bitmap);
                     await clipboard.FlushAsync();
