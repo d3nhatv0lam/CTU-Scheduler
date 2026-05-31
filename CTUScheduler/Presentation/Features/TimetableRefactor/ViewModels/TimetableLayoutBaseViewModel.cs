@@ -26,6 +26,8 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
     private TimetableViewModel? _visualizerVM = null;
     private bool _isSelected;
     private bool _isEnabled = true;
+    
+    private bool _isDisposed;
 
     public string Name
     {
@@ -117,5 +119,21 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
 
     public abstract ScheduleBlueprint ToScheduleBlueprint();
 
-    public virtual void Dispose() => Disposables.Dispose();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool isDisposing)
+    {
+        if (_isDisposed) return;
+        
+        if (isDisposing)
+        {
+            Disposables.Dispose();
+        }
+        
+        _isDisposed = true;
+    }
 }

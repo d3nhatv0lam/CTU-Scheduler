@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reactive;
@@ -24,10 +24,11 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationVi
     private readonly ReadOnlyObservableCollection<T> _bindablePagedData;
 
     private int _currentPage;
+    private bool _isDisposed;
 
     protected CompositeDisposable Disposables { get; } = new();
     protected ISourceList<T> DataList { get; }
-    protected  BehaviorSubject<IPageRequest> PageRequestSubject { get; }
+    protected BehaviorSubject<IPageRequest> PageRequestSubject { get; }
 
     /// <summary>
     /// has sorter, filter
@@ -71,11 +72,11 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationVi
         _ownsData = ownsData;
         PageSize = options.PageSize;
         PageRequestSubject = new BehaviorSubject<IPageRequest>(new PageRequest(1, PageSize)).DisposeWith(Disposables);
-        
+
         var connection = DataList.Connect()
             .ObserveOn(RxSchedulers.TaskpoolScheduler);
 
-        bool shouldDisposeItems = options.DisposeItemsOnRemove ?? ownsData; 
+        bool shouldDisposeItems = options.DisposeItemsOnRemove ?? ownsData;
         if (shouldDisposeItems)
         {
             connection = connection
@@ -118,7 +119,7 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationVi
 
         var canGoPrevious = this.WhenAnyValue(x => x.IsFirstPage, isFirstPage => !isFirstPage);
         PreviousPageCommand = ReactiveCommand.Create(GoPreviousPage, canGoPrevious).DisposeWith(Disposables);
-        
+
 
         DataSharedConnection.Page(PageRequestSubject)
             .ObserveOn(RxSchedulers.MainThreadScheduler)
@@ -140,6 +141,11 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationVi
                 else if (CurrentPage > total) CurrentPage = total;
             })
             .DisposeWith(Disposables);
+    }
+
+    ~PaginationViewModel()
+    {
+        Dispose(false);
     }
 
     public virtual void Add(T item)
@@ -170,9 +176,32 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationVi
         CurrentPage--;
     }
 
-    public virtual void Dispose()
+    public void Dispose()
     {
-        if (_ownsData) DataList.Dispose();
-        Disposables.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool isDisposing)
+    {
+        if (_isDisposed) return;
+
+        if (isDisposing)
+        {
+            Disposables.Dispose();
+            if (_ownsData)
+            {
+                foreach (var item in DataList.Items)
+                {
+                    if (item is IDisposable disposable)
+                    {
+                        disposable.Dispose();
+                    }
+                }
+                DataList.Dispose();
+            }
+        }
+
+        _isDisposed = true;
     }
 }

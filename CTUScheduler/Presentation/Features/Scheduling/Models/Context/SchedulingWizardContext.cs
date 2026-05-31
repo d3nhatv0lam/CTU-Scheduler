@@ -17,6 +17,10 @@ public class SchedulingWizardContext : IDisposable
 
     public void Dispose()
     {
+        foreach (var item in CourseBlueprints.Items)
+        {
+            item.Dispose();
+        }
         _cleanUpTrigger.Dispose();
         CourseBlueprints.Dispose();
     }
