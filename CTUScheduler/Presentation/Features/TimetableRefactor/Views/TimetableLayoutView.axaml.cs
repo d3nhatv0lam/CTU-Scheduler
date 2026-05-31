@@ -65,6 +65,8 @@ public partial class TimetableLayoutView : ReactiveUserControl<TimetableLayoutBa
                     var exportPanel = tempView.FindControl<Control>("ExportPanel");
                     exportPanel?.IsVisible = false;
 
+                    // không using ở đây vì bitmap đưa ra clipboard phải do avalonia quản lý
+                    // docs: https://docs.avaloniaui.net/docs/services/clipboard
                     var bitmap = await ViewModel.ControlRendererService.RenderToBitmapAsync(
                         tempView, 
                         width: 1600, 
@@ -72,6 +74,7 @@ public partial class TimetableLayoutView : ReactiveUserControl<TimetableLayoutBa
                         scale: 1.5);
                         
                     await clipboard.SetBitmapAsync(bitmap);
+                    // Hoạt động kém ở macos
                     await clipboard.FlushAsync();
 
                     context.SetOutput(true);
