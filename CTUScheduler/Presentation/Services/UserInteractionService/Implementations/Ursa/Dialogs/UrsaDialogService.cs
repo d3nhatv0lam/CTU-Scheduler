@@ -106,7 +106,7 @@ public class UrsaDialogService : IDialogService
         };
     }
 
-    private static Border CreateResponsiveBorder(
+    private Border CreateResponsiveBorder(
         Control control,
         in DialogOptions options)
     {
@@ -114,39 +114,81 @@ public class UrsaDialogService : IDialogService
         var verticalMargin = options.ResponsiveVerticalMargin;
         var percentage = options.ResponsivePercentage;
 
-        return new Border
+        var topLevel = _viewContextService.CurrentTopLevel;
+        Border border;
+
+        if (topLevel != null)
         {
-            Child = control,
-
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-
-            [!Layoutable.WidthProperty] = new Binding("ClientSize")
+            border = new Border
             {
-                RelativeSource = new RelativeSource(
-                    RelativeSourceMode.FindAncestor)
-                {
-                    AncestorType = typeof(TopLevel)
-                },
-                Converter = new FuncValueConverter<Size, double>(s =>
-                    Math.Max(
-                        0,
-                        s.Width * percentage - horizontalMargin))
-            },
+                Child = control,
 
-            [!Layoutable.HeightProperty] = new Binding("ClientSize")
-            {
-                RelativeSource = new RelativeSource(
-                    RelativeSourceMode.FindAncestor)
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+
+                [!Layoutable.WidthProperty] = new Binding("ClientSize")
                 {
-                    AncestorType = typeof(TopLevel)
+                    Source = topLevel,
+                    Converter = new FuncValueConverter<Size, double>(s =>
+                        Math.Max(
+                            0,
+                            s.Width * percentage - horizontalMargin))
                 },
-                Converter = new FuncValueConverter<Size, double>(s =>
-                    Math.Max(
-                        0,
-                        s.Height * percentage - verticalMargin))
-            }
+
+                [!Layoutable.HeightProperty] = new Binding("ClientSize")
+                {
+                    Source = topLevel,
+                    Converter = new FuncValueConverter<Size, double>(s =>
+                        Math.Max(
+                            0,
+                            s.Height * percentage - verticalMargin))
+                }
+            };
+        }
+        else
+        {
+            border = new Border
+            {
+                Child = control,
+
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+
+                [!Layoutable.WidthProperty] = new Binding("ClientSize")
+                {
+                    RelativeSource = new RelativeSource(
+                        RelativeSourceMode.FindAncestor)
+                    {
+                        AncestorType = typeof(TopLevel)
+                    },
+                    Converter = new FuncValueConverter<Size, double>(s =>
+                        Math.Max(
+                            0,
+                            s.Width * percentage - horizontalMargin))
+                },
+
+                [!Layoutable.HeightProperty] = new Binding("ClientSize")
+                {
+                    RelativeSource = new RelativeSource(
+                        RelativeSourceMode.FindAncestor)
+                    {
+                        AncestorType = typeof(TopLevel)
+                    },
+                    Converter = new FuncValueConverter<Size, double>(s =>
+                        Math.Max(
+                            0,
+                            s.Height * percentage - verticalMargin))
+                }
+            };
+        }
+
+        border.DetachedFromVisualTree += (s, e) =>
+        {
+            border.ClearValue(Layoutable.WidthProperty);
+            border.ClearValue(Layoutable.HeightProperty);
         };
+
+        return border;
     }
 
     private OverlayDialogOptions MapOptions(in DialogOptions options)
