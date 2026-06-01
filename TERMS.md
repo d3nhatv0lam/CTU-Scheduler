@@ -7,7 +7,7 @@ Bằng việc tải xuống, cài đặt hoặc sử dụng CTU Scheduler, bạn
 
 ### Điều 1 - Giới thiệu
 
-CTU Scheduler là ứng dụng máy tính để bàn phi lợi nhuận, được phát triển bởi nhóm sinh viên Trường Đại học Cần Thơ trong khuôn khổ đề tài nghiên cứu khoa học cấp trường, nhằm hỗ trợ sinh viên lập kế hoạch đăng ký môn học hiệu quả hơn.
+CTU Scheduler là ứng dụng máy tính để bàn phi lợi nhuận, được phát triển bởi nhóm sinh viên Đại học Cần Thơ trong khuôn khổ đề tài nghiên cứu khoa học cấp trường, nhằm hỗ trợ sinh viên lập kế hoạch đăng ký môn học hiệu quả hơn.
 
 Ứng dụng hiện đang trong giai đoạn phát triển và thử nghiệm (v0.1). Nhóm phát triển có thể ngừng hỗ trợ sau khi kết thúc đề tài mà không cần thông báo trước.
 
@@ -15,7 +15,7 @@ CTU Scheduler là ứng dụng máy tính để bàn phi lợi nhuận, được
 
 ### Điều 2 - Tuyên bố không liên kết
 
-CTU Scheduler **không phải** sản phẩm chính thức của Trường Đại học Cần Thơ. Nhóm phát triển là các cá nhân độc lập và không đại diện cho quan điểm, chính sách hay lập trường của nhà trường dưới bất kỳ hình thức nào. Tên "CTU" trong tên ứng dụng chỉ nhằm chỉ rõ đối tượng phục vụ.
+CTU Scheduler **không phải** sản phẩm chính thức của Đại học Cần Thơ. Nhóm phát triển là các cá nhân độc lập và không đại diện cho quan điểm, chính sách hay lập trường của nhà trường dưới bất kỳ hình thức nào. Tên "CTU" trong tên ứng dụng chỉ nhằm chỉ rõ đối tượng phục vụ.
 
 ---
 
