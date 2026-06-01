@@ -1,7 +1,7 @@
 # Điều Khoản Sử Dụng & Miễn Trừ Trách Nhiệm
 ## CTU Scheduler
 
-CTU Scheduler là ứng dụng phi lợi nhuận, được phát triển bởi nhóm sinh viên trong khuôn khổ đề tài nghiên cứu khoa học - **không phải sản phẩm chính thức của Trường Đại học Cần Thơ**.
+CTU Scheduler là ứng dụng phi lợi nhuận, được phát triển bởi nhóm sinh viên trong khuôn khổ đề tài nghiên cứu khoa học - **không phải sản phẩm chính thức của Đại học Cần Thơ**.
 
 Bằng việc sử dụng ứng dụng, bạn xác nhận đã hiểu và chấp nhận toàn bộ nội dung dưới đây. Phiên bản đầy đủ xem tại [TERMS.md](../TERMS.md).
 
