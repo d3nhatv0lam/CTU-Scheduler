@@ -8,24 +8,20 @@
     xmlns:rxui="http://reactiveui.net"
     x:DataType="viewModels:TimetableSchedulerViewModel"
     x:CompileBindings="True"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:models="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components"
-    xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
-    xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
     xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps"
     xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Views.Steps"
     xmlns:timetableModel="clr-namespace:CTUScheduler.Presentation.Shared.Models"
     xmlns:paginationViews="clr-namespace:CTUScheduler.Presentation.Features.Pagination.Views"
-    xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.Views"
-    xmlns:assists="clr-namespace:CTUScheduler.Presentation.Shared.Styles.Assists"
-    xmlns:ripple="clr-namespace:CTUScheduler.Presentation.Shared.Styles.Ripple"
     xmlns:schedulingModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Models"
     x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.Steps.TimetableSchedulerView">
 
-    <rxui:ReactiveUserControl.Resources>
-
-    </rxui:ReactiveUserControl.Resources>
-
     <rxui:ReactiveUserControl.Styles>
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Features/Scheduling/Shared/Styles/controls.axaml" />
+
         <Style Selector="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource Text-Font}" />
         </Style>
@@ -33,6 +29,7 @@
         <Style Selector="TextBlock.Title">
             <Setter Property="FontSize" Value="20" />
             <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
         </Style>
 
         <Style Selector="TextBlock.SubTitle">
@@ -41,56 +38,143 @@
             <Setter Property="TextAlignment" Value="DetectFromContent" />
             <Setter Property="FontSize" Value="13" />
             <Setter Property="FontWeight" Value="SemiLight" />
-            <Setter Property="Foreground" Value="#a3a3a3" />
+            <Setter Property="Foreground" Value="{StaticResource DisableColor}" />
         </Style>
+
+        <Style Selector="Border.Card">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="12" />
+            <Setter Property="BoxShadow" Value="0 4 15 0 #0D000000" />
+        </Style>
+
         <Style Selector="Button.btnCreateSchedule">
-            <Setter Property="FontSize" Value="10" />
-            <Setter Property="MaxWidth" Value="130" />
-            <Setter Property="Margin" Value="0 0 15 0" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Padding" Value="14 6" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.btnCreateSchedule:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SecondaryBrush}" />
+            <Setter Property="TextElement.Foreground" Value="White" />
+        </Style>
+        <Style Selector="Button.btnCreateSchedule:disabled">
+            <Setter Property="Background" Value="{StaticResource DisableColor}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <Style Selector="Border.Separator">
+            <Setter Property="Height" Value="1" />
+            <Setter Property="Background" Value="{StaticResource BorderColor}" />
+            <Setter Property="Margin" Value="10 0" />
+        </Style>
+
+        <Style Selector="Border.CourseItem">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10 8" />
+            <Setter Property="Margin" Value="0 4" />
+        </Style>
+
+        <Style Selector="TextBlock.CourseCode">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{StaticResource Grey}" />
+        </Style>
+        <Style Selector="Border.CreditBadge">
+            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
             <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="6 2" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBlock.CreditText">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+        </Style>
+        <Style Selector="TextBlock.GroupCount">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{StaticResource DisableColor}" />
+            <Setter Property="Margin" Value="0 2 0 4" />
+        </Style>
+
+        <Style Selector="StackPanel.locked">
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Style Selector="^ RadioButton.rd-locked /template/ Ellipse#OuterEllipse">
+                <Setter Property="Fill" Value="{StaticResource RedColor}" />
+                <Setter Property="Stroke" Value="{StaticResource RedColor}" />
+            </Style>
+        </Style>
+
+        <Style Selector="ComboBox.CourseCombo">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="MinHeight" Value="30" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+
+        <Style Selector="Border.TimetableCard">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="BoxShadow" Value="0 2 8 0 #0A000000" />
+            <Setter Property="Width" Value="250" />
+            <Setter Property="Height" Value="240" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" Easing="CubicEaseOut" />
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.TimetableCard:pointerover">
+            <Setter Property="BoxShadow" Value="0 4 16 0 #1A000000" />
+            <Setter Property="RenderTransform" Value="scale(1.02)" />
+        </Style>
+
+        <Style Selector="TextBlock.ScoreText">
+            <Setter Property="Foreground" Value="{StaticResource RedColor}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12" />
         </Style>
 
         <Style Selector="paginationViews|PaginationView.pagination">
-            <Setter Property="Height" Value="35"></Setter>
-            <Setter Property="VerticalAlignment" Value="Bottom"></Setter>
-            <Setter Property="HorizontalAlignment" Value="Left"></Setter>
-            <Setter Property="Opacity" Value="0.7"></Setter>
+            <Setter Property="Height" Value="35" />
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Opacity" Value="0.7" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0.15" Easing="CubicEaseInOut"></DoubleTransition>
+                    <DoubleTransition Property="Opacity" Duration="0.15" Easing="CubicEaseInOut" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="paginationViews|PaginationView.pagination:pointerover">
-            <Setter Property="Opacity" Value="1"></Setter>
+            <Setter Property="Opacity" Value="1" />
         </Style>
-
-
-        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml"></StyleInclude>
-        <StyleInclude Source="avares://CTUScheduler/Presentation/Features/Scheduling/Shared/Styles/controls.axaml"></StyleInclude>
     </rxui:ReactiveUserControl.Styles>
 
-
     <Grid ColumnDefinitions="0.22* 0.015* 0.5*">
-        <!--// left side //-->
-        <Border Grid.Column="0" Padding="0 3 0 3">
+        <Border Grid.Column="0" Padding="0 3">
             <Border Classes="CornerBorder">
-                <Grid RowDefinitions="auto auto 1 *" ClipToBounds="True">
-                    <!--// title //-->
+                <Grid RowDefinitions="auto auto auto *" ClipToBounds="True">
                     <TextBlock
                         Grid.Row="0"
                         Classes="Title"
                         Text="Sắp xếp thời khóa biểu"
                         HorizontalAlignment="Left"
-                        Margin="10 0 0 0"
+                        Margin="12 8 12 4"
                         TextWrapping="WrapWithOverflow" />
-                    <!-- // Scoring Preset Selector // -->
+
                     <ComboBox Grid.Row="1"
-                              Theme="{StaticResource MaterialOutlineComboBox}"
-                              p1:ComboBoxAssist.Label="Tiêu chí ưu tiên"
-                              Classes="dense"
-                              Margin="10 5 10 10"
-                              HorizontalAlignment="Stretch"
+                              Classes="CourseCombo"
+                              Margin="12 4 12 8"
                               SelectedItem="{Binding SelectedPreset}"
                               ItemsSource="{Binding Presets, Mode=OneWay}"
                               ToolTip.Tip="{Binding SelectedPreset.Description}">
@@ -103,90 +187,75 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <!-- //  Separator // -->
-                    <Border Grid.Row="2" Height="1" Padding="10 0 10 0">
-                        <Separator Margin="0" Background="#a3a3a3" />
-                    </Border>
-                    <!-- // Course Edit Tree // -->
+
+                    <Border Grid.Row="2" Classes="Separator" />
+
                     <Border Grid.Row="3"
-                            Padding="5"
+                            Padding="8 4"
                             ClipToBounds="True">
                         <ScrollViewer
                             HorizontalScrollBarVisibility="Disabled"
                             VerticalScrollBarVisibility="Auto">
                             <ItemsRepeater
                                 ItemsSource="{Binding SchedulingCourseCoordinatorVM.SchedulingCourses}">
-                                <ItemsRepeater.Styles>
-                                    <Style Selector="ItemsRepeater Border.CornerBorder">
-                                        <Setter Property="Margin" Value="0 5"></Setter>
-                                    </Style>
-                                </ItemsRepeater.Styles>
 
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate DataType="{x:Type models:SchedulingCourseViewModel}">
-                                        <Border Classes="CornerBorder"
-                                                ClipToBounds="True">
-                                            <Border Padding="5">
-                                                <StackPanel>
-                                                    <!-- // Title // -->
-                                                    <TextBlock>
+                                        <Border Classes="CourseItem">
+                                            <StackPanel Spacing="2">
+                                                <Grid ColumnDefinitions="* auto">
+                                                    <TextBlock Grid.Column="0" Classes="CourseCode"
+                                                               TextTrimming="CharacterEllipsis">
                                                         <Run Text="{Binding Item.Code, Mode=OneTime}" />
                                                         <Run Text="-" />
                                                         <Run Text="{Binding Item.Name_VN, Mode=OneTime}" />
-                                                        <Run
-                                                            Text="{Binding Item.Sections.Count,Mode=OneTime,StringFormat=({0})}">
-                                                        </Run>
                                                     </TextBlock>
-                                                    <!-- // type select // -->
-                                                    <StackPanel
-                                                        Classes.locked="{Binding IsLocked}"
-                                                        Orientation="Horizontal">
-                                                        <StackPanel.Styles>
-                                                            <Style Selector="StackPanel.locked">
-                                                                <Setter Property="IsHitTestVisible" Value="False"></Setter>
-                                                                <Style
-                                                                    Selector="^ RadioButton.rd-locked /template/ Ellipse#OuterEllipse">
-                                                                    <Setter Property="Fill" Value="Red"></Setter>
-                                                                    <Setter Property="Stroke" Value="Red"></Setter>
-                                                                </Style>
-                                                            </Style>
-                                                        </StackPanel.Styles>
-                                                        <RadioButton
-                                                            Classes="accent rd-locked"
-                                                            IsChecked="{Binding IsMainCourse}"
-                                                            Content="Môn chính" />
-                                                        <RadioButton
-                                                            IsChecked="{Binding IsMainCourse,Converter={x:Static BoolConverters.Not}}"
-                                                            Classes="accent" Content="Môn thay thế" />
-                                                    </StackPanel>
-                                                    <!-- // Alternative for // -->
-                                                    <Border
-                                                        Classes="height-transition"
-                                                        Classes.hidden="{Binding IsMainCourse}"
-                                                        Classes.show="{Binding !IsMainCourse}"
-                                                        Padding="5 0">
-                                                        <ComboBox Theme="{StaticResource MaterialOutlineComboBox}"
-                                                                  p1:ComboBoxAssist.Label="Thay thế cho"
-                                                                  Classes="dense"
-                                                                  SelectedItem="{Binding SelectedReplacement}"
-                                                                  ItemsSource="{Binding ReplacementOptions,Mode=OneWay}">
-                                                            <ComboBox.ItemTemplate>
-                                                                <DataTemplate
-                                                                    x:DataType="{x:Type models:SchedulingCourseViewModel}">
-                                                                    <TextBlock>
-                                                                        <Run
-                                                                            Text="{Binding Item.Code,Mode=OneTime}">
-                                                                        </Run>
-                                                                        <Run Text="-" />
-                                                                        <Run
-                                                                            Text="{Binding Item.Name_VN, Mode=OneTime}" />
-                                                                    </TextBlock>
-                                                                </DataTemplate>
-                                                            </ComboBox.ItemTemplate>
-                                                        </ComboBox>
+                                                    <Border Grid.Column="1" Classes="CreditBadge" Margin="6 0 0 0">
+                                                        <TextBlock Classes="CreditText"
+                                                                   Text="{Binding Item.Credits, Mode=OneTime, StringFormat={}{0} TC}" />
                                                     </Border>
+                                                </Grid>
+
+                                                <TextBlock Classes="GroupCount"
+                                                           Text="{Binding Item.Sections.Count, Mode=OneTime, StringFormat=Số lượng nhóm đã chọn: {0}}" />
+
+                                                <StackPanel
+                                                    Classes.locked="{Binding IsLocked}"
+                                                    Orientation="Horizontal"
+                                                    Spacing="4">
+                                                    <RadioButton
+                                                        Classes="accent rd-locked"
+                                                        IsChecked="{Binding IsMainCourse}"
+                                                        Content="Môn chính" />
+                                                    <RadioButton
+                                                        IsChecked="{Binding IsMainCourse,Converter={x:Static BoolConverters.Not}}"
+                                                        Classes="accent" Content="Môn thay thế" />
                                                 </StackPanel>
-                                            </Border>
+
+                                                <Border
+                                                    Classes="height-transition"
+                                                    Classes.hidden="{Binding IsMainCourse}"
+                                                    Classes.show="{Binding !IsMainCourse}"
+                                                    Padding="0 4 0 0">
+                                                    <ComboBox Classes="CourseCombo"
+                                                              SelectedItem="{Binding SelectedReplacement}"
+                                                              ItemsSource="{Binding ReplacementOptions,Mode=OneWay}">
+                                                        <ComboBox.ItemTemplate>
+                                                            <DataTemplate
+                                                                x:DataType="{x:Type models:SchedulingCourseViewModel}">
+                                                                <TextBlock>
+                                                                    <Run
+                                                                        Text="{Binding Item.Code,Mode=OneTime}">
+                                                                    </Run>
+                                                                    <Run Text="-" />
+                                                                    <Run
+                                                                        Text="{Binding Item.Name_VN, Mode=OneTime}" />
+                                                                </TextBlock>
+                                                            </DataTemplate>
+                                                        </ComboBox.ItemTemplate>
+                                                    </ComboBox>
+                                                </Border>
+                                            </StackPanel>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsRepeater.ItemTemplate>
@@ -196,18 +265,16 @@
                 </Grid>
             </Border>
         </Border>
-        <!--// right side //-->
-        <Border Grid.Column="2" Padding="0 3 0 3">
+
+        <Border Grid.Column="2" Padding="0 3">
             <Border Classes="CornerBorder">
-                <Grid RowDefinitions="auto 1 *">
-                    <!-- // Label // -->
-                    <DockPanel Grid.Row="0" LastChildFill="False">
+                <Grid RowDefinitions="auto auto *">
+                    <DockPanel Grid.Row="0" LastChildFill="False" Margin="12 8">
                         <TextBlock
                             DockPanel.Dock="Left"
                             Classes="Title"
                             Text="Thời Khóa Biểu"
-                            HorizontalAlignment="Left"
-                            Margin="10 0 0 0" />
+                            HorizontalAlignment="Left" />
                         <TextBlock DockPanel.Dock="Left"
                                    Classes="SubTitle">
                             <TextBlock.Text>
@@ -222,15 +289,16 @@
                             DockPanel.Dock="Right"
                             Classes="btnCreateSchedule"
                             x:Name="btnAddTimeTable"
-                            Content="Tạo thời khóa biểu"
-                            Command="{Binding GenerateTimeTableCommand}"
-                            ToolTip.Tip="Nhấn nút sẽ tiến hành tạo thời khóa biểu cho bạn chọn!" />
+                            Command="{Binding GenerateTimeTableCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="CalendarPlus" Width="16" Height="16" />
+                                <TextBlock Text="Tạo thời khóa biểu" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
                     </DockPanel>
-                    <!-- //  Separator // -->
-                    <Border Grid.Row="1" Height="1" Padding="10 0 10 0">
-                        <Separator Margin="0" Background="#a3a3a3" />
-                    </Border>
-                    <!-- // Timetable Generated // -->
+
+                    <Border Grid.Row="1" Classes="Separator" />
+
                     <Border Grid.Row="2" Padding="8" ClipToBounds="False">
                         <Grid>
                             <ScrollViewer>
@@ -247,30 +315,24 @@
 
                                         <ItemsRepeater.ItemTemplate>
                                             <DataTemplate x:DataType="timetableModel:SelectableTimetableLayout">
-                                                <controls:Card
-                                                    Width="250"
-                                                    Height="240">
+                                                <Border Classes="TimetableCard">
                                                     <Grid
                                                         RowDefinitions="auto auto auto auto *">
                                                         <CheckBox Grid.Row="0"
-                                                                  Classes="accent"
                                                                   IsEnabled="{Binding IsEnabled}"
                                                                   IsChecked="{Binding IsSelected}"
                                                                   Content="Chọn!" />
                                                         <TextBlock Grid.Row="1"
-                                                                   Text="{Binding Item.SubjectsCount, StringFormat=Số môn học: {0}}">
-                                                        </TextBlock>
+                                                                   FontSize="12"
+                                                                   Text="{Binding Item.SubjectsCount, StringFormat=Số môn học: {0}}" />
                                                         <TextBlock Grid.Row="2"
-                                                                   Text="{Binding Item.TotalCredits,StringFormat=Số tín chỉ: {0}}">
-                                                        </TextBlock>
+                                                                   FontSize="12"
+                                                                   Text="{Binding Item.TotalCredits,StringFormat=Số tín chỉ: {0}}" />
                                                         <TextBlock Grid.Row="3"
-                                                                   Text="{Binding Item.TotalScore, StringFormat=Điểm đánh giá: {0:F2}}"
-                                                                   Foreground="Red"
-                                                                   FontWeight="SemiBold">
-                                                        </TextBlock>
+                                                                   Classes="ScoreText"
+                                                                   Text="{Binding Item.TotalScore, StringFormat=Điểm đánh giá: {0:F2}}" />
 
                                                         <Grid Grid.Row="4">
-                                                            <!-- // TimeTable preview // -->
                                                             <Border>
                                                                 <Viewbox Stretch="Uniform">
                                                                     <Image Source="{Binding Item.PreviewImage}"
@@ -280,7 +342,6 @@
                                                                 </Viewbox>
                                                             </Border>
 
-                                                            <!-- // Open Timetable View // -->
                                                             <Button Classes="ripple"
                                                                     Background="Transparent"
                                                                     HorizontalAlignment="Stretch"
@@ -290,17 +351,14 @@
                                                                     Command="{Binding Path= ((viewModels:TimetableSchedulerViewModel)DataContext).ShowTimetableDetailsCommand, RelativeSource={RelativeSource  Mode=FindAncestor, AncestorType=views:TimetableSchedulerView}}"
                                                                     CommandParameter="{Binding .}">
                                                             </Button>
-
-
                                                         </Grid>
                                                     </Grid>
-                                                </controls:Card>
+                                                </Border>
                                             </DataTemplate>
                                         </ItemsRepeater.ItemTemplate>
                                     </ItemsRepeater>
                                 </Border>
                             </ScrollViewer>
-                            <!-- // Pagination // -->
                             <paginationViews:PaginationView
                                 IsVisible="{Binding TotalPages}"
                                 DataContext="{Binding PaginationTimeTableViewModel}"
