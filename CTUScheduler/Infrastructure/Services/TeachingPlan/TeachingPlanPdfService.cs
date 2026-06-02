@@ -268,12 +268,9 @@ public partial class TeachingPlanPdfService : ITeachingPlanPdfService
                     semesterEndDate, 
                     preciseClosingDateTime, 
                     out var fallbackAdjustmentEndDateTime);
-
-                // ngày đóng cổng cuối cùng để dùng cho Bảng cuối
-                var finalAdjustmentEndDateTime = preciseClosingDateTime ?? fallbackAdjustmentEndDateTime;
-
+                
                 // tách lịch điều chỉnh kế hoạch học tập chi tiết từng khóa (Bảng cuối)
-                var adjustmentDetails = ParseAdjustmentDetails(fullText, finalAdjustmentEndDateTime);
+                var adjustmentDetails = ParseAdjustmentDetails(fullText, fallbackAdjustmentEndDateTime);
 
                 return new TeachingPlanData(
                     RegistrationTimeline: timelineNodes.AsReadOnly(),
@@ -317,7 +314,8 @@ public partial class TeachingPlanPdfService : ITeachingPlanPdfService
         out DateTime fallbackAdjustmentEndDateTime)
     {
         var timelineNodes = new List<TimelineNode>();
-        fallbackAdjustmentEndDateTime = new DateTime(2026, 4, 19, 17, 0, 0); // Dự phòng mặc định
+        // fallback nếu không lấy được thì trước 21 ngày đầu hk hoặc sau 14 ngày hôm nay????
+        fallbackAdjustmentEndDateTime = semesterStartDate?.AddDays(-21) ?? DateTime.Today.AddDays(14);
 
         var startTag = "NỘI DUNG CÔNG VIỆC THỜI GIAN THỰC HIỆN";
         var endTag = "Lưu ý:";
@@ -407,14 +405,6 @@ public partial class TeachingPlanPdfService : ITeachingPlanPdfService
             if (id == 3)
             {
                 fallbackAdjustmentEndDateTime = nodeEnd;
-                
-                // ÁP DỤNG ĐỒNG BỘ: Nếu có ngày chính xác trích xuất từ thông báo đóng website phụ
-                if (preciseClosingDateTime.HasValue && preciseClosingDateTime.Value >= nodeStart)
-                {
-                    nodeEnd = preciseClosingDateTime.Value;
-                    type = TimelineNodeType.Range;
-                    subtitle = "Đồng bộ từ thông báo đóng cổng phụ";
-                }
             }
 
             // Thiết lập lịch chính xác cho Đợt 2 ở dòng số [7] (mặc định null để VM đè lịch cá nhân)
@@ -425,8 +415,15 @@ public partial class TeachingPlanPdfService : ITeachingPlanPdfService
 
             if (id == 8)
             {
-                nodeEnd = semesterEndDate ?? nodeStart.AddDays(7);
+                nodeEnd = semesterEndDate ?? nodeStart;
                 type = TimelineNodeType.StartFrom;
+
+                if (preciseClosingDateTime.HasValue && preciseClosingDateTime.Value >= nodeStart)
+                {
+                    nodeEnd = preciseClosingDateTime.Value;
+                    type = TimelineNodeType.Range;
+                    subtitle = "Đồng bộ từ thông báo đóng KHHT";
+                }
             }
 
             timelineNodes.Add(new TimelineNode(cleanTitle, nodeStart, nodeEnd, type, subtitle));
