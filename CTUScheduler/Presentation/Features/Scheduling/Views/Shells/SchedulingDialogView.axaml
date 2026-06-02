@@ -8,7 +8,7 @@
     xmlns:rxui="http://reactiveui.net"
     x:DataType="viewModels:SchedulingDialogViewModel"
     x:CompileBindings="True"
-    xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+    xmlns:u="https://irihi.tech/ursa"
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels.Shells"
     x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.Shells.SchedulingDialogView">
@@ -16,24 +16,40 @@
     <Design.DataContext>
         <viewModels:SchedulingDialogViewModel />
     </Design.DataContext>
+
+    <rxui:ReactiveUserControl.Styles>
+        <Style Selector="Button.CloseBtn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource DisableColor}" />
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.CloseBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
+            <Setter Property="TextElement.Foreground" Value="{StaticResource Grey}" />
+        </Style>
+    </rxui:ReactiveUserControl.Styles>
     
-    <controls:Card x:Name="CardBorder"
-                   Padding="14">
+    <Border x:Name="CardBorder"
+            Background="White"
+            CornerRadius="12"
+            Padding="14"
+            BoxShadow="0 4 15 0 #1A000000">
         <Grid RowDefinitions="auto *">
             <Button
                 Grid.Row="0"
                 x:Name="BtnClose"
-                Content="{materialIcons:MaterialIconExt Kind=WindowClose, IconSize=20}"
-                CornerRadius="5"
+                Classes="CloseBtn"
                 HorizontalAlignment="Right"
-                Command="{Binding CloseDialogCommand}"
-                Padding="3" />
+                Command="{Binding CloseDialogCommand}">
+                <materialIcons:MaterialIcon Kind="Close" Width="20" Height="20" />
+            </Button>
 
             <rxui:RoutedViewHost
                 Router="{Binding Router}"
                 Grid.Row="1" />
         </Grid>
-    </controls:Card>
-
+    </Border>
 
 </rxui:ReactiveUserControl>
