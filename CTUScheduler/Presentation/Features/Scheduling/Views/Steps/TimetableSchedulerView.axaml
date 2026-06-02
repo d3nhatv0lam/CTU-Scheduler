@@ -34,7 +34,7 @@
 
         <Style Selector="TextBlock.SubTitle">
             <Setter Property="VerticalAlignment" Value="Bottom" />
-            <Setter Property="Margin" Value="5 0 0 3" />
+            <Setter Property="Margin" Value="12 0 0 4" />
             <Setter Property="TextAlignment" Value="DetectFromContent" />
             <Setter Property="FontSize" Value="13" />
             <Setter Property="FontWeight" Value="SemiLight" />
@@ -58,7 +58,7 @@
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="Button.btnCreateSchedule:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource SecondaryBrush}" />
+            <Setter Property="Background" Value="{StaticResource ButtonHoverBrush}" />
             <Setter Property="TextElement.Foreground" Value="White" />
         </Style>
         <Style Selector="Button.btnCreateSchedule:disabled">
