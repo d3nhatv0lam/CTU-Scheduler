@@ -115,6 +115,9 @@
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="MinHeight" Value="30" />
             <Setter Property="FontSize" Value="12" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="CornerRadius" Value="6" />
         </Style>
 
         <Style Selector="Border.TimetableCard">
