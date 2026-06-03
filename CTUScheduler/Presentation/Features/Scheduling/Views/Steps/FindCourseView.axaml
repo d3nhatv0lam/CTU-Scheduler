@@ -8,6 +8,7 @@
     xmlns:rxui="http://reactiveui.net"
     x:DataType="viewModels1:FindCourseViewModel"
     x:CompileBindings="True"
+    xmlns:conv="using:Avalonia.Data.Converters"
     xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
     xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
@@ -36,7 +37,8 @@
         </Style>
 
         <Style Selector="Button.add-btn">
-            <Setter Property="Height" Value="30" />
+            <Setter Property="Height" Value="35" />
+            <Setter Property="Width" Value="175" />
             <Setter Property="Padding" Value="5" />
             <Setter Property="Margin" Value="0 5 0 0" />
             <Setter Property="CornerRadius" Value="5" />
@@ -45,6 +47,11 @@
 
         <Style Selector="Border.box-container">
             <Setter Property="Padding" Value="0 5 0 5" />
+        </Style>
+        
+        <Style Selector="ToggleSwitch:checked /template/ Border#SwitchKnobBounds">
+            <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
         </Style>
 
         <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
@@ -55,10 +62,9 @@
 
         <Border Grid.Column="0" Classes="box-container">
             <Border Classes="CornerBorder">
-                <Grid RowDefinitions="Auto, 1, Auto, Auto, *" ClipToBounds="True">
+                <Grid RowDefinitions="Auto, 1, Auto, Auto, Auto, *" ClipToBounds="True">
 
                     <TextBlock Grid.Row="0"
-                               x:Name="txtCourseInfo"
                                Classes="Title"
                                MaxHeight="80"
                                Text="Tạo thời khóa biểu thủ công"
@@ -67,13 +73,13 @@
                                TextWrapping="WrapWithOverflow" />
 
                     <Border Grid.Row="1" Height="1" Padding="10 0 10 0">
-                        <Separator Margin="0" Background="#a3a3a3" />
+                        <Separator Margin="0" Background="#E3E3E3" />
                     </Border>
 
                     <Grid Grid.Row="2" ColumnDefinitions="Auto, *" Margin="10 10 10 5" ClipToBounds="True">
                         <TextBox Grid.Column="0"
                                  x:Name="tboxCourseKeyInput"
-                                 Width="210"
+                                 Width="250"
                                  UseFloatingWatermark="True"
                                  Text="{Binding TxtInputCourseKey, Mode=TwoWay}"
                                  Classes="outline clearButton"
@@ -104,9 +110,9 @@
                         <Popup PlacementTarget="{Binding ElementName=tboxCourseKeyInput}"
                                Placement="BottomEdgeAlignedLeft"
                                IsOpen="{Binding IsOpenQuickSelectPopup, Mode=TwoWay}"
-                               MaxHeight="200" Width="210">
+                               MaxHeight="200" Width="250">
                             <controls:Card CornerRadius="5" VerticalAlignment="Top"
-                                           Background="White" BorderThickness="1" BorderBrush="#a3a3a3"
+                                           Background="White" BorderThickness="1" BorderBrush="#E3E3E3"
                                            Padding="1" SlidingAnimation.Top="500" ClipToBounds="True">
                                 <ScrollViewer HorizontalScrollBarVisibility="Auto"
                                               VerticalScrollBarVisibility="Auto"
@@ -140,12 +146,25 @@
                         </Button>
                     </Grid>
 
-                    <ToggleSwitch Grid.Row="3" Margin="10 0 0 10" HorizontalAlignment="Left" VerticalAlignment="Center"
+                    <ToggleSwitch Grid.Row="3" Margin="10 10 0 5" HorizontalAlignment="Left" VerticalAlignment="Center"
                                   OnContent="Ẩn nhóm đủ sĩ số" OffContent="Ẩn nhóm đủ sĩ số"
                                   IsChecked="{Binding ShowOnlyAvailableSections, Mode=TwoWay}" />
 
-                    <Border Grid.Row="4" Padding="8">
-                        <DataGrid ClipToBounds="True" BorderBrush="#a3a3a3" ClipboardCopyMode="IncludeHeader"
+                    <TextBlock Grid.Row="4"
+                               HorizontalAlignment="Center"
+                               FontWeight="Bold"
+                               Margin="0 5 0 10"
+                               IsVisible="{Binding SearchedCourse, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+                        <Run Text="{Binding SearchedCourse.Code, Mode=OneWay}" />
+                        <Run Text=" - " />
+                        <Run Text="{Binding SearchedCourse.Name_VN, Mode=OneWay}" />
+                        <Run Text=" (Tín chỉ: " />
+                        <Run Text="{Binding SearchedCourse.Credits, Mode=OneWay}" />
+                        <Run Text=")" />
+                    </TextBlock>
+
+                    <Border Grid.Row="5" Padding="8">
+                        <DataGrid ClipToBounds="True" BorderBrush="#E3E3E3" ClipboardCopyMode="IncludeHeader"
                                   CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeColumns="True"
                                   IsReadOnly="False" ColumnHeaderHeight="40" SelectionMode="Single"
                                   ItemsSource="{Binding FilteredCourseSections, Mode=OneWay}"
@@ -185,22 +204,19 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="Lịch học" MinWidth="220">
+                                <DataGridTemplateColumn Header="Lịch học" Width="0.5*" MinWidth="250">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="{x:Type models:SelectableCourseSection}">
                                             <ItemsRepeater VerticalAlignment="Center"
                                                            ItemsSource="{Binding Item.ClassDays, Mode=OneTime}">
                                                 <ItemsRepeater.ItemTemplate>
                                                     <DataTemplate DataType="{x:Type curriculumModel:ClassDay}">
-                                                        <StackPanel Orientation="Horizontal" Spacing="4"
-                                                                    HorizontalAlignment="Center">
-                                                            <TextBlock Text="{Binding AttendingDay, Mode=OneTime}"
-                                                                       ToolTip.Tip="Thứ đi học" />
-                                                            <TextBlock Text="---" Foreground="Gray" />
+                                                        <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+                                                            <TextBlock Text="{Binding AttendingDay, Mode=OneTime}" ToolTip.Tip="Thứ đi học" />
+                                                            <TextBlock Text="---" />
                                                             <TextBlock Text="{Binding Period}" ToolTip.Tip="Tiết học" />
-                                                            <TextBlock Text="---" Foreground="Gray" />
-                                                            <TextBlock Text="{Binding Room, Mode=OneTime}"
-                                                                       ToolTip.Tip="Phòng học" />
+                                                            <TextBlock Text="---" />
+                                                            <TextBlock Text="{Binding Room, Mode=OneTime}" ToolTip.Tip="Phòng học" />
                                                         </StackPanel>
                                                     </DataTemplate>
                                                 </ItemsRepeater.ItemTemplate>
@@ -209,7 +225,7 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="Giảng viên" Width="auto">
+                                <DataGridTemplateColumn Header="Giảng viên" Width="*">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="{x:Type models:SelectableCourseSection}">
                                             <Grid>
@@ -226,69 +242,105 @@
         </Border>
 
         <Border Grid.Column="2" Classes="box-container">
-            <Border Classes="CornerBorder">
+            <Border Classes="CornerBorder" Background="#F2FBFF">
                 <Grid RowDefinitions="auto 1 *">
-                    <TextBlock Grid.Row="0" Classes="Title" Text="Học phần đã chọn" HorizontalAlignment="Left"
-                               Margin="10 10 0 10" />
-
-                    <Border Grid.Row="1" Height="1" Padding="10 0 10 0">
-                        <Separator Margin="0" Background="#a3a3a3" />
-                    </Border>
-
+                    <TextBlock Grid.Row="0" Classes="Title" Text="Học phần đã chọn" HorizontalAlignment="Left" Margin="10 10 0 10" />
                     <Border Grid.Row="2" Padding="8">
-                        <TreeView x:Name="tviewCourses" ItemsSource="{Binding Courses}">
-                            <TreeView.ItemTemplate>
-                                <TreeDataTemplate ItemsSource="{Binding Sections}"
-                                                  x:DataType="{x:Type context:CourseBlueprint}">
-                                    <Grid ColumnDefinitions="* auto">
-                                        <TextBlock Grid.Column="0" HorizontalAlignment="Left">
-                                            <Run Text="{Binding CoreCourse.Code, Mode=OneTime}" />
-                                            <Run Text=" - " />
-                                            <Run Text="{Binding CoreCourse.Name_VN, Mode=OneTime}" />
-                                            <Run Text="(" />
-                                            <Run Text="{Binding Sections.Count, Mode=OneWay}" />
-                                            <Run Text=")" />
-                                        </TextBlock>
-                                        <Button Grid.Column="1" Classes="BtnRemove"
-                                                Content="{materialIcons:MaterialIconExt Kind=CloseBoxOutline, IconSize=20}"
-                                                Command="{Binding ViewModel.TreeRemoveCourseCommand, RelativeSource={RelativeSource AncestorType=views1:FindCourseView}}"
-                                                CommandParameter="{Binding .}" />
-                                    </Grid>
-                                </TreeDataTemplate>
-                            </TreeView.ItemTemplate>
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding Courses}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="{x:Type context:CourseBlueprint}">
 
-                            <TreeView.DataTemplates>
-                                <DataTemplate x:DataType="{x:Type curriculumModel:CourseSection}">
-                                    <Grid RowDefinitions="auto" ColumnDefinitions="* auto" Margin="0 5 0 5">
-                                        <StackPanel Grid.Column="0">
-                                            <TextBlock Text="{Binding Lecturer}" ToolTip.Tip="Giảng viên"
-                                                       HorizontalAlignment="Left" FontWeight="SemiBold"
-                                                       Margin="0 0 0 2" />
-                                            <ItemsRepeater ItemsSource="{Binding ClassDays}">
-                                                <ItemsRepeater.ItemTemplate>
-                                                    <DataTemplate x:DataType="{x:Type curriculumModel:ClassDay}">
-                                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                                            <TextBlock Text="{Binding AttendingDay, Mode=OneTime}"
-                                                                       ToolTip.Tip="Thứ đi học" />
-                                                            <TextBlock Text="---" Foreground="Gray" />
-                                                            <TextBlock Text="{Binding Period, Mode=OneTime}"
-                                                                       ToolTip.Tip="Tiết học" />
-                                                            <TextBlock Text="---" Foreground="Gray" />
-                                                            <TextBlock Text="{Binding Room, Mode=OneTime}"
-                                                                       ToolTip.Tip="Phòng học" />
-                                                        </StackPanel>
-                                                    </DataTemplate>
-                                                </ItemsRepeater.ItemTemplate>
-                                            </ItemsRepeater>
-                                        </StackPanel>
-                                        <Button Grid.Column="1" Classes="BtnRemove" VerticalAlignment="Top"
-                                                Content="{materialIcons:MaterialIconExt Kind=CloseBoxOutline, IconSize=20}"
-                                                Command="{Binding ViewModel.TreeRemoveSectionCommand, RelativeSource={RelativeSource AncestorType=views1:FindCourseView}}"
-                                                CommandParameter="{Binding .}" />
-                                    </Grid>
-                                </DataTemplate>
-                            </TreeView.DataTemplates>
-                        </TreeView>
+                                        <Border BorderBrush="{StaticResource BorderColor}"
+                                                BorderThickness="1" CornerRadius="6" Margin="0 0 0 10"
+                                                ClipToBounds="True">
+
+                                            <Expander HorizontalAlignment="Stretch"
+                                                      HorizontalContentAlignment="Stretch" Padding="0"
+                                                      Background="Transparent" BorderThickness="0" IsExpanded="True">
+
+                                                <Expander.Header>
+                                                    <Grid ColumnDefinitions="* auto" Margin="5 0">
+                                                        <TextBlock Grid.Column="0" VerticalAlignment="Center" FontWeight="Bold" TextWrapping="WrapWithOverflow">
+                                                            <Run Text="{Binding CoreCourse.Code, Mode=OneTime}" />
+                                                            <Run Text=" - " />
+                                                            <Run Text="{Binding CoreCourse.Name_VN, Mode=OneTime}" />
+                                                        </TextBlock>
+
+                                                        <Button Grid.Column="1" Background="Transparent" Padding="4"
+                                                                Foreground="Gray"
+                                                                Content="{materialIcons:MaterialIconExt Kind=TrashCanOutline, IconSize=20}"
+                                                                Command="{Binding ViewModel.TreeRemoveCourseCommand, RelativeSource={RelativeSource AncestorType=views1:FindCourseView}}"
+                                                                CommandParameter="{Binding .}" />
+                                                    </Grid>
+                                                </Expander.Header>
+
+                                                <StackPanel>
+                                                    <Separator Background="{StaticResource BorderColor}" Margin="0" Height="1" />
+
+                                                    <ItemsControl ItemsSource="{Binding Sections}" Margin="15 10 15 15">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate
+                                                                x:DataType="{x:Type curriculumModel:CourseSection}">
+                                                                <Grid ColumnDefinitions="* auto" Margin="0 5 0 10">
+
+                                                                    <StackPanel Grid.Column="0">
+                                                                        <TextBlock Text="{Binding Lecturer}"
+                                                                                ToolTip.Tip="Giảng viên"
+                                                                                HorizontalAlignment="Left"
+                                                                                Margin="0 0 0 5" />
+
+                                                                        <ItemsRepeater
+                                                                            ItemsSource="{Binding ClassDays}">
+                                                                            <ItemsRepeater.ItemTemplate>
+                                                                                <DataTemplate
+                                                                                    x:DataType="{x:Type curriculumModel:ClassDay}">
+
+                                                                                    <Border Background="#EEF2FB"
+                                                                                        CornerRadius="4" Padding="8 4"
+                                                                                        Margin="0 0 0 4"
+                                                                                        HorizontalAlignment="Left">
+                                                                                        <StackPanel
+                                                                                            Orientation="Horizontal"
+                                                                                            Spacing="4">
+                                                                                            <TextBlock
+                                                                                                Text="{Binding AttendingDay, Mode=OneTime}"
+                                                                                                ToolTip.Tip="Thứ đi học" />
+                                                                                            <TextBlock Text="---" />
+                                                                                            <TextBlock
+                                                                                                Text="{Binding Period, Mode=OneTime}"
+                                                                                                ToolTip.Tip="Tiết học" />
+                                                                                            <TextBlock Text="---" />
+                                                                                            <TextBlock
+                                                                                                Text="{Binding Room, Mode=OneTime}"
+                                                                                                ToolTip.Tip="Phòng học" />
+                                                                                        </StackPanel>
+                                                                                    </Border>
+
+                                                                                </DataTemplate>
+                                                                            </ItemsRepeater.ItemTemplate>
+                                                                        </ItemsRepeater>
+                                                                    </StackPanel>
+
+                                                                    <Button Grid.Column="1" Background="Transparent"
+                                                                            Padding="4" VerticalAlignment="Top"
+                                                                            Foreground="Gray"
+                                                                            Content="{materialIcons:MaterialIconExt Kind=TrashCanOutline, IconSize=20}"
+                                                                            Command="{Binding ViewModel.TreeRemoveSectionCommand, RelativeSource={RelativeSource AncestorType=views1:FindCourseView}}"
+                                                                            CommandParameter="{Binding .}" />
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+
+                                            </Expander>
+                                        </Border>
+
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
                     </Border>
                 </Grid>
             </Border>
