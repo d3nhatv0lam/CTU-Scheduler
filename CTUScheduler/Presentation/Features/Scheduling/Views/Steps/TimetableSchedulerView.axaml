@@ -118,6 +118,7 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
             <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Background" Value="White" />
         </Style>
 
         <Style Selector="Border.TimetableCard">
@@ -175,21 +176,31 @@
                         Margin="12 8 12 4"
                         TextWrapping="WrapWithOverflow" />
 
-                    <ComboBox Grid.Row="1"
-                              Classes="CourseCombo"
-                              Margin="12 4 12 8"
-                              SelectedItem="{Binding SelectedPreset}"
-                              ItemsSource="{Binding Presets, Mode=OneWay}"
-                              ToolTip.Tip="{Binding SelectedPreset.Description}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="schedulingModels:SchedulingPreset">
-                                <StackPanel Orientation="Horizontal" Spacing="8" ToolTip.Tip="{Binding Description}">
-                                    <TextBlock Text="{Binding Icon}" />
-                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                    <Grid Grid.Row="1" Margin="12 8 12 8">
+                        <ComboBox Classes="CourseCombo"
+                                  SelectedItem="{Binding SelectedPreset}"
+                                  ItemsSource="{Binding Presets, Mode=OneWay}"
+                                  ToolTip.Tip="{Binding SelectedPreset.Description}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="schedulingModels:SchedulingPreset">
+                                    <StackPanel Orientation="Horizontal" Spacing="8" ToolTip.Tip="{Binding Description}">
+                                        <TextBlock Text="{Binding Icon}" />
+                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <TextBlock Text="Tiêu chí ưu tiên" 
+                                   FontSize="11" 
+                                   FontWeight="Bold" 
+                                   Background="White"
+                                   Padding="4 0"
+                                   Margin="10 -7 0 0"
+                                   VerticalAlignment="Top"
+                                   HorizontalAlignment="Left"
+                                   Foreground="{StaticResource PrimaryBrush}" />
+                    </Grid>
 
                     <Border Grid.Row="2" Classes="Separator" />
 
