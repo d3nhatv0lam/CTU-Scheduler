@@ -20,7 +20,7 @@ public partial class TimetableLayoutView : ReactiveUserControl<TimetableLayoutBa
             this.OneWayBind(ViewModel,
                     x => x.Name,
                     v => v.TitleTextBlock.Text,
-                    title => $"Thời khóa biểu: {title}")
+                    title => $"{title}")
                 .DisposeWith(disposable);
             // this.Bind(ViewModel,
             //     x => x.Description,

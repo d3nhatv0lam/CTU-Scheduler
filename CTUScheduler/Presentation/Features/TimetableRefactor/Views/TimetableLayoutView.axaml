@@ -119,29 +119,46 @@
                             
                             <Panel Margin="0,4,0,0">
                                 <Grid ColumnDefinitions="*, Auto" IsVisible="{Binding !IsEditingName}">
-                                    <TextBlock Grid.Column="0"
-                                               x:Name="TitleTextBlock"
-                                               Text="{Binding Name}" 
-                                               FontSize="22" FontWeight="Bold" 
-                                               Foreground="{StaticResource PrimaryBrush}" 
-                                               TextWrapping="Wrap"
-                                               VerticalAlignment="Center"/>
+                                    
+                                    <ScrollViewer Grid.Column="0" 
+                                                  MaxHeight="80" 
+                                                  VerticalScrollBarVisibility="Auto" 
+                                                  HorizontalScrollBarVisibility="Disabled">
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="Thời khóa biểu:" 
+                                                       FontSize="18" 
+                                                       FontWeight="SemiBold" 
+                                                       Foreground="{StaticResource Grey}" 
+                                                       Margin="0,0,0,4"/>
+                                            
+                                            <TextBlock x:Name="TitleTextBlock"
+                                                       Text="{Binding Name}" 
+                                                       FontSize="22" FontWeight="Bold" 
+                                                       Foreground="{StaticResource PrimaryBrush}" 
+                                                       TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </ScrollViewer>
                                                
                                     <Button Grid.Column="1" 
                                             Classes="icon-btn"
                                             Margin="8,0,0,0"
-                                            VerticalAlignment="Center"
+                                            VerticalAlignment="Top"
                                             ToolTip.Tip="Đổi tên thời khóa biểu">
                                         <icon:MaterialIcon Kind="Pencil" Width="20" Height="20" Foreground="{StaticResource PrimaryBrush}"/>
                                     </Button>
                                 </Grid>
 
                                 <Grid ColumnDefinitions="*, Auto, Auto" IsVisible="{Binding IsEditingName}">
+                                    
                                     <TextBox Grid.Column="0"
                                              Text="{Binding Name}"
                                              FontSize="18" FontWeight="Bold"
                                              Padding="8,4"
-                                             VerticalAlignment="Center"
+                                             MaxHeight="80"
+                                             AcceptsReturn="True"
+                                             TextWrapping="Wrap"
+                                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                             VerticalAlignment="Top"
                                              Background="{StaticResource BaseBackgroundColor}"
                                              BorderThickness="1"
                                              BorderBrush="{StaticResource PrimaryBrush}"
@@ -150,7 +167,7 @@
                                     <Button Grid.Column="1" 
                                             Classes="icon-btn"
                                             Margin="8,0,0,0"
-                                            VerticalAlignment="Center"
+                                            VerticalAlignment="Top"
                                             ToolTip.Tip="Lưu lại">
                                         <icon:MaterialIcon Kind="Check" Width="24" Height="24" Foreground="Green"/>
                                     </Button>
@@ -158,7 +175,7 @@
                                     <Button Grid.Column="2" 
                                             Classes="icon-btn"
                                             Margin="4,0,0,0"
-                                            VerticalAlignment="Center"
+                                            VerticalAlignment="Top"
                                             ToolTip.Tip="Hủy bỏ">
                                         <icon:MaterialIcon Kind="Close" Width="24" Height="24" Foreground="{StaticResource RedColor}"/>
                                     </Button>
@@ -238,9 +255,9 @@
                         <Grid ColumnDefinitions="*, *">
                             <Button Classes="outline-primary"
                                     Grid.Column="0" Margin="0,0,6,0"
-                                    ToolTip.Tip="Xuất file ảnh PNG"
-                                    Command="{Binding ExportToImageCommand}"
-                                    CommandParameter="{Binding #MainTimetableLayout}">
+                                    ToolTip.Tip="Sao chép ảnh thời khóa biểu vào Clipboard (Ctrl+V)"
+                                    Command="{Binding CopyToClipboardCommand}"
+                                    >
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <icon:MaterialIcon Kind="ImageOutline" Width="18" Height="18"/>
                                     <TextBlock Text="Xuất Ảnh" VerticalAlignment="Center" FontWeight="Medium"/>
