@@ -38,8 +38,6 @@
 
         <Style Selector="Button.add-btn">
             <Setter Property="Height" Value="35" />
-            <Setter Property="Width" Value="175" />
-            <Setter Property="Padding" Value="5" />
             <Setter Property="Margin" Value="0 5 0 0" />
             <Setter Property="CornerRadius" Value="5" />
             <Setter Property="Background" Value="#F5F5F9" />
@@ -47,11 +45,6 @@
 
         <Style Selector="Border.box-container">
             <Setter Property="Padding" Value="0 5 0 5" />
-        </Style>
-        
-        <Style Selector="ToggleSwitch:checked /template/ Border#SwitchKnobBounds">
-            <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
         </Style>
 
         <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
@@ -135,7 +128,7 @@
                             </controls:Card>
                         </Popup>
 
-                        <Button Grid.Column="1" HorizontalAlignment="Right" Classes="add-btn"
+                        <Button Grid.Column="1" HorizontalAlignment="Right" Classes="add-btn ripple"
                                 Command="{Binding AddCoursesCommand}">
                             <StackPanel Orientation="Horizontal">
                                 <materialIcons:MaterialIcon Kind="Plus" Height="20" Width="20"
@@ -251,7 +244,7 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="{x:Type context:CourseBlueprint}">
 
-                                        <Border BorderBrush="{StaticResource BorderColor}"
+                                        <Border BorderBrush="{StaticResource BorderColor }"
                                                 BorderThickness="1" CornerRadius="6" Margin="0 0 0 10"
                                                 ClipToBounds="True">
 
@@ -268,7 +261,7 @@
                                                         </TextBlock>
 
                                                         <Button Grid.Column="1" Background="Transparent" Padding="4"
-                                                                Foreground="Gray"
+                                                                Foreground="{StaticResource RedColor}"
                                                                 Content="{materialIcons:MaterialIconExt Kind=TrashCanOutline, IconSize=20}"
                                                                 Command="{Binding ViewModel.TreeRemoveCourseCommand, RelativeSource={RelativeSource AncestorType=views1:FindCourseView}}"
                                                                 CommandParameter="{Binding .}" />
@@ -324,7 +317,7 @@
 
                                                                     <Button Grid.Column="1" Background="Transparent"
                                                                             Padding="4" VerticalAlignment="Top"
-                                                                            Foreground="Gray"
+                                                                            Foreground="{StaticResource RedColor}"
                                                                             Content="{materialIcons:MaterialIconExt Kind=TrashCanOutline, IconSize=20}"
                                                                             Command="{Binding ViewModel.TreeRemoveSectionCommand, RelativeSource={RelativeSource AncestorType=views1:FindCourseView}}"
                                                                             CommandParameter="{Binding .}" />
