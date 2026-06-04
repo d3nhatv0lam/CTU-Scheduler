@@ -9,7 +9,6 @@
     x:DataType="viewModels1:FindCourseViewModel"
     x:CompileBindings="True"
     xmlns:conv="using:Avalonia.Data.Converters"
-    xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
     xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:viewModels1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps"
@@ -20,41 +19,105 @@
     xmlns:context="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Models.Context"
     xmlns:curriculumModel="clr-namespace:CTUScheduler.Core.Models.Academic.Curriculum.CourseData"
     xmlns:qSelectCourse="clr-namespace:CTUScheduler.Infrastructure.Sites.CTU.Models.Curriculum"
-    x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.Steps.FindCourseView"
-    Background="White">
+    x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.Steps.FindCourseView">
 
     <rxui:ReactiveUserControl.KeyBindings>
         <KeyBinding Gesture="Enter" Command="{Binding SearchCommand}" />
     </rxui:ReactiveUserControl.KeyBindings>
 
     <rxui:ReactiveUserControl.Styles>
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Features/Scheduling/Shared/Styles/controls.axaml" />
+
         <Style Selector="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource Text-Font}" />
+            <Setter Property="Foreground" Value="{StaticResource BlackBrush}" />
         </Style>
         <Style Selector="TextBlock.Title">
             <Setter Property="FontSize" Value="20" />
             <Setter Property="FontWeight" Value="Bold" />
         </Style>
+        <Style Selector="TextBlock.course-info">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="0 5 0 10" />
+        </Style>
+        <Style Selector="TextBlock.lecturer-info">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Margin" Value="0 0 0 5" />
+            <Setter Property="TextWrapping" Value="WrapWithOverflow" />
+        </Style>
 
         <Style Selector="Button.add-btn">
             <Setter Property="Height" Value="35" />
-            <Setter Property="Margin" Value="0 5 0 0" />
+            <Setter Property="Margin" Value="0 15 8 0" />
             <Setter Property="CornerRadius" Value="5" />
-            <Setter Property="Background" Value="#F5F5F9" />
+            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+        </Style>
+        <Style Selector="Button.search-btn">
+            <Setter Property="CornerRadius" Value="20" />
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Margin" Value="0 0 5 0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+        </Style>
+        <Style Selector="Button.trash-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="Foreground" Value="{StaticResource RedColor}" />
         </Style>
 
         <Style Selector="Border.box-container">
             <Setter Property="Padding" Value="0 5 0 5" />
         </Style>
+        <Style Selector="Border.SelectedColumn">
+            <Setter Property="Background" Value="#F2FBFF" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+        </Style>
+        <Style Selector="Border.CourseCard">
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Margin" Value="0 0 0 10" />
+            <Setter Property="ClipToBounds" Value="True" />
+            <Setter Property="Background" Value="White" />
+        </Style>
+        <Style Selector="Border.schedule-badge">
+            <Setter Property="Background" Value="#EEF2FB" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="8 4" />
+            <Setter Property="Margin" Value="0 0 0 4" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+        <Style Selector="Separator.divider">
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Background" Value="{StaticResource BorderColor}" />
+        </Style>
 
-        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
-        <StyleInclude Source="avares://CTUScheduler/Presentation/Features/Scheduling/Shared/Styles/controls.axaml"></StyleInclude>
+        <Style Selector="DataGrid.main-grid">
+            <Setter Property="ClipToBounds" Value="True" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="ColumnHeaderHeight" Value="40" />
+            <Setter Property="Background" Value="White" />
+        </Style>
+        <Style Selector="DataGrid TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="TextWrapping" Value="WrapWithOverflow" />
+        </Style>
+
     </rxui:ReactiveUserControl.Styles>
 
     <Grid ColumnDefinitions="* 10 0.5*" Margin="10">
 
         <Border Grid.Column="0" Classes="box-container">
-            <Border Classes="CornerBorder">
+            <Border Classes="CornerBorder" Background="White">
                 <Grid RowDefinitions="Auto, 1, Auto, Auto, Auto, *" ClipToBounds="True">
 
                     <TextBlock Grid.Row="0"
@@ -66,25 +129,21 @@
                                TextWrapping="WrapWithOverflow" />
 
                     <Border Grid.Row="1" Height="1" Padding="10 0 10 0">
-                        <Separator Margin="0" Background="#E3E3E3" />
+                        <Separator Classes="divider" />
                     </Border>
 
-                    <Grid Grid.Row="2" ColumnDefinitions="Auto, *" Margin="10 10 10 5" ClipToBounds="True">
+                    <Grid Grid.Row="2" ColumnDefinitions="Auto, Auto, *" Margin="10 10 10 5" ClipToBounds="True">
                         <TextBox Grid.Column="0"
-                                 x:Name="tboxCourseKeyInput"
+                                 x:Name="TboxCourseKeyInput"
                                  Width="250"
-                                 UseFloatingWatermark="True"
+                                 PlaceholderText="Mã học phần"
                                  Text="{Binding TxtInputCourseKey, Mode=TwoWay}"
-                                 Classes="outline clearButton"
-                                 Theme="{StaticResource OutlineTextBox}"
-                                 p1:TextFieldAssist.Label="Mã học phần">
+                                 Classes="input floating">
 
                             <TextBox.InnerRightContent>
-                                <Button x:Name="btnSearchCourse"
+                                <Button x:Name="BtnSearchCourse"
+                                        Classes="search-btn"
                                         VerticalAlignment="Center"
-                                        CornerRadius="20" Width="30" Height="30" Margin="0 0 5 0" Padding="0"
-                                        Background="Transparent"
-                                        Foreground="{StaticResource PrimaryBrush}"
                                         Content="{materialIcons:MaterialIconExt Kind=Search, IconSize=24}"
                                         Command="{Binding SearchCommand}" />
                             </TextBox.InnerRightContent>
@@ -100,17 +159,16 @@
                             </Interaction.Behaviors>
                         </TextBox>
 
-                        <Popup PlacementTarget="{Binding ElementName=tboxCourseKeyInput}"
+                        <Popup PlacementTarget="{Binding ElementName=TboxCourseKeyInput}"
                                Placement="BottomEdgeAlignedLeft"
                                IsOpen="{Binding IsOpenQuickSelectPopup, Mode=TwoWay}"
                                MaxHeight="200" Width="250">
                             <controls:Card CornerRadius="5" VerticalAlignment="Top"
-                                           Background="White" BorderThickness="1" BorderBrush="#E3E3E3"
+                                           Background="White" BorderThickness="1"
+                                           BorderBrush="{StaticResource BorderColor}"
                                            Padding="1" SlidingAnimation.Top="500" ClipToBounds="True">
-                                <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                              VerticalScrollBarVisibility="Auto"
-                                              Theme="{StaticResource MaterialModernScrollViewer}">
-                                    <ListBox x:Name="lboxQuickSelect"
+                                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                    <ListBox x:Name="LboxQuickSelect"
                                              SelectedItem="{Binding SelectedQuickSelectDmhpCourse, Mode=TwoWay}"
                                              ItemsSource="{Binding QuickSelectCourses, Mode=OneWay}">
                                         <ListBox.ItemTemplate>
@@ -128,7 +186,13 @@
                             </controls:Card>
                         </Popup>
 
-                        <Button Grid.Column="1" HorizontalAlignment="Right" Classes="add-btn ripple"
+                        <CheckBox Grid.Column="1"
+                                  Margin="15 20 0 0"
+                                  VerticalAlignment="Center"
+                                  Content="Chọn hết nhóm"
+                                  IsChecked="{Binding IsSelectAllChecked, Mode=TwoWay}" />
+
+                        <Button Grid.Column="2" HorizontalAlignment="Right" Classes="add-btn ripple"
                                 Command="{Binding AddCoursesCommand}">
                             <StackPanel Orientation="Horizontal">
                                 <materialIcons:MaterialIcon Kind="Plus" Height="20" Width="20"
@@ -141,12 +205,14 @@
 
                     <ToggleSwitch Grid.Row="3" Margin="10 10 0 5" HorizontalAlignment="Left" VerticalAlignment="Center"
                                   OnContent="Ẩn nhóm đủ sĩ số" OffContent="Ẩn nhóm đủ sĩ số"
-                                  IsChecked="{Binding ShowOnlyAvailableSections, Mode=TwoWay}" />
+                                  IsChecked="{Binding ShowOnlyAvailableSections, Mode=TwoWay}">
+                        <ToggleSwitch.Resources>
+                            <SolidColorBrush x:Key="SecondaryHueMidBrush" Color="{StaticResource PrimaryColor}" />
+                        </ToggleSwitch.Resources>
+                    </ToggleSwitch>
 
                     <TextBlock Grid.Row="4"
-                               HorizontalAlignment="Center"
-                               FontWeight="Bold"
-                               Margin="0 5 0 10"
+                               Classes="course-info"
                                IsVisible="{Binding SearchedCourse, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
                         <Run Text="{Binding SearchedCourse.Code, Mode=OneWay}" />
                         <Run Text=" - " />
@@ -157,20 +223,12 @@
                     </TextBlock>
 
                     <Border Grid.Row="5" Padding="8">
-                        <DataGrid ClipToBounds="True" BorderBrush="#E3E3E3" ClipboardCopyMode="IncludeHeader"
+                        <DataGrid Classes="main-grid"
+                                  ClipboardCopyMode="IncludeHeader"
                                   CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeColumns="True"
-                                  IsReadOnly="False" ColumnHeaderHeight="40" SelectionMode="Single"
+                                  IsReadOnly="False" SelectionMode="Single"
                                   ItemsSource="{Binding FilteredCourseSections, Mode=OneWay}"
                                   AutoGenerateColumns="False">
-
-                            <DataGrid.Styles>
-                                <Style Selector="TextBlock">
-                                    <Setter Property="HorizontalAlignment" Value="Center" />
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                    <Setter Property="Background" Value="Transparent" />
-                                    <Setter Property="TextWrapping" Value="WrapWithOverflow" />
-                                </Style>
-                            </DataGrid.Styles>
 
                             <DataGrid.Columns>
                                 <DataGridTemplateColumn Header="Chọn" Width="69" CanUserResize="False">
@@ -188,7 +246,7 @@
                                 <DataGridTemplateColumn Header="Sĩ số" MinWidth="80" Width="auto">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="{x:Type models:SelectableCourseSection}">
-                                            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock>
                                                 <Run Text="{Binding Item.RemainingStudents, Mode=OneWay}" />
                                                 <Run Text="/" />
                                                 <Run Text="{Binding Item.TotalStudents, Mode=OneWay}" />
@@ -204,12 +262,17 @@
                                                            ItemsSource="{Binding Item.ClassDays, Mode=OneTime}">
                                                 <ItemsRepeater.ItemTemplate>
                                                     <DataTemplate DataType="{x:Type curriculumModel:ClassDay}">
-                                                        <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
-                                                            <TextBlock Text="{Binding AttendingDay, Mode=OneTime}" ToolTip.Tip="Thứ đi học" />
-                                                            <TextBlock Text="---" />
+                                                        <StackPanel Orientation="Horizontal" Spacing="4"
+                                                                    HorizontalAlignment="Center">
+                                                            <TextBlock Text="{Binding AttendingDay, Mode=OneTime}"
+                                                                       ToolTip.Tip="Thứ đi học" />
+                                                            <TextBlock Text="---"
+                                                                       Foreground="{StaticResource DisableColor}" />
                                                             <TextBlock Text="{Binding Period}" ToolTip.Tip="Tiết học" />
-                                                            <TextBlock Text="---" />
-                                                            <TextBlock Text="{Binding Room, Mode=OneTime}" ToolTip.Tip="Phòng học" />
+                                                            <TextBlock Text="---"
+                                                                       Foreground="{StaticResource DisableColor}" />
+                                                            <TextBlock Text="{Binding Room, Mode=OneTime}"
+                                                                       ToolTip.Tip="Phòng học" />
                                                         </StackPanel>
                                                     </DataTemplate>
                                                 </ItemsRepeater.ItemTemplate>
@@ -235,33 +298,36 @@
         </Border>
 
         <Border Grid.Column="2" Classes="box-container">
-            <Border Classes="CornerBorder" Background="#F2FBFF">
+            <Border Classes="SelectedColumn">
                 <Grid RowDefinitions="auto 1 *">
-                    <TextBlock Grid.Row="0" Classes="Title" Text="Học phần đã chọn" HorizontalAlignment="Left" Margin="10 10 0 10" />
+                    <TextBlock Grid.Row="0" Classes="Title" Text="Học phần đã chọn" HorizontalAlignment="Left"
+                               Margin="10 10 0 10" />
+
+                    <Border Grid.Row="1" Height="1" Padding="10 0 10 0">
+                        <Separator Classes="divider" />
+                    </Border>
+
                     <Border Grid.Row="2" Padding="8">
                         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                             <ItemsControl ItemsSource="{Binding Courses}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="{x:Type context:CourseBlueprint}">
 
-                                        <Border BorderBrush="{StaticResource BorderColor }"
-                                                BorderThickness="1" CornerRadius="6" Margin="0 0 0 10"
-                                                ClipToBounds="True">
-
+                                        <Border Classes="CourseCard">
                                             <Expander HorizontalAlignment="Stretch"
                                                       HorizontalContentAlignment="Stretch" Padding="0"
                                                       Background="Transparent" BorderThickness="0" IsExpanded="True">
 
                                                 <Expander.Header>
                                                     <Grid ColumnDefinitions="* auto" Margin="5 0">
-                                                        <TextBlock Grid.Column="0" VerticalAlignment="Center" FontWeight="Bold" TextWrapping="WrapWithOverflow">
+                                                        <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                                                                   FontWeight="Bold" TextWrapping="WrapWithOverflow">
                                                             <Run Text="{Binding CoreCourse.Code, Mode=OneTime}" />
                                                             <Run Text=" - " />
                                                             <Run Text="{Binding CoreCourse.Name_VN, Mode=OneTime}" />
                                                         </TextBlock>
 
-                                                        <Button Grid.Column="1" Background="Transparent" Padding="4"
-                                                                Foreground="{StaticResource RedColor}"
+                                                        <Button Grid.Column="1" Classes="trash-btn"
                                                                 Content="{materialIcons:MaterialIconExt Kind=TrashCanOutline, IconSize=20}"
                                                                 Command="{Binding ViewModel.TreeRemoveCourseCommand, RelativeSource={RelativeSource AncestorType=views1:FindCourseView}}"
                                                                 CommandParameter="{Binding .}" />
@@ -269,7 +335,7 @@
                                                 </Expander.Header>
 
                                                 <StackPanel>
-                                                    <Separator Background="{StaticResource BorderColor}" Margin="0" Height="1" />
+                                                    <Separator Classes="divider" />
 
                                                     <ItemsControl ItemsSource="{Binding Sections}" Margin="15 10 15 15">
                                                         <ItemsControl.ItemTemplate>
@@ -278,10 +344,15 @@
                                                                 <Grid ColumnDefinitions="* auto" Margin="0 5 0 10">
 
                                                                     <StackPanel Grid.Column="0">
-                                                                        <TextBlock Text="{Binding Lecturer}"
-                                                                                ToolTip.Tip="Giảng viên"
-                                                                                HorizontalAlignment="Left"
-                                                                                Margin="0 0 0 5" />
+                                                                        <TextBlock Classes="lecturer-info"
+                                                                                ToolTip.Tip="Giảng viên">
+                                                                            <Run Text="Nhóm " FontWeight="SemiBold" />
+                                                                            <Run Text="{Binding Group, Mode=OneTime}"
+                                                                                    FontWeight="SemiBold" />
+                                                                            <Run Text=" - " />
+                                                                            <Run
+                                                                                Text="{Binding Lecturer, Mode=OneTime}" />
+                                                                        </TextBlock>
 
                                                                         <ItemsRepeater
                                                                             ItemsSource="{Binding ClassDays}">
@@ -289,21 +360,20 @@
                                                                                 <DataTemplate
                                                                                     x:DataType="{x:Type curriculumModel:ClassDay}">
 
-                                                                                    <Border Background="#EEF2FB"
-                                                                                        CornerRadius="4" Padding="8 4"
-                                                                                        Margin="0 0 0 4"
-                                                                                        HorizontalAlignment="Left">
+                                                                                    <Border Classes="schedule-badge">
                                                                                         <StackPanel
                                                                                             Orientation="Horizontal"
                                                                                             Spacing="4">
                                                                                             <TextBlock
                                                                                                 Text="{Binding AttendingDay, Mode=OneTime}"
                                                                                                 ToolTip.Tip="Thứ đi học" />
-                                                                                            <TextBlock Text="---" />
+                                                                                            <TextBlock Text="---"
+                                                                                                Foreground="{StaticResource DisableColor}" />
                                                                                             <TextBlock
                                                                                                 Text="{Binding Period, Mode=OneTime}"
                                                                                                 ToolTip.Tip="Tiết học" />
-                                                                                            <TextBlock Text="---" />
+                                                                                            <TextBlock Text="---"
+                                                                                                Foreground="{StaticResource DisableColor}" />
                                                                                             <TextBlock
                                                                                                 Text="{Binding Room, Mode=OneTime}"
                                                                                                 ToolTip.Tip="Phòng học" />
@@ -315,9 +385,8 @@
                                                                         </ItemsRepeater>
                                                                     </StackPanel>
 
-                                                                    <Button Grid.Column="1" Background="Transparent"
-                                                                            Padding="4" VerticalAlignment="Top"
-                                                                            Foreground="{StaticResource RedColor}"
+                                                                    <Button Grid.Column="1" Classes="trash-btn"
+                                                                            VerticalAlignment="Top"
                                                                             Content="{materialIcons:MaterialIconExt Kind=TrashCanOutline, IconSize=20}"
                                                                             Command="{Binding ViewModel.TreeRemoveSectionCommand, RelativeSource={RelativeSource AncestorType=views1:FindCourseView}}"
                                                                             CommandParameter="{Binding .}" />

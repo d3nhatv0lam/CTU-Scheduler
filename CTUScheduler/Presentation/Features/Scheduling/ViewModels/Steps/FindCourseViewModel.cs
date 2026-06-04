@@ -32,6 +32,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         [Reactive] private bool _isOpenQuickSelectPopup;
         [Reactive] private bool _showOnlyAvailableSections;
         [Reactive] private bool _isTextBoxFocused;
+        [Reactive] private bool _isSelectAllChecked;
         [Reactive] private QuickSelectDmhpCourse? _selectedQuickSelectDmhpCourse;
 
         [ObservableAsProperty] private Course? _searchedCourse;
@@ -152,6 +153,22 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
             #endregion
 
             #region Commands Setup
+
+            this.WhenAnyValue(x => x.FilteredCourseSections)
+                .Subscribe(_ => IsSelectAllChecked = false)
+                .DisposeWith(_disposables);
+
+            this.WhenAnyValue(x => x.IsSelectAllChecked)
+                .Subscribe(isChecked =>
+                {
+                    if (FilteredCourseSections == null) return;
+                    
+                    foreach (var section in FilteredCourseSections)
+                    {
+                        section.IsSelected = isChecked;
+                    }
+                }).DisposeWith(_disposables);
+
 
             FocusTextBoxCommand = ReactiveCommand.Create(() =>
             {
