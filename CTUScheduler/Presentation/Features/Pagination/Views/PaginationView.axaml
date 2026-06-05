@@ -1,63 +1,80 @@
-﻿<rxui:ReactiveUserControl x:TypeArguments="viewModels:IPaginationInteraction"
+<rxui:ReactiveUserControl x:TypeArguments="viewModels:IPaginationInteraction"
                           xmlns="https://github.com/avaloniaui"
                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                          mc:Ignorable="d" d:DesignWidth="150" d:DesignHeight="35"
+                          mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="50"
                           xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Pagination.Interfaces"
                           xmlns:rxui="http://reactiveui.net"
-                          Background="Transparent"
-                          xmlns:views="clr-namespace:CTUScheduler.Presentation.Features.Pagination.Views"
+                          xmlns:u="https://irihi.tech/ursa"
                           x:DataType="viewModels:IPaginationInteraction"
                           x:CompileBindings="True"
-                          x:Class="CTUScheduler.Presentation.Features.Pagination.Views.PaginationView">
+                          x:Class="CTUScheduler.Presentation.Features.Pagination.Views.PaginationView"
+                          Background="Transparent">
+
     <rxui:ReactiveUserControl.Styles>
-        <Style Selector="Border.container">
-            <Setter Property="CornerRadius" Value="8"></Setter>
+        <Style Selector="Border.PaginationContainer">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="BoxShadow" Value="0 2 8 0 #0A000000" />
         </Style>
-        <Style Selector="Button.Navigate">
-            <Setter Property="MinWidth" Value="30"></Setter>
-            <Setter Property="FontSize" Value="30"></Setter>
-            <Setter Property="Padding" Value="0"></Setter>
-            <Setter Property="VerticalAlignment" Value="Stretch"></Setter>
-            <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
-            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+
+        <Style Selector="Button.NavBtn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Cursor" Value="Hand" />
         </Style>
-        
-        <Style Selector="StackPanel.page-number-container">
-            <Setter Property="Margin" Value="5 0"></Setter>
+        <Style Selector="Button.NavBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
+            <Setter Property="TextElement.Foreground" Value="{StaticResource PrimaryBrush}" />
         </Style>
-        
-        <Style Selector="TextBlock.page-number">
-            <Setter Property="FontSize" Value="20"></Setter>
-            <Setter Property="FontFamily" Value="{StaticResource Text-Font}"></Setter>
+        <Style Selector="Button.NavBtn:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="TextElement.Foreground" Value="{StaticResource DisableColor}" />
         </Style>
-        
-        <Style Selector="StackPanel.page-number-container, StackPanel.page-number-container > TextBlock">
-            <Setter Property="VerticalAlignment" Value="Center"></Setter>
-            <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+
+        <Style Selector="TextBlock.PageText">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{StaticResource DisableColor}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="Medium" />
+        </Style>
+        <Style Selector="TextBlock.PageHighlight">
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="FontWeight" Value="Bold" />
         </Style>
     </rxui:ReactiveUserControl.Styles>
-    
-    <Border Classes="container">
-        <Grid ColumnDefinitions="* * *">
-            <Button Grid.Column="0"
-                Classes="Navigate" 
-                Content="&lt;"
-                Command="{Binding PreviousPageCommand}"></Button>
-            
-            <StackPanel Classes="page-number-container" 
-                        Grid.Column="1"
-                        Orientation="Horizontal">
-                <TextBlock Classes="page-number" Text="{Binding CurrentPage,Mode=OneWay}"></TextBlock>
-                <TextBlock Classes="page-number" Text="/"></TextBlock>
-                <TextBlock Classes="page-number" Text="{Binding TotalPages, Mode=OneWay}"></TextBlock>
+
+    <Border Classes="PaginationContainer" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <!-- Previous page -->
+            <Button Classes="NavBtn"
+                    Content="&lt;"
+                    Command="{Binding PreviousPageCommand}" />
+
+
+            <StackPanel Orientation="Horizontal" Margin="16 0" VerticalAlignment="Center" Spacing="4">
+                <TextBlock Classes="PageText PageHighlight" Text="{Binding CurrentPage, Mode=OneWay}" />
+                <TextBlock Classes="PageText" Text="/" />
+                <TextBlock Classes="PageText" Text="{Binding TotalPages, Mode=OneWay}" />
             </StackPanel>
-            
-            <Button Grid.Column="2" 
-                    Classes="Navigate" 
+
+            <!-- Next page -->
+            <Button Classes="NavBtn"
                     Content="&gt;"
-                    Command="{Binding  NextPageCommand}"></Button>
-        </Grid>
+                    Command="{Binding NextPageCommand}" />
+        </StackPanel>
     </Border>
+
 </rxui:ReactiveUserControl>
