@@ -23,7 +23,12 @@ public class ScheduleGroupCellShared: ReactiveObject, IDisposable
     private readonly ObservableAsPropertyHelper<bool> _isMediumStatus;
     private readonly ObservableAsPropertyHelper<bool> _isLowStatus;
     private readonly ObservableAsPropertyHelper<bool> _isArchivedStatus;
+    private readonly ObservableAsPropertyHelper<int> _currentStudents;
+    public int CurrentStudents => _currentStudents.Value;
 
+    private readonly ObservableAsPropertyHelper<int> _totalStudents;
+    public int TotalStudents => _totalStudents.Value;
+    
     public IBrush BackgroundColor { get; }
     
     public ScheduleGroupCellShared(ICourseDisplaySource source, IBrush color)
@@ -35,10 +40,13 @@ public class ScheduleGroupCellShared: ReactiveObject, IDisposable
         _group = source.Group.ToProperty(this, x => x.Group).DisposeWith(_disposables);
         _lecturer = source.Lecturer.ToProperty(this, x => x.Lecturer).DisposeWith(_disposables);
         _credit = source.Credits.ToProperty(this, x => x.Credits, deferSubscription: false).DisposeWith(_disposables);
-        
+
         var statusStream = source.RemainingStudents.CombineLatest(source.TotalStudents, 
             (rem, total) => new { rem, total })
             .Replay(1).RefCount();
+        
+        _currentStudents = statusStream.Select(x => x.rem).ToProperty(this, x => x.CurrentStudents).DisposeWith(_disposables);
+        _totalStudents = statusStream.Select(x => x.total).ToProperty(this, x => x.TotalStudents).DisposeWith(_disposables);
 
         _remainingConcatTotalStudents = statusStream
             .Select(x => $"Sĩ số: {x.rem}/{x.total}")
