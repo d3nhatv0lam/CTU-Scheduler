@@ -1,6 +1,6 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Layout;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
@@ -13,6 +13,9 @@ public class TimetablePreviewRenderer : ITimetablePreviewRenderer
     private readonly IControlRendererService _controlRendererService;
 
     private TimetableView? _cachedView;
+    private const int CachedViewWidth = 600;
+    private const int CachedViewHeight = 375;
+    private const double CachedScale = 1.5D;
 
     public TimetablePreviewRenderer(IControlRendererService controlRendererService)
     {
@@ -45,8 +48,8 @@ public class TimetablePreviewRenderer : ITimetablePreviewRenderer
 
             _cachedView ??= new TimetableView()
             {
-                Width = 1200,
-                Height = 750
+                VerticalAlignment = VerticalAlignment.Stretch,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
             };
 
             _cachedView.DataContext = visualizerVM;
@@ -55,9 +58,9 @@ public class TimetablePreviewRenderer : ITimetablePreviewRenderer
             {
                 return await _controlRendererService.RenderToBitmapAsync(
                     _cachedView,
-                    width: 1200,
-                    height: 750,
-                    scale: 1.0,
+                    width: CachedViewWidth,
+                    height: CachedViewHeight,
+                    scale: CachedScale,
                     cancellationToken: cancellationToken);
             }
             finally

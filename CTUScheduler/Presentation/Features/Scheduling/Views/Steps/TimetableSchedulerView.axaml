@@ -128,8 +128,8 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="10" />
             <Setter Property="BoxShadow" Value="0 2 8 0 #0A000000" />
-            <Setter Property="Width" Value="250" />
-            <Setter Property="Height" Value="240" />
+            <Setter Property="Width" Value="260" />
+            <Setter Property="Height" Value="248" />
             <Setter Property="Transitions">
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" Easing="CubicEaseOut" />
@@ -350,8 +350,8 @@
                                                             <Border>
                                                                 <Viewbox Stretch="Uniform">
                                                                     <Image Source="{Binding Item.PreviewImage}"
-                                                                           Width="1200"
-                                                                           Height="750"
+                                                                           Width="600"
+                                                                           Height="375"
                                                                            RenderOptions.BitmapInterpolationMode="HighQuality" />
                                                                 </Viewbox>
                                                             </Border>
