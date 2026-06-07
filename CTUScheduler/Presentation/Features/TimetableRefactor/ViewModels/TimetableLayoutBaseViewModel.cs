@@ -5,6 +5,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
@@ -38,8 +39,8 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
     private bool _isSelected;
     private bool _isEnabled = true;
     private Bitmap? _previewImage;
-   
-    
+
+
     private bool _isDisposed;
 
     public string Name
@@ -83,8 +84,8 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
         get => _isEnabled;
         set => this.RaiseAndSetIfChanged(ref _isEnabled, value);
     }
-    
-    public Bitmap? PreviewImage
+
+    public virtual Bitmap? PreviewImage
     {
         get => _previewImage;
         set => this.RaiseAndSetIfChanged(ref _previewImage, value);
@@ -94,10 +95,10 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
     public ReactiveCommand<Unit, Unit> ExportToExcelCommand { get; protected set; }
 
     public Interaction<Unit, bool> CopyToClipboardInteraction { get; } = new();
-    
+
 
     public TimetableLayoutBaseViewModel(
-        IExcelExporterService excelExporter, 
+        IExcelExporterService excelExporter,
         IControlRendererService controlRendererService,
         IUserInteractionService userInteractionService)
     {
@@ -109,11 +110,9 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
             .PairWithPrevious()
             .Subscribe(pair =>
             {
-                if (pair.OldValue != null)
-                {
-                    var oldImage = pair.OldValue;
-                    Dispatcher.UIThread.Post(() => oldImage.Dispose(), DispatcherPriority.Background);
-                }
+                if (pair.OldValue is null) return;
+                var oldImage = pair.OldValue;
+                Dispatcher.UIThread.Post(oldImage.Dispose, DispatcherPriority.Background);
             })
             .DisposeWith(Disposables);
 
@@ -122,7 +121,8 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
             var success = await CopyToClipboardInteraction.Handle(Unit.Default);
             if (success)
             {
-                UserInteractionService.Toast.Light.Success("Thành công", "Đã sao chép ảnh thời khóa biểu vào clipboard!");
+                UserInteractionService.Toast.Light.Success("Thành công",
+                    "Đã sao chép ảnh thời khóa biểu vào clipboard!");
             }
             else
             {
@@ -144,12 +144,12 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
         }).DisposeWith(Disposables);
     }
 
-    protected async Task GeneratePreviewAsync()
+    protected async Task GeneratePreviewAsync(CancellationToken cancellationToken)
     {
         if (VisualizerVM is null) return;
 
-        var tempView = new TimetableView 
-        { 
+        var tempView = new TimetableView
+        {
             DataContext = VisualizerVM,
             Width = 1600,
             Height = 1000
@@ -157,7 +157,12 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
 
         try
         {
-            PreviewImage = await ControlRendererService.RenderToBitmapAsync(tempView, width: 1600, height: 1000);
+            PreviewImage = await ControlRendererService.RenderToBitmapAsync(tempView, width: 1600, height: 1000,
+                cancellationToken: cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // ignored
         }
         finally
         {
@@ -195,13 +200,13 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
     protected virtual void Dispose(bool isDisposing)
     {
         if (_isDisposed) return;
-        
+
         if (isDisposing)
         {
             PreviewImage?.Dispose();
             Disposables.Dispose();
         }
-        
+
         _isDisposed = true;
     }
 }

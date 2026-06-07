@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
+using System.Threading;
 using Avalonia.Threading;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
@@ -18,6 +20,7 @@ namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
 public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel, IScorable
 {
+    private readonly CancellationTokenSource _cts = new();
     private readonly List<SectionChoice> _choices = new();
 
     public IReadOnlyList<SectionChoice> Choices => _choices;
@@ -57,9 +60,9 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel, I
 
         SubjectsCount = sourceList.Count;
         TotalCredits = sourceList.Items.Sum(x => x.SharedData.Credits);
-
+        
         // Render preview image upon initialization
-        Dispatcher.UIThread.Post(async () => await GeneratePreviewAsync());
+        Dispatcher.UIThread.Post(async () => await GeneratePreviewAsync(_cts.Token));
     }
 
     public override ScheduleBlueprint ToScheduleBlueprint()
@@ -82,5 +85,14 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel, I
         return new ScheduleBlueprint(courses, profile);
     }
 
+    protected override void Dispose(bool isDisposing)
+    {
+        if (isDisposing)
+        {
+            _cts.Cancel();
+            _cts.Dispose();
+        }
+        base.Dispose(isDisposing);
+    }
 
 }

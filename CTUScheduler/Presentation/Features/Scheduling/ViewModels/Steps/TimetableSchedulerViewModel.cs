@@ -178,7 +178,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                 }
                 return new SelectableTimetableLayout(vm);
             })
-            .Buffer(TimeSpan.FromMilliseconds(100), PaginationTimeTableViewModel.PageSize)
+            .Buffer(TimeSpan.FromMilliseconds(500), PaginationTimeTableViewModel.PageSize * 2)
             .Where(batch => batch.Count > 0)
             .Subscribe(batch => { PaginationTimeTableViewModel.AddRange(batch); })
             .DisposeWith(_disposables);

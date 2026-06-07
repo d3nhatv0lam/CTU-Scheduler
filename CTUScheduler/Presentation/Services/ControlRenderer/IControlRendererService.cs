@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
@@ -15,7 +16,8 @@ public interface IControlRendererService
         Stream targetStream, 
         double? width = null, 
         double? height = null, 
-        double scale = 1.0);
+        double scale = 1.0,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Vẽ bất kỳ Control nào dưới nền (off-screen) và trả về đối tượng Bitmap trực tiếp (Zero-Copy) với tỉ lệ độ phân giải tùy chọn
@@ -24,5 +26,6 @@ public interface IControlRendererService
         Control control,
         double width,
         double height,
-        double scale = 1.0);
+        double scale = 1.0,
+        CancellationToken cancellationToken = default);
 }

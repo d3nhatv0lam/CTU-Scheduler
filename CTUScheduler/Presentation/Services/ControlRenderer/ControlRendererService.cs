@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -27,10 +28,14 @@ public class ControlRendererService : IControlRendererService
         Stream targetStream,
         double? width = null,
         double? height = null,
-        double scale = 1.0)
+        double scale = 1.0,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         await Dispatcher.UIThread.InvokeAsync(async () =>
         {
+            cancellationToken.ThrowIfCancellationRequested();
+            
             var topLevel = _viewContextService.CurrentTopLevel;
 
             if (topLevel == null)
@@ -48,8 +53,12 @@ public class ControlRendererService : IControlRendererService
             }
 
             // width và height được xem là kích thước logic (DIPs) thiết kế mong muốn
-            double logicalWidth = width ?? (control.Width > 0 && !double.IsNaN(control.Width) ? control.Width : VirtualWidth);
-            double logicalHeight = height ?? (control.Height > 0 && !double.IsNaN(control.Height) ? control.Height : VirtualHeight);
+            double logicalWidth =
+                width ?? (control.Width > 0 && !double.IsNaN(control.Width) ? control.Width : VirtualWidth);
+            double logicalHeight = height ??
+                                   (control.Height > 0 && !double.IsNaN(control.Height)
+                                       ? control.Height
+                                       : VirtualHeight);
 
             // Kích thước vật lý thực tế của bitmap (pixelSize) = logicalSize * scale
             double physicalWidth = logicalWidth * scale;
@@ -82,6 +91,8 @@ public class ControlRendererService : IControlRendererService
 
                 // Nhường luồng cho đến khi hệ thống vẽ xong layout ẩn dưới nền
                 await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Render);
+                
+                cancellationToken.ThrowIfCancellationRequested();
 
                 // 2. Tạo bitmap có kích thước vật lý (Pixel) và DPI tự động tính toán
                 var pixelSize = new PixelSize(
@@ -89,11 +100,10 @@ public class ControlRendererService : IControlRendererService
                     (int)Math.Ceiling(physicalHeight)
                 );
 
-                using (var bitmap = new RenderTargetBitmap(pixelSize, new Vector(targetDpi, targetDpi)))
-                {
-                    bitmap.Render(control);
-                    bitmap.Save(targetStream);
-                }
+                using var bitmap = new RenderTargetBitmap(pixelSize, new Vector(targetDpi, targetDpi));
+                bitmap.Render(control);
+                cancellationToken.ThrowIfCancellationRequested();
+                bitmap.Save(targetStream);
             }
             finally
             {
@@ -109,10 +119,15 @@ public class ControlRendererService : IControlRendererService
         Control control,
         double width,
         double height,
-        double scale = 1.0)
+        double scale = 1.0,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        RenderTargetBitmap? bitmap = null;
+        
         return await Dispatcher.UIThread.InvokeAsync(async () =>
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var topLevel = _viewContextService.CurrentTopLevel;
 
             if (topLevel == null)
@@ -166,18 +181,25 @@ public class ControlRendererService : IControlRendererService
                     () => { },
                     DispatcherPriority.Render);
 
+                cancellationToken.ThrowIfCancellationRequested();
+
                 // 2. Tạo bitmap có kích thước vật lý (Pixel) và DPI tự động tính toán
                 var pixelSize = new PixelSize(
                     (int)Math.Ceiling(physicalWidth),
                     (int)Math.Ceiling(physicalHeight));
 
-                var bitmap = new RenderTargetBitmap(
+                bitmap = new RenderTargetBitmap(
                     pixelSize,
                     new Vector(targetDpi, targetDpi));
 
                 bitmap.Render(control);
 
                 return bitmap;
+            }
+            catch
+            {
+                bitmap?.Dispose();
+                throw;
             }
             finally
             {
