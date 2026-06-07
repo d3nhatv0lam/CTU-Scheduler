@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Disposables;
@@ -19,12 +19,14 @@ public class TimetableViewModel: ViewModelBase, IDisposable
     
     public ReadOnlyObservableCollection<ScheduleCellUi> ScheduleCells => _scheduleCells;
     public ReadOnlyObservableCollection<ScheduleGroupCellShared> UnscheduledCourses => _unscheduledCourses;
+    public bool HasItems { get; }
     
     // private readonly ReadOnlyObservableCollection<ScheduleGroupCellShared> _courseList;
     // public ReadOnlyObservableCollection<ScheduleGroupCellShared> CourseList => _courseList;
 
     public TimetableViewModel(IObservableList<TimetableRenderItem> renderList)
     {
+        HasItems = renderList.Count > 0;
         var renderStream = renderList.Connect();
         
         renderStream

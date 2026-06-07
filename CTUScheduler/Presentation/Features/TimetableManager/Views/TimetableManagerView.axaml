@@ -214,8 +214,8 @@
                                     <ItemsRepeater.ItemTemplate>
                                         <DataTemplate x:DataType="timetableViewModel:TimetableLayoutBaseViewModel">
                                             <Border Classes="Card"
-                                                    Width="250"
-                                                    Height="220">
+                                                    Width="260"
+                                                    Height="248">
                                                 <Grid
                                                     RowDefinitions="auto auto auto auto *">
                                                     <CheckBox Grid.Row="0" IsEnabled="{Binding IsEnabled}"
@@ -237,8 +237,8 @@
                                                         <Border>
                                                             <Viewbox Stretch="Uniform">
                                                                 <Image Source="{Binding PreviewImage}"
-                                                                       Width="1600"
-                                                                       Height="1000"
+                                                                       Width="600"
+                                                                       Height="375"
                                                                        RenderOptions.BitmapInterpolationMode="HighQuality" />
                                                             </Viewbox>
                                                         </Border>
