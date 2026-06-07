@@ -41,8 +41,9 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
         ICourseQueryService courseQueryService,
         IExcelExporterService excelExporter,
         IControlRendererService controlRendererService,
+        ITimetablePreviewRenderer timetablePreviewRenderer,
         IUserInteractionService userInteractionService) : base(excelExporter, controlRendererService,
-        userInteractionService)
+        timetablePreviewRenderer, userInteractionService)
     {
         ArgumentNullException.ThrowIfNull(scheduleProfile);
 

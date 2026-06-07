@@ -29,6 +29,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
     private readonly CourseColorProvider _colorProvider = new();
     protected readonly CompositeDisposable Disposables = new();
     protected readonly IExcelExporterService ExcelExporter;
+    protected readonly ITimetablePreviewRenderer TimetablePreviewRenderer;
     public IControlRendererService ControlRendererService { get; }
     protected readonly IUserInteractionService UserInteractionService;
     private string _name = "New Schedule";
@@ -67,7 +68,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
         protected set => this.RaiseAndSetIfChanged(ref _lastUpdated, value);
     }
 
-    public TimetableViewModel? VisualizerVM
+    public virtual TimetableViewModel? VisualizerVM
     {
         get => _visualizerVM;
         protected set => this.RaiseAndSetIfChanged(ref _visualizerVM, value);
@@ -88,7 +89,16 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
     public virtual Bitmap? PreviewImage
     {
         get => _previewImage;
-        set => this.RaiseAndSetIfChanged(ref _previewImage, value);
+        set
+        {
+            var oldImage = _previewImage;
+            if (oldImage == value) return;
+            this.RaiseAndSetIfChanged(ref _previewImage, value);
+            if (oldImage is not null)
+            {
+                Dispatcher.UIThread.Post(oldImage.Dispose, DispatcherPriority.Background);
+            }
+        }
     }
 
     public ReactiveCommand<Unit, Unit> CopyToClipboardCommand { get; protected set; }
@@ -100,21 +110,13 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
     public TimetableLayoutBaseViewModel(
         IExcelExporterService excelExporter,
         IControlRendererService controlRendererService,
+        ITimetablePreviewRenderer timetablePreviewRenderer,
         IUserInteractionService userInteractionService)
     {
         ExcelExporter = excelExporter;
         ControlRendererService = controlRendererService;
+        TimetablePreviewRenderer = timetablePreviewRenderer;
         UserInteractionService = userInteractionService;
-
-        this.WhenAnyValue(x => x.PreviewImage)
-            .PairWithPrevious()
-            .Subscribe(pair =>
-            {
-                if (pair.OldValue is null) return;
-                var oldImage = pair.OldValue;
-                Dispatcher.UIThread.Post(oldImage.Dispose, DispatcherPriority.Background);
-            })
-            .DisposeWith(Disposables);
 
         CopyToClipboardCommand = ReactiveCommand.CreateFromTask(async () =>
         {
@@ -148,25 +150,13 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
     {
         if (VisualizerVM is null) return;
 
-        var tempView = new TimetableView
-        {
-            DataContext = VisualizerVM,
-            Width = 1600,
-            Height = 1000
-        };
-
         try
         {
-            PreviewImage = await ControlRendererService.RenderToBitmapAsync(tempView, width: 1600, height: 1000,
-                cancellationToken: cancellationToken);
+            PreviewImage = await TimetablePreviewRenderer.RenderPreviewAsync(VisualizerVM, cancellationToken);
         }
         catch (OperationCanceledException)
         {
             // ignored
-        }
-        finally
-        {
-            tempView.DataContext = null;
         }
     }
 

@@ -93,6 +93,7 @@ public class ControlRendererService : IControlRendererService
                 await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Render);
                 
                 cancellationToken.ThrowIfCancellationRequested();
+                control.UpdateLayout();
 
                 // 2. Tạo bitmap có kích thước vật lý (Pixel) và DPI tự động tính toán
                 var pixelSize = new PixelSize(
@@ -182,6 +183,7 @@ public class ControlRendererService : IControlRendererService
                     DispatcherPriority.Render);
 
                 cancellationToken.ThrowIfCancellationRequested();
+                control.UpdateLayout();
 
                 // 2. Tạo bitmap có kích thước vật lý (Pixel) và DPI tự động tính toán
                 var pixelSize = new PixelSize(

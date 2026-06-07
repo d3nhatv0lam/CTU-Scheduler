@@ -237,8 +237,8 @@
                                                         <Border>
                                                             <Viewbox Stretch="Uniform">
                                                                 <Image Source="{Binding PreviewImage}"
-                                                                       Width="1600"
-                                                                       Height="1000"
+                                                                       Width="1200"
+                                                                       Height="750"
                                                                        RenderOptions.BitmapInterpolationMode="HighQuality" />
                                                             </Viewbox>
                                                         </Border>
