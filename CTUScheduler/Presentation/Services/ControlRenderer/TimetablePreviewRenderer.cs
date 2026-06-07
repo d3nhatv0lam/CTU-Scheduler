@@ -56,6 +56,10 @@ public class TimetablePreviewRenderer : ITimetablePreviewRenderer
 
             try
             {
+                // Bật chế độ preview: ẩn các TextBlock phụ (Nhóm, Tín chỉ, Phòng, Sĩ số, Giảng viên)
+                // Style Selector ":is(UserControl).preview TextBlock.detail" sẽ xử lý việc ẩn
+                _cachedView.Classes.Add("preview");
+
                 return await _controlRendererService.RenderToBitmapAsync(
                     _cachedView,
                     width: CachedViewWidth,
@@ -65,6 +69,7 @@ public class TimetablePreviewRenderer : ITimetablePreviewRenderer
             }
             finally
             {
+                _cachedView.Classes.Remove("preview");
                 _cachedView.DataContext = null;
             }
         });
