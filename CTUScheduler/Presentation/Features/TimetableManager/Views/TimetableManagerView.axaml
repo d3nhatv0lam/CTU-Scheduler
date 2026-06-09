@@ -354,10 +354,9 @@
                                         <Grid RowDefinitions="Auto Auto Auto Auto *">
                                             <!-- Checkbox/Select -->
                                             <CheckBox Grid.Row="0"
-                                                      Classes="accent"
                                                       IsEnabled="{Binding IsEnabled}"
                                                       IsChecked="{Binding IsSelected}"
-                                                      Content="Chọn!" />
+                                                      Content="Chọn" />
                                                       
                                             <!-- Title / Name -->
                                             <TextBlock Grid.Row="1"
