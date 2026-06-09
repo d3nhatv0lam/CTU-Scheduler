@@ -21,267 +21,397 @@
     </Design.DataContext>
 
     <rxui:ReactiveUserControl.Styles>
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
+
         <Style Selector="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource Text-Font}" />
         </Style>
-        <Style Selector="TextBlock.expired-save">
-            <Setter Property="Foreground" Value="Red"></Setter>
+
+        <Style Selector="TextBlock.Title">
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource Grey}" />
         </Style>
-        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml"></StyleInclude>
-        <Style Selector="Border.Card">
+
+        <Style Selector="TextBlock.SubTitle">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="Foreground" Value="#a3a3a3" />
+        </Style>
+
+        <Style Selector="TextBlock.expired-save">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource RedColor}" />
+            <Setter Property="Cursor" Value="Help" />
+        </Style>
+
+        <Style Selector="Button.btnTopAction">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="12 6" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.btnTopAction:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="TextElement.Foreground" Value="{StaticResource PrimaryBrush}" />
+        </Style>
+
+        <Style Selector="Button.btnPrimary">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Padding" Value="14 6" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.btnPrimary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource ButtonHoverBrush}" />
+            <Setter Property="TextElement.Foreground" Value="White" />
+        </Style>
+
+        <Style Selector="Button.btnSecondary">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Foreground" Value="{StaticResource SecondaryBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SecondaryBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="14 6" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.btnSecondary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SecondaryBrush}" />
+            <Setter Property="TextElement.Foreground" Value="White" />
+        </Style>
+
+        <Style Selector="Button.btnDanger">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Foreground" Value="{StaticResource RedColor}" />
+            <Setter Property="BorderBrush" Value="{StaticResource RedColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="14 6" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.btnDanger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource RedColor}" />
+            <Setter Property="TextElement.Foreground" Value="White" />
+        </Style>
+
+        <Style Selector="Button.btnSuccess">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Foreground" Value="#107c41" />
+            <Setter Property="BorderBrush" Value="#107c41" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="14 6" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.btnSuccess:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#107c41" />
+            <Setter Property="TextElement.Foreground" Value="White" />
+        </Style>
+
+        <Style Selector="Border.MainCard">
             <Setter Property="Background" Value="White" />
             <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BoxShadow" Value="0 4 16 0 #08000000" />
+        </Style>
+
+        <Style Selector="Border.TimetableCard">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="12" />
-            <Setter Property="BoxShadow" Value="0 4 15 0 #0D000000" />
+            <Setter Property="BoxShadow" Value="0 2 8 0 #0A000000" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" Easing="CubicEaseOut" />
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.TimetableCard:pointerover">
+            <Setter Property="BoxShadow" Value="0 4 16 0 #1A000000" />
+            <Setter Property="RenderTransform" Value="scale(1.02)" />
+        </Style>
+
+        <Style Selector="TextBlock.TotalCount">
+            <Setter Property="Foreground" Value="#a3a3a3" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+
+        <Style Selector="TextBlock.CardTitle">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource Grey}" />
+        </Style>
+
+        <Style Selector="TextBlock.CardMeta">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="#a3a3a3" />
+        </Style>
+
+        <Style Selector="TextBlock.EmptyStateTitle">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{StaticResource Grey}" />
+        </Style>
+
+        <Style Selector="TextBlock.EmptyStateSubtitle">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="#a3a3a3" />
+        </Style>
+
+        <!-- small screen -->
+        <Style Selector="Grid.HeaderGrid > StackPanel.HeaderTitle">
+            <Setter Property="Grid.Row" Value="0" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+        <Style Selector="Grid.HeaderGrid > StackPanel.HeaderButtons">
+            <Setter Property="Grid.Row" Value="1" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Margin" Value="0 10 0 0" />
+        </Style>
+
+        <!-- large screen -->
+        <Style Selector="Grid.RootHeaderGrid.large Grid.HeaderGrid > StackPanel.HeaderTitle">
+            <Setter Property="Grid.Row" Value="0" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="1" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+        <Style Selector="Grid.RootHeaderGrid.large Grid.HeaderGrid > StackPanel.HeaderButtons">
+            <Setter Property="Grid.Row" Value="0" />
+            <Setter Property="Grid.Column" Value="1" />
+            <Setter Property="Grid.ColumnSpan" Value="1" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="Margin" Value="0" />
         </Style>
     </rxui:ReactiveUserControl.Styles>
 
-    <Grid RowDefinitions="50 *">
-        <!--// save & load //-->
-        <Border Grid.Row="0" Background="Transparent" Padding="0 5 0 5">
-            <Border
-                Classes="CornerBorder">
-                <DockPanel LastChildFill="False">
-                    <DockPanel.Styles>
-                        <Style Selector="DockPanel > TextBlock">
-                            <Setter Property="VerticalAlignment" Value="Center" />
-                        </Style>
-                        <Style Selector="Button">
-                            <Setter Property="CornerRadius" Value="40" />
-                        </Style>
-                    </DockPanel.Styles>
-                    <!--// txt save time //-->
-                    <TextBlock
-                        Text="Lần cuối lưu dữ liệu:"
-                        Margin="10 0 0 0" />
-                    <TextBlock x:Name="txtLastSaved"
-                               Margin="5 0 0 0" />
-                    <!--// download data button //-->
-                    <Border Padding="0 3 0 3" DockPanel.Dock="Right">
-                        <Button x:Name="btnSave"
-                                Margin="0 0 10 0">
-                            <StackPanel Orientation="Horizontal">
-                                <materialIcons:MaterialIcon Kind="MonitorArrowDownVariant" />
-                                <TextBlock VerticalAlignment="Center" Text="Tải xuống" Margin="5 0 0 0" />
-                            </StackPanel>
-                            <ToolTip.Tip>
-                                <TextBlock Text="Tải dữ liệu về máy của bạn!" />
-                            </ToolTip.Tip>
-                            <Interaction.Behaviors>
-                                <ButtonSaveFilePickerBehavior
-                                    Title="Load dữ liệu"
-                                    FileTypeChoices="JSON Files|*.json"
-                                    SuggestedFileName="Thời khóa biểu - CTU Scheduler"
-                                    Command="{Binding SaveScheduleCommand}">
-                                </ButtonSaveFilePickerBehavior>
-                            </Interaction.Behaviors>
-                        </Button>
-                    </Border>
-                    <!--// load data button //-->
-                    <Border Padding="0 3 0 3" DockPanel.Dock="Right">
-                        <Button x:Name="btnLoad" DockPanel.Dock="Right"
-                                Margin="10 0 10 0">
-                            <StackPanel Orientation="Horizontal">
-                                <materialIcons:MaterialIcon Kind="MonitorShare" />
-                                <TextBlock VerticalAlignment="Center" Text="Tải lên" Margin="5 0 0 0" />
-                            </StackPanel>
-                            <ToolTip.Tip>
-                                <TextBlock Text="Nạp dữ liệu của bạn lên ứng dụng!" />
-                            </ToolTip.Tip>
-                            <Interaction.Behaviors>
-                                <ButtonOpenFilePickerBehavior
-                                    Title="Load dữ liệu"
-                                    AllowMultiple="False"
-                                    FileTypeFilter="JSON Files|*.json"
-                                    Command="{Binding LoadScheduleCommand}">
-                                </ButtonOpenFilePickerBehavior>
-                            </Interaction.Behaviors>
-                        </Button>
-                    </Border>
-                    <TextBlock Classes="expired-save"
-                               DockPanel.Dock="Right"
-                               IsVisible="{Binding IsExpiredSaved}"
-                               Text="Lưu trữ không phù hợp với học kỳ">
-                        <ToolTip.Tip>
-                            <StackPanel Width="300">
-                                <TextBlock
-                                    TextWrapping="WrapWithOverflow"
-                                    Text="Bạn sẽ chỉ có thể xem lại các thời khóa biểu của các học kỳ trước, không thể cập nhật hay thêm thời khóa hiểu nữa!">
-                                </TextBlock>
-                            </StackPanel>
-                        </ToolTip.Tip>
-                    </TextBlock>
-                </DockPanel>
-            </Border>
-        </Border>
+    <Grid RowDefinitions="Auto *" Classes="RootHeaderGrid">
+        <Interaction.Behaviors>
+            <AdaptiveBehavior>
+                <AdaptiveClassSetter MinWidth="850" MinWidthOperator="GreaterThanOrEqual" ClassName="large" />
+            </AdaptiveBehavior>
+        </Interaction.Behaviors>
 
-        <!--// Schedule Manager //-->
-        <Border Grid.Row="1" Background="Transparent" Padding="0 5 0 5">
-            <Border>
-                <Grid RowDefinitions="40 40 *">
-                    <!--// TKB title //-->
-                    <Panel Grid.Row="0">
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            HorizontalAlignment="Left"
-                            FontSize="24"
-                            FontWeight="Bold"
-                            Text="Quản lý thời khóa biểu" />
-                        <u:Divider
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Bottom"
-                            Margin="0" />
-                    </Panel>
+        <!-- Header -->
+        <Grid Grid.Row="0" Classes="HeaderGrid" Margin="12 10" RowDefinitions="Auto, Auto" ColumnDefinitions="*, Auto">
+            <StackPanel Classes="HeaderTitle" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Classes="Title" Text="Quản lý thời khóa biểu" />
+                <TextBlock Classes="SubTitle" Text="Lần cuối lưu dữ liệu:" Margin="16 0 0 4" VerticalAlignment="Bottom" />
+                <TextBlock x:Name="txtLastSaved" Classes="SubTitle" Margin="4 0 0 4" VerticalAlignment="Bottom" />
+                
+                <TextBlock Classes="expired-save"
+                           IsVisible="{Binding IsExpiredSaved}"
+                           Text="Lưu trữ không phù hợp với học kỳ"
+                           VerticalAlignment="Bottom"
+                           Margin="16 0 0 4">
+                    <ToolTip.Tip>
+                        <StackPanel Width="300">
+                            <TextBlock TextWrapping="WrapWithOverflow"
+                                       Text="Bạn sẽ chỉ có thể xem lại các thời khóa biểu của các học kỳ trước, không thể cập nhật hay thêm thời khóa hiểu nữa!" />
+                        </StackPanel>
+                    </ToolTip.Tip>
+                </TextBlock>
+            </StackPanel>
 
-                    <!--// Button field //-->
-                    <DockPanel Grid.Row="1" LastChildFill="False" ClipToBounds="True">
-                        <DockPanel.Styles>
+            <StackPanel Classes="HeaderButtons" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <!--// load data button //-->
+                <Button x:Name="btnLoad" Classes="btnTopAction">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <materialIcons:MaterialIcon Kind="Upload" Width="16" Height="16" />
+                        <TextBlock VerticalAlignment="Center" Text="Tải lên" />
+                    </StackPanel>
+                    <ToolTip.Tip>
+                        <TextBlock Text="Nạp dữ liệu của bạn lên ứng dụng!" />
+                    </ToolTip.Tip>
+                    <Interaction.Behaviors>
+                        <ButtonOpenFilePickerBehavior
+                            Title="Load dữ liệu"
+                            AllowMultiple="False"
+                            FileTypeFilter="JSON Files|*.json"
+                            Command="{Binding LoadScheduleCommand}">
+                        </ButtonOpenFilePickerBehavior>
+                    </Interaction.Behaviors>
+                </Button>
+
+                <!--// download data button //-->
+                <Button x:Name="btnSave" Classes="btnTopAction">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <materialIcons:MaterialIcon Kind="Download" Width="16" Height="16" />
+                        <TextBlock VerticalAlignment="Center" Text="Tải xuống" />
+                    </StackPanel>
+                    <ToolTip.Tip>
+                        <TextBlock Text="Tải dữ liệu về máy của bạn!" />
+                    </ToolTip.Tip>
+                    <Interaction.Behaviors>
+                        <ButtonSaveFilePickerBehavior
+                            Title="Load dữ liệu"
+                            FileTypeChoices="JSON Files|*.json"
+                            SuggestedFileName="Thời khóa biểu - CTU Scheduler"
+                            Command="{Binding SaveScheduleCommand}">
+                        </ButtonSaveFilePickerBehavior>
+                    </Interaction.Behaviors>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="1" Classes="MainCard" Margin="8 0 8 8">
+            <Grid RowDefinitions="Auto *">
+                <Grid Grid.Row="0" Margin="16 16 16 4" ColumnDefinitions="* Auto">
+                    <WrapPanel Grid.Column="0" Orientation="Horizontal">
+                        <WrapPanel.Styles>
                             <Style Selector="Button">
-                                <Setter Property="Height" Value="30" />
-                                <Setter Property="CornerRadius" Value="40" />
-                                <Setter Property="Margin" Value="0 0 10 0" />
-                                <Setter Property="Padding" Value="15 0 15 0" />
+                                <Setter Property="Margin" Value="0 0 10 8" />
                             </Style>
-
-                            <!--// fake radio button //-->
-
-                            <!--  UniformSize make all items be same size  -->
-                        </DockPanel.Styles>
-
-                        <!--// add schedule tables //-->
-                        <Button DockPanel.Dock="Left"
-                                x:Name="btnAddTables"
+                        </WrapPanel.Styles>
+                        
+                        <Button x:Name="btnAddTables"
+                                Classes="btnPrimary"
                                 Command="{Binding ShowAddCourseDialogCommand}">
-                            <StackPanel Orientation="Horizontal">
-                                <materialIcons:MaterialIcon Kind="TablePlus" Height="20" Width="20" />
-                                <TextBlock VerticalAlignment="Center" Text="Thêm thời khóa biểu" Margin="5 0 0 0" />
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="Plus" Height="16" Width="16" />
+                                <TextBlock VerticalAlignment="Center" Text="Thêm thời khóa biểu" />
                             </StackPanel>
                         </Button>
-                        <!--// reload schedule tables data //-->
-                        <Button DockPanel.Dock="Left"
-                                x:Name="btnReloadTableData"
-                                Command="{Binding ReloadAllTimetableCommand}">
-                            <StackPanel Orientation="Horizontal">
-                                <materialIcons:MaterialIcon Kind="Reload" Height="20" Width="20" />
-                                <TextBlock VerticalAlignment="Center" Text="Cập nhật thông tin học phần"
-                                           Margin="5 0 0 0" />
 
+                        <Button x:Name="btnReloadTableData"
+                                Classes="btnSecondary"
+                                Command="{Binding ReloadAllTimetableCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="Reload" Height="16" Width="16" />
+                                <TextBlock VerticalAlignment="Center" Text="Cập nhật thông tin học phần" />
                             </StackPanel>
                         </Button>
-                        <Button DockPanel.Dock="Left" x:Name="btnDeleteTables"
+
+                        <Button x:Name="btnDeleteTables"
+                                Classes="btnDanger"
                                 Command="{Binding DeleteSelectedTimetablesCommand}"
                                 IsVisible="{Binding HasSelectedTimetable}">
-                            <StackPanel Orientation="Horizontal">
-                                <materialIcons:MaterialIcon Kind="Delete" Height="20" Width="20" />
-                                <TextBlock VerticalAlignment="Center" Text="Xóa thời khóa biểu" Margin="5 0 0 0" />
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="Delete" Height="16" Width="16" />
+                                <TextBlock VerticalAlignment="Center" Text="Xóa thời khóa biểu" />
                             </StackPanel>
                         </Button>
-                        <Button DockPanel.Dock="Left"
-                                x:Name="btnExportSelectedTables"
+
+                        <Button x:Name="btnExportSelectedTables"
+                                Classes="btnSuccess"
                                 Command="{Binding ExportSelectedTimetablesCommand}"
                                 IsVisible="{Binding HasSelectedTimetable}">
-                            <StackPanel Orientation="Horizontal">
-                                <materialIcons:MaterialIcon Kind="MonitorArrowDownVariant" Height="20" Width="20" />
-                                <TextBlock VerticalAlignment="Center" Text="Xuất Excel" Margin="5 0 0 0" />
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="FileExcel" Height="16" Width="16" />
+                                <TextBlock VerticalAlignment="Center" Text="Xuất Excel" />
                             </StackPanel>
                         </Button>
-                        <!--// total schedule tables //-->
-                        <TextBlock DockPanel.Dock="Left"
-                                   x:Name="txtTotalTable"
-                                   Foreground="#a3a3a3"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   Text="{Binding TimetableLayoutsCount
-                                   ,Mode=OneWay
-                                   ,StringFormat={}{0} Thời khóa biểu}" />
-                    </DockPanel>
+                    </WrapPanel>
 
-                    <!--// Schedule area //-->
-                    <Border Grid.Row="2" Classes="CornerBorder">
-                        <Panel ClipToBounds="True">
-                            <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-                                <ItemsRepeater
-                                    x:Name="itmRptTables"
-                                    ItemsSource="{Binding TimetableLayouts,Mode=OneWay}">
-                                    <ItemsRepeater.Layout>
-                                        <UniformGridLayout
-                                            MinRowSpacing="30"
-                                            MinColumnSpacing="30"
-                                            ItemsJustification="SpaceEvenly">
-                                        </UniformGridLayout>
-                                    </ItemsRepeater.Layout>
-
-                                    <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate x:DataType="timetableViewModel:TimetableLayoutBaseViewModel">
-                                            <Border Classes="Card"
-                                                    Width="260"
-                                                    Height="248">
-                                                <Grid
-                                                    RowDefinitions="auto auto auto auto *">
-                                                    <CheckBox Grid.Row="0" IsEnabled="{Binding IsEnabled}"
-                                                              IsChecked="{Binding IsSelected}" Content="Chọn!" />
-                                                    <TextBlock Grid.Row="1"
-                                                               Text="{Binding Name, StringFormat=Thời khóa biểu: {0}}">
-                                                    </TextBlock>
-                                                    <TextBlock Grid.Row="2"></TextBlock>
-                                                    <!-- <TextBlock Grid.Row="1" -->
-                                                    <!--            Text="{Binding Description,StringFormat=Mô tả: {0}}"> -->
-                                                    <!-- </TextBlock> -->
-                                                    <TextBlock Grid.Row="3"
-                                                               Text="{Binding LastUpdated,Mode=OneWay,StringFormat=Lần cuối cập nhật: {0}}">
-                                                    </TextBlock>
-
-                                                    <Grid Grid.Row="4">
-                                                        <!-- // TimeTable preview // -->
-
-                                                        <Border>
-                                                            <Viewbox Stretch="Uniform">
-                                                                <Image Source="{Binding PreviewImage}"
-                                                                       Width="600"
-                                                                       Height="375"
-                                                                       RenderOptions.BitmapInterpolationMode="HighQuality" />
-                                                            </Viewbox>
-                                                        </Border>
-                                                        
-
-                                                        <!-- // Open Timetable View // -->
-                                                        <Button Background="Transparent"
-                                                                Padding="0"
-                                                                BorderThickness="0"
-                                                                Command="{Binding Path= ((viewModels:TimetableManagerViewModel)DataContext).ShowTimetableDetailsCommand, RelativeSource={RelativeSource  Mode=FindAncestor, AncestorType=views:TimetableManagerView}}"
-                                                                CommandParameter="{Binding .}">
-                                                        </Button>
-                                                    </Grid>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsRepeater.ItemTemplate>
-                                </ItemsRepeater>
-                            </ScrollViewer>
-
-                            <!--// empty schedule table popup //-->
-                            <StackPanel VerticalAlignment="Center"
-                                        HorizontalAlignment="Center"
-                                        Background="Transparent"
-                                        IsHitTestVisible="False"
-                                        IsVisible="{Binding IsEmptyTimetableLayouts}">
-
-                                <StackPanel.Styles>
-                                    <Style Selector="TextBlock">
-                                        <Setter Property="HorizontalAlignment" Value="Center" />
-                                        <Setter Property="FontSize" Value="18" />
-                                        <Setter Property="FontWeight" Value="Bold" />
-                                    </Style>
-                                </StackPanel.Styles>
-                                <Image Source="/Assets/Images/Course/EmptyScheduleTable.png" Stretch="None" />
-                                <TextBlock
-                                    Text="Thêm thời khóa biểu của bạn!" />
-                                <TextBlock Text="Dễ lắm hehe" />
-                            </StackPanel>
-                        </Panel>
-                    </Border>
+                    <TextBlock Grid.Column="1"
+                               x:Name="txtTotalTable"
+                               Classes="TotalCount"
+                               VerticalAlignment="Top"
+                               Margin="0 6 0 0"
+                               Text="{Binding TimetableLayoutsCount, Mode=OneWay, StringFormat={}{0} Thời khóa biểu}" />
                 </Grid>
-            </Border>
+
+                <ScrollViewer Grid.Row="1" Margin="16 0 16 16" HorizontalScrollBarVisibility="Disabled">
+                    <Panel>
+                        <ItemsRepeater x:Name="itmRptTables"
+                                       ItemsSource="{Binding TimetableLayouts, Mode=OneWay}">
+                            <ItemsRepeater.Layout>
+                                <UniformGridLayout MinRowSpacing="24"
+                                                   MinColumnSpacing="24"
+                                                   ItemsJustification="SpaceEvenly" />
+                            </ItemsRepeater.Layout>
+
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="timetableViewModel:TimetableLayoutBaseViewModel">
+                                    <Border Classes="TimetableCard" Width="260" Height="248">
+                                        <Grid RowDefinitions="Auto Auto Auto Auto *">
+                                            <!-- Checkbox/Select -->
+                                            <CheckBox Grid.Row="0"
+                                                      IsEnabled="{Binding IsEnabled}"
+                                                      IsChecked="{Binding IsSelected}"
+                                                      Content="Chọn" />
+                                                      
+                                            <!-- Title / Name -->
+                                            <TextBlock Grid.Row="1"
+                                                       Classes="CardTitle"
+                                                       Text="{Binding Name, StringFormat=Thời khóa biểu: {0}}" />
+                                                       
+                                            <TextBlock Grid.Row="2" Height="4" />
+                                            
+                                            <!-- Last Updated -->
+                                            <TextBlock Grid.Row="3"
+                                                       Classes="CardMeta"
+                                                       Text="{Binding LastUpdated, Mode=OneWay, StringFormat=Lần cuối cập nhật: {0}}" />
+
+                                            <!-- Image Preview and Click area -->
+                                            <Grid Grid.Row="4" Margin="0 8 0 0">
+                                                <Border CornerRadius="6" ClipToBounds="True" BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
+                                                    <Viewbox Stretch="Uniform">
+                                                        <Image Source="{Binding PreviewImage}"
+                                                               Width="600"
+                                                               Height="375"
+                                                               RenderOptions.BitmapInterpolationMode="HighQuality" />
+                                                    </Viewbox>
+                                                </Border>
+
+                                                <!-- Open details command button overlaid -->
+                                                <Button Background="Transparent"
+                                                        Padding="0"
+                                                        BorderThickness="0"
+                                                        HorizontalAlignment="Stretch"
+                                                        VerticalAlignment="Stretch"
+                                                        Cursor="Hand"
+                                                        Command="{Binding Path=((viewModels:TimetableManagerViewModel)DataContext).ShowTimetableDetailsCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=views:TimetableManagerView}}"
+                                                        CommandParameter="{Binding .}">
+                                                </Button>
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+
+                        <!-- Empty state popup -->
+                        <StackPanel VerticalAlignment="Center"
+                                    HorizontalAlignment="Center"
+                                    Background="Transparent"
+                                    IsHitTestVisible="False"
+                                    IsVisible="{Binding IsEmptyTimetableLayouts}"
+                                    Spacing="12">
+                            <Image Source="/Assets/Images/Course/EmptyScheduleTable.png" Stretch="None" />
+                            <TextBlock Text="Thêm thời khóa biểu của bạn!" Classes="EmptyStateTitle" />
+                            <TextBlock Text="Dễ lắm hehe" Classes="EmptyStateSubtitle" />
+                        </StackPanel>
+                    </Panel>
+                </ScrollViewer>
+            </Grid>
         </Border>
     </Grid>
 </rxui:ReactiveUserControl>
