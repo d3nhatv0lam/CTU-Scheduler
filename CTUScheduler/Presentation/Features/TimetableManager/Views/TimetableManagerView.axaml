@@ -79,42 +79,48 @@
         <Style Selector="Button.btnSecondary">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Background" Value="{StaticResource SecondaryBrush}" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Foreground" Value="{StaticResource SecondaryBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SecondaryBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="14 6" />
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="Button.btnSecondary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource ButtonHoverBrush}" />
+            <Setter Property="Background" Value="{StaticResource SecondaryBrush}" />
             <Setter Property="TextElement.Foreground" Value="White" />
         </Style>
 
         <Style Selector="Button.btnDanger">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Background" Value="{StaticResource RedColor}" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Foreground" Value="{StaticResource RedColor}" />
+            <Setter Property="BorderBrush" Value="{StaticResource RedColor}" />
+            <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="14 6" />
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="Button.btnDanger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#e8032a" />
+            <Setter Property="Background" Value="{StaticResource RedColor}" />
             <Setter Property="TextElement.Foreground" Value="White" />
         </Style>
 
         <Style Selector="Button.btnSuccess">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Background" Value="#107c41" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Foreground" Value="#107c41" />
+            <Setter Property="BorderBrush" Value="#107c41" />
+            <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="14 6" />
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="Button.btnSuccess:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#148f4b" />
+            <Setter Property="Background" Value="#107c41" />
             <Setter Property="TextElement.Foreground" Value="White" />
         </Style>
 
