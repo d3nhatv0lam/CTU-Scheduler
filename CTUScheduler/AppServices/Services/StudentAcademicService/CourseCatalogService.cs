@@ -89,7 +89,8 @@ public class CourseCatalogService : ICourseCatalogService
         catch (CtuApiException ex)
         {
             _logger.LogWarning(ex, "Lỗi từ hệ thống CTU khi gợi ý môn học: {Message}", ex.Message);
-            return OperationResult<IReadOnlyList<QuickSelectDmhpCourse>>.Failed(ex.Message, kind: OperationFailureReason.System);
+            return OperationResult<IReadOnlyList<QuickSelectDmhpCourse>>.Failed(ex.Message,
+                kind: OperationFailureReason.System);
         }
         catch (Exception ex)
         {
@@ -107,6 +108,9 @@ public class CourseCatalogService : ICourseCatalogService
         int? semester = null,
         CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(courseCode))
+            return OperationResult<Course>.Failed("Dữ liệu đầu vào rỗng!", kind: OperationFailureReason.Validation);
+
         try
         {
             var resolvedYear = academicYear;

@@ -71,7 +71,10 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
 
             SearchCommand = ReactiveCommand.CreateFromTask(async ct =>
                 {
-                    var result = await courseCatalogService.FetchCourseAsync(TxtInputCourseKey, cancellationToken: ct);
+                    var courseKey = TxtInputCourseKey;
+                    if (string.IsNullOrWhiteSpace(courseKey)) return null;
+
+                    var result = await courseCatalogService.FetchCourseAsync(courseKey, cancellationToken: ct);
 
                     if (result.IsSuccess) return result.Content;
 
@@ -193,7 +196,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         private void AddSelectedSectionsToCart()
         {
             if (SearchedCourse is null) return;
-            
+
             var selected = FilteredCourseSections
                 .Where(x => x.IsSelected)
                 .Select(x => x.Item)
