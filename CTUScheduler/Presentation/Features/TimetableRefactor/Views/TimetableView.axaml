@@ -48,14 +48,13 @@
             </Style>
         </Style>
 
-       
+
         <Style Selector=":is(UserControl).preview TextBlock.detail">
             <Setter Property="IsVisible" Value="False" />
         </Style>
     </rxui:ReactiveUserControl.Styles>
 
-    <Border BorderBrush="Black" BorderThickness="1"
-            >
+    <Border BorderBrush="Black" BorderThickness="1">
         <Grid
             ColumnDefinitions="* 1 * 1 * 1 * 1 * 1 * 1 *"
             RowDefinitions="* 1 * * * * * 0.7* * * * *">
@@ -188,7 +187,7 @@
                             </Grid>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
-
+                    <!-- Khởi công nhánh mới hehehehe -->
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="{x:Type models:ScheduleCellUi}">
                             <Border
@@ -207,13 +206,17 @@
                                         <StackPanel>
                                             <TextBlock Text="{Binding Shared.CourseCode,Mode=OneWay}"></TextBlock>
                                             <TextBlock Text="{Binding Shared.CourseName_VN,Mode=OneWay}"></TextBlock>
-                                            <TextBlock Classes="detail" Text="{Binding Shared.Group,StringFormat=Nhóm:{0},Mode=OneWay}"></TextBlock>
                                             <TextBlock Classes="detail"
-                                                Text="{Binding Shared.Credits,StringFormat=Tín chỉ:{0},Mode=OneWay}">
+                                                       Text="{Binding Shared.Group,StringFormat=Nhóm:{0},Mode=OneWay}">
                                             </TextBlock>
-                                            <TextBlock Classes="detail" Text="{Binding Room,StringFormat=Phòng:{0},Mode=OneWay}"></TextBlock>
                                             <TextBlock Classes="detail"
-                                                Text="{Binding Shared.RemainingConcatTotalStudents, Mode=OneWay}">
+                                                       Text="{Binding Shared.Credits,StringFormat=Tín chỉ:{0},Mode=OneWay}">
+                                            </TextBlock>
+                                            <TextBlock Classes="detail"
+                                                       Text="{Binding Room,StringFormat=Phòng:{0},Mode=OneWay}">
+                                            </TextBlock>
+                                            <TextBlock Classes="detail"
+                                                       Text="{Binding Shared.RemainingConcatTotalStudents, Mode=OneWay}">
                                             </TextBlock>
                                             <TextBlock Classes="detail" Text="{Binding Shared.Lecturer,Mode=OneWay}"></TextBlock>
                                         </StackPanel>
