@@ -154,6 +154,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                         var options = new ScheduleGenerationOptions()
                         {
                             CancellationToken = cts.Token,
+                            MaxResults = null
                         };
 
                         var scorers = SelectedPreset?.Profile.Scorers;
