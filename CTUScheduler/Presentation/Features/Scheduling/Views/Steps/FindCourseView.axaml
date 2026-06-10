@@ -255,7 +255,7 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="Lịch học" Width="0.5*" MinWidth="250">
+                                <DataGridTemplateColumn Header="Lịch học" Width="0.5*" MinWidth="260">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="{x:Type models:SelectableCourseSection}">
                                             <ItemsRepeater VerticalAlignment="Center"
@@ -266,7 +266,7 @@
                                                             <Run Text="Thứ " />
                                                             <Run Text="{Binding AttendingDay, Mode=OneTime}" />
                                                             <Run Text=", Tiết " />
-                                                            <Run Text="{Binding Period, Mode=OneTime}" />
+                                                            <Run Text="{Binding Period, Mode=OneTime}" FontFamily="Monospace" />
                                                             <Run Text=", " />
                                                             <Run Text="{Binding Room, Mode=OneTime}" />
                                                         </TextBlock>
@@ -361,7 +361,7 @@
                                                                                             <Run Text="Thứ " />
                                                                                             <Run Text="{Binding AttendingDay, Mode=OneTime}" />
                                                                                             <Run Text=", Tiết " />
-                                                                                            <Run Text="{Binding Period, Mode=OneTime}" />
+                                                                                            <Run Text="{Binding Period, Mode=OneTime}" FontFamily="Monospace" />
                                                                                             <Run Text=", " />
                                                                                             <Run Text="{Binding Room, Mode=OneTime}" />
                                                                                         </TextBlock>
