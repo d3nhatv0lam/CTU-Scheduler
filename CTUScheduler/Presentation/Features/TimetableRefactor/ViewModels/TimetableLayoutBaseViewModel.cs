@@ -191,14 +191,12 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
 
         if (isDisposing)
         {
-            try
+            // gọi trực tiếp _previewImage để tránh gọi lazy property tự khởi tạo bitmap sau đó dispose
+            if (_previewImage is not null)
             {
-                // gọi trực tiếp _previewImage để tránh gọi lazy property tự khởi tạo bitmap sau đó dispose
-                _previewImage?.Dispose();
-            }
-            catch (ObjectDisposedException ex)
-            {
-                Debug.WriteLine(ex);
+                var img = _previewImage;
+                _previewImage = null;
+                Dispatcher.UIThread.Post(img.Dispose, DispatcherPriority.Background);
             }
             Disposables.Dispose();
         }
