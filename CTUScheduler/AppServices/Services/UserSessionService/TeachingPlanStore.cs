@@ -11,8 +11,7 @@ namespace CTUScheduler.AppServices.Services.UserSessionService;
 
 public sealed class TeachingPlanStore : StateStore<TeachingPlanData>, ITeachingPlanStore
 {
-    public TeachingPlanStore(ILogger<StateStore<TeachingPlanData>> logger) : base(logger)
+    public TeachingPlanStore(ILogger<TeachingPlanStore> logger) : base(logger)
     {
     }
 }
-
