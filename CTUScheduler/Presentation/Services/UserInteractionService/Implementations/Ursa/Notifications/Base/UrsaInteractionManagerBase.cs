@@ -115,12 +115,20 @@ public abstract class UrsaInteractionManagerBase<TManager> : INotificationTypeAc
 
     protected virtual object CreateFinalContent(object content, string? title) => content;
 
-    protected void CleanupManager()
+    private void CleanupManager()
     {
-        if (Manager is not null)
+        if (Manager is null) return;
+        
+        var manager = Manager;
+        Manager = null;
+
+        if (Dispatcher.UIThread.CheckAccess())
         {
-            UninstallManager(Manager);
-            Manager = null;
+            UninstallManager(manager);
+        }
+        else
+        {
+            Logger.LogDebug("Đang chạy trên luồng phụ khi Cleanup. Bỏ qua việc gỡ Manager");
         }
     }
 
@@ -139,7 +147,6 @@ public abstract class UrsaInteractionManagerBase<TManager> : INotificationTypeAc
         Logger.LogDebug("{Service} disposed", GetType().Name);
         _isDisposed = true;
     }
-    
-    protected static CTUMessageCloseReason MapReason(MessageCloseReason reason) => (CTUMessageCloseReason)reason;
 
+    protected static CTUMessageCloseReason MapReason(MessageCloseReason reason) => (CTUMessageCloseReason)reason;
 }
