@@ -262,18 +262,14 @@
                                                            ItemsSource="{Binding Item.ClassDays, Mode=OneTime}">
                                                 <ItemsRepeater.ItemTemplate>
                                                     <DataTemplate DataType="{x:Type curriculumModel:ClassDay}">
-                                                        <StackPanel Orientation="Horizontal" Spacing="4"
-                                                                    HorizontalAlignment="Center">
-                                                            <TextBlock Text="{Binding AttendingDay, Mode=OneTime}"
-                                                                       ToolTip.Tip="Thứ đi học" />
-                                                            <TextBlock Text="---"
-                                                                       Foreground="{StaticResource DisableColor}" />
-                                                            <TextBlock Text="{Binding Period}" ToolTip.Tip="Tiết học" />
-                                                            <TextBlock Text="---"
-                                                                       Foreground="{StaticResource DisableColor}" />
-                                                            <TextBlock Text="{Binding Room, Mode=OneTime}"
-                                                                       ToolTip.Tip="Phòng học" />
-                                                        </StackPanel>
+                                                        <TextBlock>
+                                                            <Run Text="Thứ " />
+                                                            <Run Text="{Binding AttendingDay, Mode=OneTime}" />
+                                                            <Run Text=", Tiết " />
+                                                            <Run Text="{Binding Period, Mode=OneTime}" />
+                                                            <Run Text=", " Foreground="{StaticResource DisableColor}" />
+                                                            <Run Text="{Binding Room, Mode=OneTime}" />
+                                                        </TextBlock>
                                                     </DataTemplate>
                                                 </ItemsRepeater.ItemTemplate>
                                             </ItemsRepeater>
@@ -361,23 +357,14 @@
                                                                                     x:DataType="{x:Type curriculumModel:ClassDay}">
 
                                                                                     <Border Classes="schedule-badge">
-                                                                                        <StackPanel
-                                                                                            Orientation="Horizontal"
-                                                                                            Spacing="4">
-                                                                                            <TextBlock
-                                                                                                Text="{Binding AttendingDay, Mode=OneTime}"
-                                                                                                ToolTip.Tip="Thứ đi học" />
-                                                                                            <TextBlock Text="---"
-                                                                                                Foreground="{StaticResource DisableColor}" />
-                                                                                            <TextBlock
-                                                                                                Text="{Binding Period, Mode=OneTime}"
-                                                                                                ToolTip.Tip="Tiết học" />
-                                                                                            <TextBlock Text="---"
-                                                                                                Foreground="{StaticResource DisableColor}" />
-                                                                                            <TextBlock
-                                                                                                Text="{Binding Room, Mode=OneTime}"
-                                                                                                ToolTip.Tip="Phòng học" />
-                                                                                        </StackPanel>
+                                                                                        <TextBlock>
+                                                                                            <Run Text="Thứ " />
+                                                                                            <Run Text="{Binding AttendingDay, Mode=OneTime}" />
+                                                                                            <Run Text=", Tiết " />
+                                                                                            <Run Text="{Binding Period, Mode=OneTime}" />
+                                                                                            <Run Text=", " Foreground="{StaticResource DisableColor}" />
+                                                                                            <Run Text="{Binding Room, Mode=OneTime}" />
+                                                                                        </TextBlock>
                                                                                     </Border>
 
                                                                                 </DataTemplate>
