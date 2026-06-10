@@ -2,6 +2,7 @@
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
+using Avalonia.Threading;
 using CTUScheduler.Presentation.Services.UserInteractionService.Implementations.Ursa.Notifications.Proxies;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models;
@@ -80,7 +81,15 @@ public abstract class UrsaInteractionManagerBase<TManager> : INotificationTypeAc
 
         // Xử lý đóng gói Classes và Theme
         var finalOpt = ProcessThemeAndClasses(in options);
-        InvokeShow(manager, type, finalContent, in finalOpt);
+
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            InvokeShow(manager, type, finalContent, in finalOpt);
+        }
+        else
+        {
+            Dispatcher.UIThread.Invoke(() => InvokeShow(manager, type, finalContent, in finalOpt));
+        }
     }
 
     private NotificationOptions ProcessThemeAndClasses(in NotificationOptions opt)

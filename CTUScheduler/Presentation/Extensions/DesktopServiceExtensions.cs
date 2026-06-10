@@ -68,7 +68,8 @@ public static class DesktopServiceExtensions
             .AddSingleton<IDialogService, UrsaDialogService>()
             .AddSingleton<IUserInteractionService, UserInteractionService>()
             .AddSingleton<IViewportService, ViewportService>()
-            .AddSingleton<IControlRendererService, ControlRendererService>();
+            .AddSingleton<IControlRendererService, ControlRendererService>()
+            .AddSingleton<ITimetablePreviewRenderer, TimetablePreviewRenderer>();
 
         // selection strategy
         services.AddTransient<ManualSchedulingStrategy>();
