@@ -12,8 +12,6 @@ using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Models.Timetable;
-using CTUScheduler.Core.Models.Scoring;
-using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Pagination.Models;
 using CTUScheduler.Presentation.Features.Scheduling.Models;
@@ -23,7 +21,7 @@ using CTUScheduler.Presentation.Features.Scheduling.Shared.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
-using CTUScheduler.Presentation.Services.ControlRenderer;
+using CTUScheduler.Presentation.Services.Factories;
 using CTUScheduler.Presentation.Shared.Models;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using DynamicData;
@@ -41,33 +39,17 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
     private readonly CompositeDisposable _disposables = new();
     private readonly ILogger<TimetableSchedulerViewModel> _logger;
     private readonly IScheduleRegistrationService _scheduleRegistrationService;
-    private readonly IExcelExporterService _excelExporter;
     private readonly ITimetableGeneratorService _timetableGeneratorService;
-    private readonly IControlRendererService _controlRendererService;
-    private readonly ITimetablePreviewRenderer _timetablePreviewRenderer;
-    private readonly IUserInteractionService _userInteractionService;
 
-    public IReadOnlyList<SchedulingPreset> Presets { get; } = SchedulingPresetViewModel.DefaultPresets;
-    
     [Reactive] private SchedulingPreset? _selectedPreset;
 
+    public IReadOnlyList<SchedulingPreset> Presets { get; } = SchedulingPresetViewModel.DefaultPresets;
     public SchedulingCourseCoordinatorViewModel SchedulingCourseCoordinatorVM { get; }
     public TimetablePaginationViewModel PaginationTimeTableViewModel { get; }
 
-    private double CalculateScore(IReadOnlyList<SectionChoice> choices, IReadOnlyList<IScheduleScorer> scorers)
-    {
-        if (scorers == null || scorers.Count == 0) return 0.0;
-        double totalWeight = 0.0;
-        double totalScore = 0.0;
-        foreach (var scorer in scorers)
-        {
-            totalScore += scorer.CalculateScore(choices) * scorer.Weight;
-            totalWeight += scorer.Weight;
-        }
-        return totalWeight > 0 ? totalScore / totalWeight : 0.0;
-    }
+
     public IObservable<bool> CanNavigateNext { get; }
-    public ReactiveCommand<Unit, SelectableTimetableLayout> GenerateTimeTableCommand { get; }
+    public ReactiveCommand<Unit, IReadOnlyList<RawTimetableData>> GenerateTimeTableCommand { get; }
     public ReactiveCommand<Unit, Unit> CancelGenerationCommand { get; }
     public ReactiveCommand<SelectableTimetableLayout, Unit> ShowTimetableDetailsCommand { get; }
 
@@ -76,17 +58,11 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
         ITimetableGeneratorService timetableGeneratorService,
         IUserInteractionService userInteractionService,
         IProfileQueryService profileQueryService,
-        IExcelExporterService excelExporterService,
-        IControlRendererService controlRendererService,
-        ITimetablePreviewRenderer timetablePreviewRenderer,
+        IViewModelFactory viewModelFactory,
         ILoggerFactory loggerFactory)
     {
         _scheduleRegistrationService = scheduleRegistrationService;
-        _excelExporter = excelExporterService;
         _timetableGeneratorService = timetableGeneratorService;
-        _controlRendererService = controlRendererService;
-        _timetablePreviewRenderer = timetablePreviewRenderer;
-        _userInteractionService = userInteractionService;
         _logger = loggerFactory.CreateLogger<TimetableSchedulerViewModel>();
 
         var courseStream = context.CourseBlueprints.Connect()
@@ -103,35 +79,39 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                 loggerFactory.CreateLogger<SchedulingCourseCoordinatorViewModel>())
             .DisposeWith(_disposables);
 
-        _selectedPreset = Presets.FirstOrDefault();
+        _selectedPreset = Presets[0];
 
         var maxCanSelect = profileQueryService.ProfileUsageState
             .Select(x => x.Limit - x.Current)
             .DistinctUntilChanged();
 
         var sortObservable = this.WhenAnyValue(x => x.SelectedPreset)
+            .WhereNotNull()
+            .ObserveOn(RxSchedulers.TaskpoolScheduler)
             .Select(preset =>
             {
-                if (preset != null && PaginationTimeTableViewModel != null)
+                if (PaginationTimeTableViewModel is not null)
                 {
                     var scorers = preset.Profile.Scorers;
                     foreach (var layout in PaginationTimeTableViewModel.CurrentData)
                     {
                         var vm = layout.Item;
-                        vm.TotalScore = CalculateScore(vm.Choices, scorers);
+                        vm.TotalScore = timetableGeneratorService.RecalculateScore(vm.Choices, scorers);
                     }
                 }
+
                 return Comparer<SelectableTimetableLayout>.Create((a, b) =>
                     b.Item.TotalScore.CompareTo(a.Item.TotalScore));
-            });
+            })
+            .ObserveOn(RxSchedulers.MainThreadScheduler);
 
         PaginationTimeTableViewModel = new TimetablePaginationViewModel(
-            maxCanSelect,
-            new PaginationOptions<SelectableTimetableLayout>
-            {
-                SortObservable = sortObservable,
-                PageSize = 12
-            })
+                maxCanSelect,
+                new PaginationOptions<SelectableTimetableLayout>
+                {
+                    SortObservable = sortObservable,
+                    PageSize = 12
+                })
             .DisposeWith(_disposables);
 
         CanNavigateNext = PaginationTimeTableViewModel.SelectedItemCountChanged
@@ -150,26 +130,18 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                         PaginationTimeTableViewModel.Clear();
                         var courseSectionFlatten =
                             CourseSectionsTrackerFlatten(SchedulingCourseCoordinatorVM.GetGroupedCourses());
+                        var scorers = SelectedPreset?.Profile.Scorers;
 
                         var options = new ScheduleGenerationOptions()
                         {
                             CancellationToken = cts.Token,
-                            MaxResults = null
+                            MaxResults = 1000,
+                            Scorers = scorers ?? [],
                         };
 
-                        var scorers = SelectedPreset?.Profile.Scorers;
 
                         return _timetableGeneratorService.Generate(courseSectionFlatten, options)
                             .SubscribeOn(RxSchedulers.TaskpoolScheduler)
-                            .Select(x =>
-                            {
-                                var vm = new TimetablePreviewViewModel(x, _excelExporter, _controlRendererService, _timetablePreviewRenderer, _userInteractionService);
-                                if (scorers != null)
-                                {
-                                    vm.TotalScore = CalculateScore(vm.Choices, scorers);
-                                }
-                                return new SelectableTimetableLayout(vm);
-                            })
                             .TakeUntil(CancelGenerationCommand.Do(_ =>
                             {
                                 try
@@ -184,9 +156,21 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
             .DisposeWith(_disposables);
 
         GenerateTimeTableCommand
-            .Buffer(TimeSpan.FromMilliseconds(500), PaginationTimeTableViewModel.PageSize * 2)
-            .Where(batch => batch.Count > 0)
-            .Subscribe(batch => { PaginationTimeTableViewModel.AddRange(batch); })
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
+            .Subscribe(rawTimetableData =>
+            {
+                var timetableLayout =
+                    rawTimetableData.Select(x =>
+                    {
+                        var layout =
+                            viewModelFactory.Create<TimetablePreviewViewModel, IReadOnlyList<SectionChoice>>(x.Choices);
+                        layout.TotalScore = x.Score;
+
+                        return new SelectableTimetableLayout(layout);
+                    });
+
+                PaginationTimeTableViewModel.AddRange(timetableLayout);
+            })
             .DisposeWith(_disposables);
 
         ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<SelectableTimetableLayout>(async
