@@ -267,7 +267,7 @@
                                                             <Run Text="{Binding AttendingDay, Mode=OneTime}" />
                                                             <Run Text=", Tiết " />
                                                             <Run Text="{Binding Period, Mode=OneTime}" />
-                                                            <Run Text=", " Foreground="{StaticResource DisableColor}" />
+                                                            <Run Text=", " />
                                                             <Run Text="{Binding Room, Mode=OneTime}" />
                                                         </TextBlock>
                                                     </DataTemplate>
@@ -362,7 +362,7 @@
                                                                                             <Run Text="{Binding AttendingDay, Mode=OneTime}" />
                                                                                             <Run Text=", Tiết " />
                                                                                             <Run Text="{Binding Period, Mode=OneTime}" />
-                                                                                            <Run Text=", " Foreground="{StaticResource DisableColor}" />
+                                                                                            <Run Text=", " />
                                                                                             <Run Text="{Binding Room, Mode=OneTime}" />
                                                                                         </TextBlock>
                                                                                     </Border>
