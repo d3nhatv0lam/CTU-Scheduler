@@ -32,13 +32,13 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         [Reactive] private bool _isOpenQuickSelectPopup;
         [Reactive] private bool _showOnlyAvailableSections;
         [Reactive] private bool _isTextBoxFocused;
-        [Reactive] private bool _isSelectAllChecked;
         [Reactive] private QuickSelectDmhpCourse? _selectedQuickSelectDmhpCourse;
 
         [ObservableAsProperty] private Course? _searchedCourse;
         [ObservableAsProperty] private IReadOnlyList<SelectableCourseSection> _searchedCourseSections = null!;
         [ObservableAsProperty] private IReadOnlyList<SelectableCourseSection> _filteredCourseSections = null!;
         [ObservableAsProperty] private IReadOnlyList<QuickSelectDmhpCourse> _quickSelectCourses = null!;
+        [ObservableAsProperty] private bool _isSelectAllChecked;
 
         private readonly ReadOnlyObservableCollection<CourseBlueprint> _coursesBindable;
         private readonly SourceList<CourseBlueprint> _coursesSourceList;
@@ -50,6 +50,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         public ReactiveCommand<Unit, Unit> AddCoursesCommand { get; }
         public ReactiveCommand<CourseBlueprint, Unit> TreeRemoveCourseCommand { get; }
         public ReactiveCommand<CourseSection, Unit> TreeRemoveSectionCommand { get; }
+        public ReactiveCommand<bool, Unit> ToggleSelectAllCommand { get; }
 
         public FindCourseViewModel(SchedulingWizardContext context,
             ICourseCatalogService courseCatalogService,
@@ -157,20 +158,29 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
 
             #region Commands Setup
 
-            this.WhenAnyValue(x => x.FilteredCourseSections)
-                .Subscribe(_ => IsSelectAllChecked = false)
+            _isSelectAllCheckedHelper = this.WhenAnyValue(x => x.FilteredCourseSections)
+                .Select(sections =>
+                {
+                    if (sections == null || !sections.Any())
+                        return Observable.Return(false);
+
+                    var selectionChangedObservables = sections.Select(s => s.WhenAnyValue(x => x.IsSelected));
+        
+                    return Observable.CombineLatest(selectionChangedObservables, states => states.All(isChecked => isChecked));
+                })
+                .Switch()
+                .ToProperty(this, nameof(IsSelectAllChecked), scheduler: RxSchedulers.MainThreadScheduler)
                 .DisposeWith(_disposables);
 
-            this.WhenAnyValue(x => x.IsSelectAllChecked)
-                .Subscribe(isChecked =>
+            ToggleSelectAllCommand = ReactiveCommand.Create<bool>(isChecked =>
+            {
+                if (FilteredCourseSections == null) return;
+
+                foreach (var section in FilteredCourseSections)
                 {
-                    if (FilteredCourseSections == null) return;
-                    
-                    foreach (var section in FilteredCourseSections)
-                    {
-                        section.IsSelected = isChecked;
-                    }
-                }).DisposeWith(_disposables);
+                    section.IsSelected = isChecked;
+                }
+            }).DisposeWith(_disposables);
 
 
             FocusTextBoxCommand = ReactiveCommand.Create(() =>

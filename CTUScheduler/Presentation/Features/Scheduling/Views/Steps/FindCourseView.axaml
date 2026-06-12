@@ -190,7 +190,9 @@
                                   Margin="15 20 0 0"
                                   VerticalAlignment="Center"
                                   Content="Chọn hết nhóm"
-                                  IsChecked="{Binding IsSelectAllChecked, Mode=TwoWay}" />
+                                  IsChecked="{Binding IsSelectAllChecked, Mode=OneWay}"
+                                  Command="{Binding ToggleSelectAllCommand}"
+                                  CommandParameter="{Binding $self.IsChecked}" />
 
                         <Button Grid.Column="2" HorizontalAlignment="Right" Classes="add-btn ripple"
                                 Command="{Binding AddCoursesCommand}">
