@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -7,7 +8,6 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CTUScheduler.Core.Models.Shared;
@@ -16,10 +16,8 @@ using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Resources;
-using CTUScheduler.Presentation.Features.TimetableRefactor.Views;
 using CTUScheduler.Presentation.Services.ControlRenderer;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
-using CTUScheduler.AppServices.Extensions;
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
@@ -194,7 +192,12 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
         if (isDisposing)
         {
             // gọi trực tiếp _previewImage để tránh gọi lazy property tự khởi tạo bitmap sau đó dispose
-            _previewImage?.Dispose();
+            if (_previewImage is not null)
+            {
+                var img = _previewImage;
+                _previewImage = null;
+                Dispatcher.UIThread.Post(img.Dispose, DispatcherPriority.Background);
+            }
             Disposables.Dispose();
         }
 

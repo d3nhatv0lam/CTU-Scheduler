@@ -20,10 +20,12 @@ using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
-public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel, IScorable
+public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel,
+    INeedArgs<IEnumerable<SectionChoice>>,
+    IScorable
 {
     private readonly CancellationTokenSource _cts = new();
-    private readonly List<SectionChoice> _choices = new();
+    private readonly List<SectionChoice> _choices = [];
     private bool _previewGenerationRequested;
 
     public IReadOnlyList<SectionChoice> Choices => _choices;
@@ -71,7 +73,7 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel, I
             lock (_visualizerLock)
             {
                 if (base.VisualizerVM is not null) return base.VisualizerVM;
-                
+
                 var sourceList = new SourceList<TimetableRenderItem>();
 
                 var items = _choices.Select(choice =>

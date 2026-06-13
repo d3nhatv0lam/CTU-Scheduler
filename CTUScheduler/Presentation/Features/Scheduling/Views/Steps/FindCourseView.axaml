@@ -8,7 +8,7 @@
     xmlns:rxui="http://reactiveui.net"
     x:DataType="viewModels1:FindCourseViewModel"
     x:CompileBindings="True"
-    xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+    xmlns:conv="using:Avalonia.Data.Converters"
     xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:viewModels1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps"
@@ -26,242 +26,262 @@
     </rxui:ReactiveUserControl.KeyBindings>
 
     <rxui:ReactiveUserControl.Styles>
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Features/Scheduling/Shared/Styles/controls.axaml" />
+
         <Style Selector="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource Text-Font}" />
+            <Setter Property="Foreground" Value="{StaticResource BlackBrush}" />
         </Style>
         <Style Selector="TextBlock.Title">
             <Setter Property="FontSize" Value="20" />
             <Setter Property="FontWeight" Value="Bold" />
         </Style>
-        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
-        <StyleInclude Source="avares://CTUScheduler/Presentation/Features/Scheduling/Shared/Styles/controls.axaml"></StyleInclude>
+        <Style Selector="TextBlock.course-info">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="0 5 0 10" />
+        </Style>
+        <Style Selector="TextBlock.section-info">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Margin" Value="0 0 0 5" />
+            <Setter Property="TextWrapping" Value="WrapWithOverflow" />
+        </Style>
+
+        <Style Selector="Button.add-btn">
+            <Setter Property="Height" Value="35" />
+            <Setter Property="Margin" Value="0 15 8 0" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+        </Style>
+        <Style Selector="Button.search-btn">
+            <Setter Property="CornerRadius" Value="20" />
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Margin" Value="0 0 5 0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+        </Style>
+        <Style Selector="Button.trash-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="Foreground" Value="{StaticResource RedColor}" />
+        </Style>
+
+        <Style Selector="Border.box-container">
+            <Setter Property="Padding" Value="0 5 0 5" />
+        </Style>
+        <Style Selector="Border.SelectedColumn">
+            <Setter Property="Background" Value="#F2FBFF" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+        </Style>
+        <Style Selector="Border.CourseCard">
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Margin" Value="0 0 0 10" />
+            <Setter Property="ClipToBounds" Value="True" />
+            <Setter Property="Background" Value="White" />
+        </Style>
+        <Style Selector="Border.schedule-badge">
+            <Setter Property="Background" Value="#EEF2FB" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="8 4" />
+            <Setter Property="Margin" Value="0 0 0 4" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+        <Style Selector="Separator.divider">
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Background" Value="{StaticResource BorderColor}" />
+        </Style>
+
+        <Style Selector="DataGrid.main-grid">
+            <Setter Property="ClipToBounds" Value="True" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="ColumnHeaderHeight" Value="40" />
+            <Setter Property="Background" Value="White" />
+        </Style>
+        <Style Selector="DataGrid TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="TextWrapping" Value="WrapWithOverflow" />
+        </Style>
+
     </rxui:ReactiveUserControl.Styles>
 
-    <Grid ColumnDefinitions="* 10 0.5*">
-        <!--// left side //-->
-        <Border Grid.Column="0" Padding="0 3 0 3">
-            <Border Classes="CornerBorder">
-                <Grid RowDefinitions="auto 1 auto *" ClipToBounds="True">
-                    <!--// title //-->
-                    <TextBlock
-                        Grid.Row="0"
-                        x:Name="txtCourseInfo"
-                        Classes="Title"
-                        MaxHeight="70"
-                        Text="Danh mục học phần"
-                        HorizontalAlignment="Left"
-                        Margin="10 0 0 0"
-                        TextWrapping="WrapWithOverflow">
-                    </TextBlock>
+    <Grid ColumnDefinitions="* 10 0.5*" Margin="10">
+
+        <Border Grid.Column="0" Classes="box-container">
+            <Border Classes="CornerBorder" Background="White">
+                <Grid RowDefinitions="Auto, 1, Auto, Auto, Auto, *" ClipToBounds="True">
+
+                    <TextBlock Grid.Row="0"
+                               Classes="Title"
+                               MaxHeight="80"
+                               Text="Tạo thời khóa biểu thủ công"
+                               HorizontalAlignment="Left"
+                               Margin="10 10 0 10"
+                               TextWrapping="WrapWithOverflow" />
 
                     <Border Grid.Row="1" Height="1" Padding="10 0 10 0">
-                        <Separator Margin="0" Background="#a3a3a3" />
+                        <Separator Classes="divider" />
                     </Border>
 
-                    <!--// Search bar //-->
-                    <Border Grid.Row="2" Padding="10 0 10 0">
-                        <DockPanel
-                            LastChildFill="False"
-                            ClipToBounds="True">
-                            <!--// search field //-->
-                            <TextBox
-                                DockPanel.Dock="Left"
-                                x:Name="tboxCourseKeyInput"
-                                Width="165"
-                                UseFloatingWatermark="True"
-                                Text="{Binding TxtInputCourseKey ,Mode=TwoWay}"
-                                Classes="outline clearButton"
-                                Theme="{StaticResource OutlineTextBox}"
-                                p1:TextFieldAssist.Label="Mã học phần">
-                                <Interaction.Behaviors>
-                                    <behaviors:TextBoxClickBehavior ClickCommand="{Binding FocusTextBoxCommand}"></behaviors:TextBoxClickBehavior>
-                                    <EventTriggerBehavior EventName="GotFocus">
-                                        <InvokeCommandAction Command="{Binding FocusTextBoxCommand}" />
-                                    </EventTriggerBehavior>
-                                    <EventTriggerBehavior EventName="LostFocus">
-                                        <InvokeCommandAction Command="{Binding UnfocusTextBoxCommand}"></InvokeCommandAction>
-                                    </EventTriggerBehavior>
-                                </Interaction.Behaviors>
-                            </TextBox>
-                            
-                            <!--// Quick select popup //-->
-                            <Popup
-                                PlacementTarget="{Binding ElementName=tboxCourseKeyInput}"
-                                Placement="BottomEdgeAlignedLeft"
-                                IsOpen="{Binding IsOpenQuickSelectPopup, Mode=TwoWay}"
-                                MaxHeight="200" Width="210">
+                    <Grid Grid.Row="2" ColumnDefinitions="Auto, Auto, *" Margin="10 10 10 5" ClipToBounds="True">
+                        <TextBox Grid.Column="0"
+                                 x:Name="TboxCourseKeyInput"
+                                 Width="250"
+                                 PlaceholderText="Mã học phần"
+                                 Text="{Binding TxtInputCourseKey, Mode=TwoWay}"
+                                 Classes="input floating">
 
-                                <controls:Card
-                                    CornerRadius="5"
-                                    VerticalAlignment="Top"
-                                    Background="White"
-                                    BorderThickness="1"
-                                    BorderBrush="#a3a3a3"
-                                    Padding="1"
-                                    SlidingAnimation.Top="500"
-                                    ClipToBounds="True">
-                                    
-                                    <ScrollViewer HorizontalScrollBarVisibility="Auto" 
-                                                  VerticalScrollBarVisibility="Auto" 
-                                                  Theme="{StaticResource MaterialModernScrollViewer}">
-                                        
-                                        <ListBox x:Name="lboxQuickSelect"
-                                                 SelectedItem="{Binding SelectedQuickSelectDmhpCourse,Mode=TwoWay}"
-                                                 ItemsSource="{Binding QuickSelectCourses,Mode=OneWay}">
+                            <TextBox.InnerRightContent>
+                                <Button x:Name="BtnSearchCourse"
+                                        Classes="search-btn"
+                                        VerticalAlignment="Center"
+                                        Content="{materialIcons:MaterialIconExt Kind=Search, IconSize=24}"
+                                        Command="{Binding SearchCommand}" />
+                            </TextBox.InnerRightContent>
 
-                                            <ListBox.ItemTemplate>
-                                                <DataTemplate x:DataType="{x:Type qSelectCourse:QuickSelectDmhpCourse}">
-                                                    <Grid Background="Transparent">
-                                                        <TextBlock Text="{Binding Information,Mode= OneTime}" />
-                                                        <ToolTip.Tip>
-                                                            <TextBlock Text="{Binding Information,Mode= OneTime}" />
-                                                        </ToolTip.Tip>
-                                                    </Grid>
-                                                </DataTemplate>
-                                            </ListBox.ItemTemplate>
-                                        </ListBox>
-                                    </ScrollViewer>
-                                </controls:Card>
-                            </Popup>
-                            <!--// search button //-->
-                            <Button
-                                x:Name="btnSearchCourse"
-                                CornerRadius="40"
-                                Content="{materialIcons:MaterialIconExt Kind=Search,IconSize=30}"
-                                Width="40"
-                                Height="40"
-                                Margin="5 5 0 0"
-                                VerticalAlignment="Center"
-                                Padding="0"
-                                DockPanel.Dock="Left"
-                                Command="{Binding SearchCommand}" />
-                            <!--// checkbox to show/hide avaiable students group //-->
-                            <CheckBox DockPanel.Dock="Left"
-                                      Margin="10 5 0 0"
-                                      VerticalAlignment="Center"
-                                      Padding="0"
-                                      Content="Ẩn nhóm đủ sĩ số"
-                                      IsChecked="{Binding ShowOnlyAvailableSections,Mode=TwoWay}" />
-                            <!--// add button //-->
-                            <Button DockPanel.Dock="Right"
-                                    Height="30"
-                                    Padding="5"
-                                    Margin="0 5 0 0"
-                                    CornerRadius="5"
-                                    Command="{Binding AddCoursesCommand}">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialIcons:MaterialIcon Kind="PlusCircleOutline" Height="20" Width="20" />
-                                    <TextBlock VerticalAlignment="Center" Text="Thêm học phần" Margin="2 0 0 0" />
-                                </StackPanel>
-                            </Button>
-                        </DockPanel>
-                    </Border>
+                            <Interaction.Behaviors>
+                                <behaviors:TextBoxClickBehavior ClickCommand="{Binding FocusTextBoxCommand}" />
+                                <EventTriggerBehavior EventName="GotFocus">
+                                    <InvokeCommandAction Command="{Binding FocusTextBoxCommand}" />
+                                </EventTriggerBehavior>
+                                <EventTriggerBehavior EventName="LostFocus">
+                                    <InvokeCommandAction Command="{Binding UnfocusTextBoxCommand}" />
+                                </EventTriggerBehavior>
+                            </Interaction.Behaviors>
+                        </TextBox>
 
+                        <Popup PlacementTarget="{Binding ElementName=TboxCourseKeyInput}"
+                               Placement="BottomEdgeAlignedLeft"
+                               IsOpen="{Binding IsOpenQuickSelectPopup, Mode=TwoWay}"
+                               MaxHeight="200" Width="250">
+                            <controls:Card CornerRadius="5" VerticalAlignment="Top"
+                                           Background="White" BorderThickness="1"
+                                           BorderBrush="{StaticResource BorderColor}"
+                                           Padding="1" SlidingAnimation.Top="500" ClipToBounds="True">
+                                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                    <ListBox x:Name="LboxQuickSelect"
+                                             SelectedItem="{Binding SelectedQuickSelectDmhpCourse, Mode=TwoWay}"
+                                             ItemsSource="{Binding QuickSelectCourses, Mode=OneWay}">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate x:DataType="{x:Type qSelectCourse:QuickSelectDmhpCourse}">
+                                                <Grid Background="Transparent">
+                                                    <TextBlock Text="{Binding Information, Mode=OneTime}" />
+                                                    <ToolTip.Tip>
+                                                        <TextBlock Text="{Binding Information, Mode=OneTime}" />
+                                                    </ToolTip.Tip>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </ScrollViewer>
+                            </controls:Card>
+                        </Popup>
 
-                    <!--// DataGrid //-->
-                    <Border Grid.Row="3" Padding="8">
-                        <DataGrid
-                            ClipToBounds="True"
-                            BorderBrush="#a3a3a3"
-                            ClipboardCopyMode="IncludeHeader"
-                            CanUserReorderColumns="False"
-                            CanUserSortColumns="False"
-                            CanUserResizeColumns="True"
-                            IsReadOnly="False"
-                            ColumnHeaderHeight="40"
-                            SelectionMode="Single"
-                            ItemsSource="{Binding FilteredCourseSections,Mode=OneWay}"
-                            AutoGenerateColumns="False">
-                            
+                        <CheckBox Grid.Column="1"
+                                  Margin="15 20 0 0"
+                                  VerticalAlignment="Center"
+                                  Content="Chọn hết nhóm"
+                                  IsChecked="{Binding IsSelectAllChecked, Mode=OneWay}"
+                                  Command="{Binding ToggleSelectAllCommand}"
+                                  CommandParameter="{Binding $self.IsChecked}" />
 
-                            <DataGrid.Styles>
-                                <Style Selector="TextBlock">
-                                    <Setter Property="HorizontalAlignment" Value="Center" />
-                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                    <Setter Property="Background" Value="Transparent" />
-                                    <Setter Property="TextWrapping" Value="WrapWithOverflow" />
-                                </Style>
-                                <!-- <Style Selector="DataGridRow:nth-child(even)"> -->
-                                <!--     <Setter Property="Background" Value="#f0f0f0"/> -->
-                                <!-- </Style> -->
-                                
-                            </DataGrid.Styles>
+                        <Button Grid.Column="2" HorizontalAlignment="Right" Classes="add-btn ripple"
+                                Command="{Binding AddCoursesCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialIcons:MaterialIcon Kind="Plus" Height="20" Width="20"
+                                                            Foreground="{StaticResource PrimaryBrush}" />
+                                <TextBlock VerticalAlignment="Center" Text="Thêm học phần" Margin="2 0 0 0"
+                                           Foreground="{StaticResource PrimaryBrush}" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <ToggleSwitch Grid.Row="3" Margin="10 10 0 5" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                  OnContent="Ẩn nhóm đủ sĩ số" OffContent="Ẩn nhóm đủ sĩ số"
+                                  IsChecked="{Binding ShowOnlyAvailableSections, Mode=TwoWay}">
+                        <ToggleSwitch.Resources>
+                            <SolidColorBrush x:Key="SecondaryHueMidBrush" Color="{StaticResource PrimaryColor}" />
+                        </ToggleSwitch.Resources>
+                    </ToggleSwitch>
+
+                    <TextBlock Grid.Row="4"
+                               Classes="course-info"
+                               IsVisible="{Binding SearchedCourse, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+                        <Run Text="{Binding SearchedCourse.Code, Mode=OneWay}" />
+                        <Run Text=" - " />
+                        <Run Text="{Binding SearchedCourse.Name_VN, Mode=OneWay}" />
+                        <Run Text=" (Tín chỉ: " />
+                        <Run Text="{Binding SearchedCourse.Credits, Mode=OneWay}" />
+                        <Run Text=")" />
+                    </TextBlock>
+
+                    <Border Grid.Row="5" Padding="8">
+                        <DataGrid Classes="main-grid"
+                                  ClipboardCopyMode="IncludeHeader"
+                                  CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeColumns="True"
+                                  IsReadOnly="False" SelectionMode="Single"
+                                  ItemsSource="{Binding FilteredCourseSections, Mode=OneWay}"
+                                  AutoGenerateColumns="False">
 
                             <DataGrid.Columns>
                                 <DataGridTemplateColumn Header="Chọn" Width="69" CanUserResize="False">
                                     <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate
-                                            x:DataType="{x:Type models:SelectableCourseSection}">
-                                            <CheckBox
-                                                VerticalAlignment="Center"
-                                                HorizontalAlignment="Center"
-                                                IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                        <DataTemplate x:DataType="{x:Type models:SelectableCourseSection}">
+                                            <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                      IsChecked="{Binding IsSelected, Mode=TwoWay}" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTextColumn Binding="{Binding Item.Group, Mode=OneWay}"
-                                                    IsReadOnly="True"
-                                                    Header="Nhóm"
-                                                    MinWidth="60">
-                                </DataGridTextColumn>
-                                <DataGridTextColumn Binding="{Binding Item.TotalStudents, Mode=OneWay}"
-                                                    IsReadOnly="True"
-                                                    Header="Sĩ số"
-                                                    MinWidth="50"
-                                                    Width="auto" />
-                                <DataGridTextColumn Binding="{Binding Item.RemainingStudents, Mode=OneWay}"
-                                                    IsReadOnly="True"
-                                                    Header="Sĩ số còn lại"
-                                                    MinWidth="80"
-                                                    Width="80" />
-                                <DataGridTemplateColumn Header="Lịch học" Width="180">
+
+                                <DataGridTextColumn Binding="{Binding Item.Group, Mode=OneWay}" IsReadOnly="True"
+                                                    Header="Nhóm" MinWidth="60" />
+
+                                <DataGridTemplateColumn Header="Sĩ số" MinWidth="80" Width="auto">
                                     <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate
-                                            x:DataType="{x:Type models:SelectableCourseSection}">
+                                        <DataTemplate x:DataType="{x:Type models:SelectableCourseSection}">
+                                            <TextBlock>
+                                                <Run Text="{Binding Item.RemainingStudents, Mode=OneWay}" />
+                                                <Run Text="/" />
+                                                <Run Text="{Binding Item.TotalStudents, Mode=OneWay}" />
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="Lịch học" Width="0.5*" MinWidth="260">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="{x:Type models:SelectableCourseSection}">
                                             <ItemsRepeater VerticalAlignment="Center"
-                                                           ItemsSource="{Binding Item.ClassDays,Mode=OneTime}">
+                                                           ItemsSource="{Binding Item.ClassDays, Mode=OneTime}">
                                                 <ItemsRepeater.ItemTemplate>
                                                     <DataTemplate DataType="{x:Type curriculumModel:ClassDay}">
-                                                        <Grid>
-                                                            <Grid.Styles>
-                                                                <Style Selector="TextBlock">
-                                                                    <Setter Property="TextWrapping" Value="NoWrap" />
-                                                                    <Setter Property="HorizontalAlignment"
-                                                                            Value="Center" />
-                                                                </Style>
-                                                            </Grid.Styles>
-
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="auto" MinWidth="20"
-                                                                        MaxWidth="50" />
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="auto" MinWidth="50"
-                                                                        MaxWidth="100" />
-                                                            </Grid.ColumnDefinitions>
-
-                                                            <TextBlock Grid.Column="0"
-                                                                       Text="{Binding AttendingDay,Mode=OneTime}"
-                                                                       ToolTip.Tip="Thứ đi học" />
-                                                            <TextBlock
-                                                                Grid.Column="1"
-                                                                Text="{Binding Period}"
-                                                                ToolTip.Tip="Tiết học" />
-                                                            <TextBlock Grid.Column="2"
-                                                                       Text="{Binding Room,Mode=OneTime}"
-                                                                       ToolTip.Tip="Phòng học" />
-                                                        </Grid>
+                                                        <TextBlock>
+                                                            <Run Text="Thứ " />
+                                                            <Run Text="{Binding AttendingDay, Mode=OneTime}" />
+                                                            <Run Text=", Tiết " />
+                                                            <Run Text="{Binding Period, Mode=OneTime}" FontFamily="Monospace" />
+                                                            <Run Text=", " />
+                                                            <Run Text="{Binding Room, Mode=OneTime}" />
+                                                        </TextBlock>
                                                     </DataTemplate>
                                                 </ItemsRepeater.ItemTemplate>
                                             </ItemsRepeater>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn
-                                    Header="Giảng viên"
-                                    Width="*">
+
+                                <DataGridTemplateColumn Header="Giảng viên" Width="*">
                                     <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate
-                                            x:DataType="{x:Type models:SelectableCourseSection}">
+                                        <DataTemplate x:DataType="{x:Type models:SelectableCourseSection}">
                                             <Grid>
                                                 <TextBlock Text="{Binding Item.Lecturer, Mode=OneTime}" />
                                             </Grid>
@@ -269,101 +289,108 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                             </DataGrid.Columns>
-
                         </DataGrid>
                     </Border>
                 </Grid>
             </Border>
         </Border>
-        <!--// right side //-->
-        <Border Grid.Column="2" Padding="0 3 0 3">
-            <Border Classes="CornerBorder">
+
+        <Border Grid.Column="2" Classes="box-container">
+            <Border Classes="SelectedColumn">
                 <Grid RowDefinitions="auto 1 *">
-                    <TextBlock
-                        Grid.Row="0"
-                        Classes="Title"
-                        Text="Học phần đã chọn"
-                        HorizontalAlignment="Left"
-                        Margin="10 0 0 0" />
+                    <TextBlock Grid.Row="0" Classes="Title" Text="Học phần đã chọn" HorizontalAlignment="Left"
+                               Margin="10 10 0 10" />
 
                     <Border Grid.Row="1" Height="1" Padding="10 0 10 0">
-                        <Separator Grid.Row="1" Margin="0" Background="#a3a3a3" />
+                        <Separator Classes="divider" />
                     </Border>
 
-                    <!--// TreeView //-->
                     <Border Grid.Row="2" Padding="8">
-                        <TreeView
-                            x:Name="tviewCourses"
-                            ItemsSource="{Binding Courses}">
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding Courses}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="{x:Type context:CourseBlueprint}">
 
-                            <TreeView.ItemTemplate>
-                                <TreeDataTemplate ItemsSource="{Binding Sections}"
-                                                  x:DataType="{x:Type context:CourseBlueprint}">
-                                    <Grid ColumnDefinitions="* auto">
-                                        <TextBlock Grid.Column="0"
-                                                   HorizontalAlignment="Left">
-                                            <Run Text="{Binding CoreCourse.Code,Mode=OneTime}" />
-                                            <Run Text=" - " />
-                                            <Run Text="{Binding CoreCourse.Name_VN,Mode=OneTime}" />
-                                            <Run Text="(" />
-                                            <Run Text="{Binding Sections.Count,Mode=OneWay}" />
-                                            <Run Text=")" />
-                                        </TextBlock>
-                                        
-                                        <Button Grid.Column="1"
-                                                Classes="BtnRemove"
-                                                Content="{materialIcons:MaterialIconExt Kind=CloseBoxOutline,IconSize=20}"
-                                                Command="{Binding ViewModel.TreeRemoveCourseCommand , RelativeSource={RelativeSource AncestorType=views1:FindCourseView}}"
-                                                CommandParameter="{Binding .}" />
-                                    </Grid>
-                                </TreeDataTemplate>
-                            </TreeView.ItemTemplate>
+                                        <Border Classes="CourseCard">
+                                            <Expander HorizontalAlignment="Stretch"
+                                                      HorizontalContentAlignment="Stretch" Padding="0"
+                                                      Background="Transparent" BorderThickness="0" IsExpanded="True">
 
-                            <TreeView.DataTemplates>
-                                <DataTemplate x:DataType="{x:Type curriculumModel:CourseSection}">
-                                    <Grid RowDefinitions="auto auto"
-                                          ColumnDefinitions="auto * auto">
+                                                <Expander.Header>
+                                                    <Grid ColumnDefinitions="* auto" Margin="5 0">
+                                                        <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                                                                   FontWeight="Bold" TextWrapping="WrapWithOverflow">
+                                                            <Run Text="{Binding CoreCourse.Code, Mode=OneTime}" />
+                                                            <Run Text=" - " />
+                                                            <Run Text="{Binding CoreCourse.Name_VN, Mode=OneTime}" />
+                                                        </TextBlock>
 
-                                        <ItemsRepeater
-                                            Grid.Row="0"
-                                            Grid.Column="1"
-                                            ItemsSource="{Binding ClassDays}">
-                                            <ItemsRepeater.ItemTemplate>
-                                                <DataTemplate x:DataType="{x:Type curriculumModel:ClassDay}">
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="auto" MinWidth="30" />
-                                                            <ColumnDefinition Width="auto" MinWidth="80" />
-                                                            <ColumnDefinition Width="auto" MinWidth="50" />
-                                                        </Grid.ColumnDefinitions>
-
-                                                        <TextBlock Grid.Column="0"
-                                                                   Text="{Binding AttendingDay, Mode=OneTime}"
-                                                                   ToolTip.Tip="thứ đi học" />
-                                                        <TextBlock Grid.Column="1"
-                                                                   Text="{Binding Period, Mode=OneTime}"
-                                                                   ToolTip.Tip="Tiết học" />
-                                                        <TextBlock Grid.Column="2" Text="{Binding Room, Mode=OneTime}"
-                                                                   ToolTip.Tip="Phòng học" />
+                                                        <Button Grid.Column="1" Classes="trash-btn"
+                                                                Content="{materialIcons:MaterialIconExt Kind=TrashCanOutline, IconSize=20}"
+                                                                Command="{Binding ViewModel.TreeRemoveCourseCommand, RelativeSource={RelativeSource AncestorType=views1:FindCourseView}}"
+                                                                CommandParameter="{Binding .}" />
                                                     </Grid>
-                                                </DataTemplate>
-                                            </ItemsRepeater.ItemTemplate>
-                                        </ItemsRepeater>
-                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Lecturer}"
-                                                   ToolTip.Tip="Giảng viên"
-                                                   HorizontalAlignment="Left" />
-                                        <Button Grid.Row="0"
-                                                Grid.RowSpan="2"
-                                                Grid.Column="2"
-                                                Classes="BtnRemove"
-                                                Content="{materialIcons:MaterialIconExt Kind=CloseBoxOutline,IconSize=20}"
-                                                Command="{Binding ViewModel.TreeRemoveSectionCommand , RelativeSource={RelativeSource AncestorType=views1:FindCourseView}}"
-                                                CommandParameter="{Binding .}" />
-                                    </Grid>
-                                </DataTemplate>
-                            </TreeView.DataTemplates>
+                                                </Expander.Header>
 
-                        </TreeView>
+                                                <StackPanel>
+                                                    <Separator Classes="divider" />
+
+                                                    <ItemsControl ItemsSource="{Binding Sections}" Margin="15 10 15 15">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate
+                                                                x:DataType="{x:Type curriculumModel:CourseSection}">
+                                                                <Grid ColumnDefinitions="* auto" Margin="0 5 0 10">
+
+                                                                    <StackPanel Grid.Column="0">
+                                                                        <TextBlock Classes="section-info">
+                                                                            <Run Text="Nhóm " FontWeight="SemiBold" />
+                                                                            <Run Text="{Binding Group, Mode=OneTime}"
+                                                                                    FontWeight="SemiBold" />
+                                                                            <Run Text=" - " />
+                                                                            <Run
+                                                                                Text="{Binding Lecturer, Mode=OneTime}" />
+                                                                        </TextBlock>
+
+                                                                        <ItemsRepeater
+                                                                            ItemsSource="{Binding ClassDays}">
+                                                                            <ItemsRepeater.ItemTemplate>
+                                                                                <DataTemplate
+                                                                                    x:DataType="{x:Type curriculumModel:ClassDay}">
+
+                                                                                    <Border Classes="schedule-badge">
+                                                                                        <TextBlock>
+                                                                                            <Run Text="Thứ " />
+                                                                                            <Run Text="{Binding AttendingDay, Mode=OneTime}" />
+                                                                                            <Run Text=", Tiết " />
+                                                                                            <Run Text="{Binding Period, Mode=OneTime}" FontFamily="Monospace" />
+                                                                                            <Run Text=", " />
+                                                                                            <Run Text="{Binding Room, Mode=OneTime}" />
+                                                                                        </TextBlock>
+                                                                                    </Border>
+
+                                                                                </DataTemplate>
+                                                                            </ItemsRepeater.ItemTemplate>
+                                                                        </ItemsRepeater>
+                                                                    </StackPanel>
+
+                                                                    <Button Grid.Column="1" Classes="trash-btn"
+                                                                            VerticalAlignment="Top"
+                                                                            Content="{materialIcons:MaterialIconExt Kind=TrashCanOutline, IconSize=20}"
+                                                                            Command="{Binding ViewModel.TreeRemoveSectionCommand, RelativeSource={RelativeSource AncestorType=views1:FindCourseView}}"
+                                                                            CommandParameter="{Binding .}" />
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+
+                                            </Expander>
+                                        </Border>
+
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
                     </Border>
                 </Grid>
             </Border>
