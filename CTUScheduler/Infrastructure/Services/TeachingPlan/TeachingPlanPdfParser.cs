@@ -340,7 +340,7 @@ public partial class TeachingPlanPdfParser : ITeachingPlanPdfParser
             }
 
             // Nhận diện loại công việc dựa trên từ khóa trong content
-            var step = DetectStep(content);
+            var step = DetectStep(content, id);
 
             if (type == TimelineNodeType.SinglePoint &&
                 (id == 4 || step == TeachingPlanStep.ApproveExtraClasses))
@@ -380,8 +380,10 @@ public partial class TeachingPlanPdfParser : ITeachingPlanPdfParser
                 fallbackAdjustmentEndDateTime = nodeEnd;
             }
 
+            // Kế hoạch bổ sung
             if (step == TeachingPlanStep.AdjustStudyPlanSupplementary)
             {
+                // kết thúc học kỳ (chắc chắn quá thời hạn đóng khht), không thì thành 1 điểm
                 nodeEnd = semesterEndDate ?? nodeStart;
                 type = TimelineNodeType.StartFrom;
 
@@ -399,7 +401,7 @@ public partial class TeachingPlanPdfParser : ITeachingPlanPdfParser
         return timelineNodes;
     }
 
-    private static TeachingPlanStep DetectStep(string content)
+    private static TeachingPlanStep DetectStep(string content, int id)
     {
         if (content.Contains("công bố", StringComparison.OrdinalIgnoreCase) && 
             content.Contains("thời khóa biểu", StringComparison.OrdinalIgnoreCase))
@@ -419,26 +421,33 @@ public partial class TeachingPlanPdfParser : ITeachingPlanPdfParser
             return TeachingPlanStep.CourseRegistrationPhase2;
         }
         
-        if (content.Contains("điều chỉnh", StringComparison.OrdinalIgnoreCase) && 
-            content.Contains("bổ sung", StringComparison.OrdinalIgnoreCase))
+        // Cần phân biệt rõ Đợt điều chỉnh kế hoạch học tập chính (id == 3) 
+        // và đợt điều chỉnh bổ sung/mở lại (id == 8) tránh bị ghi đè dữ liệu timeline
+        if (id == 8 || (content.Contains("điều chỉnh", StringComparison.OrdinalIgnoreCase) && 
+            content.Contains("bổ sung", StringComparison.OrdinalIgnoreCase)))
         {
             return TeachingPlanStep.AdjustStudyPlanSupplementary;
         }
         
-        if (content.Contains("điều chỉnh", StringComparison.OrdinalIgnoreCase) && 
-            (content.Contains("kế hoạch", StringComparison.OrdinalIgnoreCase) || content.Contains("KHHT", StringComparison.OrdinalIgnoreCase)))
+        if (id == 3 || (content.Contains("điều chỉnh", StringComparison.OrdinalIgnoreCase) && 
+            (content.Contains("kế hoạch", StringComparison.OrdinalIgnoreCase) || content.Contains("KHHT", StringComparison.OrdinalIgnoreCase))))
         {
             return TeachingPlanStep.AdjustStudyPlan;
         }
         
         if (content.Contains("duyệt mở", StringComparison.OrdinalIgnoreCase) || 
-            content.Contains("mở thêm", StringComparison.OrdinalIgnoreCase))
+            content.Contains("mở thêm", StringComparison.OrdinalIgnoreCase) ||
+            content.Contains("mở lớp", StringComparison.OrdinalIgnoreCase))
         {
             return TeachingPlanStep.ApproveExtraClasses;
         }
         
         if (content.Contains("đóng", StringComparison.OrdinalIgnoreCase) && 
-            (content.Contains("xóa lớp", StringComparison.OrdinalIgnoreCase) || content.Contains("xóa HP", StringComparison.OrdinalIgnoreCase)))
+            (content.Contains("xóa lớp", StringComparison.OrdinalIgnoreCase) || 
+             content.Contains("xóa HP", StringComparison.OrdinalIgnoreCase) ||
+             content.Contains("kế hoạch", StringComparison.OrdinalIgnoreCase) ||
+             content.Contains("KHHT", StringComparison.OrdinalIgnoreCase) ||
+             content.Contains("website", StringComparison.OrdinalIgnoreCase)))
         {
             return TeachingPlanStep.CloseRegistration;
         }
@@ -576,6 +585,14 @@ public partial class TeachingPlanPdfParser : ITeachingPlanPdfParser
 
         return null;
     }
+
+    /// <summary>
+    ///  Parse string Date, string time to Datetime
+    /// </summary>
+    /// <param name="dateStr"></param>
+    /// <param name="timeStr"></param>
+    /// <param name="result">Kết quả khi parse. Không parse được thì sẽ là MinValue</param>
+    /// <returns></returns>
 
     private static bool TryParseDateTimeParts(string dateStr, string timeStr, out DateTime result)
     {
