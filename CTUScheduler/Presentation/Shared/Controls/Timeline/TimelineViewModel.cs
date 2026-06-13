@@ -37,6 +37,7 @@ public partial class TimelineNodeViewModel : ReactiveObject, IDisposable
     [Reactive] private DateTime _endDate;
     [Reactive] private string? _subtitle;
     [Reactive] private TimelineNodeType _nodeType;
+    [Reactive] private TeachingPlanStep _step;
     [ObservableAsProperty] private TimelineState _state = TimelineState.Completed;
     [ObservableAsProperty] private double _progress;
 
@@ -188,6 +189,7 @@ public partial class TimelineNodeViewModel : ReactiveObject, IDisposable
         EndDate = node.EndDate;
         Subtitle = node.Subtitle;
         NodeType = node.Type;
+        Step = node.GetStepType();
 
         // Ticker thời gian thực cập nhật mỗi 1 phút để đếm ngược chính xác, bắt buộc chạy trên Main UI Thread
         var timeTicker = Observable.Timer(TimeSpan.Zero, TimeSpan.FromMinutes(1), RxSchedulers.MainThreadScheduler)
