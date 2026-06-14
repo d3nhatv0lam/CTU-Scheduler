@@ -5,163 +5,323 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+    mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
     xmlns:rxui="http://reactiveui.net"
     x:CompileBindings="True"
     Focusable="True"
     x:DataType="vm:TimetableLayoutBaseViewModel"
-    xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
-    xmlns:p1="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels"
     xmlns:timetableVm="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.Models"
-    xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.Views"
     x:Class="CTUScheduler.Presentation.Features.TimetableRefactor.Views.TimetableLayoutView">
 
     <rxui:ReactiveUserControl.Styles>
-        <Style Selector="Border.padding">
-            <Setter Property="Padding" Value="10 10 10 10"></Setter>
+        <Style Selector="TextBlock.label">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{StaticResource DisableColor}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,4" />
         </Style>
-        <Style Selector="TextBlock">
-            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Style Selector="TextBlock.value">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Foreground" Value="{StaticResource Grey}" />
+            <Setter Property="FontWeight" Value="Bold" />
         </Style>
 
-        <Style Selector=".export-container > :is(Control)">
-            <Setter Property="Margin" Value="0 0 10 0"></Setter>
-            <Setter Property="ClipToBounds" Value="True"></Setter>
+        <Style Selector="Button.outline-primary">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="12 8" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.outline-primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Foreground" Value="White" />
         </Style>
 
-        <Style Selector="Button.export">
-            <Setter Property="CornerRadius" Value="10"></Setter>
-            <Setter Property="Height" Value="50"></Setter>
-
-            <Style Selector="^ StackPanel icon|MaterialIcon">
-                <Setter Property="Height" Value="20"></Setter>
-                <Setter Property="Width" Value="20"></Setter>
-            </Style>
+        <Style Selector="Button.icon-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="CornerRadius" Value="16" />
         </Style>
-        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml"></StyleInclude>
+        <Style Selector="Button.icon-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1A1f5ca9" />
+        </Style>
+
+        <Style Selector="Border.sidebar">
+            <Setter Property="Grid.Row" Value="0" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="Background" Value="White" />
+        </Style>
+        <Style Selector="Border.content-area">
+            <Setter Property="Grid.Row" Value="1" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
+        </Style>
+
+        <Style Selector="ScrollViewer.large Border.sidebar">
+            <Setter Property="Grid.Row" Value="0" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="1" />
+            <Setter Property="Grid.RowSpan" Value="2" />
+            <Setter Property="Width" Value="340" />
+            <Setter Property="MinWidth" Value="340" />
+            <Setter Property="MaxWidth" Value="340" />
+            <Setter Property="BorderThickness" Value="0,0,1,0" />
+        </Style>
+        <Style Selector="ScrollViewer.large Border.content-area">
+            <Setter Property="Grid.Row" Value="0" />
+            <Setter Property="Grid.Column" Value="1" />
+            <Setter Property="Grid.ColumnSpan" Value="1" />
+            <Setter Property="Grid.RowSpan" Value="2" />
+        </Style>
+
+        <Style Selector="ScrollViewer.large">
+            <Setter Property="VerticalScrollBarVisibility" Value="Disabled" />
+        </Style>
+        <Style Selector="ScrollViewer:not(.large)">
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+        </Style>
     </rxui:ReactiveUserControl.Styles>
 
-    <controls:Card
-        Padding="0" 
-        Background="White">
-        <Grid RowDefinitions="50 *">
-            <!-- // Top - Title // -->
-            <Border Grid.Row="0"
-                    Classes="padding">
-                <TextBlock
-                    x:Name="TitleTextBlock"
-                    Classes="Headline5"
-                    Text="{Binding Name
-                    , StringFormat={}Thời khóa biểu: {0}
-                    ,Mode=OneTime}">
-                </TextBlock>
-            </Border>
+    <ScrollViewer x:Name="RootScroller" HorizontalScrollBarVisibility="Disabled">
+        <Interaction.Behaviors>
+            <AdaptiveBehavior>
+                <AdaptiveClassSetter MinWidth="1100" MinWidthOperator="GreaterThanOrEqual" ClassName="large" />
+            </AdaptiveBehavior>
+        </Interaction.Behaviors>
 
-            <!-- // Bottom // -->
-            <Border Grid.Row="1"
-                    Classes="padding">
-                <Grid ColumnDefinitions="0.3* 20 *">
-                    <!-- // TimeTable Information // -->
-                    <Grid Grid.Column="0" RowDefinitions="* *">
-                        <Grid Grid.Row="0" RowDefinitions="* *">
-                            <TextBox
-                                x:Name="DescriptionTextBox"
-                                UseFloatingWatermark="True"
-                                p1:TextFieldAssist.Label="Mô tả"
-                                Classes="filled"
-                                VerticalAlignment="Stretch"
-                                Theme="{StaticResource FilledTextBox}"
-                                AcceptsReturn="True"
-                                TextWrapping="Wrap" />
-                            
-                            <Grid Grid.Row="1" 
-                                  Background="Transparent"
-                                  RowDefinitions="auto *"
-                                  ToolTip.Tip="Lịch tự dàn xếp với giảng viên">
-                                <TextBlock Grid.Row="0" 
-                                           Text="Môn lịch tự sắp xếp" FontWeight="Bold"
-                                           VerticalAlignment="Stretch" 
-                                           Padding="10"></TextBlock>
-                                <Border Padding="10" Grid.Row="1">
-                                    <ItemsRepeater ItemsSource="{Binding VisualizerVM.UnscheduledCourses}">
-                                        <ItemsRepeater.ItemTemplate>
-                                            <DataTemplate x:DataType="timetableVm:ScheduleGroupCellShared">
-                                                <TextBlock 
-                                                    Text="{Binding NameConcat, Mode=OneTime}" FontWeight="Bold"
-                                                    TextWrapping="WrapWithOverflow" 
-                                                   >
-                                                    <ToolTip.Tip>
-                                                        <StackPanel>
-                                                            <TextBlock Text="{Binding RemainingConcatTotalStudents, Mode=OneWay}"></TextBlock>
-                                                            <TextBlock Text="{Binding Credits,StringFormat=Tín chỉ:{0},Mode=OneWay}"></TextBlock>
-                                                            <TextBlock Text="{Binding Lecturer, Mode=OneWay}"></TextBlock>
-                                                        </StackPanel>
-                                                    </ToolTip.Tip>
-                                                </TextBlock>
-                                            </DataTemplate>
-                                        </ItemsRepeater.ItemTemplate>
-                                    </ItemsRepeater>
-                                </Border>
-                                <!-- Ct239e -->
-                            </Grid>
-                        </Grid>
-                        
-                        <Grid Grid.Row="1" RowDefinitions="* * * auto">
-                            <TextBlock Grid.Row="0"
-                                       x:Name="SubjectsCountTextBlock"
-                                       Text="{Binding SubjectsCount
-                                       ,StringFormat={}Số môn: {0}
-                                       ,Mode=OneTime}">
-                            </TextBlock>
-                            <TextBlock Grid.Row="1"
-                                       x:Name="TotalCreditTextBlock"
-                                       Text="{Binding TotalCredits
-                                       ,StringFormat={}Số tín chỉ: {0}
-                                       ,Mode=OneTime}">
-                            </TextBlock>
-                            <TextBlock Grid.Row="2"
-                                       x:Name="LastUpdateTextBlock"
-                                       Text="{Binding LastUpdated
-                                       ,StringFormat={}Lần cuối cập nhật: {0}
-                                       ,Mode=OneTime}">
-                            </TextBlock>
+        <Grid x:Name="ResponsiveLayout"
+              RowDefinitions="Auto, *"
+              ColumnDefinitions="Auto, *"
+              Background="White"
+              MaxWidth="{Binding $parent[ScrollViewer].Bounds.Width}">
 
-                            <!-- // Export Field // -->
-                            <StackPanel Grid.Row="3"
-                                        x:Name="ExportPanel"
-                                        Classes="export-container"
-                                        Orientation="Horizontal" >
-                                <Button
-                                    Classes="export"
-                                    ToolTip.Tip="Sao chép ảnh thời khóa biểu vào Clipboard (Ctrl+V)"
-                                    Command="{Binding CopyToClipboardCommand}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <icon:MaterialIcon Kind="ContentCopy" />
-                                        <TextBlock Text="COPY"></TextBlock>
-                                    </StackPanel>
-                                </Button>
-                                <Button
-                                    Classes="export"
-                                    ToolTip.Tip="Xuất thời khóa biểu dưới dạng file Excel"
-                                    Command="{Binding ExportToExcelCommand}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <icon:MaterialIcon Kind="DownloadOutline" />
-                                        <TextBlock Text="Excel"></TextBlock>
-                                    </StackPanel>
-                                </Button>
+            <Border Classes="sidebar">
+                <Grid RowDefinitions="Auto, *, Auto">
+
+                    <StackPanel Grid.Row="0" Margin="24, 24, 24, 0" Spacing="16">
+                        <StackPanel>
+                            <TextBlock Text="Chi tiết thời khóa biểu" FontSize="13"
+                                       Foreground="{StaticResource DisableColor}" FontWeight="SemiBold" />
+
+                            <Panel Margin="0,4,0,0">
+                                <Grid ColumnDefinitions="*, Auto" IsVisible="{Binding !IsEditing}">
+
+                                    <ScrollViewer Grid.Column="0"
+                                                  MaxHeight="80"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled">
+                                        
+                                        <!-- // Timetable Name // -->
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="Thời khóa biểu:"
+                                                       FontSize="18"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource Grey}"
+                                                       Margin="0,0,0,4" />
+
+                                            <TextBlock
+                                                       Text="{Binding Name}"
+                                                       FontSize="22" FontWeight="Bold"
+                                                       Foreground="{StaticResource PrimaryBrush}"
+                                                       TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </ScrollViewer>
+
+                                    <Button Grid.Column="1"
+                                            Classes="icon-btn"
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Top"
+                                            Command="{Binding StartEditCommand}"
+                                            ToolTip.Tip="Đổi tên thời khóa biểu">
+                                        <icon:MaterialIcon Kind="Pencil" Width="20" Height="20"
+                                                           Foreground="{StaticResource PrimaryBrush}" />
+                                    </Button>
+                                </Grid>
+
+                                <!-- // edit name field // -->
+                                <Grid ColumnDefinitions="*, Auto, Auto" IsVisible="{Binding IsEditing}">
+
+                                    <TextBox Grid.Column="0"
+                                             Text="{Binding TempName}"
+                                             FontSize="18" FontWeight="Bold"
+                                             Padding="8,4"
+                                             MaxHeight="80"
+                                             AcceptsReturn="True"
+                                             TextWrapping="Wrap"
+                                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                             VerticalAlignment="Top"
+                                             Background="{StaticResource BaseBackgroundColor}"
+                                             BorderThickness="1"
+                                             BorderBrush="{StaticResource PrimaryBrush}"
+                                             CornerRadius="4" />
+
+                                    <Button Grid.Column="1"
+                                            Classes="icon-btn"
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Top"
+                                            Command="{Binding SaveCommand}"
+                                            ToolTip.Tip="Lưu lại">
+                                        <icon:MaterialIcon Kind="Check" Width="24" Height="24" Foreground="Green" />
+                                    </Button>
+
+                                    <Button Grid.Column="2"
+                                            Classes="icon-btn"
+                                            Margin="4,0,0,0"
+                                            VerticalAlignment="Top"
+                                            Command="{Binding CancelCommand}"
+                                            ToolTip.Tip="Hủy bỏ">
+                                        <icon:MaterialIcon Kind="Close" Width="24" Height="24"
+                                                           Foreground="{StaticResource RedColor}" />
+                                    </Button>
+                                </Grid>
+                            </Panel>
+                        </StackPanel>
+
+                       
+                        <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto">
+                            <!-- // subject count //-->
+                            <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,0,0,12">
+                                <TextBlock Text="Số môn học" Classes="label" />
+                                <TextBlock 
+                                           Text="{Binding SubjectsCount}"
+                                           Classes="value" />
+                            </StackPanel>
+
+                            <!-- // credit // -->
+                            <StackPanel Grid.Column="1" Grid.Row="0" Margin="0,0,0,12">
+                                <TextBlock Text="Tổng tín chỉ" Classes="label" />
+                                <TextBlock 
+                                           Text="{Binding TotalCredits}"
+                                           Classes="value" />
+                            </StackPanel>
+
+                            <!-- // last update  -->
+                            <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1">
+                                <TextBlock Text="Cập nhật lần cuối" Classes="label" />
+                                <TextBlock 
+                                           Text="{Binding LastUpdated.LocalDateTime, StringFormat={}{0:dd/MM/yyyy HH:mm:ss}}"
+                                           FontSize="14"
+                                           Foreground="{StaticResource Grey}" />
                             </StackPanel>
                         </Grid>
-                    </Grid>
 
-                    <!-- // TimeTable View // -->
-                    <views1:TimetableView
-                        Grid.Column="2"
-                        DataContext="{Binding VisualizerVM}" />
+                        <u:Divider Margin="0, 8, 0, 16" BorderBrush="{StaticResource BorderColor}" />
+                    </StackPanel>
 
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <Grid RowDefinitions="Auto, Auto" Margin="24, 0, 24, 24">
+
+                            <Grid Grid.Row="1" RowDefinitions="Auto, *">
+                                <TextBlock Grid.Row="0" Text="Môn lịch tự sắp xếp" Classes="label"
+                                           ToolTip.Tip="Lịch tự dàn xếp với giảng viên" Margin="0,0,0,8" />
+
+                                <ItemsRepeater Grid.Row="1" ItemsSource="{Binding VisualizerVM.UnscheduledCourses}">
+                                    <ItemsRepeater.ItemTemplate>
+                                        <DataTemplate x:DataType="timetableVm:ScheduleGroupCellShared">
+                                            <Border Background="{StaticResource BaseBackgroundColor}"
+                                                    CornerRadius="6"
+                                                    Padding="12"
+                                                    Margin="0,0,0,8">
+                                                <Grid RowDefinitions="Auto, Auto, Auto">
+                                                    <TextBlock Grid.Row="0"
+                                                               Text="{Binding NameConcat, Mode=OneTime}"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{StaticResource PrimaryBrush}"
+                                                               TextWrapping="Wrap"
+                                                               Margin="0,0,0,6" />
+
+                                                    <Grid Grid.Row="1" ColumnDefinitions="Auto, *">
+                                                        <TextBlock Grid.Column="0"
+                                                                   Text="{Binding Credits, StringFormat={}Tín chỉ: {0}, Mode=OneWay}"
+                                                                   FontSize="12" Foreground="{StaticResource Grey}"
+                                                                   Margin="0,0,8,0" />
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding Lecturer, Mode=OneWay}"
+                                                                   FontSize="12"
+                                                                   Foreground="{StaticResource Grey}"
+                                                                   TextAlignment="Right"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   ToolTip.Tip="{Binding Lecturer, Mode=OneWay}" />
+                                                    </Grid>
+
+                                                    <Grid Grid.Row="2" Margin="0,12,0,0" RowDefinitions="Auto, Auto">
+                                                        <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="0,0,0,4">
+                                                            <TextBlock Grid.Column="0" Text="Đã đăng ký" FontSize="11"
+                                                                       Foreground="{StaticResource DisableColor}" />
+                                                            <TextBlock Grid.Column="1"
+                                                                       Text="{Binding RemainingConcatTotalStudents}"
+                                                                       FontSize="11" FontWeight="SemiBold"
+                                                                       Foreground="{StaticResource PrimaryBrush}" />
+                                                        </Grid>
+
+                                                        <ProgressBar Grid.Row="1"
+                                                                     Height="4"
+                                                                     CornerRadius="2"
+                                                                     Foreground="{StaticResource SecondaryBrush}"
+                                                                     Background="{StaticResource BorderColor}"
+                                                                     Minimum="0"
+                                                                     Maximum="{Binding TotalStudents}"
+                                                                     Value="{Binding CurrentStudents}" />
+                                                    </Grid>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsRepeater.ItemTemplate>
+                                </ItemsRepeater>
+                            </Grid>
+
+                        </Grid>
+                    </ScrollViewer>
+
+                    <Border Grid.Row="2" Padding="24" Background="White" BorderThickness="0,1,0,0"
+                            BorderBrush="{StaticResource BorderColor}">
+                        <Grid ColumnDefinitions="*, *">
+                            <Button Classes="outline-primary"
+                                    Grid.Column="0" Margin="0,0,6,0"
+                                    ToolTip.Tip="Sao chép ảnh thời khóa biểu vào Clipboard (Ctrl+V)"
+                                    Command="{Binding CopyToClipboardCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <icon:MaterialIcon Kind="ImageOutline" Width="18" Height="18" />
+                                    <TextBlock Text="Xuất Ảnh" VerticalAlignment="Center" FontWeight="Medium" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Classes="outline-primary"
+                                    Grid.Column="1" Margin="6,0,0,0"
+                                    ToolTip.Tip="Xuất file Excel"
+                                    Command="{Binding ExportToExcelCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <icon:MaterialIcon Kind="FileExcelOutline" Width="18" Height="18" />
+                                    <TextBlock Text="Xuất Excel" VerticalAlignment="Center" FontWeight="Medium" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Border>
                 </Grid>
             </Border>
+
+            <Border Classes="content-area">
+                <Grid Margin="16, 60, 16, 24">
+                    <views1:TimetableView DataContext="{Binding VisualizerVM}" />
+                </Grid>
+            </Border>
+
         </Grid>
-    </controls:Card>
+    </ScrollViewer>
 </rxui:ReactiveUserControl>

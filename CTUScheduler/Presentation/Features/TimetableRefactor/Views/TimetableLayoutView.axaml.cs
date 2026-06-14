@@ -17,31 +17,6 @@ public partial class TimetableLayoutView : ReactiveUserControl<TimetableLayoutBa
         InitializeComponent();
         this.WhenActivated(disposable =>
         {
-            this.OneWayBind(ViewModel,
-                    x => x.Name,
-                    v => v.TitleTextBlock.Text,
-                    title => $"Thời khóa biểu: {title}")
-                .DisposeWith(disposable);
-            // this.Bind(ViewModel,
-            //     x => x.Description,
-            //     v => v.DescriptionTextBox.Text
-            //     ).DisposeWith(disposable);
-            this.OneWayBind(ViewModel,
-                    x => x.SubjectsCount,
-                    v => v.SubjectsCountTextBlock.Text,
-                    text => $"Số môn: {text}")
-                .DisposeWith(disposable);
-            this.OneWayBind(ViewModel,
-                    x => x.TotalCredits,
-                    v => v.TotalCreditTextBlock.Text,
-                    text => $"Số tín chỉ: {text}")
-                .DisposeWith(disposable);
-            this.OneWayBind(ViewModel,
-                    x => x.LastUpdated,
-                    v => v.LastUpdateTextBlock.Text,
-                    updateTime => $"Lần cuối cập nhật: {updateTime}")
-                .DisposeWith(disposable);
-
             ViewModel!.CopyToClipboardInteraction.RegisterHandler(async context =>
             {
                 TimetableLayoutView? tempView = null;
@@ -73,7 +48,7 @@ public partial class TimetableLayoutView : ReactiveUserControl<TimetableLayoutBa
                         height: 1000,
                         scale: 1.5,
                         dpi: 144);
-                        
+
                     await clipboard.SetBitmapAsync(bitmap);
                     // Hoạt động kém ở macos
                     await clipboard.FlushAsync();

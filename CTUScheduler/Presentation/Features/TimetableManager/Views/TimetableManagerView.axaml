@@ -225,7 +225,7 @@
                 <TextBlock Classes="Title" Text="Quản lý thời khóa biểu" />
                 <TextBlock Classes="SubTitle" Text="Lần cuối lưu dữ liệu:" Margin="16 0 0 4" VerticalAlignment="Bottom" />
                 <TextBlock x:Name="txtLastSaved" Classes="SubTitle" Margin="4 0 0 4" VerticalAlignment="Bottom" />
-                
+
                 <TextBlock Classes="expired-save"
                            IsVisible="{Binding IsExpiredSaved}"
                            Text="Lưu trữ không phù hợp với học kỳ"
@@ -290,7 +290,7 @@
                                 <Setter Property="Margin" Value="0 0 10 8" />
                             </Style>
                         </WrapPanel.Styles>
-                        
+
                         <Button x:Name="btnAddTables"
                                 Classes="btnPrimary"
                                 Command="{Binding ShowAddCourseDialogCommand}">
@@ -354,25 +354,25 @@
                                         <Grid RowDefinitions="Auto Auto Auto Auto *">
                                             <!-- Checkbox/Select -->
                                             <CheckBox Grid.Row="0"
-                                                      IsEnabled="{Binding IsEnabled}"
                                                       IsChecked="{Binding IsSelected}"
                                                       Content="Chọn" />
-                                                      
+
                                             <!-- Title / Name -->
                                             <TextBlock Grid.Row="1"
                                                        Classes="CardTitle"
                                                        Text="{Binding Name, StringFormat=Thời khóa biểu: {0}}" />
-                                                       
+
                                             <TextBlock Grid.Row="2" Height="4" />
-                                            
+
                                             <!-- Last Updated -->
                                             <TextBlock Grid.Row="3"
                                                        Classes="CardMeta"
-                                                       Text="{Binding LastUpdated, Mode=OneWay, StringFormat=Lần cuối cập nhật: {0}}" />
+                                                       Text="{Binding LastUpdated.LocalDateTime, Mode=OneWay, StringFormat='Lần cuối cập nhật: \{0:dd/MM/yyyy HH:mm:ss\}'}" />
 
                                             <!-- Image Preview and Click area -->
                                             <Grid Grid.Row="4" Margin="0 8 0 0">
-                                                <Border CornerRadius="6" ClipToBounds="True" BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
+                                                <Border CornerRadius="6" ClipToBounds="True"
+                                                        BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
                                                     <Viewbox Stretch="Uniform">
                                                         <Image Source="{Binding PreviewImage}"
                                                                Width="600"
