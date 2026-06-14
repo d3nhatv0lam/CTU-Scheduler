@@ -8,103 +8,50 @@
     xmlns:rxui="http://reactiveui.net"
     xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels"
     xmlns:models="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.Models"
+    xmlns:icon="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     x:DataType="vm:TimetableViewModel"
     x:CompileBindings="True"
     x:Class="CTUScheduler.Presentation.Features.TimetableRefactor.Views.TimetableView">
 
     <rxui:ReactiveUserControl.Styles>
         <Style Selector="Border.cell-container" x:DataType="models:ScheduleCellUi">
-            <Setter Property="BorderBrush" Value="Black"></Setter>
             <Setter Property="BorderThickness" Value="1"></Setter>
-            <!-- // Default style // -->
-            <Style Selector="^ Border.students-remaining-status">
-                <Setter Property="Background" Value="#D1D5DB"></Setter>
-            </Style>
-            <Style Selector="^ ScrollViewer StackPanel">
-                <Setter Property="Background" Value="{Binding Shared.BackgroundColor}"></Setter>
-            </Style>
-            <Style Selector="^ ScrollViewer StackPanel > :is(Control)">
-                <Setter Property="Margin" Value="0 2"></Setter>
-            </Style>
-            <Style Selector="^ ScrollViewer StackPanel TextBlock">
-                <Setter Property="TextAlignment" Value="Center" />
-                <Setter Property="VerticalAlignment" Value="Center" />
-                <Setter Property="TextWrapping" Value="WrapWithOverflow" />
-                <Setter Property="FontWeight" Value="Bold" />
-                <Setter Property="Foreground" Value="Black" />
-            </Style>
-
-            <Style Selector="^.archived Border.students-remaining-status">
-                <Setter Property="Background" Value="White"></Setter>
-            </Style>
-            <Style Selector="^.red Border.students-remaining-status">
-                <Setter Property="Background" Value="#F87171"></Setter>
-            </Style>
-            <Style Selector="^.yellow Border.students-remaining-status">
-                <Setter Property="Background" Value="#FBBF24"></Setter>
-            </Style>
-            <Style Selector="^.green Border.students-remaining-status">
-                <Setter Property="Background" Value="#4ADE80"></Setter>
-            </Style>
+            <Setter Property="CornerRadius" Value="6"></Setter>
+            <Setter Property="ClipToBounds" Value="True"></Setter>
+            <Setter Property="Background" Value="#EAF2FA"></Setter>
         </Style>
-
 
         <Style Selector=":is(UserControl).preview TextBlock.detail">
             <Setter Property="IsVisible" Value="False" />
         </Style>
+        <Style Selector=":is(UserControl).preview StackPanel.detail">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector=":is(UserControl).preview Grid.detail">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector=":is(UserControl).preview WrapPanel.detail">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
     </rxui:ReactiveUserControl.Styles>
 
-    <Border BorderBrush="Black" BorderThickness="1">
-        <Grid
-            ColumnDefinitions="* 1 * 1 * 1 * 1 * 1 * 1 *"
-            RowDefinitions="* 1 * * * * * 0.7* * * * *">
-
-            <!-- ~1~  Định nghĩa cột  @1@ -->
-            <!-- <Grid.ColumnDefinitions> -->
-            <!-- 	<ColumnDefinition Width="*" MinWidth="50"/> -->
-            <!-- 	<ColumnDefinition Width="1" /> -->
-            <!-- 	<ColumnDefinition Width="*" MinWidth="50"/> -->
-            <!-- 	<ColumnDefinition Width="1" /> -->
-            <!-- 	<ColumnDefinition Width="*" MinWidth="50"/> -->
-            <!-- 	<ColumnDefinition Width="1" /> -->
-            <!-- 	<ColumnDefinition Width="*" MinWidth="50"/> -->
-            <!-- 	<ColumnDefinition Width="1" /> -->
-            <!-- 	<ColumnDefinition Width="*" MinWidth="50"/> -->
-            <!-- 	<ColumnDefinition Width="1" /> -->
-            <!-- 	<ColumnDefinition Width="*" MinWidth="50"/> -->
-            <!-- 	<ColumnDefinition Width="1" /> -->
-            <!-- 	<ColumnDefinition Width="*" MinWidth="50"/> -->
-            <!-- </Grid.ColumnDefinitions> -->
-            <!-- -->
-            <!--  ~1~Định nghĩa hàng@1@ -->
-            <!-- <Grid.RowDefinitions> -->
-            <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-            <!-- 	<RowDefinition Height="1"/> -->
-            <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-            <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-            <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-            <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-            <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-            <!-- 	<RowDefinition Height="0.7*" MinHeight="30"/> -->
-            <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-            <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-            <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-            <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-            <!-- </Grid.RowDefinitions> -->
+    <Border BorderBrush="{StaticResource BorderColor}" BorderThickness="1" Background="White">
+        <Grid ColumnDefinitions="* 1 * 1 * 1 * 1 * 1 * 1 *"
+              RowDefinitions="* 1 * * * * * 0.7* * * * *">
 
             <Grid.Styles>
-                <Style Selector="Grid > TextBlock">
+                <Style Selector="Grid > TextBlock.head">
                     <Setter Property="HorizontalAlignment" Value="Center" />
                     <Setter Property="VerticalAlignment" Value="Center" />
-                    <Setter Property="FontWeight" Value="Bold" />
+                    <Setter Property="FontWeight" Value="SemiBold" />
+                    <Setter Property="Foreground" Value="{StaticResource Grey}" />
                     <Setter Property="FontFamily" Value="{StaticResource Text-Font}" />
                 </Style>
                 <Style Selector="Grid > Rectangle">
-                    <Setter Property="Fill" Value="Black" />
+                    <Setter Property="Fill" Value="{StaticResource BorderColor}" />
                 </Style>
             </Grid.Styles>
 
-            <!--// Column Border //-->
             <Rectangle Grid.Row="0" Grid.Column="1" Grid.RowSpan="12" Width="1" />
             <Rectangle Grid.Row="0" Grid.Column="3" Grid.RowSpan="12" Width="1" />
             <Rectangle Grid.Row="0" Grid.Column="5" Grid.RowSpan="12" Width="1" />
@@ -112,42 +59,33 @@
             <Rectangle Grid.Row="0" Grid.Column="9" Grid.RowSpan="12" Width="1" />
             <Rectangle Grid.Row="0" Grid.Column="11" Grid.RowSpan="12" Width="1" />
 
-            <!--// Row 0 Border //-->
             <Rectangle Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="13" Height="1" />
 
-            <!--// Row 0 Init //-->
-            <TextBlock Grid.Row="0" Grid.Column="0" Text="Thời khóa biểu" />
-            <TextBlock Grid.Row="0" Grid.Column="2" Text="Thứ 2" />
-            <TextBlock Grid.Row="0" Grid.Column="4" Text="Thứ 3" />
-            <TextBlock Grid.Row="0" Grid.Column="6" Text="Thứ 4" />
-            <TextBlock Grid.Row="0" Grid.Column="8" Text="Thứ 5" />
-            <TextBlock Grid.Row="0" Grid.Column="10" Text="Thứ 6" />
-            <TextBlock Grid.Row="0" Grid.Column="12" Text="Thứ 7" />
+            <TextBlock Classes="head" Grid.Row="0" Grid.Column="0" Text="Thời khóa biểu" />
+            <TextBlock Classes="head" Grid.Row="0" Grid.Column="2" Text="Thứ 2" />
+            <TextBlock Classes="head" Grid.Row="0" Grid.Column="4" Text="Thứ 3" />
+            <TextBlock Classes="head" Grid.Row="0" Grid.Column="6" Text="Thứ 4" />
+            <TextBlock Classes="head" Grid.Row="0" Grid.Column="8" Text="Thứ 5" />
+            <TextBlock Classes="head" Grid.Row="0" Grid.Column="10" Text="Thứ 6" />
+            <TextBlock Classes="head" Grid.Row="0" Grid.Column="12" Text="Thứ 7" />
 
-            <!--// Column 0 Init //-->
-            <TextBlock Grid.Row="2" Grid.Column="0" Text="Tiết 1" />
-            <TextBlock Grid.Row="3" Grid.Column="0" Text="Tiết 2" />
-            <TextBlock Grid.Row="4" Grid.Column="0" Text="Tiết 3" />
-            <TextBlock Grid.Row="5" Grid.Column="0" Text="Tiết 4" />
-            <TextBlock Grid.Row="6" Grid.Column="0" Text="Tiết 5" />
+            <TextBlock Classes="head" Grid.Row="2" Grid.Column="0" Text="Tiết 1" />
+            <TextBlock Classes="head" Grid.Row="3" Grid.Column="0" Text="Tiết 2" />
+            <TextBlock Classes="head" Grid.Row="4" Grid.Column="0" Text="Tiết 3" />
+            <TextBlock Classes="head" Grid.Row="5" Grid.Column="0" Text="Tiết 4" />
+            <TextBlock Classes="head" Grid.Row="6" Grid.Column="0" Text="Tiết 5" />
 
-            <TextBlock Grid.Row="8" Grid.Column="0" Text="Tiết 6" />
-            <TextBlock Grid.Row="9" Grid.Column="0" Text="Tiết 7" />
-            <TextBlock Grid.Row="10" Grid.Column="0" Text="Tiết 8" />
-            <TextBlock Grid.Row="11" Grid.Column="0" Text="Tiết 9" />
+            <TextBlock Classes="head" Grid.Row="8" Grid.Column="0" Text="Tiết 6" />
+            <TextBlock Classes="head" Grid.Row="9" Grid.Column="0" Text="Tiết 7" />
+            <TextBlock Classes="head" Grid.Row="10" Grid.Column="0" Text="Tiết 8" />
+            <TextBlock Classes="head" Grid.Row="11" Grid.Column="0" Text="Tiết 9" />
 
-            <!--// Time Break Init //-->
-            <Border Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="13" ZIndex="-1" Background="LightBlue" />
+            <Border Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="13" ZIndex="-1"
+                    Background="{StaticResource BaseBackgroundColor}" />
 
-            <!--// Schedule Table Init //-->
-            <Grid Grid.Row="2"
-                  Grid.RowSpan="10"
-                  Grid.Column="2"
-                  Grid.ColumnSpan="11">
-                <!-- // Schedule Table Data // -->
-                <ItemsControl x:Name="ScheduleTable"
-                              ItemsSource="{Binding ScheduleCells, Mode=OneWay}"
-                              Padding="0">
+            <Grid Grid.Row="2" Grid.RowSpan="10" Grid.Column="2" Grid.ColumnSpan="11">
+                <ItemsControl x:Name="ScheduleTable" ItemsSource="{Binding ScheduleCells, Mode=OneWay}" Padding="0">
+
                     <ItemsControl.Styles>
                         <Style Selector="ItemsControl ContentPresenter" x:DataType="{x:Type models:ScheduleCellUi}">
                             <Setter Property="Grid.Row" Value="{Binding Row}" />
@@ -158,70 +96,134 @@
 
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <Grid
-                                RowDefinitions="* * * * * 0.7* * * * *"
-                                ColumnDefinitions="* * * * * *">
-
-                                <!-- <Grid.ColumnDefinitions> -->
-                                <!-- 	<ColumnDefinition Width="*" MinWidth="50"/> -->
-                                <!-- 	<ColumnDefinition Width="*" MinWidth="50"/> -->
-                                <!-- 	<ColumnDefinition Width="*" MinWidth="50"/> -->
-                                <!-- 	<ColumnDefinition Width="*" MinWidth="50"/> -->
-                                <!-- 	<ColumnDefinition Width="*" MinWidth="50"/> -->
-                                <!-- 	<ColumnDefinition Width="*" MinWidth="50"/> -->
-                                <!-- </Grid.ColumnDefinitions> -->
-                                <!-- -->
-                                <!-- <Grid.RowDefinitions> -->
-                                <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-                                <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-                                <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-                                <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-                                <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-                                <!-- 	<RowDefinition Height="0.7*" MinHeight="30"/> -->
-                                <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-                                <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-                                <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-                                <!-- 	<RowDefinition Height="*" MinHeight="50"/> -->
-                                <!-- </Grid.RowDefinitions> -->
-
-                            </Grid>
+                            <Grid RowDefinitions="* * * * * 0.7* * * * *" ColumnDefinitions="* * * * * *" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
-                    <!-- Khởi công nhánh mới hehehehe -->
+
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="{x:Type models:ScheduleCellUi}">
-                            <Border
-                                Classes="cell-container"
-                                Classes.archived="{Binding Shared.IsArchivedStatus}"
-                                Classes.red="{Binding Shared.IsLowStatus}"
-                                Classes.yellow="{Binding Shared.IsMediumStatus}"
-                                Classes.green="{Binding Shared.IsHighStatus}">
-                                <Grid ColumnDefinitions="0.1* *">
-                                    <Border Classes="students-remaining-status" Grid.Column="0" />
-                                    <ScrollViewer
-                                        Grid.Column="1"
-                                        VerticalScrollBarVisibility="Auto"
-                                        HorizontalScrollBarVisibility="Disabled"
-                                        Theme="{StaticResource MaterialModernScrollViewer}">
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding Shared.CourseCode,Mode=OneWay}"></TextBlock>
-                                            <TextBlock Text="{Binding Shared.CourseName_VN,Mode=OneWay}"></TextBlock>
-                                            <TextBlock Classes="detail"
-                                                       Text="{Binding Shared.Group,StringFormat=Nhóm:{0},Mode=OneWay}">
-                                            </TextBlock>
-                                            <TextBlock Classes="detail"
-                                                       Text="{Binding Shared.Credits,StringFormat=Tín chỉ:{0},Mode=OneWay}">
-                                            </TextBlock>
-                                            <TextBlock Classes="detail"
-                                                       Text="{Binding Room,StringFormat=Phòng:{0},Mode=OneWay}">
-                                            </TextBlock>
-                                            <TextBlock Classes="detail"
-                                                       Text="{Binding Shared.RemainingConcatTotalStudents, Mode=OneWay}">
-                                            </TextBlock>
-                                            <TextBlock Classes="detail" Text="{Binding Shared.Lecturer,Mode=OneWay}"></TextBlock>
+                            <Border Classes="cell-container"
+                                    Margin="2">
+
+                                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Disabled">
+
+                                    <Grid Margin="10"
+                                          RowDefinitions="Auto,Auto,Auto,*,Auto">
+
+                                        <Border Grid.Row="0"
+                                                Background="{StaticResource PrimaryBrush}"
+                                                CornerRadius="999"
+                                                Padding="10,4"
+                                                HorizontalAlignment="Left"
+                                                Margin="0,0,0,8">
+
+                                            <WrapPanel Orientation="Horizontal">
+
+                                                <TextBlock Text="{Binding Shared.CourseCode}"
+                                                           Foreground="White"
+                                                           FontSize="12"
+                                                           FontWeight="Bold" />
+
+                                                <TextBlock Text=" • "
+                                                           Foreground="White"
+                                                           FontSize="12"
+                                                           FontWeight="Bold" />
+
+                                                <TextBlock Text="{Binding Shared.Credits,StringFormat={}{0} TC}"
+                                                           Foreground="White"
+                                                           FontSize="12"
+                                                           FontWeight="Bold" />
+
+                                            </WrapPanel>
+
+                                        </Border>
+                                        <WrapPanel Grid.Row="1"
+                                                   Classes="detail"
+                                                   Orientation="Horizontal"
+                                                   Margin="0,0,0,6">
+
+                                            <TextBlock Text="{Binding Shared.Group,StringFormat={}Nhóm {0}}"
+                                                       Foreground="{StaticResource Grey}"
+                                                       FontSize="11"
+                                                       TextWrapping="Wrap" />
+
+                                            <TextBlock Text=" - "
+                                                       Foreground="{StaticResource Grey}"
+                                                       FontSize="11" />
+
+                                            <TextBlock Text="{Binding Room,StringFormat={}P.{0}}"
+                                                       Foreground="{StaticResource Grey}"
+                                                       FontSize="11"
+                                                       TextWrapping="Wrap" />
+
+                                        </WrapPanel>
+
+                                        <TextBlock Grid.Row="2"
+                                                   Text="{Binding Shared.CourseName_VN}"
+                                                   FontWeight="Bold"
+                                                   FontSize="13"
+                                                   Foreground="{StaticResource BlackBrush}"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,0,0,6" />
+
+                                        <Grid Grid.Row="3"
+                                              Classes="detail"
+                                              ColumnDefinitions="Auto,*"
+                                              Margin="0,0,0,6">
+
+                                            <icon:MaterialIcon Grid.Column="0"
+                                                               Kind="AccountOutline"
+                                                               Width="14"
+                                                               Height="14"
+                                                               Margin="0,0,4,0"
+                                                               Foreground="{StaticResource Grey}"
+                                                               VerticalAlignment="Top" />
+
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding Shared.Lecturer}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource Grey}"
+                                                       TextWrapping="Wrap" />
+
+                                        </Grid>
+
+                                        <StackPanel Grid.Row="4"
+                                                    Classes="detail"
+                                                    Spacing="4" VerticalAlignment="Top">
+
+                                            <Grid ColumnDefinitions="*,Auto">
+
+                                                <TextBlock Grid.Column="0"
+                                                           Text="Sĩ số"
+                                                           FontSize="11"
+                                                           FontWeight="Medium"
+                                                           Foreground="{StaticResource Grey}" />
+
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding Shared.RemainingConcatTotalStudents}"
+                                                           FontSize="11"
+                                                           FontWeight="Bold"
+                                                           Foreground="{StaticResource PrimaryBrush}" />
+
+                                            </Grid>
+
+                                            <Border
+                                                Height="4"
+                                                CornerRadius="999"
+                                                ClipToBounds="True"
+                                                VerticalAlignment="Bottom">
+                                                <ProgressBar Height="4"
+                                                             Minimum="0"
+                                                             Maximum="{Binding Shared.TotalStudents}"
+                                                             Value="{Binding Shared.CurrentStudents}"
+                                                             Foreground="{StaticResource SecondaryBrush}"
+                                                             Background="White"
+                                                             BorderThickness="0" />
+                                            </Border>
                                         </StackPanel>
-                                    </ScrollViewer>
-                                </Grid>
+                                    </Grid>
+                                </ScrollViewer>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
