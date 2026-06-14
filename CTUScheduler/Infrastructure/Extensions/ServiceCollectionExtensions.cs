@@ -29,6 +29,7 @@ public static class ServiceCollectionExtensions
         }).AddSingleton<IUserPreferencesRepository, UserPreferencesRepository>();
         
         // --- Teaching Plan ---
+        services.AddSingleton<ITeachingPlanPdfParser, TeachingPlanPdfParser>();
         services.AddHttpClient<ITeachingPlanPdfService, TeachingPlanPdfService>();
         services.AddHttpClient<ISchoolAnnouncementService, SchoolAnnouncementService>();
 

@@ -18,6 +18,9 @@ public static partial class QddkPayloadExtensions
     [GeneratedRegex(@"Khóa \d+")]
     private static partial Regex KhoaRegex();
 
+    [GeneratedRegex(@"Nhóm \d+: ?")]
+    private static partial Regex NhomHeaderRegex();
+
     public static RegistrationInformation ToRegistrationInformation(this RawQddkPayload rawQddkPayload,
         string userKey, string userUnit, ILogger? logger = null)
     {
@@ -121,7 +124,7 @@ public static partial class QddkPayloadExtensions
                 foreach (var rightData in quyDinh.CotPhai)
                 {
                     var name = rightData.CacDiemLuuY.FirstOrDefault() ?? string.Empty;
-                    var description = Regex.Replace(rightData.NoiDung, @"Nhóm \d+: ?", "");
+                    var description = NhomHeaderRegex().Replace(rightData.NoiDung, "");
                     groups.Add(new GroupItem(name, description));
                 }
             }
@@ -295,14 +298,19 @@ public static partial class QddkPayloadExtensions
         // Thay thế " ngày " thành " " để parse dễ hơn
         string normalized = input.Replace(" ngày ", " ").Trim();
 
-        // Thử parse các định dạng phổ biến
-        string[] formats = { "HH:mm dd/MM/yyyy", "dd/MM/yyyy HH:mm", "dd/MM/yyyy" };
+        // Thử parse các định dạng phổ biến bao gồm cả định dạng ngày/tháng 1 chữ số
+        string[] formats = 
+        [
+            "HH:mm dd/MM/yyyy", "dd/MM/yyyy HH:mm", "dd/MM/yyyy",
+            "HH:mm d/M/yyyy", "d/M/yyyy HH:mm", "d/M/yyyy",
+            "H:mm dd/MM/yyyy", "dd/MM/yyyy H:mm",
+            "H:mm d/M/yyyy", "d/M/yyyy H:mm"
+        ];
 
-        if (DateTime.TryParseExact(normalized, formats, CultureInfo.InvariantCulture, DateTimeStyles.None,
-                out var dt))
+        if (DateTime.TryParseExact(normalized, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt))
             return dt;
 
-        if (DateTime.TryParse(normalized, out dt))
+        if (DateTime.TryParse(normalized, CultureInfo.GetCultureInfo("vi-VN"), DateTimeStyles.None, out dt))
             return dt;
 
         return null;
