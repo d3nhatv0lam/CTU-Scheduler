@@ -16,15 +16,18 @@ public class TeachingPlanLoaderService : ITeachingPlanLoaderService
     private const string TeachingPlanKeyword = "kế hoạch giảng dạy";
     private readonly ISchoolAnnouncementService _announcementService;
     private readonly ITeachingPlanPdfService _pdfService;
+    private readonly ITeachingPlanPdfParser _pdfParser;
     private readonly ILogger<TeachingPlanLoaderService> _logger;
 
     public TeachingPlanLoaderService(
         ISchoolAnnouncementService announcementService,
         ITeachingPlanPdfService pdfService,
+        ITeachingPlanPdfParser pdfParser,
         ILogger<TeachingPlanLoaderService> logger)
     {
         _announcementService = announcementService;
         _pdfService = pdfService;
+        _pdfParser = pdfParser;
         _logger = logger;
     }
 
@@ -112,7 +115,7 @@ public class TeachingPlanLoaderService : ITeachingPlanLoaderService
                 {
                     var closingPdfPath = closingResult.Content;
                     _logger.LogDebug("Extracting precise closing date/time from secondary notice PDF...");
-                    preciseClosingDateTime = await _pdfService.ExtractClosingNoticeDateTimeAsync(closingPdfPath);
+                    preciseClosingDateTime = await _pdfParser.ExtractClosingNoticeDateTimeAsync(closingPdfPath);
                 }
             }
             else
@@ -129,7 +132,7 @@ public class TeachingPlanLoaderService : ITeachingPlanLoaderService
             }
 
             _logger.LogDebug("Parsing main teaching plan PDF...");
-            var data = await _pdfService.ExtractTeachingPlanAsync(mainPdfPath, preciseClosingDateTime);
+            var data = await _pdfParser.ExtractTeachingPlanAsync(mainPdfPath, preciseClosingDateTime);
 
             if (data.RegistrationTimeline.Count == 0)
             {

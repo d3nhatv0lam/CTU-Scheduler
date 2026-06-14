@@ -20,7 +20,7 @@
     </Application.Resources>
 
     <Application.Styles>
-        <!--       <FluentTheme /> -->
+        <!-- <FluentTheme /> -->
         <themes:CustomMaterialTheme PrimaryColor="Blue" SecondaryColor="#1f5ca9" />
         <materialIcons:MaterialIconStyles />
 

@@ -1,6 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
+using System.Threading;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
@@ -16,50 +20,110 @@ using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
-public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel, IScorable
+public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel,
+    INeedArgs<IEnumerable<SectionChoice>>,
+    IScorable
 {
-    private readonly List<SectionChoice> _choices = new();
+    private readonly CancellationTokenSource _cts = new();
+    private readonly List<SectionChoice> _choices = [];
+    private bool _previewGenerationRequested;
 
     public IReadOnlyList<SectionChoice> Choices => _choices;
 
     [Reactive] private double _totalScore;
-    
+
     double IScorable.Score => TotalScore;
 
+    public override Bitmap? PreviewImage
+    {
+        get
+        {
+            if (!_previewGenerationRequested)
+            {
+                _previewGenerationRequested = true;
+
+                try
+                {
+                    var token = _cts.Token;
+                    _ = Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        if (token.IsCancellationRequested) return;
+                        await GeneratePreviewAsync(token);
+                    }, DispatcherPriority.Background);
+                }
+                catch (ObjectDisposedException)
+                {
+                    // _cts đã bị Dispose, bỏ qua không đợi nữa
+                }
+            }
+
+            return base.PreviewImage;
+        }
+        set => base.PreviewImage = value;
+    }
+
+    private readonly object _visualizerLock = new();
+
+    public override TimetableViewModel? VisualizerVM
+    {
+        get
+        {
+            if (base.VisualizerVM is not null || _choices.Count <= 0) return base.VisualizerVM;
+
+            lock (_visualizerLock)
+            {
+                if (base.VisualizerVM is not null) return base.VisualizerVM;
+
+                var sourceList = new SourceList<TimetableRenderItem>();
+
+                var items = _choices.Select(choice =>
+                {
+                    var adapter = new StaticCourseAdapter(choice.Course, choice.Section);
+                    return CreateRenderItem(adapter);
+                }).ToList();
+
+                sourceList.AddRange(items);
+
+                Disposable.Create(sourceList, list =>
+                {
+                    foreach (var item in list.Items)
+                    {
+                        item.Dispose();
+                    }
+
+                    list.Dispose();
+                }).DisposeWith(Disposables);
+
+                var vm = new TimetableViewModel(sourceList)
+                    .DisposeWith(Disposables);
+
+                base.VisualizerVM = vm;
+            }
+
+            return base.VisualizerVM;
+        }
+        protected set => base.VisualizerVM = value;
+    }
+
     public TimetablePreviewViewModel(
-        IEnumerable<SectionChoice> choices, 
+        IEnumerable<SectionChoice> choices,
         IExcelExporterService excelExporter,
         IControlRendererService controlRendererService,
+        ITimetablePreviewRenderer timetablePreviewRenderer,
         IUserInteractionService userInteractionService)
-        : base(excelExporter, controlRendererService, userInteractionService)
+        : base(excelExporter, controlRendererService, timetablePreviewRenderer, userInteractionService)
     {
-        if (choices is null) 
+        if (choices is null)
         {
             SubjectsCount = 0;
             TotalCredits = 0;
             return;
         }
+
         _choices.AddRange(choices);
 
-        var sourceList = new SourceList<TimetableRenderItem>()
-            .DisposeWith(Disposables);
-        
-        var items = _choices.Select(choice =>
-        {
-            var adapter = new StaticCourseAdapter(choice.Course, choice.Section);
-            return CreateRenderItem(adapter);
-        }).ToList();
-        
-        sourceList.AddRange(items);
-        
-        VisualizerVM = new TimetableViewModel(sourceList)
-            .DisposeWith(Disposables);
-
-        SubjectsCount = sourceList.Count;
-        TotalCredits = sourceList.Items.Sum(x => x.SharedData.Credits);
-
-        // Render preview image upon initialization
-        Dispatcher.UIThread.Post(async () => await GeneratePreviewAsync());
+        SubjectsCount = _choices.Count;
+        TotalCredits = _choices.Sum(x => x.Course.Credits);
     }
 
     public override ScheduleBlueprint ToScheduleBlueprint()
@@ -73,6 +137,7 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel, I
             var courseCode = choice.Course.Code;
             groupKeys.TryAdd(courseCode, choice.Section.Group);
         }
+
         var profile = new ScheduleProfile()
         {
             Name = this.Name,
@@ -82,5 +147,14 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel, I
         return new ScheduleBlueprint(courses, profile);
     }
 
+    protected override void Dispose(bool isDisposing)
+    {
+        if (isDisposing)
+        {
+            _cts.Cancel();
+            _cts.Dispose();
+        }
 
+        base.Dispose(isDisposing);
+    }
 }

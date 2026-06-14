@@ -31,7 +31,7 @@ public static class DesktopServiceExtensions
     public static IServiceCollection AddPresentationServices(this IServiceCollection services)
     {
         // services.AddSingleton<IViewLocator, MsDiViewLocator>();
-        
+
         // --- ViewModel Registration ---
         services.Scan(scan => scan
             .FromAssemblyOf<MainViewModel>()
@@ -44,20 +44,12 @@ public static class DesktopServiceExtensions
             .WithTransientLifetime()
         );
 
-        // scan all classes that implement IUiDisposable to dispose when the app is closed
-        services.Scan(scan => scan
-            .FromAssemblyOf<UrsaToast>()
-            .AddClasses(c => c.AssignableTo<IUiDisposable>())
-            .AsSelfWithInterfaces()
-            .WithSingletonLifetime()
-        );
-
         // đăng ký ReactiveUI view
         services.Scan(scan => scan
-                .FromAssemblyOf<LoginView>()
-                .AddClasses(c => c.AssignableTo(typeof(IViewFor<>)))
-                .AsImplementedInterfaces()
-                .WithTransientLifetime()
+            .FromAssemblyOf<LoginView>()
+            .AddClasses(c => c.AssignableTo(typeof(IViewFor<>)))
+            .AsImplementedInterfaces()
+            .WithTransientLifetime()
         );
 
         services.AddSingleton<IViewModelFactory, ViewModelFactory>();
@@ -65,10 +57,23 @@ public static class DesktopServiceExtensions
 
         // --- UI Helper Services ---
         services.AddSingleton<IViewContextService, ViewContextService>()
+            .AddSingleton<IViewportService, ViewportService>()
+            // Đăng ký Toast
+            .AddSingleton<UrsaToast>()
+            .AddSingleton<IToastService>(sp => sp.GetRequiredService<UrsaToast>())
+            .AddSingleton<IUiDisposable>(sp => sp.GetRequiredService<UrsaToast>())
+            // Đăng ký Notification
+            .AddSingleton<UrsaNotification>()
+            .AddSingleton<INotificationService>(sp => sp.GetRequiredService<UrsaNotification>())
+            .AddSingleton<IUiDisposable>(sp => sp.GetRequiredService<UrsaNotification>())
+            // Đăng ký Dialog
             .AddSingleton<IDialogService, UrsaDialogService>()
             .AddSingleton<IUserInteractionService, UserInteractionService>()
-            .AddSingleton<IViewportService, ViewportService>()
-            .AddSingleton<IControlRendererService, ControlRendererService>();
+            .AddSingleton<IControlRendererService, ControlRendererService>()
+            .AddSingleton<ITimetablePreviewRenderer, TimetablePreviewRenderer>();
+
+        // --- Window Registration ---
+        services.AddSingleton<IUiDisposable>(sp => sp.GetRequiredService<MainViewModel>());
 
         // selection strategy
         services.AddTransient<ManualSchedulingStrategy>();
@@ -80,7 +85,7 @@ public static class DesktopServiceExtensions
             .AddSingleton<IAppLifecycleService>(sp => sp.GetRequiredService<AppLifecycleManager>());
         services.AddSingleton<IUiShutdownCoordinator, UiShutdownCoordinator>();
         services.AddSingleton<IAppStartup, AppStartup>();
-        
+
         services.AddTransient<SplashScreenWindow>();
         services.AddTransient<MainWindow>();
 

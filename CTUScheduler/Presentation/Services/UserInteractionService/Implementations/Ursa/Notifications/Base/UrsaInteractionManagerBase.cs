@@ -2,6 +2,7 @@
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
+using Avalonia.Threading;
 using CTUScheduler.Presentation.Services.UserInteractionService.Implementations.Ursa.Notifications.Proxies;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models;
@@ -80,7 +81,15 @@ public abstract class UrsaInteractionManagerBase<TManager> : INotificationTypeAc
 
         // Xử lý đóng gói Classes và Theme
         var finalOpt = ProcessThemeAndClasses(in options);
-        InvokeShow(manager, type, finalContent, in finalOpt);
+
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            InvokeShow(manager, type, finalContent, in finalOpt);
+        }
+        else
+        {
+            Dispatcher.UIThread.Invoke(() => InvokeShow(manager, type, finalContent, in finalOpt));
+        }
     }
 
     private NotificationOptions ProcessThemeAndClasses(in NotificationOptions opt)
@@ -106,12 +115,20 @@ public abstract class UrsaInteractionManagerBase<TManager> : INotificationTypeAc
 
     protected virtual object CreateFinalContent(object content, string? title) => content;
 
-    protected void CleanupManager()
+    private void CleanupManager()
     {
-        if (Manager is not null)
+        if (Manager is null) return;
+        
+        var manager = Manager;
+        Manager = null;
+
+        if (Dispatcher.UIThread.CheckAccess())
         {
-            UninstallManager(Manager);
-            Manager = null;
+            UninstallManager(manager);
+        }
+        else
+        {
+            Logger.LogDebug("Đang chạy trên luồng phụ khi Cleanup. Bỏ qua việc gỡ Manager");
         }
     }
 
@@ -130,7 +147,6 @@ public abstract class UrsaInteractionManagerBase<TManager> : INotificationTypeAc
         Logger.LogDebug("{Service} disposed", GetType().Name);
         _isDisposed = true;
     }
-    
-    protected static CTUMessageCloseReason MapReason(MessageCloseReason reason) => (CTUMessageCloseReason)reason;
 
+    protected static CTUMessageCloseReason MapReason(MessageCloseReason reason) => (CTUMessageCloseReason)reason;
 }

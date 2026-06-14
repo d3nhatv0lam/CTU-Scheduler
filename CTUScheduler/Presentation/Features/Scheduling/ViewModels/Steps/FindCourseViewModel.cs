@@ -38,6 +38,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         [ObservableAsProperty] private IReadOnlyList<SelectableCourseSection> _searchedCourseSections = null!;
         [ObservableAsProperty] private IReadOnlyList<SelectableCourseSection> _filteredCourseSections = null!;
         [ObservableAsProperty] private IReadOnlyList<QuickSelectDmhpCourse> _quickSelectCourses = null!;
+        [ObservableAsProperty] private bool _isSelectAllChecked;
 
         private readonly ReadOnlyObservableCollection<CourseBlueprint> _coursesBindable;
         private readonly SourceList<CourseBlueprint> _coursesSourceList;
@@ -49,6 +50,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         public ReactiveCommand<Unit, Unit> AddCoursesCommand { get; }
         public ReactiveCommand<CourseBlueprint, Unit> TreeRemoveCourseCommand { get; }
         public ReactiveCommand<CourseSection, Unit> TreeRemoveSectionCommand { get; }
+        public ReactiveCommand<bool, Unit> ToggleSelectAllCommand { get; }
 
         public FindCourseViewModel(SchedulingWizardContext context,
             ICourseCatalogService courseCatalogService,
@@ -71,7 +73,10 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
 
             SearchCommand = ReactiveCommand.CreateFromTask(async ct =>
                 {
-                    var result = await courseCatalogService.FetchCourseAsync(TxtInputCourseKey, cancellationToken: ct);
+                    var courseKey = TxtInputCourseKey;
+                    if (string.IsNullOrWhiteSpace(courseKey)) return null;
+
+                    var result = await courseCatalogService.FetchCourseAsync(courseKey, cancellationToken: ct);
 
                     if (result.IsSuccess) return result.Content;
 
@@ -153,6 +158,31 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
 
             #region Commands Setup
 
+            _isSelectAllCheckedHelper = this.WhenAnyValue(x => x.FilteredCourseSections)
+                .Select(sections =>
+                {
+                    if (sections == null || !sections.Any())
+                        return Observable.Return(false);
+
+                    var selectionChangedObservables = sections.Select(s => s.WhenAnyValue(x => x.IsSelected));
+        
+                    return Observable.CombineLatest(selectionChangedObservables, states => states.All(isChecked => isChecked));
+                })
+                .Switch()
+                .ToProperty(this, nameof(IsSelectAllChecked), scheduler: RxSchedulers.MainThreadScheduler)
+                .DisposeWith(_disposables);
+
+            ToggleSelectAllCommand = ReactiveCommand.Create<bool>(isChecked =>
+            {
+                if (FilteredCourseSections == null) return;
+
+                foreach (var section in FilteredCourseSections)
+                {
+                    section.IsSelected = isChecked;
+                }
+            }).DisposeWith(_disposables);
+
+
             FocusTextBoxCommand = ReactiveCommand.Create(() =>
             {
                 IsTextBoxFocused = true;
@@ -193,7 +223,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         private void AddSelectedSectionsToCart()
         {
             if (SearchedCourse is null) return;
-            
+
             var selected = FilteredCourseSections
                 .Where(x => x.IsSelected)
                 .Select(x => x.Item)

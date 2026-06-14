@@ -68,10 +68,11 @@ public partial class TimetableLayoutView : ReactiveUserControl<TimetableLayoutBa
                     // không using ở đây vì bitmap đưa ra clipboard phải do avalonia quản lý
                     // docs: https://docs.avaloniaui.net/docs/services/clipboard
                     var bitmap = await ViewModel.ControlRendererService.RenderToBitmapAsync(
-                        tempView, 
-                        width: 1600, 
+                        tempView,
+                        width: 1600,
                         height: 1000,
-                        scale: 1.5);
+                        scale: 1.5,
+                        dpi: 144);
                         
                     await clipboard.SetBitmapAsync(bitmap);
                     // Hoạt động kém ở macos

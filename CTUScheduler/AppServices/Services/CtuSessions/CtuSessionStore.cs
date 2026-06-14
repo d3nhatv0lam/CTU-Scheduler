@@ -6,7 +6,7 @@ namespace CTUScheduler.AppServices.Services.CtuSessions;
 
 public sealed class CtuSessionStore: StateStore<CtuSession>, ICtuSessionStore
 {
-    public CtuSessionStore(ILogger<StateStore<CtuSession>> logger) : base(logger)
+    public CtuSessionStore(ILogger<CtuSessionStore> logger) : base(logger)
     {
     }
 }

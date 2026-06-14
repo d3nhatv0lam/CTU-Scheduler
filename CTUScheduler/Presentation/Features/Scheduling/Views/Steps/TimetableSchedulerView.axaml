@@ -128,8 +128,8 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="10" />
             <Setter Property="BoxShadow" Value="0 2 8 0 #0A000000" />
-            <Setter Property="Width" Value="250" />
-            <Setter Property="Height" Value="240" />
+            <Setter Property="Width" Value="260" />
+            <Setter Property="Height" Value="248" />
             <Setter Property="Transitions">
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" Easing="CubicEaseOut" />
@@ -183,7 +183,8 @@
                                   ToolTip.Tip="{Binding SelectedPreset.Description}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="schedulingModels:SchedulingPreset">
-                                    <StackPanel Orientation="Horizontal" Spacing="8" ToolTip.Tip="{Binding Description}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8"
+                                                ToolTip.Tip="{Binding Description}">
                                         <TextBlock Text="{Binding Icon}" />
                                         <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
                                     </StackPanel>
@@ -191,9 +192,9 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
 
-                        <TextBlock Text="Tiêu chí ưu tiên" 
-                                   FontSize="11" 
-                                   FontWeight="Bold" 
+                        <TextBlock Text="Tiêu chí ưu tiên"
+                                   FontSize="11"
+                                   FontWeight="Bold"
                                    Background="White"
                                    Padding="4 0"
                                    Margin="10 -7 0 0"
@@ -238,12 +239,12 @@
                                                     Orientation="Horizontal"
                                                     Spacing="4">
                                                     <RadioButton
-                                                        Classes="accent rd-locked"
+                                                        Classes="rd-locked"
                                                         IsChecked="{Binding IsMainCourse}"
                                                         Content="Môn chính" />
                                                     <RadioButton
                                                         IsChecked="{Binding IsMainCourse,Converter={x:Static BoolConverters.Not}}"
-                                                        Classes="accent" Content="Môn thay thế" />
+                                                        Content="Môn thay thế" />
                                                 </StackPanel>
 
                                                 <Border
@@ -335,7 +336,7 @@
                                                         <CheckBox Grid.Row="0"
                                                                   IsEnabled="{Binding IsEnabled}"
                                                                   IsChecked="{Binding IsSelected}"
-                                                                  Content="Chọn!" />
+                                                                  Content="Chọn" />
                                                         <TextBlock Grid.Row="1"
                                                                    FontSize="12"
                                                                    Text="{Binding Item.SubjectsCount, StringFormat=Số môn học: {0}}" />
@@ -350,8 +351,8 @@
                                                             <Border>
                                                                 <Viewbox Stretch="Uniform">
                                                                     <Image Source="{Binding Item.PreviewImage}"
-                                                                           Width="1200"
-                                                                           Height="800"
+                                                                           Width="600"
+                                                                           Height="375"
                                                                            RenderOptions.BitmapInterpolationMode="HighQuality" />
                                                                 </Viewbox>
                                                             </Border>

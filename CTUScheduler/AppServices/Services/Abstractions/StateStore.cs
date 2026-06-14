@@ -9,7 +9,7 @@ namespace CTUScheduler.AppServices.Services.Abstractions;
 public class StateStore<T> : IStateStore<T>, ICleanup, IDisposable
 {
     private readonly BehaviorSubject<T?> _subject = new(default);
-    private readonly ILogger<StateStore<T>> _logger;
+    private readonly ILogger _logger;
     private bool _isDisposed;
     
     public IObservable<T?> Changed { get; }

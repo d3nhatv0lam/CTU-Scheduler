@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Reactive;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
@@ -25,6 +26,9 @@ namespace CTUScheduler.Presentation.Features.Home.ViewModels;
 
 public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewModel
 {
+    [GeneratedRegex(@"\d+")]
+    private static partial Regex CohortNumberRegex();
+
     private readonly IRegistrationRulesService _registrationRulesService;
 
     private readonly ObservableAsPropertyHelper<RegistrationInformation?> _registrationInfo;
@@ -153,11 +157,11 @@ public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewMode
     private void PersonalizeTimelineNodesBasedOnUserSession(RegistrationInformation? regInfo)
     {
         // 1. Phân phối đăng ký học phần Đợt 1 (Node 2) và Đợt 2 (Node 7)
-        var dot1Node = TimelineViewModel.Nodes.FirstOrDefault(n => n.Title.Contains("Đợt 1"));
-        var dot2Node = TimelineViewModel.Nodes.FirstOrDefault(n => n.Title.Contains("Đợt 2"));
+        var dot1Node = TimelineViewModel.Nodes.FirstOrDefault(n => n.Step == TeachingPlanStep.CourseRegistrationPhase1);
+        var dot2Node = TimelineViewModel.Nodes.FirstOrDefault(n => n.Step == TeachingPlanStep.CourseRegistrationPhase2);
 
-        var originalDot1 = TeachingPlan?.RegistrationTimeline?.FirstOrDefault(n => n.Title.Contains("Đợt 1"));
-        var originalDot2 = TeachingPlan?.RegistrationTimeline?.FirstOrDefault(n => n.Title.Contains("Đợt 2"));
+        var originalDot1 = TeachingPlan?.RegistrationTimeline?.FirstOrDefault(n => n.GetStepType() == TeachingPlanStep.CourseRegistrationPhase1);
+        var originalDot2 = TeachingPlan?.RegistrationTimeline?.FirstOrDefault(n => n.GetStepType() == TeachingPlanStep.CourseRegistrationPhase2);
 
         if (regInfo?.UserPeriod is not null)
         {
@@ -227,9 +231,9 @@ public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewMode
         }
 
         // 2. Cá nhân hóa Đợt điều chỉnh KHTT (Node 3: "Điều chỉnh kế hoạch học tập")
-        var khttNode = TimelineViewModel.Nodes.FirstOrDefault(n => n.Title.Contains("Điều chỉnh kế hoạch học tập"));
+        var khttNode = TimelineViewModel.Nodes.FirstOrDefault(n => n.Step == TeachingPlanStep.AdjustStudyPlan);
         var originalKhtt =
-            TeachingPlan?.RegistrationTimeline?.FirstOrDefault(n => n.Title.Contains("Điều chỉnh kế hoạch học tập"));
+            TeachingPlan?.RegistrationTimeline?.FirstOrDefault(n => n.GetStepType() == TeachingPlanStep.AdjustStudyPlan);
 
         if (khttNode is not null && originalKhtt is not null)
         {
@@ -237,7 +241,7 @@ public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewMode
             {
                 var p = regInfo.UserPeriod;
                 // Trích xuất số khóa từ p.Key (ví dụ: "Khóa 50" -> 50)
-                var cohortNumberMatch = System.Text.RegularExpressions.Regex.Match(p.Key, @"\d+");
+                var cohortNumberMatch = CohortNumberRegex().Match(p.Key);
                 if (cohortNumberMatch.Success && int.TryParse(cohortNumberMatch.Value, out int studentCohort))
                 {
                     var studentGroups = p.AllowedGroups ?? Array.Empty<int>();
@@ -247,7 +251,7 @@ public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewMode
                     {
                         // 1. Kiểm tra khớp khóa
                         bool isCohortMatched = false;
-                        var detailCohortMatch = System.Text.RegularExpressions.Regex.Match(detail.Cohort, @"\d+");
+                        var detailCohortMatch = CohortNumberRegex().Match(detail.Cohort);
                         if (detailCohortMatch.Success && int.TryParse(detailCohortMatch.Value, out int detailCohortNum))
                         {
                             if (detail.Cohort.Contains("trở về trước") || detail.Cohort.Contains("trở xuống"))

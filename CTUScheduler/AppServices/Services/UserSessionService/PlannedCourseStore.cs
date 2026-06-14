@@ -11,7 +11,7 @@ namespace CTUScheduler.AppServices.Services.UserSessionService;
 
 public sealed class PlannedCourseStore : StateStore<IReadOnlyList<PlannedCourse>>, IPlannedCourseStore
 {
-    public PlannedCourseStore(ILogger<StateStore<IReadOnlyList<PlannedCourse>>> logger) : base(logger)
+    public PlannedCourseStore(ILogger<PlannedCourseStore> logger) : base(logger)
     {
     }
 }
