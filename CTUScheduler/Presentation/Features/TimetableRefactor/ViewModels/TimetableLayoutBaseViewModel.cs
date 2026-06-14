@@ -19,16 +19,16 @@ using CTUScheduler.Presentation.Features.TimetableRefactor.Resources;
 using CTUScheduler.Presentation.Services.ControlRenderer;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
-public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
+public abstract partial class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
 {
     private readonly CourseColorProvider _colorProvider = new();
     protected readonly CompositeDisposable Disposables = new();
     protected readonly IExcelExporterService ExcelExporter;
     protected readonly ITimetablePreviewRenderer TimetablePreviewRenderer;
-    public IControlRendererService ControlRendererService { get; }
     protected readonly IUserInteractionService UserInteractionService;
     private string _name = "New Schedule";
     private int _subjectCount = 0;
@@ -36,26 +36,26 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
     private DateTimeOffset _lastUpdated = DateTimeOffset.Now;
     private TimetableViewModel? _visualizerVM = null;
     private bool _isSelected;
-    private bool _isEnabled = true;
     private Bitmap? _previewImage;
 
+    [ObservableAsProperty] private bool _isEditing;
 
     private bool _isDisposed;
+
+    public IControlRendererService ControlRendererService { get; }
 
     public string Name
     {
         get => _name;
         protected set => this.RaiseAndSetIfChanged(ref _name, value);
     }
-    
-    private bool _isEditingName;
-    //bien tam de khong bi loi TimeTableLayoutView thoi hihihihihihihihihih
-    public bool IsEditingName
+
+    public string TempName
     {
-        get => _isEditingName;
-        set => this.RaiseAndSetIfChanged(ref _isEditingName, value);
+        get => field ?? _name;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
-    
+
     public int SubjectsCount
     {
         get => _subjectCount;
@@ -86,12 +86,6 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
         set => this.RaiseAndSetIfChanged(ref _isSelected, value);
     }
 
-    public bool IsEnabled
-    {
-        get => _isEnabled;
-        set => this.RaiseAndSetIfChanged(ref _isEnabled, value);
-    }
-
     public virtual Bitmap? PreviewImage
     {
         get => _previewImage;
@@ -109,6 +103,10 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
 
     public ReactiveCommand<Unit, Unit> CopyToClipboardCommand { get; protected set; }
     public ReactiveCommand<Unit, Unit> ExportToExcelCommand { get; protected set; }
+
+    public ReactiveCommand<Unit, Unit> StartEditCommand { get; }
+    public ReactiveCommand<Unit, Unit> SaveCommand { get; }
+    public ReactiveCommand<Unit, Unit> CancelCommand { get; }
 
     public Interaction<Unit, bool> CopyToClipboardInteraction { get; } = new();
 
@@ -150,6 +148,27 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
 
             await ExcelExporter.ExportTimetableAsync(blueprint, fullPath);
         }).DisposeWith(Disposables);
+
+        StartEditCommand = ReactiveCommand.Create(() => { })
+            .DisposeWith(Disposables);
+
+        SaveCommand = ReactiveCommand.Create(() =>
+        {
+            Name = TempName;
+            LastUpdated = DateTimeOffset.Now;
+            UserInteractionService.Toast.Light.Success("Cập nhật thông tin thơi khóa biểu thành công!");
+        }).DisposeWith(Disposables);
+
+        CancelCommand = ReactiveCommand.Create(() => { TempName = Name; })
+            .DisposeWith(Disposables);
+
+        _isEditingHelper = Observable.Merge(
+                StartEditCommand.Select(_ => true),
+                SaveCommand.Select(_ => false),
+                CancelCommand.Select(_ => false)
+            )
+            .ToProperty(this, nameof(IsEditing), initialValue: false, scheduler: RxSchedulers.MainThreadScheduler)
+            .DisposeWith(Disposables);
     }
 
     protected async Task GeneratePreviewAsync(CancellationToken cancellationToken)
@@ -206,6 +225,7 @@ public abstract class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
                 _previewImage = null;
                 Dispatcher.UIThread.Post(img.Dispose, DispatcherPriority.Background);
             }
+
             Disposables.Dispose();
         }
 

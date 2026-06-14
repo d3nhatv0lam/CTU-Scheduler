@@ -25,16 +25,11 @@ namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<ScheduleProfile>
 {
     private readonly ScheduleProfile _scheduleProfile;
-    private readonly ObservableAsPropertyHelper<bool> _isEditing;
     private readonly ICourseQueryService _courseQueryService;
     private readonly IObservableList<TimetableRenderItem> _sharedCourse;
 
     public ScheduleProfile ScheduleProfile => _scheduleProfile;
-    public bool IsEditing => _isEditing.Value;
-    public ReactiveCommand<Unit, Unit> StartEditCommand { get; }
-    public ReactiveCommand<Unit, Unit> SaveCommand { get; }
-    public ReactiveCommand<Unit, Unit> CancelCommand { get; }
-
+    
 
     public TimetableEditorViewModel(
         ScheduleProfile scheduleProfile,
@@ -123,22 +118,13 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
             .Subscribe()
             .DisposeWith(Disposables);
 
-        StartEditCommand = ReactiveCommand.Create(() => { }).DisposeWith(Disposables);
-
-        SaveCommand = ReactiveCommand.Create(() =>
-        {
-            _scheduleProfile.Name = this.Name;
-            _scheduleProfile.LastUpdated = DateTimeOffset.Now;
-            LastUpdated = _scheduleProfile.LastUpdated;
-        }).DisposeWith(Disposables);
-        CancelCommand = ReactiveCommand.Create(() => { Name = _scheduleProfile.Name; }).DisposeWith(Disposables);
-
-        _isEditing = Observable.Merge(
-                StartEditCommand.Select(_ => true),
-                SaveCommand.Select(_ => false),
-                CancelCommand.Select(_ => false)
-            )
-            .ToProperty(this, nameof(IsEditing), initialValue: false, scheduler: RxSchedulers.MainThreadScheduler)
+        this.WhenAnyValue(x => x.Name)
+            .Skip(1)
+            .Subscribe(name =>
+            {
+                _scheduleProfile.Name = name;
+                _scheduleProfile.LastUpdated = DateTimeOffset.Now;
+            })
             .DisposeWith(Disposables);
     }
 

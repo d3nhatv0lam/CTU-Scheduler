@@ -119,12 +119,14 @@
                                        Foreground="{StaticResource DisableColor}" FontWeight="SemiBold" />
 
                             <Panel Margin="0,4,0,0">
-                                <Grid ColumnDefinitions="*, Auto" IsVisible="{Binding !IsEditingName}">
+                                <Grid ColumnDefinitions="*, Auto" IsVisible="{Binding !IsEditing}">
 
                                     <ScrollViewer Grid.Column="0"
                                                   MaxHeight="80"
                                                   VerticalScrollBarVisibility="Auto"
                                                   HorizontalScrollBarVisibility="Disabled">
+                                        
+                                        <!-- // Timetable Name // -->
                                         <StackPanel VerticalAlignment="Center">
                                             <TextBlock Text="Thời khóa biểu:"
                                                        FontSize="18"
@@ -132,7 +134,7 @@
                                                        Foreground="{StaticResource Grey}"
                                                        Margin="0,0,0,4" />
 
-                                            <TextBlock x:Name="TitleTextBlock"
+                                            <TextBlock
                                                        Text="{Binding Name}"
                                                        FontSize="22" FontWeight="Bold"
                                                        Foreground="{StaticResource PrimaryBrush}"
@@ -144,16 +146,18 @@
                                             Classes="icon-btn"
                                             Margin="8,0,0,0"
                                             VerticalAlignment="Top"
+                                            Command="{Binding StartEditCommand}"
                                             ToolTip.Tip="Đổi tên thời khóa biểu">
                                         <icon:MaterialIcon Kind="Pencil" Width="20" Height="20"
                                                            Foreground="{StaticResource PrimaryBrush}" />
                                     </Button>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="*, Auto, Auto" IsVisible="{Binding IsEditingName}">
+                                <!-- // edit name field // -->
+                                <Grid ColumnDefinitions="*, Auto, Auto" IsVisible="{Binding IsEditing}">
 
                                     <TextBox Grid.Column="0"
-                                             Text="{Binding Name}"
+                                             Text="{Binding TempName}"
                                              FontSize="18" FontWeight="Bold"
                                              Padding="8,4"
                                              MaxHeight="80"
@@ -170,6 +174,7 @@
                                             Classes="icon-btn"
                                             Margin="8,0,0,0"
                                             VerticalAlignment="Top"
+                                            Command="{Binding SaveCommand}"
                                             ToolTip.Tip="Lưu lại">
                                         <icon:MaterialIcon Kind="Check" Width="24" Height="24" Foreground="Green" />
                                     </Button>
@@ -178,6 +183,7 @@
                                             Classes="icon-btn"
                                             Margin="4,0,0,0"
                                             VerticalAlignment="Top"
+                                            Command="{Binding CancelCommand}"
                                             ToolTip.Tip="Hủy bỏ">
                                         <icon:MaterialIcon Kind="Close" Width="24" Height="24"
                                                            Foreground="{StaticResource RedColor}" />
@@ -186,25 +192,29 @@
                             </Panel>
                         </StackPanel>
 
+                       
                         <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto">
+                            <!-- // subject count //-->
                             <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,0,0,12">
                                 <TextBlock Text="Số môn học" Classes="label" />
-                                <TextBlock x:Name="SubjectsCountTextBlock"
+                                <TextBlock 
                                            Text="{Binding SubjectsCount}"
                                            Classes="value" />
                             </StackPanel>
 
+                            <!-- // credit // -->
                             <StackPanel Grid.Column="1" Grid.Row="0" Margin="0,0,0,12">
                                 <TextBlock Text="Tổng tín chỉ" Classes="label" />
-                                <TextBlock x:Name="TotalCreditTextBlock"
+                                <TextBlock 
                                            Text="{Binding TotalCredits}"
                                            Classes="value" />
                             </StackPanel>
 
+                            <!-- // last update  -->
                             <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1">
                                 <TextBlock Text="Cập nhật lần cuối" Classes="label" />
-                                <TextBlock x:Name="LastUpdateTextBlock"
-                                           Text="{Binding LastUpdated}"
+                                <TextBlock 
+                                           Text="{Binding LastUpdated.LocalDateTime, StringFormat={}{0:dd/MM/yyyy HH:mm:ss}}"
                                            FontSize="14"
                                            Foreground="{StaticResource Grey}" />
                             </StackPanel>
