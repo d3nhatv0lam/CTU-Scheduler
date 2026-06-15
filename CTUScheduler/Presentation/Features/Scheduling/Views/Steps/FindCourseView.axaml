@@ -9,7 +9,7 @@
     x:DataType="viewModels1:FindCourseViewModel"
     x:CompileBindings="True"
     xmlns:conv="using:Avalonia.Data.Converters"
-    xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+    xmlns:u="https://irihi.tech/ursa"
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:viewModels1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps"
     xmlns:views1="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Views.Steps"
@@ -112,6 +112,14 @@
             <Setter Property="TextWrapping" Value="WrapWithOverflow" />
         </Style>
 
+        <Style Selector="Border.PopupCard">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Padding" Value="1" />
+            <Setter Property="BoxShadow" Value="0 4 10 0 #1A000000" />
+        </Style>
     </rxui:ReactiveUserControl.Styles>
 
     <Grid ColumnDefinitions="* 10 0.5*" Margin="10">
@@ -163,10 +171,7 @@
                                Placement="BottomEdgeAlignedLeft"
                                IsOpen="{Binding IsOpenQuickSelectPopup, Mode=TwoWay}"
                                MaxHeight="200" Width="250">
-                            <controls:Card CornerRadius="5" VerticalAlignment="Top"
-                                           Background="White" BorderThickness="1"
-                                           BorderBrush="{StaticResource BorderColor}"
-                                           Padding="1" SlidingAnimation.Top="500" ClipToBounds="True">
+                            <Border Classes="PopupCard" VerticalAlignment="Top" ClipToBounds="True">
                                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                                     <ListBox x:Name="LboxQuickSelect"
                                              SelectedItem="{Binding SelectedQuickSelectDmhpCourse, Mode=TwoWay}"
@@ -183,7 +188,7 @@
                                         </ListBox.ItemTemplate>
                                     </ListBox>
                                 </ScrollViewer>
-                            </controls:Card>
+                            </Border>
                         </Popup>
 
                         <CheckBox Grid.Column="1"
@@ -207,11 +212,7 @@
 
                     <ToggleSwitch Grid.Row="3" Margin="10 10 0 5" HorizontalAlignment="Left" VerticalAlignment="Center"
                                   OnContent="Ẩn nhóm đủ sĩ số" OffContent="Ẩn nhóm đủ sĩ số"
-                                  IsChecked="{Binding ShowOnlyAvailableSections, Mode=TwoWay}">
-                        <ToggleSwitch.Resources>
-                            <SolidColorBrush x:Key="SecondaryHueMidBrush" Color="{StaticResource PrimaryColor}" />
-                        </ToggleSwitch.Resources>
-                    </ToggleSwitch>
+                                  IsChecked="{Binding ShowOnlyAvailableSections, Mode=TwoWay}" />
 
                     <TextBlock Grid.Row="4"
                                Classes="course-info"
