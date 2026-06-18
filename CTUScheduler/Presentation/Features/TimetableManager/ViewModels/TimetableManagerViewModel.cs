@@ -173,7 +173,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     using var confirmViewModel = new ConfirmDialogViewModel
                     {
                         Title = "Xóa thời khóa biểu",
-                        Message = "Bạn có chắc chắn xóa các thời khóa biểu đã chọn ?",
+                        Message = "Bạn có chắc chắn xóa thời khóa biểu đã chọn ?",
                         ConfirmText = "Xóa",
                         CancelText = "Không",
                         IsDestructive = true
@@ -183,6 +183,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     {
                         SizeMode = DialogSizeMode.Content,
                         CanLightDismiss = true,
+                        IsCloseButtonVisible = false,
                         HostId = DialogIds.Root
                     };
 
