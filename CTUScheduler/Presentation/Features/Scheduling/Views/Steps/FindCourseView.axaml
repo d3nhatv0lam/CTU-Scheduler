@@ -171,7 +171,7 @@
                                Placement="BottomEdgeAlignedLeft"
                                IsOpen="{Binding IsOpenQuickSelectPopup, Mode=TwoWay}"
                                MaxHeight="200" Width="250">
-                            <Border Classes="PopupCard" VerticalAlignment="Top" ClipToBounds="True">
+                            <Border Classes="PopupCard" VerticalAlignment="Top" ClipToBounds="True" SlidingAnimation.Top="500">
                                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                                     <ListBox x:Name="LboxQuickSelect"
                                              SelectedItem="{Binding SelectedQuickSelectDmhpCourse, Mode=TwoWay}"
