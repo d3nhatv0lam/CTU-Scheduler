@@ -183,6 +183,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     {
                         SizeMode = DialogSizeMode.Content,
                         CanLightDismiss = true,
+                        IsCloseButtonVisible = false,
                         HostId = DialogIds.Root
                     };
 
