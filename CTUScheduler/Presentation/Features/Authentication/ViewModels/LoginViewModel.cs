@@ -5,6 +5,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using Avalonia.Threading;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.AppServices.Services.CtuSessions;
@@ -22,6 +23,9 @@ using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
+using CTUScheduler.Presentation.Features.TermsAcceptance.ViewModels;
+using CTUScheduler.Presentation.Services.ApplicationLifetime;
+using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
 
 namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
 {
@@ -32,6 +36,8 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
         private readonly INavigationRegionManager _navigationRegionManager;
         private readonly IUserSettingService _userSettingService;
         private readonly ILogger<LoginViewModel> _logger;
+        private readonly TermsAcceptanceViewModel _termsAcceptanceViewModel;
+        private readonly IAppLifecycleService _appLifecycleService;
 
         private string _userName = string.Empty;
         private string _password = string.Empty;
@@ -74,13 +80,17 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
             ITeachingPlanStore teachingPlanStore,
             ISessionCoordinator sessionCoordinator,
             IConnectivityService connectivityService,
-            ILogger<LoginViewModel> logger)
+            ILogger<LoginViewModel> logger,
+            TermsAcceptanceViewModel termsAcceptanceViewModel,
+            IAppLifecycleService appLifecycleService)
         {
             HostScreen = hostScreen;
             _userInteractionService = userInteractionService;
             _navigationRegionManager = navigationRegionManager;
             _userSettingService = userSettingService;
             _logger = logger;
+            _termsAcceptanceViewModel = termsAcceptanceViewModel;
+            _appLifecycleService = appLifecycleService;
 
             _userSettingService.AuthSettingsChanged
                 .Subscribe(authSettings =>
@@ -151,6 +161,39 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
 
             this.WhenActivated(disposable =>
             {
+                if (!_userSettingService.CurrentPreferences.Behavior.IsTermsAccepted)
+                {
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        var options = new DialogOptions()
+                        {
+                            SizeMode = DialogSizeMode.Responsive,
+                            ResponsivePercentage = 1,          
+                            ResponsiveHorizontalMargin = 80,   
+                            ResponsiveVerticalMargin = 80,
+                            CanLightDismiss = false,
+                            IsCloseButtonVisible = false,
+                            HostId = DialogIds.Root
+                        };
+
+                        var result =
+                            await _userInteractionService.Dialog
+                                .ShowModal<TermsAcceptanceViewModel, bool>(_termsAcceptanceViewModel, in options);
+                        if (result)
+                        {
+                            _userSettingService.UpdateSettings(pref => pref with
+                            {
+                                Behavior = pref.Behavior with { IsTermsAccepted = true }
+                            });
+                            _userInteractionService.Toast.Light.Success("Xác nhận điều khoản sử dụng thành công!");
+                        }
+                        else
+                        {
+                            _appLifecycleService.Shutdown();
+                        }
+                    });
+                }
+
                 LoadTeachingPlanCommand.Execute()
                     .Subscribe()
                     .DisposeWith(disposable);
