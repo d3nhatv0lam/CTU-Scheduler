@@ -213,7 +213,7 @@
                                         </ScrollViewer>
 
                                         <Border Background="#1A000000" 
-                                                IsVisible="{Binding Shared.IsCancelled}" 
+                                                IsVisible="{Binding !Shared.IsCancelled}" 
                                                 ZIndex="10">
                                             
                                             <Border Background="#E63946"
