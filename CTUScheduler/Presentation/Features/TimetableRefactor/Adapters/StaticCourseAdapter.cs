@@ -12,6 +12,7 @@ public class StaticCourseAdapter: ICourseDisplaySource
     {
         Code = Observable.Return(courseDto.Code);
         Name = Observable.Return(courseDto.Name_VN);
+        IsCancelled = Observable.Return(sectionDto.IsCancelled);
         Credits = Observable.Return(courseDto.Credits);
         Group = Observable.Return(sectionDto.Group);
         Lecturer = Observable.Return(sectionDto.Lecturer);
@@ -22,6 +23,7 @@ public class StaticCourseAdapter: ICourseDisplaySource
 
     public IObservable<string> Code { get; }
     public IObservable<string> Name { get; }
+    public IObservable<bool> IsCancelled { get; }
     public IObservable<int> Credits { get; }
     public IObservable<string> Group { get; }
     public IObservable<string> Lecturer { get; }

@@ -5,13 +5,15 @@ using System.Reactive.Linq;
 using Avalonia.Media;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Interfaces;
 using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.Models;
 
-public class ScheduleGroupCellShared : ReactiveObject, IDisposable
+public partial class ScheduleGroupCellShared : ReactiveObject, IDisposable
 {
     private readonly CompositeDisposable _disposables = new();
 
+    [ObservableAsProperty] private bool _isCancelled;
     private readonly ObservableAsPropertyHelper<string> _courseCode;
     private readonly ObservableAsPropertyHelper<string> _courseNameVn;
     private readonly ObservableAsPropertyHelper<string> _group;
@@ -23,27 +25,17 @@ public class ScheduleGroupCellShared : ReactiveObject, IDisposable
     private readonly ObservableAsPropertyHelper<bool> _isMediumStatus;
     private readonly ObservableAsPropertyHelper<bool> _isLowStatus;
     private readonly ObservableAsPropertyHelper<bool> _isArchivedStatus;
-    private readonly ObservableAsPropertyHelper<int> _currentStudents;
-    public int CurrentStudents => _currentStudents.Value;
+    [ObservableAsProperty] private int _remainingStudents;
+    [ObservableAsProperty] private int _totalStudents;
 
-    private readonly ObservableAsPropertyHelper<int> _totalStudents;
-    public int TotalStudents => _totalStudents.Value;
 
-    public IBrush BackgroundColor { get; }
-    
-    private bool _isCancelled;
-    public bool IsCancelled
-    {
-        get => _isCancelled;
-        set => this.RaiseAndSetIfChanged(ref _isCancelled, value);
-    }
-    
     public ScheduleGroupCellShared(ICourseDisplaySource source, IBrush color)
     {
         BackgroundColor = color;
 
         _courseCode = source.Code.ToProperty(this, x => x.CourseCode).DisposeWith(_disposables);
         _courseNameVn = source.Name.ToProperty(this, x => x.CourseName_VN).DisposeWith(_disposables);
+        _isCancelledHelper = source.IsCancelled.ToProperty(this, x => x._isCancelled).DisposeWith(_disposables);
         _group = source.Group.ToProperty(this, x => x.Group).DisposeWith(_disposables);
         _lecturer = source.Lecturer.ToProperty(this, x => x.Lecturer).DisposeWith(_disposables);
         _credit = source.Credits.ToProperty(this, x => x.Credits, deferSubscription: false).DisposeWith(_disposables);
@@ -52,9 +44,9 @@ public class ScheduleGroupCellShared : ReactiveObject, IDisposable
                 (rem, total) => new { rem, total })
             .Replay(1).RefCount();
 
-        _currentStudents = statusStream.Select(x => x.rem).ToProperty(this, x => x.CurrentStudents)
+        _remainingStudentsHelper = statusStream.Select(x => x.rem).ToProperty(this, nameof(RemainingStudents))
             .DisposeWith(_disposables);
-        _totalStudents = statusStream.Select(x => x.total).ToProperty(this, x => x.TotalStudents)
+        _totalStudentsHelper = statusStream.Select(x => x.total).ToProperty(this, nameof(TotalStudents))
             .DisposeWith(_disposables);
 
         _remainingConcatTotalStudents = statusStream
@@ -82,9 +74,20 @@ public class ScheduleGroupCellShared : ReactiveObject, IDisposable
     public string Group => _group.Value;
     public string Lecturer => _lecturer.Value;
     public int Credits => _credit.Value;
-    public string RemainingConcatTotalStudents => _remainingConcatTotalStudents.Value;
 
+    public string RemainingConcatTotalStudents => _remainingConcatTotalStudents.Value;
     public string NameConcat => $"{CourseCode}-{Group}-{CourseName_VN}";
+
+    public IBrush BackgroundColor { get; }
+
+    public IBrush TextColor => IsColorDark(BackgroundColor)
+        ? new SolidColorBrush(Colors.White)
+        : new SolidColorBrush(Color.Parse("#051c3b"));
+
+    public IBrush SecondaryTextColor => IsColorDark(BackgroundColor)
+        ? new SolidColorBrush(Color.Parse("#E6FFFFFF"))
+        : new SolidColorBrush(Color.Parse("#343A40"));
+
 
     public bool IsHighStatus => _isHighStatus.Value;
     public bool IsMediumStatus => _isMediumStatus.Value;
@@ -114,12 +117,4 @@ public class ScheduleGroupCellShared : ReactiveObject, IDisposable
 
         return false;
     }
-
-    public IBrush TextColor => IsColorDark(BackgroundColor)
-        ? new SolidColorBrush(Colors.White)
-        : new SolidColorBrush(Color.Parse("#051c3b"));
-
-    public IBrush SecondaryTextColor => IsColorDark(BackgroundColor)
-        ? new SolidColorBrush(Color.Parse("#E6FFFFFF"))
-        : new SolidColorBrush(Color.Parse("#343A40"));
 }

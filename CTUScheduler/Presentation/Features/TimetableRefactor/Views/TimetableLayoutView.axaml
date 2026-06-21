@@ -277,7 +277,7 @@
                                                                      Background="{StaticResource BorderColor}"
                                                                      Minimum="0"
                                                                      Maximum="{Binding TotalStudents}"
-                                                                     Value="{Binding CurrentStudents}" />
+                                                                     Value="{Binding RemainingStudents}" />
                                                     </Grid>
                                                 </Grid>
                                             </Border>

@@ -185,7 +185,6 @@
                                                 </Grid>
 
                                                 <StackPanel Grid.Row="4"
-                                                            Classes="detail"
                                                             Spacing="4" VerticalAlignment="Top">
                                                     <Grid ColumnDefinitions="*,Auto">
                                                         <TextBlock Grid.Column="0"
@@ -205,7 +204,7 @@
                                                                  CornerRadius="999"
                                                                  Minimum="0"
                                                                  Maximum="{Binding Shared.TotalStudents}"
-                                                                 Value="{Binding Shared.CurrentStudents}"
+                                                                 Value="{Binding Shared.RemainingStudents}"
                                                                  Foreground="{Binding Shared.TextColor}"
                                                                  Background="#4D000000"
                                                                  BorderThickness="0" />

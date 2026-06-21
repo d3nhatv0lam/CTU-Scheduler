@@ -8,6 +8,7 @@ public interface ICourseDisplaySource
 {
     IObservable<string> Code { get; }
     IObservable<string> Name { get; }
+    IObservable<bool> IsCancelled { get; }
     IObservable<int> Credits { get; }
     IObservable<string> Group { get; }
     IObservable<string> Lecturer { get; }
