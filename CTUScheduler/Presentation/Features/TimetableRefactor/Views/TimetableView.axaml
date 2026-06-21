@@ -21,15 +21,15 @@
             <Setter Property="Background" Value="{Binding Shared.BackgroundColor}"></Setter>
         </Style>
 
-        <Style Selector="Border.cell-container.cancelled">
+        <Style Selector="Border.card-content.cancelled">
             <Setter Property="Opacity" Value="0.6" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.2" Easing="SineEaseInOut"/>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.2" Easing="SineEaseInOut" />
                 </Transitions>
             </Setter>
         </Style>
-        <Style Selector="Border.cell-container.cancelled:pointerover">
+        <Style Selector="Border.cell-container:pointerover Border.card-content.cancelled">
             <Setter Property="Opacity" Value="1.0" />
         </Style>
 
@@ -37,26 +37,14 @@
             <Setter Property="Opacity" Value="1.0" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="SineEaseInOut"/>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="SineEaseInOut" />
                 </Transitions>
             </Setter>
         </Style>
         <Style Selector="Border.cell-container:pointerover Border.cancelled-overlay">
-            <Setter Property="Opacity" Value="0.05" /> 
+            <Setter Property="Opacity" Value="0.05" />
         </Style>
 
-        <Style Selector=":is(UserControl).preview TextBlock.detail">
-            <Setter Property="IsVisible" Value="False" />
-        </Style>
-        <Style Selector=":is(UserControl).preview StackPanel.detail">
-            <Setter Property="IsVisible" Value="False" />
-        </Style>
-        <Style Selector=":is(UserControl).preview Grid.detail">
-            <Setter Property="IsVisible" Value="False" />
-        </Style>
-        <Style Selector=":is(UserControl).preview WrapPanel.detail">
-            <Setter Property="IsVisible" Value="False" />
-        </Style>
     </rxui:ReactiveUserControl.Styles>
 
     <Border BorderBrush="{StaticResource BorderColor}" BorderThickness="1" Background="White">
@@ -126,134 +114,140 @@
 
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="{x:Type models:ScheduleCellUi}">
-                            
+
                             <Border Background="Transparent" Padding="4">
-                                
-                                <Border Classes="cell-container" Classes.cancelled="{Binding !Shared.IsCancelled}">
+
+                                <Border Classes="cell-container">
 
                                     <Grid>
-                                        <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                                      HorizontalScrollBarVisibility="Disabled">
+                                        <Border Classes="card-content"
+                                                Classes.cancelled="{Binding !Shared.IsCancelled}">
+                                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                          HorizontalScrollBarVisibility="Disabled">
 
-                                            <Grid Margin="10"
-                                                  RowDefinitions="Auto,Auto,Auto,*,Auto">
+                                                <Grid Margin="10"
+                                                      RowDefinitions="Auto,Auto,Auto,*,Auto">
 
-                                                <Border Grid.Row="0"
-                                                        Background="{Binding Shared.TextColor}"
-                                                        CornerRadius="999"
-                                                        Padding="10,4"
-                                                        HorizontalAlignment="Left"
-                                                        Margin="0,0,0,8">
+                                                    <Border Grid.Row="0"
+                                                            Background="{Binding Shared.TextColor}"
+                                                            CornerRadius="999"
+                                                            Padding="10,4"
+                                                            HorizontalAlignment="Left"
+                                                            Margin="0,0,0,8">
 
-                                                    <WrapPanel Orientation="Horizontal">
-                                                        <TextBlock Text="{Binding Shared.CourseCode}"
-                                                                   Foreground="{Binding Shared.BackgroundColor}"
-                                                                   FontSize="12"
-                                                                   FontWeight="Bold" />
-                                                        <TextBlock Text=" • "
-                                                                   Foreground="{Binding Shared.BackgroundColor}"
-                                                                   FontSize="12"
-                                                                   FontWeight="Bold" />
-                                                        <TextBlock Text="{Binding Shared.Credits,StringFormat={}{0} TC}"
-                                                                   Foreground="{Binding Shared.BackgroundColor}"
-                                                                   FontSize="12"
-                                                                   FontWeight="Bold" />
+                                                        <WrapPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding Shared.CourseCode}"
+                                                                       Foreground="{Binding Shared.BackgroundColor}"
+                                                                       FontSize="12"
+                                                                       FontWeight="Bold" />
+                                                            <TextBlock Text=" • "
+                                                                       Foreground="{Binding Shared.BackgroundColor}"
+                                                                       FontSize="12"
+                                                                       FontWeight="Bold" />
+                                                            <TextBlock
+                                                                Text="{Binding Shared.Credits,StringFormat={}{0} TC}"
+                                                                Foreground="{Binding Shared.BackgroundColor}"
+                                                                FontSize="12"
+                                                                FontWeight="Bold" />
+                                                        </WrapPanel>
+                                                    </Border>
+
+                                                    <WrapPanel Grid.Row="1"
+                                                               Orientation="Horizontal"
+                                                               Margin="0,0,0,6">
+                                                        <TextBlock
+                                                            Text="{Binding Shared.Group,StringFormat={}Nhóm {0}}"
+                                                            Foreground="{Binding Shared.SecondaryTextColor}"
+                                                            FontSize="11"
+                                                            TextWrapping="Wrap" />
+                                                        <TextBlock Text=" - "
+                                                                   Foreground="{Binding Shared.SecondaryTextColor}"
+                                                                   FontSize="11" />
+                                                        <TextBlock Text="{Binding Room,StringFormat={}P.{0}}"
+                                                                   Foreground="{Binding Shared.SecondaryTextColor}"
+                                                                   FontSize="11"
+                                                                   TextWrapping="Wrap" />
                                                     </WrapPanel>
-                                                </Border>
-                                                
-                                                <WrapPanel Grid.Row="1"
-                                                           Classes="detail"
-                                                           Orientation="Horizontal"
-                                                           Margin="0,0,0,6">
-                                                    <TextBlock Text="{Binding Shared.Group,StringFormat={}Nhóm {0}}"
-                                                               Foreground="{Binding Shared.SecondaryTextColor}"
-                                                               FontSize="11"
-                                                               TextWrapping="Wrap" />
-                                                    <TextBlock Text=" - "
-                                                               Foreground="{Binding Shared.SecondaryTextColor}"
-                                                               FontSize="11" />
-                                                    <TextBlock Text="{Binding Room,StringFormat={}P.{0}}"
-                                                               Foreground="{Binding Shared.SecondaryTextColor}"
-                                                               FontSize="11"
-                                                               TextWrapping="Wrap" />
-                                                </WrapPanel>
 
-                                                <TextBlock Grid.Row="2"
-                                                           Text="{Binding Shared.CourseName_VN}"
-                                                           FontWeight="Bold"
-                                                           FontSize="13"
-                                                           Foreground="{Binding Shared.TextColor}"
-                                                           TextWrapping="Wrap"
-                                                           Margin="0,0,0,6" />
+                                                    <TextBlock Grid.Row="2"
+                                                               Text="{Binding Shared.CourseName_VN}"
+                                                               FontWeight="Bold"
+                                                               FontSize="13"
+                                                               Foreground="{Binding Shared.TextColor}"
+                                                               TextWrapping="Wrap"
+                                                               Margin="0,0,0,6" />
 
-                                                <Grid Grid.Row="3"
-                                                      Classes="detail"
-                                                      ColumnDefinitions="Auto,*"
-                                                      Margin="0,0,0,6">
-                                                    <icon:MaterialIcon Grid.Column="0"
-                                                                       Kind="AccountOutline"
-                                                                       Width="14"
-                                                                       Height="14"
-                                                                       Margin="0,0,4,0"
-                                                                       Foreground="{Binding Shared.SecondaryTextColor}"
-                                                                       VerticalAlignment="Top" />
-                                                    <TextBlock Grid.Column="1"
-                                                               Text="{Binding Shared.Lecturer}"
-                                                               FontSize="11"
-                                                               Foreground="{Binding Shared.SecondaryTextColor}"
-                                                               TextWrapping="Wrap" />
-                                                </Grid>
-
-                                                <StackPanel Grid.Row="4"
-                                                            Classes="detail"
-                                                            Spacing="4" VerticalAlignment="Top">
-                                                    <Grid ColumnDefinitions="*,Auto">
-                                                        <TextBlock Grid.Column="0"
-                                                                   Text="Sĩ số"
-                                                                   FontSize="11"
-                                                                   FontWeight="Medium"
-                                                                   Foreground="{Binding Shared.SecondaryTextColor}" />
+                                                    <Grid Grid.Row="3"
+                                                          ColumnDefinitions="Auto,*"
+                                                          Margin="0,0,0,6">
+                                                        <icon:MaterialIcon Grid.Column="0"
+                                                                           Kind="AccountOutline"
+                                                                           Width="14"
+                                                                           Height="14"
+                                                                           Margin="0,0,4,0"
+                                                                           Foreground="{Binding Shared.SecondaryTextColor}"
+                                                                           VerticalAlignment="Top" />
                                                         <TextBlock Grid.Column="1"
-                                                                   Text="{Binding Shared.RemainingConcatTotalStudents}"
+                                                                   Text="{Binding Shared.Lecturer}"
                                                                    FontSize="11"
-                                                                   FontWeight="Bold"
-                                                                   Foreground="{Binding Shared.TextColor}" />
+                                                                   Foreground="{Binding Shared.SecondaryTextColor}"
+                                                                   TextWrapping="Wrap" />
                                                     </Grid>
-                                                    <ProgressBar Height="4"
-                                                                 MinWidth="0"
-                                                                 HorizontalAlignment="Stretch"
-                                                                 CornerRadius="999"
-                                                                 Minimum="0"
-                                                                 Maximum="{Binding Shared.TotalStudents}"
-                                                                 Value="{Binding Shared.RemainingStudents}"
-                                                                 Foreground="{Binding Shared.TextColor}"
-                                                                 Background="#4D000000"
-                                                                 BorderThickness="0" />
-                                                </StackPanel>
-                                            </Grid>
-                                        </ScrollViewer>
+
+                                                    <StackPanel Grid.Row="4"
+                                                                Spacing="4" VerticalAlignment="Top">
+                                                        <Grid ColumnDefinitions="*,Auto">
+                                                            <TextBlock Grid.Column="0"
+                                                                       Text="Sĩ số"
+                                                                       FontSize="11"
+                                                                       FontWeight="Medium"
+                                                                       Foreground="{Binding Shared.SecondaryTextColor}" />
+                                                            <TextBlock Grid.Column="1"
+                                                                       Text="{Binding Shared.RemainingConcatTotalStudents}"
+                                                                       FontSize="11"
+                                                                       FontWeight="Bold"
+                                                                       Foreground="{Binding Shared.TextColor}" />
+                                                        </Grid>
+                                                        <ProgressBar Height="4"
+                                                                     MinWidth="0"
+                                                                     HorizontalAlignment="Stretch"
+                                                                     CornerRadius="999"
+                                                                     Minimum="0"
+                                                                     Maximum="{Binding Shared.TotalStudents}"
+                                                                     Value="{Binding Shared.RemainingStudents}"
+                                                                     Foreground="{Binding Shared.TextColor}"
+                                                                     Background="#4D000000"
+                                                                     BorderThickness="0" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </ScrollViewer>
+                                        </Border>
 
                                         <Border Classes="cancelled-overlay"
-                                                Background="{StaticResource DarkOverlayColor}" 
-                                                IsVisible="{Binding !Shared.IsCancelled}" 
+                                                Background="{StaticResource DarkOverlayColor}"
+                                                IsVisible="{Binding !Shared.IsCancelled}"
                                                 ZIndex="10"
-                                                IsHitTestVisible="False">
-                                            
+                                                IsHitTestVisible="False"
+                                                Padding="5">
+
                                             <Border Background="{StaticResource LightRedColor}"
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center"
                                                     Padding="14,6"
+                                                    Opacity="0.8"
                                                     CornerRadius="999"
-                                                    BoxShadow="0 4 12 0 #33000000">
-                                                
-                                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                    <icon:MaterialIcon Kind="EyeOffOutline" Width="15" Height="16" Foreground="White" VerticalAlignment="Center" />
+                                                    BoxShadow="0 3 10 0 #33000000">
+
+                                                <StackPanel Orientation="Horizontal" Spacing="6"
+                                                            VerticalAlignment="Center">
+                                                    <icon:MaterialIcon Kind="EyeOffOutline" Width="15" Height="15"
+                                                                       Foreground="White" VerticalAlignment="Center" />
                                                     <TextBlock Text="LỚP ĐÃ BỊ XÓA"
                                                                Foreground="White"
-                                                               FontSize="12"
+                                                               FontSize="11"
                                                                FontWeight="Bold"
                                                                LetterSpacing="0.5"
-                                                               VerticalAlignment="Center"/>
+                                                               VerticalAlignment="Center" />
                                                 </StackPanel>
                                             </Border>
                                         </Border>
