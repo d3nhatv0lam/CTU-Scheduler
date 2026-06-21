@@ -22,7 +22,27 @@
         </Style>
 
         <Style Selector="Border.cell-container.cancelled">
-            <Setter Property="Opacity" Value="0.55" />
+            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.2" Easing="SineEaseInOut"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.cell-container.cancelled:pointerover">
+            <Setter Property="Opacity" Value="1.0" />
+        </Style>
+
+        <Style Selector="Border.cancelled-overlay">
+            <Setter Property="Opacity" Value="1.0" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="SineEaseInOut"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.cell-container:pointerover Border.cancelled-overlay">
+            <Setter Property="Opacity" Value="0.05" /> 
         </Style>
 
         <Style Selector=":is(UserControl).preview TextBlock.detail">
@@ -109,10 +129,9 @@
                             
                             <Border Background="Transparent" Padding="4">
                                 
-                                <Border Classes="cell-container" Classes.cancelled="{Binding Shared.IsCancelled}">
+                                <Border Classes="cell-container" Classes.cancelled="{Binding !Shared.IsCancelled}">
 
                                     <Grid>
-                                        
                                         <ScrollViewer VerticalScrollBarVisibility="Auto"
                                                       HorizontalScrollBarVisibility="Disabled">
 
@@ -125,6 +144,7 @@
                                                         Padding="10,4"
                                                         HorizontalAlignment="Left"
                                                         Margin="0,0,0,8">
+
                                                     <WrapPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding Shared.CourseCode}"
                                                                    Foreground="{Binding Shared.BackgroundColor}"
@@ -185,6 +205,7 @@
                                                 </Grid>
 
                                                 <StackPanel Grid.Row="4"
+                                                            Classes="detail"
                                                             Spacing="4" VerticalAlignment="Top">
                                                     <Grid ColumnDefinitions="*,Auto">
                                                         <TextBlock Grid.Column="0"
@@ -212,25 +233,28 @@
                                             </Grid>
                                         </ScrollViewer>
 
-                                        <Border Background="#1A000000" 
+                                        <Border Classes="cancelled-overlay"
+                                                Background="{StaticResource DarkOverlayColor}" 
                                                 IsVisible="{Binding !Shared.IsCancelled}" 
-                                                ZIndex="10">
+                                                ZIndex="10"
+                                                IsHitTestVisible="False">
                                             
-                                            <Border Background="#E63946"
+                                            <Border Background="{StaticResource LightRedColor}"
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center"
-                                                    Padding="12,4"
-                                                    CornerRadius="4"
-                                                    BorderBrush="White"
-                                                    BorderThickness="2"
-                                                    BoxShadow="0 4 8 0 #33000000"
-                                                    RenderTransform="rotate(-15deg)">
-                                                    
-                                                <TextBlock Text="ĐÃ HỦY"
-                                                           Foreground="White"
-                                                           FontWeight="Black"
-                                                           FontSize="18"
-                                                           LetterSpacing="1"/>
+                                                    Padding="14,6"
+                                                    CornerRadius="999"
+                                                    BoxShadow="0 4 12 0 #33000000">
+                                                
+                                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                    <icon:MaterialIcon Kind="EyeOffOutline" Width="15" Height="16" Foreground="White" VerticalAlignment="Center" />
+                                                    <TextBlock Text="LỚP ĐÃ BỊ XÓA"
+                                                               Foreground="White"
+                                                               FontSize="12"
+                                                               FontWeight="Bold"
+                                                               LetterSpacing="0.5"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
                                             </Border>
                                         </Border>
 
