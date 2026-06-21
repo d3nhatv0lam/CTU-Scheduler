@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
@@ -15,7 +17,7 @@ using ReactiveUI;
 namespace CTUScheduler.Presentation.Features.Pagination.ViewModels;
 
 public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationViewModel<T>
-    where T : class
+    where T : class, INotifyPropertyChanged
 {
     private readonly bool _ownsData;
     private readonly ObservableAsPropertyHelper<int> _totalPages;
@@ -73,8 +75,15 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationVi
         PageSize = options.PageSize;
         PageRequestSubject = new BehaviorSubject<IPageRequest>(new PageRequest(1, PageSize)).DisposeWith(Disposables);
 
-        var connection = DataList.Connect()
-            .ObserveOn(RxSchedulers.TaskpoolScheduler);
+        var connection = DataList.Connect();
+
+
+        if (options.AutoRefresh is not null)
+        {
+            connection = options.AutoRefresh.Aggregate(connection,
+                (current, item) =>
+                    current.AutoRefresh(propertyAccessor: item.Property, changeSetBuffer: item.RefreshBuffer));
+        }
 
         bool shouldDisposeItems = options.DisposeItemsOnRemove ?? ownsData;
         if (shouldDisposeItems)
@@ -93,7 +102,9 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationVi
             connection = connection.Sort(options.SortObservable);
         }
 
+
         DataSharedConnection = connection.Publish().RefCount();
+
 
         _totalPages = DataSharedConnection
             .Count()
@@ -198,6 +209,7 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationVi
                         disposable.Dispose();
                     }
                 }
+
                 DataList.Dispose();
             }
         }

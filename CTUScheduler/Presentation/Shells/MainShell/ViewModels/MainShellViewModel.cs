@@ -113,6 +113,7 @@ namespace CTUScheduler.Presentation.Shells.MainShell.ViewModels
                 {
                     SizeMode = DialogSizeMode.Content,
                     CanLightDismiss = true,
+                    IsCloseButtonVisible = false,
                     HostId = DialogIds.Root
                 };
 
