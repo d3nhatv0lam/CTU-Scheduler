@@ -121,7 +121,7 @@
 
                                     <Grid>
                                         <Border Classes="card-content"
-                                                Classes.cancelled="{Binding !Shared.IsCancelled}">
+                                                Classes.cancelled="{Binding Shared.IsCancelled}">
                                             <ScrollViewer VerticalScrollBarVisibility="Auto"
                                                           HorizontalScrollBarVisibility="Disabled">
 
@@ -130,7 +130,7 @@
 
                                                     <Border Grid.Row="0"
                                                             Background="{Binding Shared.TextColor}"
-                                                            CornerRadius="999"
+                                                            CornerRadius="50"
                                                             Padding="10,4"
                                                             HorizontalAlignment="Left"
                                                             Margin="0,0,0,8">
@@ -211,7 +211,7 @@
                                                         <ProgressBar Height="4"
                                                                      MinWidth="0"
                                                                      HorizontalAlignment="Stretch"
-                                                                     CornerRadius="999"
+                                                                     CornerRadius="50"
                                                                      Minimum="0"
                                                                      Maximum="{Binding Shared.TotalStudents}"
                                                                      Value="{Binding Shared.RemainingStudents}"
@@ -225,30 +225,21 @@
 
                                         <Border Classes="cancelled-overlay"
                                                 Background="{StaticResource DarkOverlayColor}"
-                                                IsVisible="{Binding !Shared.IsCancelled}"
-                                                ZIndex="10"
-                                                IsHitTestVisible="False"
-                                                Padding="5">
-
+                                                IsVisible="{Binding Shared.IsCancelled}"
+                                                IsHitTestVisible="False">
                                             <Border Background="{StaticResource LightRedColor}"
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center"
                                                     Padding="14,6"
                                                     Opacity="0.8"
-                                                    CornerRadius="999"
-                                                    BoxShadow="0 3 10 0 #33000000">
-
-                                                <StackPanel Orientation="Horizontal" Spacing="6"
-                                                            VerticalAlignment="Center">
-                                                    <icon:MaterialIcon Kind="EyeOffOutline" Width="15" Height="15"
-                                                                       Foreground="White" VerticalAlignment="Center" />
-                                                    <TextBlock Text="LỚP ĐÃ BỊ XÓA"
-                                                               Foreground="White"
-                                                               FontSize="11"
-                                                               FontWeight="Bold"
-                                                               LetterSpacing="0.5"
-                                                               VerticalAlignment="Center" />
-                                                </StackPanel>
+                                                    CornerRadius="50">
+                                                <TextBlock Text="LỚP ĐÃ BỊ XÓA"
+                                                           Foreground="White"
+                                                           FontSize="11"
+                                                           FontWeight="Bold"
+                                                           LetterSpacing="0.5"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Center"/>
                                             </Border>
                                         </Border>
 
