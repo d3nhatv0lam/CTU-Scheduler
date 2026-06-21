@@ -1,4 +1,4 @@
-﻿namespace CTUScheduler.Core.Models.Settings;
+namespace CTUScheduler.Core.Models.Settings;
 
 public record UserPreferences
 {
@@ -32,6 +32,7 @@ public record BehaviorSettings
 {
     public bool RunOnStartup { get; init; } = false;
     public bool MinimizeToTray { get; init; } = false;
+    public bool IsTermsAccepted { get; init; } = false;
 }
 
 

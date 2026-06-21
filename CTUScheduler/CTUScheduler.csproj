@@ -25,6 +25,7 @@
     <PackageReference Include="Irihi.Ursa" Version="2.0.0" />
     <PackageReference Include="Irihi.Ursa.ReactiveUIExtension" Version="2.0.0" />
     <PackageReference Include="Irihi.Ursa.Themes.Semi" Version="2.0.0" />
+    <PackageReference Include="Markdown.Avalonia.Tight" Version="12.0.0-a3" />
     <PackageReference Include="Material.Avalonia" Version="3.16.1" />
     <PackageReference Include="Material.Avalonia.DataGrid" Version="3.16.1" />
     <PackageReference Include="Material.Icons.Avalonia" Version="3.0.2" />
@@ -123,6 +124,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Assets\Docs\" />
     <Folder Include="Presentation\Shared\Styles\Ripple\" />
   </ItemGroup>
   

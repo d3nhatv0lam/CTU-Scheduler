@@ -125,6 +125,8 @@ public class UrsaDialogService : IDialogService
 
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
+                MaxWidth = control.MaxWidth,
+                MaxHeight = control.MaxHeight,
 
                 [!Layoutable.WidthProperty] = new Binding("ClientSize")
                 {
@@ -153,6 +155,8 @@ public class UrsaDialogService : IDialogService
 
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
+                MaxWidth = control.MaxWidth,
+                MaxHeight = control.MaxHeight,
 
                 [!Layoutable.WidthProperty] = new Binding("ClientSize")
                 {
