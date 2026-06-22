@@ -151,8 +151,15 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel,
     {
         if (isDisposing)
         {
-            _cts.Cancel();
-            _cts.Dispose();
+            try
+            {
+                _cts.Cancel();
+                _cts.Dispose();
+            }
+            catch (ObjectDisposedException)
+            {
+                // ignored
+            }
         }
 
         base.Dispose(isDisposing);

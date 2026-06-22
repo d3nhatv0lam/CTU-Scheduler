@@ -25,6 +25,7 @@ using CTUScheduler.Presentation.Services.Factories;
 using CTUScheduler.Presentation.Shared.Models;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
 using DynamicData;
+using DynamicData.Binding;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
@@ -85,34 +86,38 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
             .Select(x => x.Limit - x.Current)
             .DistinctUntilChanged();
 
-        var sortObservable = this.WhenAnyValue(x => x.SelectedPreset)
-            .WhereNotNull()
-            .ObserveOn(RxSchedulers.TaskpoolScheduler)
-            .Select(preset =>
-            {
-                if (PaginationTimeTableViewModel is not null)
-                {
-                    var scorers = preset.Profile.Scorers;
-                    foreach (var layout in PaginationTimeTableViewModel.CurrentData)
-                    {
-                        var vm = layout.Item;
-                        vm.TotalScore = timetableGeneratorService.RecalculateScore(vm.Choices, scorers);
-                    }
-                }
-
-                return Comparer<SelectableTimetableLayout>.Create((a, b) =>
-                    b.Item.TotalScore.CompareTo(a.Item.TotalScore));
-            })
-            .ObserveOn(RxSchedulers.MainThreadScheduler);
 
         PaginationTimeTableViewModel = new TimetablePaginationViewModel(
                 maxCanSelect,
                 new PaginationOptions<SelectableTimetableLayout>
                 {
-                    SortObservable = sortObservable,
-                    PageSize = 12
+                    PageSize = 12,
+                    SortObservable =
+                        Observable.Return(
+                            SortExpressionComparer<SelectableTimetableLayout>.Descending(x => x.Item.TotalScore)),
+                    AutoRefresh =
+                    [
+                        new AutoRefreshOptions<SelectableTimetableLayout>
+                        {
+                            Property = x => x.Item.TotalScore,
+                            RefreshBuffer = TimeSpan.FromMilliseconds(300)
+                        }
+                    ]
                 })
             .DisposeWith(_disposables);
+
+        this.WhenAnyValue(x => x.SelectedPreset)
+            .WhereNotNull()
+            .ObserveOn(RxSchedulers.TaskpoolScheduler)
+            .Subscribe(preset =>
+            {
+                var scorers = preset.Profile.Scorers;
+                foreach (var layout in PaginationTimeTableViewModel.CurrentData)
+                {
+                    var vm = layout.Item;
+                    vm.TotalScore = timetableGeneratorService.RecalculateScore(vm.Choices, scorers);
+                }
+            }).DisposeWith(_disposables);
 
         CanNavigateNext = PaginationTimeTableViewModel.SelectedItemCountChanged
             .Select(count => count > 0);
