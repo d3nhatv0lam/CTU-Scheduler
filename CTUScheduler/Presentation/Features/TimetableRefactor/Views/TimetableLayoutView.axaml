@@ -20,7 +20,7 @@
     <rxui:ReactiveUserControl.Styles>
         <Style Selector="TextBlock.label">
             <Setter Property="FontSize" Value="13" />
-            <Setter Property="Foreground" Value="{StaticResource DisableColor}" />
+            <Setter Property="Foreground" Value="{StaticResource SubTextColor}" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Margin" Value="0,0,0,4" />
         </Style>
@@ -95,6 +95,30 @@
         <Style Selector="ScrollViewer:not(.large)">
             <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
         </Style>
+
+        <Style Selector="Border.unscheduled-card.cancelled">
+            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.2" Easing="SineEaseInOut" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.unscheduled-card.cancelled:pointerover">
+            <Setter Property="Opacity" Value="1.0" />
+        </Style>
+
+        <Style Selector="Border.unscheduled-cancelled-overlay">
+            <Setter Property="Opacity" Value="1.0" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="SineEaseInOut" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.unscheduled-card:pointerover Border.unscheduled-cancelled-overlay">
+            <Setter Property="Opacity" Value="0.05" />
+        </Style>
     </rxui:ReactiveUserControl.Styles>
 
     <ScrollViewer x:Name="RootScroller" HorizontalScrollBarVisibility="Disabled">
@@ -116,7 +140,7 @@
                     <StackPanel Grid.Row="0" Margin="24, 24, 24, 0" Spacing="16">
                         <StackPanel>
                             <TextBlock Text="Chi tiết thời khóa biểu" FontSize="13"
-                                       Foreground="{StaticResource DisableColor}" FontWeight="SemiBold" />
+                                       Foreground="{StaticResource SubTextColor}" FontWeight="SemiBold" />
 
                             <Panel Margin="0,4,0,0">
                                 <Grid ColumnDefinitions="*, Auto" IsVisible="{Binding !IsEditing}">
@@ -125,8 +149,7 @@
                                                   MaxHeight="80"
                                                   VerticalScrollBarVisibility="Auto"
                                                   HorizontalScrollBarVisibility="Disabled">
-                                        
-                                        <!-- // Timetable Name // -->
+
                                         <StackPanel VerticalAlignment="Center">
                                             <TextBlock Text="Thời khóa biểu:"
                                                        FontSize="18"
@@ -135,10 +158,10 @@
                                                        Margin="0,0,0,4" />
 
                                             <TextBlock
-                                                       Text="{Binding Name}"
-                                                       FontSize="22" FontWeight="Bold"
-                                                       Foreground="{StaticResource PrimaryBrush}"
-                                                       TextWrapping="Wrap" />
+                                                Text="{Binding Name}"
+                                                FontSize="22" FontWeight="Bold"
+                                                Foreground="{StaticResource PrimaryBrush}"
+                                                TextWrapping="Wrap" />
                                         </StackPanel>
                                     </ScrollViewer>
 
@@ -153,7 +176,6 @@
                                     </Button>
                                 </Grid>
 
-                                <!-- // edit name field // -->
                                 <Grid ColumnDefinitions="*, Auto, Auto" IsVisible="{Binding IsEditing}">
 
                                     <TextBox Grid.Column="0"
@@ -192,31 +214,27 @@
                             </Panel>
                         </StackPanel>
 
-                       
                         <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto">
-                            <!-- // subject count //-->
                             <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,0,0,12">
                                 <TextBlock Text="Số môn học" Classes="label" />
-                                <TextBlock 
-                                           Text="{Binding SubjectsCount}"
-                                           Classes="value" />
+                                <TextBlock
+                                    Text="{Binding SubjectsCount}"
+                                    Classes="value" />
                             </StackPanel>
 
-                            <!-- // credit // -->
                             <StackPanel Grid.Column="1" Grid.Row="0" Margin="0,0,0,12">
                                 <TextBlock Text="Tổng tín chỉ" Classes="label" />
-                                <TextBlock 
-                                           Text="{Binding TotalCredits}"
-                                           Classes="value" />
+                                <TextBlock
+                                    Text="{Binding TotalCredits}"
+                                    Classes="value" />
                             </StackPanel>
 
-                            <!-- // last update  -->
                             <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1">
                                 <TextBlock Text="Cập nhật lần cuối" Classes="label" />
-                                <TextBlock 
-                                           Text="{Binding LastUpdated.LocalDateTime, StringFormat={}{0:dd/MM/yyyy HH:mm:ss}}"
-                                           FontSize="14"
-                                           Foreground="{StaticResource Grey}" />
+                                <TextBlock
+                                    Text="{Binding LastUpdated.LocalDateTime, StringFormat={}{0:dd/MM/yyyy HH:mm:ss}}"
+                                    FontSize="14"
+                                    Foreground="{StaticResource Grey}" />
                             </StackPanel>
                         </Grid>
 
@@ -234,52 +252,87 @@
                                 <ItemsRepeater Grid.Row="1" ItemsSource="{Binding VisualizerVM.UnscheduledCourses}">
                                     <ItemsRepeater.ItemTemplate>
                                         <DataTemplate x:DataType="timetableVm:ScheduleGroupCellShared">
-                                            <Border Background="{StaticResource BaseBackgroundColor}"
-                                                    CornerRadius="6"
-                                                    Padding="12"
-                                                    Margin="0,0,0,8">
-                                                <Grid RowDefinitions="Auto, Auto, Auto">
-                                                    <TextBlock Grid.Row="0"
-                                                               Text="{Binding NameConcat, Mode=OneTime}"
-                                                               FontWeight="SemiBold"
-                                                               Foreground="{StaticResource PrimaryBrush}"
-                                                               TextWrapping="Wrap"
-                                                               Margin="0,0,0,6" />
 
-                                                    <Grid Grid.Row="1" ColumnDefinitions="Auto, *">
-                                                        <TextBlock Grid.Column="0"
-                                                                   Text="{Binding Credits, StringFormat={}Tín chỉ: {0}, Mode=OneWay}"
-                                                                   FontSize="12" Foreground="{StaticResource Grey}"
-                                                                   Margin="0,0,8,0" />
-                                                        <TextBlock Grid.Column="1"
-                                                                   Text="{Binding Lecturer, Mode=OneWay}"
-                                                                   FontSize="12"
-                                                                   Foreground="{StaticResource Grey}"
-                                                                   TextAlignment="Right"
-                                                                   TextTrimming="CharacterEllipsis"
-                                                                   ToolTip.Tip="{Binding Lecturer, Mode=OneWay}" />
+                                            <Border Background="Transparent" Padding="0,0,0,8">
+
+                                                <Border Classes="unscheduled-card"
+                                                        Classes.cancelled="{Binding IsCancelled}"
+                                                        Background="{StaticResource BaseBackgroundColor}"
+                                                        CornerRadius="6"
+                                                        ClipToBounds="True">
+                                                    <Grid>
+                                                        <Border Padding="12">
+                                                            <Grid RowDefinitions="Auto, Auto, Auto">
+                                                                <TextBlock Grid.Row="0"
+                                                                           Text="{Binding NameConcat, Mode=OneTime}"
+                                                                           FontWeight="SemiBold"
+                                                                           Foreground="{StaticResource PrimaryBrush}"
+                                                                           TextWrapping="Wrap"
+                                                                           Margin="0,0,0,6" />
+
+                                                                <Grid Grid.Row="1" ColumnDefinitions="Auto, *">
+                                                                    <TextBlock Grid.Column="0"
+                                                                               Text="{Binding Credits, StringFormat={}Tín chỉ: {0}, Mode=OneWay}"
+                                                                               FontSize="12"
+                                                                               Foreground="{StaticResource Grey}"
+                                                                               Margin="0,0,8,0" />
+                                                                    <TextBlock Grid.Column="1"
+                                                                               Text="{Binding Lecturer, Mode=OneWay}"
+                                                                               FontSize="12"
+                                                                               Foreground="{StaticResource Grey}"
+                                                                               TextAlignment="Right"
+                                                                               TextTrimming="CharacterEllipsis"
+                                                                               ToolTip.Tip="{Binding Lecturer, Mode=OneWay}" />
+                                                                </Grid>
+
+                                                                <Grid Grid.Row="2" Margin="0,12,0,0"
+                                                                      RowDefinitions="Auto, Auto">
+                                                                    <Grid Grid.Row="0" ColumnDefinitions="*, Auto"
+                                                                          Margin="0,0,0,4">
+                                                                        <TextBlock Grid.Column="0" Text="Sĩ số"
+                                                                                FontSize="11"
+                                                                                Foreground="{StaticResource SubTextColor}" />
+                                                                        <TextBlock Grid.Column="1"
+                                                                                Text="{Binding RemainingConcatTotalStudents}"
+                                                                                FontSize="11" FontWeight="SemiBold"
+                                                                                Foreground="{StaticResource PrimaryBrush}" />
+                                                                    </Grid>
+
+                                                                    <ProgressBar Grid.Row="1"
+                                                                            Height="4"
+                                                                            MinWidth="0"
+                                                                            HorizontalAlignment="Stretch"
+                                                                            CornerRadius="2"
+                                                                            Foreground="{StaticResource SecondaryBrush}"
+                                                                            Background="{StaticResource BorderColor}"
+                                                                            Minimum="0"
+                                                                            Maximum="{Binding TotalStudents}"
+                                                                            Value="{Binding RemainingStudents}" />
+                                                                </Grid>
+                                                            </Grid>
+                                                        </Border>
+
+                                                        <Border Classes="unscheduled-cancelled-overlay"
+                                                                Background="{StaticResource DarkOverlayColor}"
+                                                                IsVisible="{Binding IsCancelled}"
+                                                                ZIndex="10"
+                                                                IsHitTestVisible="False">
+                                                            <Border Background="{StaticResource LightRedColor}"
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center"
+                                                                    Padding="16,6"
+                                                                    CornerRadius="50">
+                                                                <TextBlock Text="LỚP ĐÃ BỊ XÓA"
+                                                                           Foreground="White"
+                                                                           FontSize="12"
+                                                                           FontWeight="Bold"
+                                                                           LetterSpacing="0.5"
+                                                                           VerticalAlignment="Center"
+                                                                           HorizontalAlignment="Center" />
+                                                            </Border>
+                                                        </Border>
                                                     </Grid>
-
-                                                    <Grid Grid.Row="2" Margin="0,12,0,0" RowDefinitions="Auto, Auto">
-                                                        <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="0,0,0,4">
-                                                            <TextBlock Grid.Column="0" Text="Đã đăng ký" FontSize="11"
-                                                                       Foreground="{StaticResource DisableColor}" />
-                                                            <TextBlock Grid.Column="1"
-                                                                       Text="{Binding RemainingConcatTotalStudents}"
-                                                                       FontSize="11" FontWeight="SemiBold"
-                                                                       Foreground="{StaticResource PrimaryBrush}" />
-                                                        </Grid>
-
-                                                        <ProgressBar Grid.Row="1"
-                                                                     Height="4"
-                                                                     CornerRadius="2"
-                                                                     Foreground="{StaticResource SecondaryBrush}"
-                                                                     Background="{StaticResource BorderColor}"
-                                                                     Minimum="0"
-                                                                     Maximum="{Binding TotalStudents}"
-                                                                     Value="{Binding CurrentStudents}" />
-                                                    </Grid>
-                                                </Grid>
+                                                </Border>
                                             </Border>
                                         </DataTemplate>
                                     </ItemsRepeater.ItemTemplate>
@@ -289,7 +342,11 @@
                         </Grid>
                     </ScrollViewer>
 
-                    <Border Grid.Row="2" Padding="24" Background="White" BorderThickness="0,1,0,0"
+                    <Border Grid.Row="2"
+                            x:Name="ExportPanel"
+                            Padding="24"
+                            Background="White"
+                            BorderThickness="0,1,0,0"
                             BorderBrush="{StaticResource BorderColor}">
                         <Grid ColumnDefinitions="*, *">
                             <Button Classes="outline-primary"

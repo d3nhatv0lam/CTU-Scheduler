@@ -14,11 +14,11 @@ public class LiveCourseAdapter: ICourseDisplaySource
     {
         Code = runtimeCourse.WhenAnyValue(x => x.Code);
         Name = runtimeCourse.WhenAnyValue(x => x.Name_VN);
+        IsCancelled = section.WhenAnyValue(x => x.IsCancelled);
         Credits = runtimeCourse.WhenAnyValue(x => x.Credits);
         
         Group = Observable.Return(section.Group); 
         Lecturer = Observable.Return(section.Lecturer);
-        
         RemainingStudents = Observable.Return(section.RemainingStudents); 
         TotalStudents = Observable.Return(section.TotalStudents);
         
@@ -27,6 +27,7 @@ public class LiveCourseAdapter: ICourseDisplaySource
 
     public IObservable<string> Code { get; }
     public IObservable<string> Name { get; }
+    public IObservable<bool> IsCancelled { get; }
     public IObservable<int> Credits { get; }
     public IObservable<string> Group { get; }
     public IObservable<string> Lecturer { get; }

@@ -9,21 +9,17 @@ public class CourseColorProvider
 {
     private static readonly Lazy<IReadOnlyList<IBrush>> Palette = new(() =>
     [
-        new ImmutableSolidColorBrush(Color.Parse("#0466c8")), 
-        new ImmutableSolidColorBrush(Color.Parse("#5fa8d3")),
-        new ImmutableSolidColorBrush(Color.Parse("#0582ca")), 
-
-        new ImmutableSolidColorBrush(Color.Parse("#48C9B0")), 
-        new ImmutableSolidColorBrush(Color.Parse("#63A6A0")),
-        new ImmutableSolidColorBrush(Color.Parse("#84aec2")), 
-
-        new ImmutableSolidColorBrush(Color.Parse("#64D8D8")), 
-        new ImmutableSolidColorBrush(Color.Parse("#43A9B7")), 
-        new ImmutableSolidColorBrush(Color.Parse("#88BCC0")), 
-
-        new ImmutableSolidColorBrush(Color.Parse("#7CB9E8")),
-        new ImmutableSolidColorBrush(Color.Parse("#5499C7")),
-        new ImmutableSolidColorBrush(Color.Parse("#7E90A3")), 
+        new ImmutableSolidColorBrush(Color.Parse("#ffe8ed")), 
+        new ImmutableSolidColorBrush(Color.Parse("#d6ecf3")), 
+        new ImmutableSolidColorBrush(Color.Parse("#FFFBD9")), 
+        new ImmutableSolidColorBrush(Color.Parse("#F1CECD")),
+        new ImmutableSolidColorBrush(Color.Parse("#e2a8c6")),
+        new ImmutableSolidColorBrush(Color.Parse("#eafdeb")), 
+        new ImmutableSolidColorBrush(Color.Parse("#daf9f4")),
+        new ImmutableSolidColorBrush(Color.Parse("#c1d5f3")),
+        new ImmutableSolidColorBrush(Color.Parse("#c6eac2")),
+        new ImmutableSolidColorBrush(Color.Parse("#e3f5e0")), 
+        new ImmutableSolidColorBrush(Color.Parse("#d1fff4")),
     ]);
     private readonly Dictionary<string, IBrush> _assignedColors = new();
     
