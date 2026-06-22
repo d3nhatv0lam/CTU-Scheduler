@@ -16,14 +16,13 @@
 <p align="center">
   <img src="https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white" alt="C#" />
   <img src="https://img.shields.io/badge/.NET-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET" />
-  <img src="https://img.shields.io/badge/Avalonia%20UI-170F1C?style=for-the-badge&logo=avalonia&logoColor=white" alt="Avalonia UI" />
+<img src="https://img.shields.io/badge/Avalonia%20UI-00afef?style=for-the-badge&logo=avalonia&logoColor=white" alt="Avalonia UI" />
 </p>
-
 <p align="center"> Đừng quên thả Sao để tiếp thêm động lực cho nhóm mình nha!</p>
 
 ---
 
-## [Video Demo](https://youtu.be/ubb4gyOioU0?si=qRQOwMNo4vsZeSlX)
+## [Video Demo](https://youtube.com/playlist?list=PLpnKrm8pPyD0HF_HUuaAnjFAXzI_KsOe5&si=cnIgiPVaJ429lAAd)
 
 ## Mục lục
 
