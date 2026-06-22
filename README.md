@@ -1,6 +1,6 @@
 <p>&nbsp;</p>
 <p align="center">
-  <img src="assets/imgs/CTU_logo_180x180.png" width="20%" alt="Logo App"/>
+  <img src="assets/imgs/AppLogo.png" width="20%" alt="Logo App"/>
 </p>
 
 <p align="center">
@@ -19,7 +19,7 @@
   <img src="https://img.shields.io/badge/Avalonia%20UI-170F1C?style=for-the-badge&logo=avalonia&logoColor=white" alt="Avalonia UI" />
 </p>
 
-<p align="center"> Đừng quên thả sao (Star) để tiếp thêm động lực cho nhóm phát triển nha!</p>
+<p align="center"> Đừng quên thả Sao để tiếp thêm động lực cho nhóm mình nha!</p>
 
 ---
 
@@ -32,7 +32,9 @@
     * [Tạo thời khóa biểu nhanh](#auto)
     * [Tùy chỉnh lịch thủ công](#manual)
     * [Tổng hợp thông tin học tập](#info)
-    * [Lưu trữ & Xuất dữ liệu](#data)
+    * [Cập nhật sĩ số lớp học](#capacity)
+    * [Quản lý nhiều thời khóa biểu](#manage)
+    * [Trực quan thời khóa biểu & Xuất dữ liệu](#visualize)
 * [Kiến trúc và công nghệ sử dụng](#architecture)
 * [Biên bản họp hội đồng](#certification)
 * [Cài đặt & Thiết lập](#setup)
@@ -89,24 +91,69 @@ kế hoạch học tập và xếp lịch học. Ứng dụng hỗ trợ chạy 
 
 ### <a id="info"></a> Tổng hợp thông tin học tập
 
-Thông tin học tập được hiển thị trên một màn hình:
+<table width="100%">
+  <tr>
+    <td width="50%"><img src="assets/imgs/HomeView.png" alt="Home View" width="100%" /></td>
+    <td width="50%">
+      Thông tin học tập được hiển thị tập trung:
+      <ul>
+        <li><strong>Theo dõi mốc thời gian đăng ký:</strong> Xem trực tiếp lộ trình mở/đóng hệ thống.</li>
+        <li><strong>Theo dõi môn học:</strong> Xem nhanh danh sách các môn trong Kế hoạch học tập (KHHT) và trạng thái đăng ký.</li>
+        <li><strong>Theo dõi học phí:</strong> Xem tổng tiền phải đóng, hạn chót nộp và trạng thái thanh toán.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+### <a id="capacity"></a> Cập nhật sĩ số lớp học
+
+<table width="100%">
+  <tr>
+    <td width="50%"><img src="assets/imgs/UpdateCapacity.png" alt="Update Capacity" width="100%" /></td>
+    <td width="50%">
+      Theo dõi tình trạng chỗ trống của các nhóm môn học:
+      <ul>
+        <li>Đồng bộ dữ liệu sĩ số thực tế từ hệ thống trường.</li>
+        <li>Giúp bạn xem trước nhóm học nào còn chỗ để lên kế hoạch đăng ký.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+### <a id="manage"></a> Quản lý nhiều thời khóa biểu
+
+<table width="100%">
+  <tr>
+    <td width="50%"><img src="assets/imgs/TimetableManager.png" alt="Timetable Manager" width="100%" /></td>
+    <td width="50%">
+      Quản lý các phương án lịch học khác nhau:
+      <ul>
+        <li>Lưu lại nhiều phiên bản thời khóa biểu cùng lúc.</li>
+        <li>So sánh và các lịch đã tạo để chọn phương án phù hợp nhất.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+### <a id="visualize"></a> Trực quan thời khóa biểu & Xuất dữ liệu
+
+Hiển thị lịch học dưới dạng lưới và hỗ trợ lưu trữ:
 <ul>
-  <li><strong>Theo dõi mốc thời gian đăng ký:</strong> Xem trực tiếp các mốc thời gian (lộ trình) mở/đóng hệ thống để không trễ đợt đăng ký.</li>
-  <li><strong>Theo dõi môn học:</strong> Xem nhanh danh sách các môn trong Kế hoạch học tập (KHHT) và trạng thái đăng ký.</li>
-  <li><strong>Theo dõi học phí:</strong> Xem tổng tiền phải đóng, hạn chót nộp và trạng thái thanh toán.</li>
+  <li><strong>Sao chép ảnh:</strong> Chụp thời khóa biểu và lưu vào bộ nhớ tạm bằng một nút bấm. Nhấn <code>Ctrl + V</code> để dán và chia sẻ.</li>
+  <li><strong>Xuất Excel:</strong> Kết xuất dữ liệu ra tệp Excel định dạng rõ ràng, sẵn sàng in ấn.</li> 
+  <li><strong>Lưu trữ cấu hình:</strong> Xuất thời khóa biểu ra file JSON cục bộ để tải lại nhanh chóng.</li>
 </ul>
 
-<p align="center">
-  <img src="assets/imgs/HomeView.png" width="60%"/>
-</p>
-
-### <a id="data"></a> Lưu trữ & Xuất dữ liệu
-
-<ul>
-  <li><strong>Sao chép ảnh nhanh:</strong> Chụp thời khóa biểu và lưu thẳng vào bộ nhớ tạm (Clipboard). Bạn chỉ cần ấn nút, sau đó <code>Ctrl + V</code> để dán và gửi ngay cho bạn bè qua tin nhắn mà không làm rác máy với các file ảnh tải về.</li>
-  <li><strong>Lưu trữ cấu hình:</strong> Xuất toàn bộ thời khóa biểu đang xếp ra file JSON cục bộ để sao lưu và tải lại nhanh chóng.</li>
-  <li><strong>Xuất Excel:</strong> Xuất dữ liệu thời khóa biểu ra tệp Excel định dạng rõ ràng, sẵn sàng in ấn.</li>
-</ul>
+<table width="100%">
+  <tr>
+    <td width="50%" align="center">
+      <img src="assets/imgs/ClipboardCopy.jpg" alt="Sao chép ảnh" width="100%" />
+    </td>
+    <td width="50%" align="center">
+      <img src="assets/imgs/ExcelExport.png" alt="Xuất Excel" width="100%" />
+    </td>
+  </tr>
+</table>
 
 ## <a id="architecture"></a> Kiến trúc và công nghệ sử dụng
 
@@ -193,10 +240,10 @@ dotnet run --project CTUScheduler.Desktop/CTUScheduler.Desktop.csproj
 
 Dự án NCKH này được nghiên cứu và phát triển bởi nhóm sinh viên Đại học Cần Thơ:
 
-* **Dương Minh Đức** ([@d3nhatv0lam](https://github.com/d3nhatv0lam)) - Chủ nhiệm đề tài & Lead Developer
-* **Nguyễn Phước Lộc** ([@Lexipit3268](https://github.com/Lexipit3268)) - Developer, Designer
-* **Trần Trọng Phúc** ([@phuctran1501](https://github.com/phuctran1501)) - Developer
-* **Nguyễn Ngọc Đức Phát** ([@KimgionDev](https://github.com/KimgionDev)) - Developer
+* **Dương Minh Đức** ([@d3nhatv0lam](https://github.com/d3nhatv0lam)) - Chủ nhiệm đề tài & Lead Developer, Tester
+* **Nguyễn Phước Lộc** ([@Lexipit3268](https://github.com/Lexipit3268)) - Developer, Designer, Tester
+* **Trần Trọng Phúc** ([@phuctran1501](https://github.com/phuctran1501)) - Developer, Tester
+* **Nguyễn Ngọc Đức Phát** ([@KimgionDev](https://github.com/KimgionDev)) - Developer, Tester
 
 ## Đóng góp & Góp ý
 
