@@ -108,7 +108,7 @@ kế hoạch học tập và xếp lịch học. Ứng dụng hỗ trợ chạy 
 
 <table width="100%">
   <tr>
-    <td width="50%"><img src="assets/imgs/UpdateCapacity.png" alt="Update Capacity" width="100%" /></td>
+    <td width="50%"><img src="assets/gifs/UpdateCapacity.gif" alt="Update Capacity" width="100%" /></td>
     <td width="50%">
       Theo dõi tình trạng chỗ trống của các nhóm môn học:
       <ul>
