@@ -18,7 +18,7 @@
   <img src="https://img.shields.io/badge/.NET-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET" />
 <img src="https://img.shields.io/badge/Avalonia%20UI-00afef?style=for-the-badge&logo=avalonia&logoColor=white" alt="Avalonia UI" />
 </p>
-<p align="center"> Đừng quên thả Sao để tiếp thêm động lực cho nhóm mình nha!</p>
+<p align="center"> Đừng quên thả ⭐ để tiếp thêm động lực cho nhóm mình nha!</p>
 
 ---
 
