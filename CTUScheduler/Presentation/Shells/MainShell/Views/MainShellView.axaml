@@ -10,13 +10,11 @@
     x:DataType="vm:MainShellViewModel"
     x:CompileBindings="True"
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
     xmlns:vm="clr-namespace:CTUScheduler.Presentation.Shells.MainShell.ViewModels"
     xmlns:models="clr-namespace:CTUScheduler.Presentation.Shells.MainShell.Models"
     x:Class="CTUScheduler.Presentation.Shells.MainShell.Views.MainShellView">
 
     <rxui:ReactiveUserControl.Styles>
-        <themes:CustomMaterialTheme PrimaryColor="Blue" SecondaryColor="#1f5ca9" />
     </rxui:ReactiveUserControl.Styles>
 
     <!-- <Design.DataContext> -->

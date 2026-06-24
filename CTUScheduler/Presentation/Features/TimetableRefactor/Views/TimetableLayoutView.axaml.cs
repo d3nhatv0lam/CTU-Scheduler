@@ -17,7 +17,7 @@ public partial class TimetableLayoutView : ReactiveUserControl<TimetableLayoutBa
         InitializeComponent();
         this.WhenActivated(disposable =>
         {
-            ViewModel!.CopyToClipboardInteraction.RegisterHandler(async context =>
+            ViewModel?.CopyToClipboardInteraction.RegisterHandler(async context =>
             {
                 TimetableLayoutView? tempView = null;
                 try

@@ -233,6 +233,7 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
                     {
                         SizeMode = DialogSizeMode.Responsive,
                         CanLightDismiss = true,
+                        IsCloseButtonVisible = false,
                         HostId = DialogIds.Root
                     };
                     await UserInteractionService.Dialog.ShowModal<TimetableLayoutBaseViewModel, Unit>(

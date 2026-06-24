@@ -6,8 +6,7 @@ using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 using ReactiveUI.Avalonia;
-using CTUScheduler.Presentation.Shells.MainShell.ViewModels;
-using Material.Styles.Controls;
+using CTUScheduler.Presentation.Shells.MainShell.ViewModels; 
 using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Shells.MainShell.Views;

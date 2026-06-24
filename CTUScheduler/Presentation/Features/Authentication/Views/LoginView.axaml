@@ -87,13 +87,13 @@
                     <!-- MSSV -->
                     <TextBox x:Name="txtUsername"
                              Classes="input floating"
-                             Watermark="MSSV"
+                             PlaceholderText="MSSV"
                              Margin="0 15 0 0"
                              HorizontalAlignment="Stretch" />
 
                     <!-- Password -->
                     <TextBox x:Name="txtPassword"
-                             Watermark="Mật khẩu"
+                             PlaceholderText="Mật khẩu"
                              Classes="input floating reveal"
                              PasswordChar="*"
                              Margin="0 20 0 0"

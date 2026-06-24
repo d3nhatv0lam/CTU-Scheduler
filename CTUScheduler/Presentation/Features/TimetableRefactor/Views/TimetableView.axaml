@@ -44,6 +44,10 @@
         <Style Selector="Border.cell-container:pointerover Border.cancelled-overlay">
             <Setter Property="Opacity" Value="0.05" />
         </Style>
+        
+        <Style Selector=":is(UserControl).preview :is(Control).detail">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
 
     </rxui:ReactiveUserControl.Styles>
 
@@ -153,6 +157,7 @@
                                                     </Border>
 
                                                     <WrapPanel Grid.Row="1"
+                                                               Classes="detail"
                                                                Orientation="Horizontal"
                                                                Margin="0,0,0,6">
                                                         <TextBlock
@@ -178,6 +183,7 @@
                                                                Margin="0,0,0,6" />
 
                                                     <Grid Grid.Row="3"
+                                                          Classes="detail"
                                                           ColumnDefinitions="Auto,*"
                                                           Margin="0,0,0,6">
                                                         <icon:MaterialIcon Grid.Column="0"
