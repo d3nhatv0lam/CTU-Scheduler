@@ -4,7 +4,7 @@
     
     <ControlTheme x:Key="{x:Type ripple:RippleEffect}"
                   TargetType="ripple:RippleEffect"
-                  BasedOn="{StaticResource {x:Type ContentControl}}">
+                  >
         <Style Selector="^:not(.no-transitions)">
             <Setter Property="UseTransitions" Value="True"/>
         </Style>

@@ -13,6 +13,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Colors.axaml" />
                 <ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Fonts.axaml" />
+                <!-- hỗ trợ dịch 1 số câu sang tiếng Việt cho semi & ursa -->
                 <ResourceInclude Source="avares://CTUScheduler/Assets/Localization/Locale.vi-VN.axaml" />
                 <ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Ripple/Theme.axaml" />
             </ResourceDictionary.MergedDictionaries>
@@ -21,9 +22,9 @@
 
     <Application.Styles>
         <!-- <FluentTheme /> -->
-        <themes:CustomMaterialTheme PrimaryColor="Blue" SecondaryColor="#1f5ca9" />
+        <!-- <themes:CustomMaterialTheme PrimaryColor="Blue" SecondaryColor="#1f5ca9" /> -->
+        
         <materialIcons:MaterialIconStyles />
-
         <semi:SemiTheme Locale="vi-VN" />
         <semi:UrsaSemiTheme Locale="vi-VN" />
         <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
