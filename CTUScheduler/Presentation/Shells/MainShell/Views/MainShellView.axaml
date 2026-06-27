@@ -15,12 +15,87 @@
     x:Class="CTUScheduler.Presentation.Shells.MainShell.Views.MainShellView">
 
     <rxui:ReactiveUserControl.Styles>
+        
+        <Style Selector="ListBox#lBoxNavigation">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+        </Style>
+
+        <Style Selector="ListBoxItem">
+            <Setter Property="Height" Value="52" />
+            <Setter Property="Margin" Value="0,4" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="PART_HighlightBorder"
+                            Background="Transparent"
+                            CornerRadius="10"
+                            Padding="5,0,0,0">
+                        
+                        <Border Name="PART_ContentBorder"
+                                Background="Transparent"
+                                CornerRadius="4,8,8,4"> 
+                            
+                            <ContentPresenter Name="PART_ContentPresenter"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              Content="{TemplateBinding Content}"
+                                              Padding="16,0,16,0"
+                                              VerticalContentAlignment="Center"
+                                              HorizontalContentAlignment="Stretch"/>
+                        </Border>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="ListBoxItem:pointerover /template/ Border#PART_HighlightBorder">
+            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
+        </Style>
+
+        <Style Selector="ListBoxItem:selected /template/ Border#PART_HighlightBorder">
+            <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+        </Style>
+        <Style Selector="ListBoxItem:selected /template/ Border#PART_ContentBorder">
+            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
+        </Style>
+
+        <Style Selector="ListBoxItem materialIcons|MaterialIcon">
+            <Setter Property="Foreground" Value="{StaticResource Grey}" />
+            <Setter Property="Width" Value="24" />
+            <Setter Property="Height" Value="24" />
+        </Style>
+        <Style Selector="ListBoxItem TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Grey}" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="Regular" /> 
+        </Style>
+
+        <Style Selector="ListBoxItem:selected materialIcons|MaterialIcon">
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+        </Style>
+        <Style Selector="ListBoxItem:selected TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+        </Style>
+        
+        <Style Selector="Button#BtnLogout">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Height" Value="52" />
+            <Setter Property="Padding" Value="21,0,16,0" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="Button#BtnLogout /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+        <Style Selector="Button#BtnLogout:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
+        </Style>
+
     </rxui:ReactiveUserControl.Styles>
-
-    <!-- <Design.DataContext> -->
-    <!--     <vm:MainShellViewModel /> -->
-    <!-- </Design.DataContext> -->
-
 
     <Grid ColumnDefinitions="auto *">
         <Border Grid.Column="0"
@@ -31,8 +106,7 @@
                        ExpandWidth="250">
                 <u:NavMenu.Header>
                     <DockPanel Background="White">
-                        <!--// CTU Title //-->
-                        <Border Classes="header-bar" Background="{StaticResource PrimaryColor}"
+                        <Border Classes="header-bar" Background="{StaticResource PrimaryBrush}"
                                 DockPanel.Dock="Top">
                             <Grid ColumnDefinitions="50 *"
                                   ColumnSpacing="-10">
@@ -59,7 +133,7 @@
                                                                     Kind="AccountSchool"
                                                                     Height="40"
                                                                     Width="40"
-                                                                    Foreground="{StaticResource PrimaryColor}" />
+                                                                    Foreground="{StaticResource PrimaryBrush}" />
                                         <Grid Grid.Column="1" RowDefinitions="* *">
                                             <Grid.Styles>
                                                 <Style Selector="SelectableTextBlock">
@@ -80,128 +154,57 @@
                                                                  Text="{Binding UserMSSV, Mode=OneWay}"
                                                                  VerticalAlignment="Top"
                                                                  FontSize="13"
-                                                                 Foreground="Gray" />
+                                                                 Foreground="{StaticResource SubTextColor}" />
                                         </Grid>
                                     </Grid>
                                 </Border>
                             </Border>
                         </StackPanel>
-
+                        
                         <!--// navigation & Logout //-->
-                        <Border Padding="8">
-                            <Border CornerRadius="5" Background="White">
-                                <StackPanel>
-                                    <!--// Navigation //-->
-                                    <Border CornerRadius="5" Background="White">
-                                        <ListBox x:Name="lBoxNavigation"
-                                                 SelectionMode="Single"
-                                                 ItemsSource="{Binding NavigationItems,Mode=OneWay}"
-                                                 SelectedItem="{Binding SelectedItem,Mode=TwoWay}"
-                                                 Focusable="{Binding ElementName=LeftDrawer, Path=IsHorizontalCollapsed}">
-                                            <ListBox.Styles>
-                                                <Style Selector="ListBoxItem">
-                                                    <Setter Property="Height" Value="45" />
-                                                    <Setter Property="Padding" Value="0" />
-                                                    <Setter Property="Cursor" Value="Hand" />
-                                                    <Setter Property="Margin" Value="0,5"></Setter>
-                                                    <Setter Property="BorderThickness" Value="6,0,0,0"></Setter>
-                                                </Style>
-                                                <Style Selector="ListBoxItem > Border">
-                                                    <Setter Property="Background"
-                                                            Value="{StaticResource BaseBackgroundColor}">
-                                                    </Setter>
-                                                </Style>
-                                                <Style Selector="ListBoxItem Border Panel Border">
-                                                    <Setter Property="CornerRadius" Value="8"></Setter>
-                                                </Style>
-                                                <Style Selector="ListBoxItem:selected > Border">
-                                                    <Setter Property="BorderBrush"
-                                                            Value="{StaticResource PrimaryColor}" />
-                                                    <Setter Property="BorderThickness" Value="6,0,0,0"></Setter>
-                                                    <Setter Property="CornerRadius" Value="10"></Setter>
-                                                </Style>
+                        <Border Padding="12,16"> 
+                            <StackPanel>
+                                
+                                <ListBox x:Name="lBoxNavigation"
+                                         SelectionMode="Single"
+                                         ItemsSource="{Binding NavigationItems,Mode=OneWay}"
+                                         SelectedItem="{Binding SelectedItem,Mode=TwoWay}"
+                                         Focusable="{Binding ElementName=LeftDrawer, Path=IsHorizontalCollapsed}">
 
-                                            </ListBox.Styles>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate x:DataType="{x:Type models:NavigationItem}">
+                                            
+                                            <StackPanel Orientation="Horizontal" Spacing="16" Background="Transparent">
+                                                <materialIcons:MaterialIcon Kind="{Binding Kind}" VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding Title}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
 
-                                            <ListBox.ItemTemplate>
-                                                <DataTemplate x:DataType="{x:Type models:NavigationItem}">
-                                                    <Grid ColumnDefinitions="7 5 auto 5 *">
-                                                        <Grid.Styles>
-                                                            <Style Selector="TextBlock">
-                                                                <Setter Property="VerticalAlignment"
-                                                                        Value="Center" />
-                                                            </Style>
-                                                            <Style Selector="Border">
-                                                                <Setter Property="BorderBrush"
-                                                                        Value="Transparent" />
-                                                            </Style>
-                                                        </Grid.Styles>
-                                                        <!-- <Border -->
-                                                        <!--     IsVisible="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType= ListBoxItem}}" -->
-                                                        <!--     Grid.Column="0" CornerRadius="0 5 5 0" Background="Blue" /> -->
-                                                        <materialIcons:MaterialIcon Grid.Column="2" Height="25"
-                                                                Width="25" Kind="{Binding Kind}"
-                                                                Foreground="{StaticResource Grey}" />
-                                                        <TextBlock Grid.Column="5" Text="{Binding Title}"
-                                                                   Foreground="{StaticResource Grey}" />
-                                                    </Grid>
-                                                </DataTemplate>
-                                            </ListBox.ItemTemplate>
-                                            <!-- // Element Example // -->
-                                            <!--<ListBox.Items>
-                											<ListBoxItem>
-                												<Grid ColumnDefinitions="7 5 auto 5 *">
-                													<Grid.Styles>
-                														<Style Selector="TextBlock">
-                															<Setter Property="VerticalAlignment" Value="Center"/>
-                														</Style>
-                													</Grid.Styles>
-                													<Border  Grid.Column="0" CornerRadius="0 5 5 0" Background="Blue"/>
-                													<materialIcons:MaterialIcon Grid.Column="2" Height="25" Width="25" Kind="Abacus"/>
-                													<TextBlock Grid.Column="5" Text="text"/>
-                												</Grid>
-                											</ListBoxItem>
-                										</ListBox.Items>-->
-                                        </ListBox>
-                                    </Border>
+                                <Border Padding="12,16,12,8">
+                                    <Separator Height="1" Background="{StaticResource BorderColor}" />
+                                </Border>
 
+                                <Button x:Name="BtnLogout"
+                                        Command="{Binding LogoutCommand}"> 
+                                    
+                                    <StackPanel Orientation="Horizontal" Spacing="16">
+                                        <materialIcons:MaterialIcon Kind="Logout" 
+                                                                    Width="24" Height="24" 
+                                                                    Foreground="{StaticResource RedColor}" 
+                                                                    VerticalAlignment="Center" />
 
-                                    <Border Padding="10">
-                                        <Separator Height="2" />
-                                    </Border>
-
-                                    <!--// Logout Button //-->
-
-                                    <Button x:Name="BtnLogout"
-                                            Height="50"
-                                            Foreground="{StaticResource RedColor}"
-                                            Background="Transparent"
-                                            VerticalContentAlignment="Stretch"
-                                            HorizontalContentAlignment="Stretch"
-                                            Padding="0"
-                                            Cursor="Hand">
-
-                                        <Button.ContentTemplate>
-                                            <DataTemplate>
-                                                <Border CornerRadius="5"
-                                                        HorizontalAlignment="Stretch"
-                                                        VerticalAlignment="Stretch">
-
-                                                    <Grid ColumnDefinitions="50 *">
-                                                        <materialIcons:MaterialIcon
-                                                            Grid.Column="0"
-                                                            Kind="Logout" />
-
-                                                        <TextBlock Grid.Column="1"
-                                                                   Text="Đăng xuất"
-                                                                   VerticalAlignment="Center" />
-                                                    </Grid>
-                                                </Border>
-                                            </DataTemplate>
-                                        </Button.ContentTemplate>
-                                    </Button>
-                                </StackPanel>
-                            </Border>
+                                        <TextBlock Text="Đăng xuất"
+                                                   FontSize="18"
+                                                   FontWeight="Regular"
+                                                   Foreground="{StaticResource RedColor}"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                
+                            </StackPanel>
                         </Border>
                     </DockPanel>
                 </u:NavMenu.Header>
@@ -211,10 +214,7 @@
         <Border Background="{StaticResource BaseBackgroundColor}"
                 Grid.Column="1">
             <Grid RowDefinitions="auto *">
-                <!--// Title content //-->
-                <Border Grid.Row="0"
-                        Classes="header-bar">
-
+                <Border Grid.Row="0" Classes="header-bar">
                     <Grid RowDefinitions="* auto" ColumnDefinitions="50 *">
                         <!-- <ToggleButton x:Name="ExpandToggleButton" -->
                         <!--               Grid.Row="0" -->
@@ -233,13 +233,11 @@
                                    FontWeight="Bold"
                                    FontSize="26"
                                    Foreground="White" />
-                        <!-- <Separator Grid.Row="1" Grid.ColumnSpan="2" /> -->
                     </Grid>
                 </Border>
                 <!--// Navigation content //-->
                 <Border Grid.Row="1" Padding="16">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                  AllowAutoHide="True">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" AllowAutoHide="True">
                         <ScrollViewer.Styles>
                             <Style Selector="ScrollBar:vertical">
                                 <Setter Property="Width" Value="8" />
@@ -249,7 +247,6 @@
                             </Style>
                         </ScrollViewer.Styles>
                         <rxui:RoutedViewHost x:Name="PageRounter" Router="{Binding Router}" />
-
                     </ScrollViewer>
                 </Border>
             </Grid>
