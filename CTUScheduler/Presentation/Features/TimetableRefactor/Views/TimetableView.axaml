@@ -44,7 +44,7 @@
         <Style Selector="Border.cell-container:pointerover Border.cancelled-overlay">
             <Setter Property="Opacity" Value="0.05" />
         </Style>
-        
+
         <Style Selector=":is(UserControl).preview :is(Control).detail">
             <Setter Property="IsVisible" Value="False" />
         </Style>
@@ -245,7 +245,7 @@
                                                            FontWeight="Bold"
                                                            LetterSpacing="0.5"
                                                            VerticalAlignment="Center"
-                                                           HorizontalAlignment="Center"/>
+                                                           HorizontalAlignment="Center" />
                                             </Border>
                                         </Border>
 

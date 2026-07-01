@@ -69,6 +69,20 @@
         <Style Selector="Button.SocialButton:pointerover TextBlock.SocialText">
             <Setter Property="Opacity" Value="1" />
         </Style>
+        
+        <Style Selector="Button.SocialButton /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BoxShadow" Value="none" />
+            <Setter Property="Background" Value="{TemplateBinding Background}" />
+        </Style>
+
+        <Style Selector="Button.SocialButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{TemplateBinding Background}" />
+        </Style>
+
+        <Style Selector="Button.SocialButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{TemplateBinding Background}" />
+            <Setter Property="Opacity" Value="0.8" /> 
+        </Style>
 
         <!-- Contributor Card Base and Hover Styling -->
         <Style Selector="Border.ContributorCard">
