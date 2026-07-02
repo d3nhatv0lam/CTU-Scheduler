@@ -178,8 +178,8 @@ Dự án áp dụng **Clean Architecture** để quản lý mã nguồn và ứn
 
 ### Dành cho người dùng
 
-Cách nhanh nhất để tải và cài đặt ứng dụng là truy cập vào trang web chính thức của dự án:
-🌐 **[Tải CTU-Scheduler tại đây](https://link-trang-web-cua-ban.com)**
+Tải và cài đặt ứng dụng là truy cập vào trang web chính thức của dự án:
+🌐 **[Tải CTU-Scheduler tại đây](https://ctutkb.vercel.app/#download)**
 
 Hoặc tải thủ công qua GitHub:
 
