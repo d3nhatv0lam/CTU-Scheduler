@@ -176,7 +176,7 @@
                                             
                                             <StackPanel Orientation="Horizontal" Spacing="16" Background="Transparent">
                                                 <materialIcons:MaterialIcon Kind="{Binding Kind}" VerticalAlignment="Center" />
-                                                <TextBlock Text="{Binding Title}" VerticalAlignment="Center"/>
+                                                <TextBlock FontWeight="Medium" Text="{Binding Title}" VerticalAlignment="Center"/>
                                             </StackPanel>
                                             
                                         </DataTemplate>
