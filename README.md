@@ -1,6 +1,6 @@
 <p>&nbsp;</p>
 <p align="center">
-  <img src="assets/imgs/AppLogo.png" width="20%" alt="Logo App"/>
+  <img src="assets/imgs/AppLogo.svg" width="20%" alt="Logo App"/>
 </p>
 
 <p align="center">
