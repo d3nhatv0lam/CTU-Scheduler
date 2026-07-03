@@ -414,6 +414,7 @@
 
                                                 <!-- Open details command button overlaid -->
                                                 <Button Background="Transparent"
+                                                        Classes="ripple"
                                                         Padding="0"
                                                         BorderThickness="0"
                                                         HorizontalAlignment="Stretch"

@@ -103,12 +103,13 @@
     <Grid ColumnDefinitions="auto *">
         <Border Grid.Column="0"
                 Classes="ShadowCard"
+                Background="White"
                 ZIndex="1"
                 ClipToBounds="False">
             <u:NavMenu x:Name="LeftDrawer"
                        ExpandWidth="250">
                 <u:NavMenu.Header>
-                    <DockPanel Background="White">
+                    <DockPanel Background="Transparent">
                         <Border Classes="header-bar" Background="{StaticResource PrimaryBrush}"
                                 DockPanel.Dock="Top">
                             <Grid ColumnDefinitions="50 *"
