@@ -12,14 +12,15 @@
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:vm="clr-namespace:CTUScheduler.Presentation.Shells.MainShell.ViewModels"
     xmlns:models="clr-namespace:CTUScheduler.Presentation.Shells.MainShell.Models"
+    xmlns:ripple="clr-namespace:CTUScheduler.Presentation.Shared.Styles.Ripple"
     x:Class="CTUScheduler.Presentation.Shells.MainShell.Views.MainShellView">
 
     <rxui:ReactiveUserControl.Styles>
-        
+
         <Style Selector="ListBox#lBoxNavigation">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
         </Style>
 
         <Style Selector="ListBoxItem">
@@ -28,23 +29,25 @@
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
                 <ControlTemplate>
-                    <Border Name="PART_HighlightBorder"
-                            Background="Transparent"
-                            CornerRadius="8"
-                            Padding="4,0,0,0"> 
-                        
-                        <Border Name="PART_ContentBorder"
+                    <ripple:RippleEffect>
+                        <Border Name="PART_HighlightBorder"
                                 Background="Transparent"
-                                CornerRadius="4,6,6,4"> 
-                            
-                            <ContentPresenter Name="PART_ContentPresenter"
-                                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                                              Content="{TemplateBinding Content}"
-                                              Padding="12,0,12,0" 
-                                              VerticalContentAlignment="Center"
-                                              HorizontalContentAlignment="Stretch"/>
+                                CornerRadius="8"
+                                Padding="4,0,0,0">
+
+                            <Border Name="PART_ContentBorder"
+                                    Background="Transparent"
+                                    CornerRadius="4,6,6,4">
+
+                                <ContentPresenter Name="PART_ContentPresenter"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  Content="{TemplateBinding Content}"
+                                                  Padding="12,0,12,0"
+                                                  VerticalContentAlignment="Center"
+                                                  HorizontalContentAlignment="Stretch" />
+                            </Border>
                         </Border>
-                    </Border>
+                    </ripple:RippleEffect>
                 </ControlTemplate>
             </Setter>
         </Style>
@@ -68,7 +71,7 @@
         <Style Selector="ListBoxItem TextBlock">
             <Setter Property="Foreground" Value="{StaticResource Grey}" />
             <Setter Property="FontSize" Value="14" /> <!-- 80%: 18 -> 14 -->
-            <Setter Property="FontWeight" Value="Regular" /> 
+            <Setter Property="FontWeight" Value="Regular" />
         </Style>
 
         <Style Selector="ListBoxItem:selected materialIcons|MaterialIcon">
@@ -77,13 +80,13 @@
         <Style Selector="ListBoxItem:selected TextBlock">
             <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
         </Style>
-        
+
         <Style Selector="Button#BtnLogout">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Height" Value="42" /> 
-            <Setter Property="Padding" Value="16,0,12,0" /> 
+            <Setter Property="Height" Value="42" />
+            <Setter Property="Padding" Value="16,0,12,0" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         </Style>
@@ -160,11 +163,11 @@
                                 </Border>
                             </Border>
                         </StackPanel>
-                        
+
                         <!--// navigation & Logout //-->
-                        <Border Padding="12,16"> 
+                        <Border Padding="12,16">
                             <StackPanel>
-                                
+
                                 <ListBox x:Name="lBoxNavigation"
                                          SelectionMode="Single"
                                          ItemsSource="{Binding NavigationItems,Mode=OneWay}"
@@ -173,12 +176,12 @@
 
                                     <ListBox.ItemTemplate>
                                         <DataTemplate x:DataType="{x:Type models:NavigationItem}">
-                                            
                                             <StackPanel Orientation="Horizontal" Spacing="12" Background="Transparent">
-                                                <materialIcons:MaterialIcon Kind="{Binding Kind}" VerticalAlignment="Center" />
-                                                <TextBlock FontWeight="Medium" Text="{Binding Title}" VerticalAlignment="Center"/>
+                                                <materialIcons:MaterialIcon Kind="{Binding Kind}"
+                                                                            VerticalAlignment="Center" />
+                                                <TextBlock FontWeight="Medium" Text="{Binding Title}"
+                                                           VerticalAlignment="Center" />
                                             </StackPanel>
-                                            
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                 </ListBox>
@@ -188,12 +191,14 @@
                                 </Border>
 
                                 <Button x:Name="BtnLogout"
-                                        Command="{Binding LogoutCommand}"> 
-                                    
+                                        Background="Transparent"
+                                        CornerRadius="4"
+                                        Command="{Binding LogoutCommand}">
+
                                     <StackPanel Orientation="Horizontal" Spacing="12">
-                                        <materialIcons:MaterialIcon Kind="Logout" 
-                                                                    Width="20" Height="20" 
-                                                                    Foreground="{StaticResource RedColor}" 
+                                        <materialIcons:MaterialIcon Kind="Logout"
+                                                                    Width="20" Height="20"
+                                                                    Foreground="{StaticResource RedColor}"
                                                                     VerticalAlignment="Center" />
 
                                         <TextBlock Text="Đăng xuất"
@@ -203,7 +208,7 @@
                                                    VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
-                                
+
                             </StackPanel>
                         </Border>
                     </DockPanel>
@@ -237,7 +242,8 @@
                 </Border>
                 <!--// Navigation content //-->
                 <Border Grid.Row="1" Padding="16">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" AllowAutoHide="True">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                                  AllowAutoHide="True">
                         <ScrollViewer.Styles>
                             <Style Selector="ScrollBar:vertical">
                                 <Setter Property="Width" Value="8" />
