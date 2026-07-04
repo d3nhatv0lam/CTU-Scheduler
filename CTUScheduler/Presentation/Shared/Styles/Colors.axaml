@@ -1,25 +1,66 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    
-    <Color x:Key="PrimaryColor">#1f5ca9</Color>
-    <Color x:Key="SecondaryColor">#00afef</Color>
 
-    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
-    <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource SecondaryColor}"/>
-    
-    <LinearGradientBrush x:Key="CtuGradient" StartPoint="0%,50%" EndPoint="100%,50%">
-        <GradientStop Color="{StaticResource PrimaryColor}" Offset="0"/>
-        <GradientStop Color="{StaticResource SecondaryColor}" Offset="1"/>
-    </LinearGradientBrush>
+    <ResourceDictionary.ThemeDictionaries>
+        <!-- ================= LIGHT THEME ================= -->
+        <ResourceDictionary x:Key="Light">
+            <Color x:Key="PrimaryColor">#1f5ca9</Color>
+            <Color x:Key="SecondaryColor">#00afef</Color>
 
-    
-    <SolidColorBrush x:Key="BaseBackgroundColor" Color="#F5F5F9"/>
-    <SolidColorBrush x:Key="Grey" Color="#343A40"/>
-    <SolidColorBrush x:Key="BorderColor" Color="#E3E3E3"/>
-    <SolidColorBrush x:Key="DisableColor" Color="#C2C2C2"></SolidColorBrush>
-    <SolidColorBrush x:Key="SubTextColor" Color="#ababab"/>
-    <SolidColorBrush x:Key="RedColor" Color="#D90429"></SolidColorBrush>    
-    <SolidColorBrush x:Key="LightRedColor" Color="#E63946"></SolidColorBrush>
-    <SolidColorBrush x:Key="ButtonHoverBrush" Color="#3a7bd5"/>
-    <SolidColorBrush x:Key="DarkOverlayColor" Color="#002C2C2C"/>
+            <!-- Khai báo màu bắt đầu/kết thúc ở Light mode (trỏ về màu Primary/Secondary) -->
+            <StaticResource x:Key="CtuGradientStartColor" ResourceKey="PrimaryColor" />
+            <StaticResource x:Key="CtuGradientEndColor" ResourceKey="SecondaryColor" />
+
+            <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+            <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource SecondaryColor}"/>
+            
+            <LinearGradientBrush x:Key="CtuGradient" StartPoint="0%,50%" EndPoint="100%,50%">
+                <GradientStop Color="{StaticResource CtuGradientStartColor}" Offset="0"/>
+                <GradientStop Color="{StaticResource CtuGradientEndColor}" Offset="1"/>
+            </LinearGradientBrush>
+            
+            <SolidColorBrush x:Key="CtuGradientStartBrush" Color="{StaticResource CtuGradientStartColor}"/>
+            
+            <SolidColorBrush x:Key="BaseBackgroundColor" Color="#F5F5F9"/>
+            <SolidColorBrush x:Key="Grey" Color="#343A40"/>
+            <SolidColorBrush x:Key="BorderColor" Color="#E3E3E3"/>
+            <SolidColorBrush x:Key="DisableColor" Color="#C2C2C2"/>
+            <SolidColorBrush x:Key="SubTextColor" Color="#ababab"/>
+            <SolidColorBrush x:Key="RedColor" Color="#D90429"/>    
+            <SolidColorBrush x:Key="LightRedColor" Color="#E63946"/>
+            <SolidColorBrush x:Key="ButtonHoverBrush" Color="#3a7bd5"/>
+            <SolidColorBrush x:Key="DarkOverlayColor" Color="#002C2C2C"/>
+        </ResourceDictionary>
+
+        <!-- ================= DARK THEME ================= -->
+        <ResourceDictionary x:Key="Dark">
+            <Color x:Key="PrimaryColor">#3b82f6</Color>
+            <Color x:Key="SecondaryColor">#38bdf8</Color>
+
+            <!-- Khai báo màu sẫm ở Dark mode -->
+            <Color x:Key="CtuGradientStartColor">#152a4a</Color>
+            <Color x:Key="CtuGradientEndColor">#1e3a8a</Color>
+
+            <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+            <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource SecondaryColor}"/>
+            
+            <LinearGradientBrush x:Key="CtuGradient" StartPoint="0%,50%" EndPoint="100%,50%">
+                <GradientStop Color="{StaticResource CtuGradientStartColor}" Offset="0"/>
+                <GradientStop Color="{StaticResource CtuGradientEndColor}" Offset="1"/>
+            </LinearGradientBrush>
+            
+            <SolidColorBrush x:Key="CtuGradientStartBrush" Color="{StaticResource CtuGradientStartColor}"/>
+            
+            <SolidColorBrush x:Key="BaseBackgroundColor" Color="#121212"/>
+            <SolidColorBrush x:Key="Grey" Color="#F9F9F9"/>
+            <SolidColorBrush x:Key="BorderColor" Color="#2D2D2D"/>
+            <SolidColorBrush x:Key="DisableColor" Color="#555555"/>
+            <SolidColorBrush x:Key="SubTextColor" Color="#A9AEB8"/>
+            <SolidColorBrush x:Key="RedColor" Color="#F93920"/>    
+            <SolidColorBrush x:Key="LightRedColor" Color="#FCA5A5"/>
+            <SolidColorBrush x:Key="ButtonHoverBrush" Color="#4f8cfc"/>
+            <SolidColorBrush x:Key="DarkOverlayColor" Color="#002C2C2C"/>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
 </ResourceDictionary>

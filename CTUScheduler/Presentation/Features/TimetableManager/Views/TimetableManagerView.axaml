@@ -30,7 +30,7 @@
         <Style Selector="TextBlock.Title">
             <Setter Property="FontSize" Value="24" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource Grey}" />
+            <Setter Property="Foreground" Value="{DynamicResource Grey}" />
         </Style>
 
         <Style Selector="TextBlock.SubTitle">
@@ -42,7 +42,7 @@
         <Style Selector="TextBlock.expired-save">
             <Setter Property="FontSize" Value="13" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource RedColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource RedColor}" />
             <Setter Property="Cursor" Value="Help" />
         </Style>
 
@@ -62,8 +62,8 @@
 
         <Style Selector="Button.btnTopAction">
             <Setter Property="Background" Value="White" />
-            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Padding" Value="12 6" />
@@ -71,9 +71,9 @@
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="Button.btnTopAction:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
-            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
-            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Background" Value="{DynamicResource BaseBackgroundColor}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
         </Style>
         <Style Selector="Button.btnTopAction:pressed /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Opacity" Value="0.7" />
@@ -82,7 +82,7 @@
         <Style Selector="Button.btnPrimary">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
             <Setter Property="Foreground" Value="White" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Padding" Value="14 6" />
@@ -90,11 +90,11 @@
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="Button.btnPrimary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource ButtonHoverBrush}" />
+            <Setter Property="Background" Value="{DynamicResource ButtonHoverBrush}" />
             <Setter Property="Foreground" Value="White" />
         </Style>
         <Style Selector="Button.btnPrimary:pressed /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
             <Setter Property="Opacity" Value="0.8" />
         </Style>
 
@@ -102,15 +102,15 @@
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Background" Value="White" />
-            <Setter Property="Foreground" Value="{StaticResource SecondaryBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource SecondaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="14 6" />
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="Button.btnSecondary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource SecondaryBrush}" />
+            <Setter Property="Background" Value="{DynamicResource SecondaryBrush}" />
             <Setter Property="Foreground" Value="White" />
         </Style>
         <Style Selector="Button.btnSecondary:pressed /template/ ContentPresenter#PART_ContentPresenter">
@@ -121,15 +121,15 @@
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Background" Value="White" />
-            <Setter Property="Foreground" Value="{StaticResource RedColor}" />
-            <Setter Property="BorderBrush" Value="{StaticResource RedColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource RedColor}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource RedColor}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="14 6" />
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="Button.btnDanger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource RedColor}" />
+            <Setter Property="Background" Value="{DynamicResource RedColor}" />
             <Setter Property="Foreground" Value="White" />
         </Style>
         <Style Selector="Button.btnDanger:pressed /template/ ContentPresenter#PART_ContentPresenter">
@@ -159,14 +159,14 @@
             <Setter Property="Background" Value="White" />
             <Setter Property="CornerRadius" Value="12" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="BoxShadow" Value="0 4 16 0 #08000000" />
         </Style>
 
         <Style Selector="Border.TimetableCard">
             <Setter Property="Background" Value="White" />
             <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="12" />
             <Setter Property="BoxShadow" Value="0 2 8 0 #0A000000" />
@@ -191,7 +191,7 @@
         <Style Selector="TextBlock.CardTitle">
             <Setter Property="FontSize" Value="13" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource Grey}" />
+            <Setter Property="Foreground" Value="{DynamicResource Grey}" />
         </Style>
 
         <Style Selector="TextBlock.CardMeta">
@@ -203,7 +203,7 @@
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="FontSize" Value="18" />
             <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Foreground" Value="{StaticResource Grey}" />
+            <Setter Property="Foreground" Value="{DynamicResource Grey}" />
         </Style>
 
         <Style Selector="TextBlock.EmptyStateSubtitle">
@@ -403,7 +403,7 @@
                                             <!-- Image Preview and Click area -->
                                             <Grid Grid.Row="4" Margin="0 8 0 0">
                                                 <Border CornerRadius="6" ClipToBounds="True"
-                                                        BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
+                                                        BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
                                                     <Viewbox Stretch="Uniform">
                                                         <Image Source="{Binding PreviewImage}"
                                                                Width="600"
