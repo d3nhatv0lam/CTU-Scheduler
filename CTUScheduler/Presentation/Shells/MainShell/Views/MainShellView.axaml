@@ -110,7 +110,7 @@
                        ExpandWidth="250">
                 <u:NavMenu.Header>
                     <DockPanel Background="Transparent">
-                        <Border Classes="header-bar" Background="{DynamicResource PrimaryBrush}"
+                        <Border Classes="header-bar" Background="{DynamicResource CtuGradientStartBrush}"
                                 DockPanel.Dock="Top">
                             <Grid ColumnDefinitions="50 *"
                                   ColumnSpacing="-10">

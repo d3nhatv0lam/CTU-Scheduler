@@ -43,7 +43,7 @@
                             </TextBlock.Transitions>
                         </TextBlock>
 
-                        <Border Name="PART_Border"
+                        <Border Name="PART_CustomBorder"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
