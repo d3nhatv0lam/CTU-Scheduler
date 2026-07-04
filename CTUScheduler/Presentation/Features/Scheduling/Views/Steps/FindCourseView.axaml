@@ -31,7 +31,7 @@
 
         <Style Selector="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource Text-Font}" />
-            <Setter Property="Foreground" Value="{StaticResource BlackBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}" />
         </Style>
         <Style Selector="TextBlock.Title">
             <Setter Property="FontSize" Value="20" />

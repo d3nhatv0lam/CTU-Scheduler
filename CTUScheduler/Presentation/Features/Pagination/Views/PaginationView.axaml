@@ -24,7 +24,7 @@
 
         <Style Selector="Button.NavBtn">
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
             <Setter Property="Width" Value="28" />
             <Setter Property="Height" Value="28" />
             <Setter Property="Padding" Value="0" />
@@ -51,7 +51,7 @@
             <Setter Property="FontWeight" Value="Medium" />
         </Style>
         <Style Selector="TextBlock.PageHighlight">
-            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
             <Setter Property="FontWeight" Value="Bold" />
         </Style>
     </rxui:ReactiveUserControl.Styles>

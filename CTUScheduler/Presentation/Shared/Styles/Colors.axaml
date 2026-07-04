@@ -20,7 +20,6 @@
     <SolidColorBrush x:Key="SubTextColor" Color="#ababab"/>
     <SolidColorBrush x:Key="RedColor" Color="#D90429"></SolidColorBrush>    
     <SolidColorBrush x:Key="LightRedColor" Color="#E63946"></SolidColorBrush>
-    <SolidColorBrush x:Key="BlackBrush" Color="#000000"/>
     <SolidColorBrush x:Key="ButtonHoverBrush" Color="#3a7bd5"/>
     <SolidColorBrush x:Key="DarkOverlayColor" Color="#002C2C2C"/>
 </ResourceDictionary>
