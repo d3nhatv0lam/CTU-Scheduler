@@ -18,6 +18,19 @@
     <rxui:ReactiveUserControl.KeyBindings>
         <KeyBinding Gesture="Enter" Command="{Binding SignInCommand}" />
     </rxui:ReactiveUserControl.KeyBindings>
+    
+    <rxui:ReactiveUserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="LoginLeftBgBrush" Color="{StaticResource PrimaryColor}" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="LoginLeftBgBrush" Color="#1a3e6c" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </rxui:ReactiveUserControl.Resources>
 
     <rxui:ReactiveUserControl.Styles>
         <Style Selector="TextBlock">
@@ -35,7 +48,7 @@
         </Style>
     </rxui:ReactiveUserControl.Styles>
 
-    <Grid Background="{DynamicResource PrimaryBrush}"
+    <Grid Background="{DynamicResource LoginLeftBgBrush}"
           ColumnDefinitions="0.85* *">
 
         <Grid Grid.Column="0" RowDefinitions="20 * *">
@@ -73,7 +86,7 @@
 
         <!--// right side //-->
         <Border Grid.Column="1"
-                Background="{DynamicResource SemiColorBackground0}"
+                Background="{DynamicResource SemiColorBackground1}"
                 CornerRadius="40 0 0 40"
                 BorderThickness="0">
             <Grid RowDefinitions="Auto *" ColumnDefinitions="0.2* * 0.2*">
