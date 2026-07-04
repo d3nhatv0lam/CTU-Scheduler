@@ -51,7 +51,7 @@
 
     </rxui:ReactiveUserControl.Styles>
 
-    <Border BorderBrush="{StaticResource BorderColor}" BorderThickness="1" Background="White">
+    <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Background="White">
         <Grid ColumnDefinitions="* 1 * 1 * 1 * 1 * 1 * 1 *"
               RowDefinitions="* 1 * * * * * 0.7* * * * *">
 
@@ -60,11 +60,11 @@
                     <Setter Property="HorizontalAlignment" Value="Center" />
                     <Setter Property="VerticalAlignment" Value="Center" />
                     <Setter Property="FontWeight" Value="SemiBold" />
-                    <Setter Property="Foreground" Value="{StaticResource Grey}" />
+                    <Setter Property="Foreground" Value="{DynamicResource Grey}" />
                     <Setter Property="FontFamily" Value="{StaticResource Text-Font}" />
                 </Style>
                 <Style Selector="Grid > Rectangle">
-                    <Setter Property="Fill" Value="{StaticResource BorderColor}" />
+                    <Setter Property="Fill" Value="{DynamicResource BorderColor}" />
                 </Style>
             </Grid.Styles>
 
@@ -97,7 +97,7 @@
             <TextBlock Classes="head" Grid.Row="11" Grid.Column="0" Text="Tiết 9" />
 
             <Border Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="13" ZIndex="-1"
-                    Background="{StaticResource BaseBackgroundColor}" />
+                    Background="{DynamicResource BaseBackgroundColor}" />
 
             <Grid Grid.Row="2" Grid.RowSpan="10" Grid.Column="2" Grid.ColumnSpan="11">
                 <ItemsControl x:Name="ScheduleTable" ItemsSource="{Binding ScheduleCells, Mode=OneWay}" Padding="0">
@@ -230,10 +230,10 @@
                                         </Border>
 
                                         <Border Classes="cancelled-overlay"
-                                                Background="{StaticResource DarkOverlayColor}"
+                                                Background="{DynamicResource DarkOverlayColor}"
                                                 IsVisible="{Binding Shared.IsCancelled}"
                                                 IsHitTestVisible="False">
-                                            <Border Background="{StaticResource LightRedColor}"
+                                            <Border Background="{DynamicResource LightRedColor}"
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center"
                                                     Padding="14,6"

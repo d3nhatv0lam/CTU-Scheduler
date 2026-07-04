@@ -81,7 +81,7 @@
             <Setter Property="FontFamily" Value="{StaticResource Ctu-Title-Font}" />
             <Setter Property="FontSize" Value="22" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource PrimaryColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryColor}" />
             <Setter Property="Margin" Value="0,0,0,15" />
         </Style>
 

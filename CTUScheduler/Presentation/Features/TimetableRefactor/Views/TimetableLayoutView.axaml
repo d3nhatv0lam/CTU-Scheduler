@@ -20,21 +20,21 @@
     <rxui:ReactiveUserControl.Styles>
         <Style Selector="TextBlock.label">
             <Setter Property="FontSize" Value="13" />
-            <Setter Property="Foreground" Value="{StaticResource SubTextColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource SubTextColor}" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Margin" Value="0,0,0,4" />
         </Style>
         <Style Selector="TextBlock.value">
             <Setter Property="FontSize" Value="16" />
-            <Setter Property="Foreground" Value="{StaticResource Grey}" />
+            <Setter Property="Foreground" Value="{DynamicResource Grey}" />
             <Setter Property="FontWeight" Value="Bold" />
         </Style>
 
         <Style Selector="Button.outline-primary">
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Padding" Value="12 8" />
             <Setter Property="Cursor" Value="Hand" />
@@ -42,7 +42,7 @@
             <Setter Property="HorizontalContentAlignment" Value="Center" />
         </Style>
         <Style Selector="Button.outline-primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
             <Setter Property="Foreground" Value="White" />
         </Style>
 
@@ -62,14 +62,14 @@
             <Setter Property="Grid.Column" Value="0" />
             <Setter Property="Grid.ColumnSpan" Value="2" />
             <Setter Property="BorderThickness" Value="0,0,0,1" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="Background" Value="White" />
         </Style>
         <Style Selector="Border.content-area">
             <Setter Property="Grid.Row" Value="1" />
             <Setter Property="Grid.Column" Value="0" />
             <Setter Property="Grid.ColumnSpan" Value="2" />
-            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
+            <Setter Property="Background" Value="{DynamicResource BaseBackgroundColor}" />
         </Style>
 
         <Style Selector="ScrollViewer.large Border.sidebar">
@@ -140,7 +140,7 @@
                     <StackPanel Grid.Row="0" Margin="24, 24, 24, 0" Spacing="16">
                         <StackPanel>
                             <TextBlock Text="Chi tiết thời khóa biểu" FontSize="13"
-                                       Foreground="{StaticResource SubTextColor}" FontWeight="SemiBold" />
+                                       Foreground="{DynamicResource SubTextColor}" FontWeight="SemiBold" />
 
                             <Panel Margin="0,4,0,0">
                                 <Grid ColumnDefinitions="*, Auto" IsVisible="{Binding !IsEditing}">
@@ -154,13 +154,13 @@
                                             <TextBlock Text="Thời khóa biểu:"
                                                        FontSize="18"
                                                        FontWeight="SemiBold"
-                                                       Foreground="{StaticResource Grey}"
+                                                       Foreground="{DynamicResource Grey}"
                                                        Margin="0,0,0,4" />
 
                                             <TextBlock
                                                 Text="{Binding Name}"
                                                 FontSize="22" FontWeight="Bold"
-                                                Foreground="{StaticResource PrimaryBrush}"
+                                                Foreground="{DynamicResource PrimaryBrush}"
                                                 TextWrapping="Wrap" />
                                         </StackPanel>
                                     </ScrollViewer>
@@ -172,7 +172,7 @@
                                             Command="{Binding StartEditCommand}"
                                             ToolTip.Tip="Đổi tên thời khóa biểu">
                                         <icon:MaterialIcon Kind="Pencil" Width="20" Height="20"
-                                                           Foreground="{StaticResource PrimaryBrush}" />
+                                                           Foreground="{DynamicResource PrimaryBrush}" />
                                     </Button>
                                 </Grid>
 
@@ -187,9 +187,9 @@
                                              TextWrapping="Wrap"
                                              ScrollViewer.VerticalScrollBarVisibility="Auto"
                                              VerticalAlignment="Top"
-                                             Background="{StaticResource BaseBackgroundColor}"
+                                             Background="{DynamicResource BaseBackgroundColor}"
                                              BorderThickness="1"
-                                             BorderBrush="{StaticResource PrimaryBrush}"
+                                             BorderBrush="{DynamicResource PrimaryBrush}"
                                              CornerRadius="4" />
 
                                     <Button Grid.Column="1"
@@ -208,7 +208,7 @@
                                             Command="{Binding CancelCommand}"
                                             ToolTip.Tip="Hủy bỏ">
                                         <icon:MaterialIcon Kind="Close" Width="24" Height="24"
-                                                           Foreground="{StaticResource RedColor}" />
+                                                           Foreground="{DynamicResource RedColor}" />
                                     </Button>
                                 </Grid>
                             </Panel>
@@ -234,11 +234,11 @@
                                 <TextBlock
                                     Text="{Binding LastUpdated.LocalDateTime, StringFormat={}{0:dd/MM/yyyy HH:mm:ss}}"
                                     FontSize="14"
-                                    Foreground="{StaticResource Grey}" />
+                                    Foreground="{DynamicResource Grey}" />
                             </StackPanel>
                         </Grid>
 
-                        <u:Divider Margin="0, 8, 0, 16" BorderBrush="{StaticResource BorderColor}" />
+                        <u:Divider Margin="0, 8, 0, 16" BorderBrush="{DynamicResource BorderColor}" />
                     </StackPanel>
 
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
@@ -257,7 +257,7 @@
 
                                                 <Border Classes="unscheduled-card"
                                                         Classes.cancelled="{Binding IsCancelled}"
-                                                        Background="{StaticResource BaseBackgroundColor}"
+                                                        Background="{DynamicResource BaseBackgroundColor}"
                                                         CornerRadius="6"
                                                         ClipToBounds="True">
                                                     <Grid>
@@ -266,7 +266,7 @@
                                                                 <TextBlock Grid.Row="0"
                                                                            Text="{Binding NameConcat, Mode=OneTime}"
                                                                            FontWeight="SemiBold"
-                                                                           Foreground="{StaticResource PrimaryBrush}"
+                                                                           Foreground="{DynamicResource PrimaryBrush}"
                                                                            TextWrapping="Wrap"
                                                                            Margin="0,0,0,6" />
 
@@ -274,12 +274,12 @@
                                                                     <TextBlock Grid.Column="0"
                                                                                Text="{Binding Credits, StringFormat={}Tín chỉ: {0}, Mode=OneWay}"
                                                                                FontSize="12"
-                                                                               Foreground="{StaticResource Grey}"
+                                                                               Foreground="{DynamicResource Grey}"
                                                                                Margin="0,0,8,0" />
                                                                     <TextBlock Grid.Column="1"
                                                                                Text="{Binding Lecturer, Mode=OneWay}"
                                                                                FontSize="12"
-                                                                               Foreground="{StaticResource Grey}"
+                                                                               Foreground="{DynamicResource Grey}"
                                                                                TextAlignment="Right"
                                                                                TextTrimming="CharacterEllipsis"
                                                                                ToolTip.Tip="{Binding Lecturer, Mode=OneWay}" />
@@ -291,11 +291,11 @@
                                                                           Margin="0,0,0,4">
                                                                         <TextBlock Grid.Column="0" Text="Sĩ số"
                                                                                 FontSize="11"
-                                                                                Foreground="{StaticResource SubTextColor}" />
+                                                                                Foreground="{DynamicResource SubTextColor}" />
                                                                         <TextBlock Grid.Column="1"
                                                                                 Text="{Binding RemainingConcatTotalStudents}"
                                                                                 FontSize="11" FontWeight="SemiBold"
-                                                                                Foreground="{StaticResource PrimaryBrush}" />
+                                                                                Foreground="{DynamicResource PrimaryBrush}" />
                                                                     </Grid>
 
                                                                     <ProgressBar Grid.Row="1"
@@ -303,8 +303,8 @@
                                                                             MinWidth="0"
                                                                             HorizontalAlignment="Stretch"
                                                                             CornerRadius="2"
-                                                                            Foreground="{StaticResource SecondaryBrush}"
-                                                                            Background="{StaticResource BorderColor}"
+                                                                            Foreground="{DynamicResource SecondaryBrush}"
+                                                                            Background="{DynamicResource BorderColor}"
                                                                             Minimum="0"
                                                                             Maximum="{Binding TotalStudents}"
                                                                             Value="{Binding RemainingStudents}" />
@@ -313,11 +313,11 @@
                                                         </Border>
 
                                                         <Border Classes="unscheduled-cancelled-overlay"
-                                                                Background="{StaticResource DarkOverlayColor}"
+                                                                Background="{DynamicResource DarkOverlayColor}"
                                                                 IsVisible="{Binding IsCancelled}"
                                                                 ZIndex="10"
                                                                 IsHitTestVisible="False">
-                                                            <Border Background="{StaticResource LightRedColor}"
+                                                            <Border Background="{DynamicResource LightRedColor}"
                                                                     HorizontalAlignment="Center"
                                                                     VerticalAlignment="Center"
                                                                     Padding="16,6"
@@ -347,7 +347,7 @@
                             Padding="24"
                             Background="White"
                             BorderThickness="0,1,0,0"
-                            BorderBrush="{StaticResource BorderColor}">
+                            BorderBrush="{DynamicResource BorderColor}">
                         <Grid ColumnDefinitions="*, *">
                             <Button Classes="outline-primary"
                                     Grid.Column="0" Margin="0,0,6,0"

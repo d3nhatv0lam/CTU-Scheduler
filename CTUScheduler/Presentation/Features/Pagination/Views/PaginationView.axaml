@@ -15,7 +15,7 @@
     <rxui:ReactiveUserControl.Styles>
         <Style Selector="Border.PaginationContainer">
             <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="4" />
@@ -36,17 +36,17 @@
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="Button.NavBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
-            <Setter Property="TextElement.Foreground" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Background" Value="{DynamicResource BaseBackgroundColor}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource PrimaryBrush}" />
         </Style>
         <Style Selector="Button.NavBtn:disabled /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="TextElement.Foreground" Value="{StaticResource DisableColor}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource DisableColor}" />
         </Style>
 
         <Style Selector="TextBlock.PageText">
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Foreground" Value="{StaticResource DisableColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource DisableColor}" />
             <Setter Property="FontSize" Value="13" />
             <Setter Property="FontWeight" Value="Medium" />
         </Style>

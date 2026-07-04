@@ -29,7 +29,7 @@
             <Setter Property="Height" Value="48"/>
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="Background" Value="#F3F4F6"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
             <Setter Property="BorderThickness" Value="1.5"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
@@ -38,7 +38,7 @@
         <Style Selector="materialIcons|MaterialIcon.Icon">
             <Setter Property="Width" Value="24"/>
             <Setter Property="Height" Value="24"/>
-            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
@@ -48,7 +48,7 @@
         <Style Selector="TextBlock.DialogTitle">
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="TextAlignment" Value="Left"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
@@ -64,7 +64,7 @@
 
         <Style Selector="Border.DialogSeparator">
             <Setter Property="Height" Value="1"/>
-            <Setter Property="Background" Value="{StaticResource BorderColor}"/>
+            <Setter Property="Background" Value="{DynamicResource BorderColor}"/>
             <Setter Property="Margin" Value="0"/>
         </Style>
 
@@ -75,14 +75,14 @@
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Background" Value="White"/>
             <Setter Property="Foreground" Value="#374151"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
             <Setter Property="BorderThickness" Value="1.5"/>
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.BtnCancel:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}"/>
+            <Setter Property="Background" Value="{DynamicResource BaseBackgroundColor}"/>
         </Style>
 
         <Style Selector="Button.BtnConfirm">
@@ -90,7 +90,7 @@
             <Setter Property="Height" Value="38"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="8"/>
@@ -98,7 +98,7 @@
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.BtnConfirm:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource ButtonHoverBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource ButtonHoverBrush}"/>
             <Setter Property="TextElement.Foreground" Value="White"/>
         </Style>
 
