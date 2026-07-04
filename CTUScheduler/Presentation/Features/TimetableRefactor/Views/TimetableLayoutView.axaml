@@ -374,7 +374,7 @@
             </Border>
 
             <Border Classes="content-area">
-                <Grid Margin="16, 60, 16, 24">
+                <Grid Margin="16, 16, 16, 16">
                     <views1:TimetableView DataContext="{Binding VisualizerVM}" />
                 </Grid>
             </Border>

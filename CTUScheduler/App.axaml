@@ -1,7 +1,6 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="CTUScheduler.App"
-             xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:semi="https://irihi.tech/semi"
              xmlns:timetableTemplates="clr-namespace:CTUScheduler.Presentation.Features.TimetableRefactor.Templates"
@@ -13,6 +12,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Colors.axaml" />
                 <ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Fonts.axaml" />
+                <!-- hỗ trợ dịch 1 số câu sang tiếng Việt cho semi & ursa -->
                 <ResourceInclude Source="avares://CTUScheduler/Assets/Localization/Locale.vi-VN.axaml" />
                 <ResourceInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Ripple/Theme.axaml" />
             </ResourceDictionary.MergedDictionaries>
@@ -20,11 +20,9 @@
     </Application.Resources>
 
     <Application.Styles>
-        <!-- <FluentTheme /> -->
-        <themes:CustomMaterialTheme PrimaryColor="Blue" SecondaryColor="#1f5ca9" />
         <materialIcons:MaterialIconStyles />
-
         <semi:SemiTheme Locale="vi-VN" />
+        <semi:DataGridSemiTheme/>
         <semi:UrsaSemiTheme Locale="vi-VN" />
         <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
         <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.Textbox.axaml" />

@@ -184,7 +184,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                 var options = new DialogOptions
                 {
                     SizeMode = DialogSizeMode.Responsive,
-                    IsCloseButtonVisible = true,
+                    IsCloseButtonVisible = false,
                     CanLightDismiss = true,
                     HostId = DialogIds.Root
                 };
