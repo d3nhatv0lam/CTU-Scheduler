@@ -17,7 +17,7 @@
     <!-- header bar -->
     <Style Selector="Border.header-bar">
         <Setter Property="Height" Value="70" />
-        <Setter Property="Background" Value="{StaticResource CtuGradient}" />
+        <Setter Property="Background" Value="{DynamicResource CtuGradient}" />
         <Setter Property="Padding" Value="10,0" />
     </Style>
 
