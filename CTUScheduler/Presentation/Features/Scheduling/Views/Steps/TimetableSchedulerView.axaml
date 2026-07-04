@@ -29,7 +29,7 @@
         <Style Selector="TextBlock.Title">
             <Setter Property="FontSize" Value="20" />
             <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
         </Style>
 
         <Style Selector="TextBlock.SubTitle">
@@ -38,7 +38,7 @@
             <Setter Property="TextAlignment" Value="DetectFromContent" />
             <Setter Property="FontSize" Value="13" />
             <Setter Property="FontWeight" Value="SemiLight" />
-            <Setter Property="Foreground" Value="{StaticResource DisableColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource DisableColor}" />
         </Style>
 
         <Style Selector="Border.Card">
@@ -58,24 +58,24 @@
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="Button.btnCreateSchedule:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource ButtonHoverBrush}" />
+            <Setter Property="Background" Value="{DynamicResource ButtonHoverBrush}" />
             <Setter Property="TextElement.Foreground" Value="White" />
         </Style>
         <Style Selector="Button.btnCreateSchedule:disabled">
-            <Setter Property="Background" Value="{StaticResource DisableColor}" />
+            <Setter Property="Background" Value="{DynamicResource DisableColor}" />
             <Setter Property="Foreground" Value="White" />
         </Style>
 
         <Style Selector="Border.Separator">
             <Setter Property="Height" Value="1" />
-            <Setter Property="Background" Value="{StaticResource BorderColor}" />
+            <Setter Property="Background" Value="{DynamicResource BorderColor}" />
             <Setter Property="Margin" Value="10 0" />
         </Style>
 
         <Style Selector="Border.CourseItem">
             <Setter Property="Background" Value="White" />
             <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="10 8" />
             <Setter Property="Margin" Value="0 4" />
@@ -84,10 +84,10 @@
         <Style Selector="TextBlock.CourseCode">
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="FontSize" Value="13" />
-            <Setter Property="Foreground" Value="{StaticResource Grey}" />
+            <Setter Property="Foreground" Value="{DynamicResource Grey}" />
         </Style>
         <Style Selector="Border.CreditBadge">
-            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
+            <Setter Property="Background" Value="{DynamicResource BaseBackgroundColor}" />
             <Setter Property="CornerRadius" Value="4" />
             <Setter Property="Padding" Value="6 2" />
             <Setter Property="VerticalAlignment" Value="Center" />
@@ -95,19 +95,19 @@
         <Style Selector="TextBlock.CreditText">
             <Setter Property="FontSize" Value="11" />
             <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
         </Style>
         <Style Selector="TextBlock.GroupCount">
             <Setter Property="FontSize" Value="11" />
-            <Setter Property="Foreground" Value="{StaticResource DisableColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource DisableColor}" />
             <Setter Property="Margin" Value="0 2 0 4" />
         </Style>
 
         <Style Selector="StackPanel.locked">
             <Setter Property="IsHitTestVisible" Value="False" />
             <Style Selector="^ RadioButton.rd-locked /template/ Ellipse#OuterEllipse">
-                <Setter Property="Fill" Value="{StaticResource RedColor}" />
-                <Setter Property="Stroke" Value="{StaticResource RedColor}" />
+                <Setter Property="Fill" Value="{DynamicResource RedColor}" />
+                <Setter Property="Stroke" Value="{DynamicResource RedColor}" />
             </Style>
         </Style>
 
@@ -116,7 +116,7 @@
             <Setter Property="MinHeight" Value="30" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Background" Value="White" />
         </Style>
@@ -124,7 +124,7 @@
         <Style Selector="Border.TimetableCard">
             <Setter Property="Background" Value="White" />
             <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="10" />
             <Setter Property="BoxShadow" Value="0 2 8 0 #0A000000" />
@@ -143,7 +143,7 @@
         </Style>
 
         <Style Selector="TextBlock.ScoreText">
-            <Setter Property="Foreground" Value="{StaticResource RedColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource RedColor}" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="FontSize" Value="12" />
         </Style>
@@ -200,7 +200,7 @@
                                    Margin="10 -7 0 0"
                                    VerticalAlignment="Top"
                                    HorizontalAlignment="Left"
-                                   Foreground="{StaticResource PrimaryBrush}" />
+                                   Foreground="{DynamicResource PrimaryBrush}" />
                     </Grid>
 
                     <Border Grid.Row="2" Classes="Separator" />

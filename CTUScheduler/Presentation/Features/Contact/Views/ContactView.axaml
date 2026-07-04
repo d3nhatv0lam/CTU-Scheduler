@@ -126,7 +126,7 @@
         </Style>
 
         <Style Selector="Border.ContributorCard:pointerover Border.AvatarContainer">
-            <Setter Property="BorderBrush" Value="{StaticResource PrimaryColor}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryColor}" />
             <Setter Property="RenderTransform" Value="scale(1.05)" />
         </Style>
 
@@ -193,7 +193,7 @@
                                FontFamily="{StaticResource Ctu-Title-Font}"
                                FontSize="28"
                                FontWeight="SemiBold"
-                               Foreground="{StaticResource PrimaryColor}"
+                               Foreground="{DynamicResource PrimaryColor}"
                                HorizontalAlignment="Center" />
                 </Border>
 

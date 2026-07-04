@@ -20,14 +20,14 @@
     <rxui:ReactiveUserControl.Styles>
         <Style Selector="Button.CloseBtn">
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="{StaticResource DisableColor}" />
+            <Setter Property="Foreground" Value="{DynamicResource DisableColor}" />
             <Setter Property="Padding" Value="6" />
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="Button.CloseBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
-            <Setter Property="TextElement.Foreground" Value="{StaticResource Grey}" />
+            <Setter Property="Background" Value="{DynamicResource BaseBackgroundColor}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource Grey}" />
         </Style>
     </rxui:ReactiveUserControl.Styles>
     

@@ -39,8 +39,8 @@
                 Classes="Tertiary"
                 Icon="{StaticResource SemiIconGithubLogo}" 
                 Command="{Binding OpenGithubRepo}"/>
-            <!-- <u:ThemeToggleButton -->
-            <!--     Mode="Controller" /> -->
+            <u:ThemeToggleButton
+                Mode="Controller" />
         </StackPanel>
     </u:ReactiveUrsaWindow.RightContent>
 

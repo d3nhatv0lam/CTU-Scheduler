@@ -53,32 +53,32 @@
         </Style>
 
         <Style Selector="ListBoxItem:pointerover /template/ Border#PART_HighlightBorder">
-            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
+            <Setter Property="Background" Value="{DynamicResource BaseBackgroundColor}" />
         </Style>
 
         <Style Selector="ListBoxItem:selected /template/ Border#PART_HighlightBorder">
-            <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
         </Style>
         <Style Selector="ListBoxItem:selected /template/ Border#PART_ContentBorder">
-            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
+            <Setter Property="Background" Value="{DynamicResource BaseBackgroundColor}" />
         </Style>
 
         <Style Selector="ListBoxItem materialIcons|MaterialIcon">
-            <Setter Property="Foreground" Value="{StaticResource Grey}" />
+            <Setter Property="Foreground" Value="{DynamicResource Grey}" />
             <Setter Property="Width" Value="20" /> <!-- 80%: 24 -> 20 -->
             <Setter Property="Height" Value="20" /> <!-- 80%: 24 -> 20 -->
         </Style>
         <Style Selector="ListBoxItem TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource Grey}" />
+            <Setter Property="Foreground" Value="{DynamicResource Grey}" />
             <Setter Property="FontSize" Value="14" /> <!-- 80%: 18 -> 14 -->
             <Setter Property="FontWeight" Value="Regular" />
         </Style>
 
         <Style Selector="ListBoxItem:selected materialIcons|MaterialIcon">
-            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
         </Style>
         <Style Selector="ListBoxItem:selected TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
         </Style>
 
         <Style Selector="Button#BtnLogout">
@@ -95,7 +95,7 @@
             <Setter Property="CornerRadius" Value="8" />
         </Style>
         <Style Selector="Button#BtnLogout:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
+            <Setter Property="Background" Value="{DynamicResource BaseBackgroundColor}" />
         </Style>
 
     </rxui:ReactiveUserControl.Styles>
@@ -110,7 +110,7 @@
                        ExpandWidth="250">
                 <u:NavMenu.Header>
                     <DockPanel Background="Transparent">
-                        <Border Classes="header-bar" Background="{StaticResource PrimaryBrush}"
+                        <Border Classes="header-bar" Background="{DynamicResource PrimaryBrush}"
                                 DockPanel.Dock="Top">
                             <Grid ColumnDefinitions="50 *"
                                   ColumnSpacing="-10">
@@ -130,14 +130,14 @@
                         <!--// Student Info //-->
                         <StackPanel DockPanel.Dock="Top">
                             <Border MinHeight="90" CornerRadius="0,0,15,15"
-                                    Background="{StaticResource BaseBackgroundColor}">
+                                    Background="{DynamicResource BaseBackgroundColor}">
                                 <Border MinHeight="60">
                                     <Grid ColumnDefinitions="50 *">
                                         <materialIcons:MaterialIcon Grid.Column="0"
                                                                     Kind="AccountSchool"
                                                                     Height="40"
                                                                     Width="40"
-                                                                    Foreground="{StaticResource PrimaryBrush}" />
+                                                                    Foreground="{DynamicResource PrimaryBrush}" />
                                         <Grid Grid.Column="1" RowDefinitions="* *">
                                             <Grid.Styles>
                                                 <Style Selector="SelectableTextBlock">
@@ -152,13 +152,13 @@
                                                                  VerticalAlignment="Bottom"
                                                                  FontWeight="Bold"
                                                                  FontSize="15"
-                                                                 Foreground="{StaticResource Grey}" />
+                                                                 Foreground="{DynamicResource Grey}" />
                                             <SelectableTextBlock x:Name="txtMSSV"
                                                                  Grid.Row="1"
                                                                  Text="{Binding UserMSSV, Mode=OneWay}"
                                                                  VerticalAlignment="Top"
                                                                  FontSize="13"
-                                                                 Foreground="{StaticResource SubTextColor}" />
+                                                                 Foreground="{DynamicResource SubTextColor}" />
                                         </Grid>
                                     </Grid>
                                 </Border>
@@ -188,7 +188,7 @@
                                 </ListBox>
 
                                 <Border Padding="12,16,12,8">
-                                    <Separator Height="1" Background="{StaticResource BorderColor}" />
+                                    <Separator Height="1" Background="{DynamicResource BorderColor}" />
                                 </Border>
 
                                 <Button x:Name="BtnLogout"
@@ -199,13 +199,13 @@
                                     <StackPanel Orientation="Horizontal" Spacing="12">
                                         <materialIcons:MaterialIcon Kind="Logout"
                                                                     Width="20" Height="20"
-                                                                    Foreground="{StaticResource RedColor}"
+                                                                    Foreground="{DynamicResource RedColor}"
                                                                     VerticalAlignment="Center" />
 
                                         <TextBlock Text="Đăng xuất"
                                                    FontSize="14"
                                                    FontWeight="Regular"
-                                                   Foreground="{StaticResource RedColor}"
+                                                   Foreground="{DynamicResource RedColor}"
                                                    VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
@@ -217,7 +217,7 @@
             </u:NavMenu>
         </Border>
 
-        <Border Background="{StaticResource BaseBackgroundColor}"
+        <Border Background="{DynamicResource BaseBackgroundColor}"
                 Grid.Column="1">
             <Grid RowDefinitions="auto *">
                 <Border Grid.Row="0" Classes="header-bar">

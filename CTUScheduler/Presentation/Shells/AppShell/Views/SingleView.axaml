@@ -13,6 +13,7 @@
                     Focusable="True"
                     IsTitleBarVisible="False"
                     x:Class="CTUScheduler.Presentation.Shells.AppShell.Views.SingleView">
+    
     <u:ReactiveUrsaView.RightContent>
         <StackPanel Orientation="Horizontal">
             <u:IconButton
@@ -23,6 +24,7 @@
                 Mode="Controller" />
         </StackPanel>
     </u:ReactiveUrsaView.RightContent>
+
     <views:MainView />
 
     <!-- // khởi động các Toast, Notification // -->

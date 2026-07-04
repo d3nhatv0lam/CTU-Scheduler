@@ -30,26 +30,26 @@
         <!-- Back Button -->
         <Style Selector="Button.BtnBack">
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="BorderThickness" Value="1.5" />
-            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
         </Style>
         <Style Selector="Button.BtnBack:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource BaseBackgroundColor}" />
+            <Setter Property="Background" Value="{DynamicResource BaseBackgroundColor}" />
         </Style>
 
         <!-- Next Button -->
         <Style Selector="Button.BtnNext">
-            <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
             <Setter Property="Foreground" Value="White" />
         </Style>
         <Style Selector="Button.BtnNext:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource ButtonHoverBrush}" />
+            <Setter Property="Background" Value="{DynamicResource ButtonHoverBrush}" />
             <Setter Property="TextElement.Foreground" Value="White" />
         </Style>
         <Style Selector="Button.BtnNext:disabled /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource DisableColor}" />
-            <Setter Property="TextElement.Foreground" Value="{StaticResource BaseBackgroundColor}" />
+            <Setter Property="Background" Value="{DynamicResource DisableColor}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource BaseBackgroundColor}" />
         </Style>
     </rxui:ReactiveUserControl.Styles>
 
