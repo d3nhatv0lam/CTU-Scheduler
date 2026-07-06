@@ -457,3 +457,10 @@ $RECYCLE.BIN/
 .env*
 
 .runsettings
+
+## Code graph
+.codegraph/
+GEMINI.md
+.mcp.json
+.gemini/
+.claude/
