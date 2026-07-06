@@ -8,6 +8,7 @@
              xmlns:rxui="http://reactiveui.net"
              x:DataType="vm:ConfirmDialogViewModel"
              x:CompileBindings="True"
+             Background="Transparent"
              xmlns:u="https://irihi.tech/ursa"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:vm="clr-namespace:CTUScheduler.Presentation.Shared.Dialogs.ViewModels"
@@ -15,24 +16,31 @@
 
     <rxui:ReactiveUserControl.Styles>
         <Style Selector="Border.DialogCard">
-            <Setter Property="Background" Value="White"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground3}"/>
             <Setter Property="CornerRadius" Value="16"/>
             <Setter Property="MinWidth" Value="440"/>
             <Setter Property="MaxWidth" Value="480"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="ClipToBounds" Value="True"/>
-            <Setter Property="BoxShadow" Value="0 8 32 0 #22000000"/>
+            <Setter Property="BoxShadow" Value="0 8 32 0 #1A000000"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
         <Style Selector="Border.IconBox">
             <Setter Property="Width" Value="48"/>
             <Setter Property="Height" Value="48"/>
             <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="Background" Value="#F3F4F6"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
-            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
+        </Style>
+
+        <Style Selector="Border.IconBoxBg">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="Opacity" Value="0.12"/>
         </Style>
 
         <Style Selector="materialIcons|MaterialIcon.Icon">
@@ -42,8 +50,6 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
-
-
 
         <Style Selector="TextBlock.DialogTitle">
             <Setter Property="FontSize" Value="18"/>
@@ -56,7 +62,7 @@
 
         <Style Selector="TextBlock.DialogMessage">
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="#4B5563"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText1}"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="TextAlignment" Value="Left"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
@@ -73,8 +79,8 @@
             <Setter Property="Height" Value="38"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText1}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
             <Setter Property="BorderThickness" Value="1.5"/>
             <Setter Property="CornerRadius" Value="8"/>
@@ -82,7 +88,7 @@
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.BtnCancel:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource BaseBackgroundColor}"/>
+            <Setter Property="Background" Value="{DynamicResource SemiColorFill1}"/>
         </Style>
 
         <Style Selector="Button.BtnConfirm">
@@ -102,25 +108,24 @@
             <Setter Property="TextElement.Foreground" Value="White"/>
         </Style>
 
-        <Style Selector="Border.DialogCard.Warning Border.IconBox">
-            <Setter Property="Background" Value="#FEF2F2"/>
-            <Setter Property="BorderBrush" Value="#FCA5A5"/>
+        <Style Selector="Border.DialogCard.Warning Border.IconBoxBg">
+            <Setter Property="Background" Value="{DynamicResource RedColor}"/>
         </Style>
 
         <Style Selector="Border.DialogCard.Warning Border.IconBox materialIcons|MaterialIcon">
-            <Setter Property="Foreground" Value="#DC2626"/>
+            <Setter Property="Foreground" Value="{DynamicResource RedColor}"/>
         </Style>
 
         <Style Selector="Border.DialogCard.Warning TextBlock.DialogTitle">
-            <Setter Property="Foreground" Value="#DC2626"/>
+            <Setter Property="Foreground" Value="{DynamicResource RedColor}"/>
         </Style>
 
         <Style Selector="Border.DialogCard.Warning Button.BtnConfirm">
-            <Setter Property="Background" Value="#DC2626"/>
+            <Setter Property="Background" Value="{DynamicResource RedColor}"/>
         </Style>
 
         <Style Selector="Border.DialogCard.Warning Button.BtnConfirm:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#B91C1C"/>
+            <Setter Property="Background" Value="{DynamicResource LightRedColor}"/>
             <Setter Property="TextElement.Foreground" Value="White"/>
         </Style>
     </rxui:ReactiveUserControl.Styles>
@@ -131,14 +136,19 @@
                 <Border Grid.Column="0" 
                         Classes="IconBox"
                         Margin="0,0,16,0">
-                    <Grid>
-                        <materialIcons:MaterialIcon Kind="HelpCircleOutline" 
-                                                    Classes="Icon"
-                                                    IsVisible="{Binding !IsDestructive}"/>
-                        <materialIcons:MaterialIcon Kind="AlertOutline" 
-                                                    Classes="Icon"
-                                                    IsVisible="{Binding IsDestructive}"/>
-                    </Grid>
+                    <Panel>
+                        <!-- Nền mờ phía sau sử dụng Opacity cục bộ -->
+                        <Border Classes="IconBoxBg" />
+                        
+                        <Grid>
+                            <materialIcons:MaterialIcon Kind="HelpCircleOutline" 
+                                                        Classes="Icon"
+                                                        IsVisible="{Binding !IsDestructive}"/>
+                            <materialIcons:MaterialIcon Kind="AlertOutline" 
+                                                        Classes="Icon"
+                                                        IsVisible="{Binding IsDestructive}"/>
+                        </Grid>
+                    </Panel>
                 </Border>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Top">
