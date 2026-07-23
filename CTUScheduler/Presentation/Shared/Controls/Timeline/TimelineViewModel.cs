@@ -14,7 +14,21 @@ namespace CTUScheduler.Presentation.Shared.Controls.Timeline;
 
 public class TimelineViewModel : ReactiveObject, IViewModel, IDisposable
 {
-    public ObservableCollection<TimelineNodeViewModel> Nodes { get; } = new();
+    public ObservableCollection<TimelineNodeViewModel> Nodes { get; } = [];
+    
+
+    // design test
+    // public TimelineViewModel()
+    // {
+    //     var node = new TimelineNode(
+    //         Title:"test",
+    //         StartDate:DateTime.Now,
+    //         EndDate:DateTime.Now.AddDays(10),
+    //         TimelineNodeType.Range);
+    //     
+    //     Nodes.Add(new TimelineNodeViewModel(node));
+    //     Nodes.Add(new TimelineNodeViewModel(node));
+    // }
 
     public void Dispose()
     {
@@ -40,14 +54,6 @@ public partial class TimelineNodeViewModel : ReactiveObject, IDisposable
     [Reactive] private TeachingPlanStep _step;
     [ObservableAsProperty] private TimelineState _state = TimelineState.Completed;
     [ObservableAsProperty] private double _progress;
-
-    private static string FormatDateTime(DateTime dt, string timeOnlyFormat = "HH:mm dd/MM",
-        string dateOnlyFormat = "dd/MM")
-    {
-        return dt.TimeOfDay == TimeSpan.Zero
-            ? dt.ToString(dateOnlyFormat)
-            : dt.ToString(timeOnlyFormat);
-    }
 
     public string DateRange => NodeType switch
     {
@@ -104,61 +110,20 @@ public partial class TimelineNodeViewModel : ReactiveObject, IDisposable
             Color = WithAlpha(ProgressColor, 0)
         });
 
-    // --- CÁC THUỘC TÍNH PHỤC VỤ GIAO DIỆN PREMIUM (VISUAL CARDS) ---
 
-    public BoxShadows CardBoxShadow => State switch
-    {
-        TimelineState.Active => new BoxShadows(new BoxShadow
+    public BoxShadows? CardBoxShadow => State == TimelineState.Active
+        ? new BoxShadows(new BoxShadow
         {
             OffsetX = 0,
             OffsetY = 6,
             Blur = 20,
             Spread = 0,
             Color = WithAlpha(ProgressColor, 0x1A) // Dynamic soft glow matching remaining time color
-        }),
-        TimelineState.Completed => new BoxShadows(new BoxShadow
-        {
-            OffsetX = 0,
-            OffsetY = 2,
-            Blur = 6,
-            Spread = 0,
-            Color = Color.Parse("#080F172A") // Subtle elevation shadow for completed
-        }),
-        _ => new BoxShadows(new BoxShadow
-        {
-            OffsetX = 0,
-            OffsetY = 0,
-            Blur = 0,
-            Spread = 0,
-            Color = Colors.Transparent
         })
-    };
+        : null;
 
-    public IBrush TitleColor => State switch
-    {
-        TimelineState.Active => new SolidColorBrush(Color.Parse("#1E1B4B")), // Indigo-950 (extremely sharp & premium)
-        TimelineState.Completed => new SolidColorBrush(Color.Parse("#334155")), // Slate-700
-        TimelineState.Upcoming => new SolidColorBrush(Color.Parse("#94A3B8")), // Slate-400 (slightly dimmed)
-        _ => Brushes.Black
-    };
-
-    public IBrush DateColor => State switch
-    {
-        TimelineState.Active => new SolidColorBrush(Color.Parse("#4F46E5")), // Indigo-600 accent
-        TimelineState.Completed => new SolidColorBrush(Color.Parse("#64748B")), // Slate-500
-        TimelineState.Upcoming => new SolidColorBrush(Color.Parse("#CBD5E1")), // Slate-300
-        _ => Brushes.Gray
-    };
-
-    public FontWeight TitleFontWeight => State switch
-    {
-        TimelineState.Active => FontWeight.Bold,
-        _ => FontWeight.SemiBold
-    };
-
-    public IBrush CardBackground => State switch
-    {
-        TimelineState.Active => new LinearGradientBrush
+    public IBrush? CardBackground => State == TimelineState.Active
+        ? new LinearGradientBrush
         {
             StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
             EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
@@ -167,20 +132,12 @@ public partial class TimelineNodeViewModel : ReactiveObject, IDisposable
                 new GradientStop(WithAlpha(ProgressColor, 0x0A), 0.0), // Dynamic matching very soft tint (approx 4%)
                 new GradientStop(Color.Parse("#FFFFFF"), 1.0) // Blending into pure white
             }
-        },
-        TimelineState.Completed => new SolidColorBrush(Color.Parse("#F8FAFC")), // Slate-50
-        TimelineState.Upcoming => new SolidColorBrush(Color.Parse("#FFFFFF")), // Clean white
-        _ => Brushes.Transparent
-    };
+        }
+        : null;
 
-    public IBrush CardBorderBrush => State switch
-    {
-        TimelineState.Active => new SolidColorBrush(WithAlpha(ProgressColor,
-            0x4D)), // Dynamic matching border (30% opacity)
-        TimelineState.Completed => new SolidColorBrush(Color.Parse("#E2E8F0")), // Slate-200
-        TimelineState.Upcoming => new SolidColorBrush(Color.Parse("#F1F5F9")), // Slate-100 (clean & soft outline)
-        _ => Brushes.Transparent
-    };
+    public IBrush? CardBorderBrush => State == TimelineState.Active
+        ? new SolidColorBrush(WithAlpha(ProgressColor, 0x4D)) // Dynamic matching border (30% opacity)
+        : null;
 
     public TimelineNodeViewModel(TimelineNode node)
     {
@@ -191,7 +148,7 @@ public partial class TimelineNodeViewModel : ReactiveObject, IDisposable
         NodeType = node.Type;
         Step = node.GetStepType();
 
-        // Ticker thời gian thực cập nhật mỗi 1 phút để đếm ngược chính xác, bắt buộc chạy trên Main UI Thread
+        // Ticker thời gian thực cập nhật mỗi 1 phút để đếm ngược chính xác
         var timeTicker = Observable.Timer(TimeSpan.Zero, TimeSpan.FromMinutes(1), RxSchedulers.MainThreadScheduler)
             .Select(_ => DateTime.Now);
 
@@ -241,14 +198,19 @@ public partial class TimelineNodeViewModel : ReactiveObject, IDisposable
                 this.RaisePropertyChanged(nameof(ProgressBrush));
                 this.RaisePropertyChanged(nameof(GlowStart));
                 this.RaisePropertyChanged(nameof(GlowEnd));
-                this.RaisePropertyChanged(nameof(TitleColor));
-                this.RaisePropertyChanged(nameof(DateColor));
-                this.RaisePropertyChanged(nameof(TitleFontWeight));
                 this.RaisePropertyChanged(nameof(CardBackground));
                 this.RaisePropertyChanged(nameof(CardBorderBrush));
                 this.RaisePropertyChanged(nameof(CardBoxShadow));
             })
             .DisposeWith(_disposables);
+    }
+
+    private static string FormatDateTime(DateTime dt, string timeOnlyFormat = "HH:mm dd/MM",
+        string dateOnlyFormat = "dd/MM")
+    {
+        return dt.TimeOfDay == TimeSpan.Zero
+            ? dt.ToString(dateOnlyFormat)
+            : dt.ToString(timeOnlyFormat);
     }
 
     /// Linear Interpolation 

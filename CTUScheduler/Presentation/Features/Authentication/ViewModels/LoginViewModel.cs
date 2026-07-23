@@ -126,7 +126,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                     };
                     _userInteractionService.Notification.Light.Error(
                         title: "Không tại được kế hoạch giảng dạy!",
-                        content: "Bạn nên bật vpn và khởi động lại!",
+                        content: "Bạn nên bật VPN và khởi động lại!",
                         options: options);
                 })
                 .DisposeWith(_disposables);

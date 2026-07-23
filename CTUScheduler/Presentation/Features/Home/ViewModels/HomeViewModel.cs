@@ -178,7 +178,7 @@ public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewMode
 
                 if (distToDot1 < distToDot2) // Khớp Đợt 1 hơn
                 {
-                    if (dot1Node is not null)
+                    if (dot1Node is not null && dot1Node.StartDate < p.StartDate.Value)
                     {
                         dot1Node.StartDate = p.StartDate.Value;
                         dot1Node.EndDate = p.EndDate.Value;
@@ -195,7 +195,7 @@ public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewMode
                 }
                 else // Khớp Đợt 2 hơn
                 {
-                    if (dot2Node is not null)
+                    if (dot2Node is not null && dot2Node.StartDate < p.StartDate.Value)
                     {
                         dot2Node.StartDate = p.StartDate.Value;
                         dot2Node.EndDate = p.EndDate.Value;
