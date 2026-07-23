@@ -156,149 +156,113 @@ public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewMode
 
     private void PersonalizeTimelineNodesBasedOnUserSession(RegistrationInformation? regInfo)
     {
-        // 1. Phân phối đăng ký học phần Đợt 1 (Node 2) và Đợt 2 (Node 7)
-        var dot1Node = TimelineViewModel.Nodes.FirstOrDefault(n => n.Step == TeachingPlanStep.CourseRegistrationPhase1);
-        var dot2Node = TimelineViewModel.Nodes.FirstOrDefault(n => n.Step == TeachingPlanStep.CourseRegistrationPhase2);
+        // đăng ký học phần Đợt 1 và Đợt 2
+        var registrationPhase1Node = TimelineViewModel.Nodes.FirstOrDefault(n => n.Step == TeachingPlanStep.CourseRegistrationPhase1);
+        var registrationPhase2Node = TimelineViewModel.Nodes.FirstOrDefault(n => n.Step == TeachingPlanStep.CourseRegistrationPhase2);
+        var originalRegistrationPhase1 = TeachingPlan?.RegistrationTimeline?.FirstOrDefault(n => n.GetStepType() == TeachingPlanStep.CourseRegistrationPhase1);
+        var originalRegistrationPhase2 = TeachingPlan?.RegistrationTimeline?.FirstOrDefault(n => n.GetStepType() == TeachingPlanStep.CourseRegistrationPhase2);
 
-        var originalDot1 = TeachingPlan?.RegistrationTimeline?.FirstOrDefault(n => n.GetStepType() == TeachingPlanStep.CourseRegistrationPhase1);
-        var originalDot2 = TeachingPlan?.RegistrationTimeline?.FirstOrDefault(n => n.GetStepType() == TeachingPlanStep.CourseRegistrationPhase2);
+        var userPeriod = regInfo?.UserPeriod;
+        var isPhase1Matched = false;
+        var isPhase2Matched = false;
 
-        if (regInfo?.UserPeriod is not null)
+        if (userPeriod is { StartDate: { } userStart, EndDate: { } userEnd })
         {
-            var p = regInfo.UserPeriod;
-            if (p.StartDate.HasValue && p.EndDate.HasValue)
+            var daysDifferenceToPhase1 = originalRegistrationPhase1 is not null 
+                ? Math.Abs((userStart - originalRegistrationPhase1.StartDate).TotalDays) 
+                : double.MaxValue;
+            var daysDifferenceToPhase2 = originalRegistrationPhase2 is not null 
+                ? Math.Abs((userStart - originalRegistrationPhase2.StartDate).TotalDays) 
+                : double.MaxValue;
+            
+            // Xác định đợt khớp hơn và chỉ áp dụng nếu đợt cá nhân bắt đầu muộn hơn đợt trường (tránh đè nhầm lịch chung)
+            if (daysDifferenceToPhase1 < daysDifferenceToPhase2)
             {
-                // Tự động phân phối lịch cá nhân vào đúng đợt đăng ký bằng cách tìm đợt gần nhất (độ lệch ngày nhỏ nhất)
-                double distToDot1 = originalDot1 is not null
-                    ? Math.Abs((p.StartDate.Value - originalDot1.StartDate).TotalDays)
-                    : double.MaxValue;
-                double distToDot2 = originalDot2 is not null
-                    ? Math.Abs((p.StartDate.Value - originalDot2.StartDate).TotalDays)
-                    : double.MaxValue;
-
-                if (distToDot1 < distToDot2) // Khớp Đợt 1 hơn
-                {
-                    if (dot1Node is not null)
-                    {
-                        dot1Node.StartDate = p.StartDate.Value;
-                        dot1Node.EndDate = p.EndDate.Value;
-                        dot1Node.Subtitle = $"Đã áp dụng lịch cá nhân ({p.Key} - Nhóm {p.AllowedGroupsDisplay})";
-                    }
-
-                    // Khôi phục Đợt 2 về lịch trường
-                    if (dot2Node is not null && originalDot2 is not null)
-                    {
-                        dot2Node.StartDate = originalDot2.StartDate;
-                        dot2Node.EndDate = originalDot2.EndDate;
-                        dot2Node.Subtitle = null;
-                    }
-                }
-                else // Khớp Đợt 2 hơn
-                {
-                    if (dot2Node is not null)
-                    {
-                        dot2Node.StartDate = p.StartDate.Value;
-                        dot2Node.EndDate = p.EndDate.Value;
-                        dot2Node.Subtitle = $"Đã áp dụng lịch cá nhân ({p.Key} - Nhóm {p.AllowedGroupsDisplay})";
-                    }
-
-                    // Khôi phục Đợt 1 về lịch trường
-                    if (dot1Node is not null && originalDot1 is not null)
-                    {
-                        dot1Node.StartDate = originalDot1.StartDate;
-                        dot1Node.EndDate = originalDot1.EndDate;
-                        dot1Node.Subtitle = null;
-                    }
-                }
-            }
-        }
-        else
-        {
-            // Reset cả hai về lịch trường khi không đăng nhập / không có lịch cá nhân
-            if (dot1Node is not null && originalDot1 is not null)
-            {
-                dot1Node.StartDate = originalDot1.StartDate;
-                dot1Node.EndDate = originalDot1.EndDate;
-                dot1Node.Subtitle = null;
-            }
-
-            if (dot2Node is not null && originalDot2 is not null)
-            {
-                dot2Node.StartDate = originalDot2.StartDate;
-                dot2Node.EndDate = originalDot2.EndDate;
-                dot2Node.Subtitle = null;
-            }
-        }
-
-        // 2. Cá nhân hóa Đợt điều chỉnh KHTT (Node 3: "Điều chỉnh kế hoạch học tập")
-        var khttNode = TimelineViewModel.Nodes.FirstOrDefault(n => n.Step == TeachingPlanStep.AdjustStudyPlan);
-        var originalKhtt =
-            TeachingPlan?.RegistrationTimeline?.FirstOrDefault(n => n.GetStepType() == TeachingPlanStep.AdjustStudyPlan);
-
-        if (khttNode is not null && originalKhtt is not null)
-        {
-            if (regInfo?.UserPeriod is not null && TeachingPlan?.AdjustmentDetails is not null)
-            {
-                var p = regInfo.UserPeriod;
-                // Trích xuất số khóa từ p.Key (ví dụ: "Khóa 50" -> 50)
-                var cohortNumberMatch = CohortNumberRegex().Match(p.Key);
-                if (cohortNumberMatch.Success && int.TryParse(cohortNumberMatch.Value, out int studentCohort))
-                {
-                    var studentGroups = p.AllowedGroups ?? Array.Empty<int>();
-
-                    // Tìm kiếm AdjustmentDetail phù hợp từ bảng 3 của PDF
-                    var matchedDetail = TeachingPlan.AdjustmentDetails.FirstOrDefault(detail =>
-                    {
-                        // 1. Kiểm tra khớp khóa
-                        bool isCohortMatched = false;
-                        var detailCohortMatch = CohortNumberRegex().Match(detail.Cohort);
-                        if (detailCohortMatch.Success && int.TryParse(detailCohortMatch.Value, out int detailCohortNum))
-                        {
-                            if (detail.Cohort.Contains("trở về trước") || detail.Cohort.Contains("trở xuống"))
-                                isCohortMatched = studentCohort <= detailCohortNum;
-                            else if (detail.Cohort.Contains("trở về sau") || detail.Cohort.Contains("trở lên"))
-                                isCohortMatched = studentCohort >= detailCohortNum;
-                            else
-                                isCohortMatched = studentCohort == detailCohortNum;
-                        }
-                        else
-                        {
-                            isCohortMatched = detail.Cohort.Contains(p.Key, StringComparison.OrdinalIgnoreCase);
-                        }
-
-                        if (!isCohortMatched) return false;
-
-                        // 2. Kiểm tra khớp nhóm đơn vị
-                        return detail.AllowedGroups.Intersect(studentGroups).Any();
-                    });
-
-                    if (matchedDetail is not null)
-                    {
-                        khttNode.StartDate = matchedDetail.StartDateTime;
-                        khttNode.EndDate = matchedDetail.EndDateTime;
-                        khttNode.Subtitle = $"Đã áp dụng lịch cá nhân ({p.Key} - Nhóm {p.AllowedGroupsDisplay})";
-                    }
-                    else
-                    {
-                        khttNode.StartDate = originalKhtt.StartDate;
-                        khttNode.EndDate = originalKhtt.EndDate;
-                        khttNode.Subtitle = null;
-                    }
-                }
-                else
-                {
-                    khttNode.StartDate = originalKhtt.StartDate;
-                    khttNode.EndDate = originalKhtt.EndDate;
-                    khttNode.Subtitle = null;
-                }
+                isPhase1Matched = originalRegistrationPhase1 is null || originalRegistrationPhase1.StartDate < userStart;
             }
             else
             {
-                khttNode.StartDate = originalKhtt.StartDate;
-                khttNode.EndDate = originalKhtt.EndDate;
-                khttNode.Subtitle = null;
+                isPhase2Matched = originalRegistrationPhase2 is null || originalRegistrationPhase2.StartDate < userStart;
             }
         }
+
+        var personalScheduleSubtitle = userPeriod is not null 
+            ? $"Đã áp dụng lịch cá nhân ({userPeriod.Key} - Nhóm {userPeriod.AllowedGroupsDisplay})" 
+            : null;
+
+        ApplyOrRestoreTimelineNode(
+            registrationPhase1Node, 
+            originalRegistrationPhase1, 
+            isPhase1Matched ? userPeriod?.StartDate : null, 
+            isPhase1Matched ? userPeriod?.EndDate : null, 
+            personalScheduleSubtitle);
+
+        ApplyOrRestoreTimelineNode(
+            registrationPhase2Node, 
+            originalRegistrationPhase2, 
+            isPhase2Matched ? userPeriod?.StartDate : null, 
+            isPhase2Matched ? userPeriod?.EndDate : null, 
+            personalScheduleSubtitle);
+
+        // Cá nhân hóa Đợt điều chỉnh Kế hoạch học tập (KHTT)
+        var adjustStudyPlanNode = TimelineViewModel.Nodes.FirstOrDefault(n => n.Step == TeachingPlanStep.AdjustStudyPlan);
+        var originalAdjustStudyPlan = TeachingPlan?.RegistrationTimeline?.FirstOrDefault(n => n.GetStepType() == TeachingPlanStep.AdjustStudyPlan);
+
+        if (adjustStudyPlanNode is not null && originalAdjustStudyPlan is not null)
+        {
+            var matchedAdjustmentDetail = TryFindMatchingAdjustmentDetail(userPeriod);
+            ApplyOrRestoreTimelineNode(
+                adjustStudyPlanNode, 
+                originalAdjustStudyPlan, 
+                matchedAdjustmentDetail?.StartDateTime, 
+                matchedAdjustmentDetail?.EndDateTime, 
+                matchedAdjustmentDetail is not null ? personalScheduleSubtitle : null);
+        }
+    }
+
+    private void ApplyOrRestoreTimelineNode(
+        TimelineNodeViewModel? targetNodeViewModel, 
+        TimelineNode? originalSchoolNode, 
+        DateTime? personalizedStartDate, 
+        DateTime? personalizedEndDate, 
+        string? personalizedSubtitle)
+    {
+        if (targetNodeViewModel is null || originalSchoolNode is null) return;
+        targetNodeViewModel.StartDate = personalizedStartDate ?? originalSchoolNode.StartDate;
+        targetNodeViewModel.EndDate = personalizedEndDate ?? originalSchoolNode.EndDate;
+        targetNodeViewModel.Subtitle = personalizedStartDate.HasValue ? personalizedSubtitle : null;
+    }
+
+    private TeachingPlanAdjustmentDetail? TryFindMatchingAdjustmentDetail(UserPeriodItem? userPeriod)
+    {
+        if (userPeriod is null || TeachingPlan?.AdjustmentDetails is null) return null;
+
+        var cohortNumberMatch = CohortNumberRegex().Match(userPeriod.Key);
+        if (!cohortNumberMatch.Success || !int.TryParse(cohortNumberMatch.Value, out int studentCohort)) return null;
+
+        var studentGroups = userPeriod.AllowedGroups;
+
+        return TeachingPlan.AdjustmentDetails.FirstOrDefault(detail =>
+        {
+            var detailCohortNumberMatch = CohortNumberRegex().Match(detail.Cohort);
+            bool isCohortMatched;
+
+            if (detailCohortNumberMatch.Success && int.TryParse(detailCohortNumberMatch.Value, out int detailCohortNumber))
+            {
+                if (detail.Cohort.Contains("trở về trước") || detail.Cohort.Contains("trở xuống"))
+                    isCohortMatched = studentCohort <= detailCohortNumber;
+                else if (detail.Cohort.Contains("trở về sau") || detail.Cohort.Contains("trở lên"))
+                    isCohortMatched = studentCohort >= detailCohortNumber;
+                else
+                    isCohortMatched = studentCohort == detailCohortNumber;
+            }
+            else
+            {
+                isCohortMatched = detail.Cohort.Contains(userPeriod.Key, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return isCohortMatched && detail.AllowedGroups.Intersect(studentGroups).Any();
+        });
     }
 
     protected override void Dispose(bool isDisposing)

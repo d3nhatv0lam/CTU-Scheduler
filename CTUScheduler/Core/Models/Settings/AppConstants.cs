@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using CTUScheduler.Core.Models.Contributors;
@@ -64,15 +63,15 @@ public static class AppConstants
         public static readonly IReadOnlyList<ContributorProfile> AllContributors = new List<ContributorProfile>
         {
             new ContributorProfile(
-                Id: "d3n",
+                Id: "duc",
                 Name: "Dương Minh Đức",
-                Nickname: "d3nhatv0lam / RxAmethyst",
+                Nickname: "RxAmethyst",
                 Tier: ContributorTier.Founder,
-                Bio: "Đụng là dứt",
+                Bio: "",
                 AvatarUrl: "https://avatars.githubusercontent.com/u/110104167?v=4",
                 SocialLinks: new Dictionary<SocialPlatform, string>
                 {
-                    [SocialPlatform.Facebook] = "https://www.facebook.com/profile.php?id=61589850129287",
+                    [SocialPlatform.Facebook] = "https://www.facebook.com/profile.php?id=61591905747383",
                     [SocialPlatform.YouTube] = "https://www.youtube.com/@ucduong9984",
                     [SocialPlatform.GitHub] = "https://github.com/d3nhatv0lam",
                     [SocialPlatform.TikTok] = "https://www.tiktok.com/@c.dng273"
@@ -91,7 +90,7 @@ public static class AppConstants
                 Name: "Nguyễn Phước Lộc",
                 Tier: ContributorTier.Maintainer,
                 Nickname: "Lexipit3268",
-                Bio: "Đụng là cọc",
+                Bio: "",
                 AvatarUrl: "https://avatars.githubusercontent.com/u/62460969?v=4",
                 SocialLinks: new Dictionary<SocialPlatform, string>
                 {
@@ -102,7 +101,8 @@ public static class AppConstants
                 Roles: new List<ContributorRole>
                 {
                     ContributorRole.Designer,
-                    ContributorRole.Tester
+                    ContributorRole.Tester,
+                    ContributorRole.Developer,
                 },
                 DisplayOrder: 2
             ),
@@ -121,7 +121,9 @@ public static class AppConstants
                 Roles: new List<ContributorRole>
                 {
                     ContributorRole.Designer,
-                    ContributorRole.Tester
+                    ContributorRole.Developer,
+                    ContributorRole.Tester,
+                    ContributorRole.Documenter,
                 },
                 DisplayOrder: 3
             ),
@@ -139,7 +141,9 @@ public static class AppConstants
                 },
                 Roles: new List<ContributorRole>
                 {
-                    ContributorRole.Designer
+                    ContributorRole.Developer,
+                    ContributorRole.Documenter,
+                    ContributorRole.Tester
                 },
                 DisplayOrder: 4
             ),
