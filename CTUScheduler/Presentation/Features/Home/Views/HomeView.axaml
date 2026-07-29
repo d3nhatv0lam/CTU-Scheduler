@@ -287,7 +287,7 @@
                               Margin="10,25,10,10"
                               ColumnDefinitions="155, Auto, *"
                               RowDefinitions="auto auto"
-                              IsVisible="{Binding ., Converter={x:Static ObjectConverters.IsNotNull}}">
+                              IsVisible="{Binding IsCalculated, FallbackValue=false}">
 
                             <!-- // cột trái // -->
                             <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="8">
@@ -544,6 +544,25 @@
                                 </Grid>
                             </Border>
                         </Grid>
+
+                        <!-- // Hiện thời gian có học phí - Khi chưa dến thời gian cho phép xem học phí  -->
+                        <Border Grid.Row="1"
+                                Background="{DynamicResource SemiColorWarningLightActive}"
+                                DataContext="{Binding TuitionFee}"
+                                Margin="10,25,10,10"
+                                CornerRadius="8"
+                                IsVisible="{Binding !IsCalculated, FallbackValue=true}">
+                            <TextBlock Padding="10"
+                                       HorizontalAlignment="Stretch"
+                                       TextAlignment="Center"
+                                       FontSize="{DynamicResource SemiFontSizeSmall}"
+                                       FontWeight="Bold"
+                                       TextWrapping="Wrap"
+                                       Text="{Binding CalculationDate, 
+                                            StringFormat={}Thông tin học phí sẽ được tính sau khi kết thúc thời gian đăng ký học phần (sau ngày: {0:dd/MM/yyyy}),
+                                            FallbackValue=Thông tin học phí sẽ được tính sau khi kết thúc thời gian đăng ký học phần}">
+                            </TextBlock>
+                        </Border>
                     </Grid>
                 </Border>
 
