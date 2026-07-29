@@ -18,11 +18,27 @@ public static partial class TtHocPhiPayLoadExtensions
 
     public static TuitionFeeSummary? ToSummary(this RawThongTinHocPhiPayload payload, ILogger? logger = null)
     {
-        long? semesterTuitionFee = null;
-        long healthInsuranceFee = 0;
-        long previousSemesterDebt = 0;
-        long? totalPayableAmount = null;
-        long? totalPaidAmount = null;
+        decimal? semesterTuitionFee = null;
+        decimal? healthInsuranceFee = 0;
+        decimal? previousSemesterDebt = 0;
+        decimal? totalPayableAmount = null;
+        decimal? totalPaidAmount = null;
+        DateOnly? calculationDate = null;
+
+        if (DateOnly.TryParseExact(
+                payload.ThongTinTinhHocPhi,
+                "dd/MM/yyyy",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var parsedDate))
+        {
+            calculationDate = parsedDate;
+        }
+        else
+        {
+            logger?.LogWarning("Không có thông tin thời gian bắt đầu học phí hoặc định dạng không hợp lệ: {Value}",
+                payload.ThongTinTinhHocPhi);
+        }
 
 
         if (payload.ChiTietHocPhi is not null)
@@ -49,8 +65,7 @@ public static partial class TtHocPhiPayLoadExtensions
 
         if (semesterTuitionFee is null || totalPayableAmount is null || totalPaidAmount is null)
         {
-            logger?.LogWarning("Cấu trúc dữ liệu học phí bị thay đổi. Thiếu các field bắt buộc.");
-            return null;
+            logger?.LogWarning("Cấu trúc dữ liệu dữ liệu các field {0}, {1}, {2},", nameof(semesterTuitionFee), nameof(totalPayableAmount), nameof(totalPaidAmount));
         }
 
         DateOnly? paymentDeadline = null;
@@ -88,11 +103,12 @@ public static partial class TtHocPhiPayLoadExtensions
         }
 
         return new TuitionFeeSummary(
-            SemesterTuitionFee: semesterTuitionFee.Value,
+            SemesterTuitionFee: semesterTuitionFee,
             HealthInsuranceFee: healthInsuranceFee,
             PreviousSemesterDebt: previousSemesterDebt,
-            TotalPayableAmount: totalPayableAmount.Value,
-            TotalPaidAmount: totalPaidAmount.Value,
+            TotalPayableAmount: totalPayableAmount,
+            TotalPaidAmount: totalPaidAmount,
+            CalculationDate: calculationDate,
             PaymentDeadline: paymentDeadline,
             GeneralCreditFee: generalFee,
             MajorCreditFee: majorFee
