@@ -162,6 +162,19 @@
         <Style Selector="paginationViews|PaginationView.pagination:pointerover">
             <Setter Property="Opacity" Value="1" />
         </Style>
+
+        <Style Selector="TextBlock.EmptyStateTitle">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{DynamicResource Grey}" />
+        </Style>
+
+        <Style Selector="TextBlock.EmptyStateSubtitle">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{DynamicResource DisableColor}" />
+        </Style>
     </rxui:ReactiveUserControl.Styles>
 
     <Grid ColumnDefinitions="0.22* 0.015* 0.5*">
@@ -316,7 +329,7 @@
 
                     <Border Grid.Row="2" Padding="8" ClipToBounds="False">
                         <Grid>
-                            <ScrollViewer>
+                            <ScrollViewer IsVisible="{Binding !HasNoResults}">
                                 <Border>
                                     <ItemsRepeater ClipToBounds="False"
                                                    ItemsSource="{Binding PaginationTimeTableViewModel.PagedData}">
@@ -379,6 +392,18 @@
                                 DataContext="{Binding PaginationTimeTableViewModel}"
                                 Classes="pagination">
                             </paginationViews:PaginationView>
+
+                            <!-- Empty state popup when no matching timetable -->
+                            <StackPanel VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        Background="Transparent"
+                                        IsHitTestVisible="False"
+                                        IsVisible="{Binding HasNoResults}"
+                                        Spacing="12">
+                                <Image Source="/Assets/Images/Course/EmptyScheduleTable.png" Stretch="None" />
+                                <TextBlock Text="Không có thời khóa biểu nào hợp lệ" Classes="EmptyStateTitle" />
+                                <TextBlock Text="Vui lòng thử điều chỉnh lại nhóm môn học hoặc tiêu chí ưu tiên" Classes="EmptyStateSubtitle" />
+                            </StackPanel>
                         </Grid>
                     </Border>
                 </Grid>

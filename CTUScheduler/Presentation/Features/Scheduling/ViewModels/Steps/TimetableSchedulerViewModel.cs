@@ -43,6 +43,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
     private readonly ITimetableGeneratorService _timetableGeneratorService;
 
     [Reactive] private SchedulingPreset? _selectedPreset;
+    [ObservableAsProperty] private bool _hasNoResults;
 
     public IReadOnlyList<SchedulingPreset> Presets { get; } = SchedulingPresetViewModel.DefaultPresets;
     public SchedulingCourseCoordinatorViewModel SchedulingCourseCoordinatorVM { get; }
@@ -158,6 +159,10 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                                 }
                             }));
                     }))
+            .DisposeWith(_disposables);
+        
+        _hasNoResultsHelper = GenerateTimeTableCommand.Select(x => x.Count == 0)
+            .ToProperty(this, nameof(HasNoResults), scheduler: RxSchedulers.MainThreadScheduler, initialValue:false)
             .DisposeWith(_disposables);
 
         GenerateTimeTableCommand
