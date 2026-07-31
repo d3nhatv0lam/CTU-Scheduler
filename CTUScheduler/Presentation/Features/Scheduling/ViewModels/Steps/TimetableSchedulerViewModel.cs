@@ -43,7 +43,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
     private readonly ITimetableGeneratorService _timetableGeneratorService;
 
     [Reactive] private SchedulingPreset? _selectedPreset;
-    [Reactive] private bool _hasNoResults;
+    [ObservableAsProperty] private bool _hasNoResults;
 
     public IReadOnlyList<SchedulingPreset> Presets { get; } = SchedulingPresetViewModel.DefaultPresets;
     public SchedulingCourseCoordinatorViewModel SchedulingCourseCoordinatorVM { get; }
@@ -133,7 +133,6 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                     () => new CancellationTokenSource(),
                     cts =>
                     {
-                        HasNoResults = false;
                         PaginationTimeTableViewModel.Clear();
                         var courseSectionFlatten =
                             CourseSectionsTrackerFlatten(SchedulingCourseCoordinatorVM.GetGroupedCourses());
@@ -161,6 +160,10 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                             }));
                     }))
             .DisposeWith(_disposables);
+        
+        _hasNoResultsHelper = GenerateTimeTableCommand.Select(x => x.Count == 0)
+            .ToProperty(this, nameof(HasNoResults), scheduler: RxSchedulers.MainThreadScheduler, initialValue:false)
+            .DisposeWith(_disposables);
 
         GenerateTimeTableCommand
             .ObserveOn(RxSchedulers.MainThreadScheduler)
@@ -177,7 +180,6 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                     });
 
                 PaginationTimeTableViewModel.AddRange(timetableLayout);
-                HasNoResults = !rawTimetableData.Any();
             })
             .DisposeWith(_disposables);
 
