@@ -42,7 +42,7 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
     [Reactive(SetModifier = AccessModifier.Private)]
     private string _windowTitle = "CTU Scheduler";
 
-    public ReactiveCommand<Unit, Unit> OpenGithubRepo { get; }
+    public ReactiveCommand<Unit, Unit> OpenGithubRepoCommand { get; }
 
 
     public MainViewModel(
@@ -58,7 +58,7 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
         navigationRegionManager.Register(_regionId, this)
             .DisposeWith(_disposables);
 
-        OpenGithubRepo = ReactiveCommand.Create(() => ProcessHelper.OpenUrl(AppConstants.Urls.GithubRepo))
+        OpenGithubRepoCommand = ReactiveCommand.Create(() => ProcessHelper.OpenUrl(AppConstants.Urls.GithubRepo))
             .DisposeWith(_disposables);
 
         navigationRegionManager.NavigateAndResetTo<LoginViewModel>(_regionId);
