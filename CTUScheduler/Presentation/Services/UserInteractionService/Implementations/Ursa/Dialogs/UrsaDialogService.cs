@@ -1,13 +1,12 @@
 using System;
 using System.Linq;
-using System.Reactive.Disposables;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Layout;
+using Avalonia.Media;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
 using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
@@ -125,6 +124,7 @@ public class UrsaDialogService : IDialogService
 
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
+                Background = Brushes.Transparent,
 
                 [!Layoutable.WidthProperty] = new Binding("ClientSize")
                 {
@@ -153,6 +153,7 @@ public class UrsaDialogService : IDialogService
 
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
+                Background = Brushes.Transparent,
 
                 [!Layoutable.WidthProperty] = new Binding("ClientSize")
                 {

@@ -20,6 +20,13 @@
                              HorizontalContentAlignment="Stretch" />
 
         <u:OverlayDialogHost HostId="{x:Static ids:DialogIds.Root}">
+            <u:OverlayDialogHost.Styles>
+                <Style Selector="u|CustomDialogControl.background-transparent /template/ Border#PART_Border">
+                    <Setter Property="Background" Value="Transparent"></Setter>
+                    <Setter Property="BorderThickness" Value="0"></Setter>
+                    <Setter Property="BoxShadow" Value="none"></Setter>
+                </Style>
+            </u:OverlayDialogHost.Styles>
             <Interaction.Behaviors>
                 <behaviors:RefreshOnResizeBehavior />
             </Interaction.Behaviors>

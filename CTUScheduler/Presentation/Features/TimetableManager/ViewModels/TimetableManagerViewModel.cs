@@ -284,9 +284,10 @@ namespace CTUScheduler.Presentation.Features.TimetableManager.ViewModels
             using var viewModel = _viewModelFactory.Create<SchedulingDialogViewModel>();
             var options = new DialogOptions()
             {
-                SizeMode = DialogSizeMode.Content,
+                SizeMode = DialogSizeMode.Responsive,
                 IsCloseButtonVisible = false,
                 CanLightDismiss = false,
+                StyleClass = "background-transparent",
                 HostId = DialogIds.Root
             };
             await UserInteractionService.Dialog.ShowModal<SchedulingDialogViewModel, Unit>(viewModel, options);

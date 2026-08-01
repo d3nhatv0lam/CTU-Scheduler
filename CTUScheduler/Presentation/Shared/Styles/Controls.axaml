@@ -20,5 +20,10 @@
         <Setter Property="Background" Value="{StaticResource CtuGradient}" />
         <Setter Property="Padding" Value="10,0" />
     </Style>
+    
+    <!-- box shadow of dialog -->
+    <Style Selector=":is(Border).dialog-boxshadow">
+        <Setter Property="BoxShadow" Value="0 0 1 #4a000000, 0 4 14 #1a000000"></Setter>
+    </Style>
 
 </Styles>

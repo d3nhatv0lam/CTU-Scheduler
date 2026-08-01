@@ -36,20 +36,20 @@ public record CtuSession(
     // Chỉ kết thúc phiên chính khi phân hệ Dkmh (JWT) hết hạn
     public bool IsExpired => Dkmh.IsExpired;
 
-    public bool IsHtqlExpired => Htql == null || Htql.IsExpired;
+    public bool IsHtqlExpired => Htql is null || Htql.IsExpired;
 
     public override string ToString()
     {
         var cookiesStr = Htql != null
-            ? string.Join(", ", Htql.Cookies.Select(kv => $"{kv.Key}={kv.Value}"))
+            ? string.Join(", ", Htql.Cookies.Select(kv => $"{kv.Key}=[REDACTED]"))
             : "null";
 
         var htqlExpiresStr = Htql != null
             ? Htql.ExpiresAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")
             : "null";
-
+        
         return $"CtuSession {{ \n" +
-               $"  Dkmh = DkmhSession {{ AccessToken = {Dkmh.AccessToken}, ExpiresAt = {Dkmh.ExpiresAt.ToLocalTime():dd/MM/yyyy HH:mm:ss} }},\n" +
+               $"  Dkmh = DkmhSession {{ $\"AccessToken = {Dkmh.AccessToken[..8]}...[REDACTED]\", ExpiresAt = {Dkmh.ExpiresAt.ToLocalTime():dd/MM/yyyy HH:mm:ss} }},\n" +
                $"  Htql = HtqlSession {{ InstanceId = {Htql?.InstanceId.ToString() ?? "null"}, Cookies = [ {cookiesStr} ], ExpiresAt = {htqlExpiresStr} }},\n" +
                $"  Profile = {Profile}\n" +
                $"}}";
