@@ -36,7 +36,7 @@ public partial class SchedulingDialogViewModel : ViewModelBase, IScreen, IDispos
 
         _isSelectionModeHelper = Router.CurrentViewModel
             .Select(currentVm => currentVm is SelectionViewModel)
-            .ToProperty(this, x => x.IsSelectionMode)
+            .ToProperty(this,  nameof(IsSelectionMode))
             .DisposeWith(_disposables);
 
         navigationRegionManager.NavigateTo<SelectionViewModel>(RegionIds.Scheduling);

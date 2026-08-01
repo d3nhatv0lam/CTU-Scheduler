@@ -1,12 +1,9 @@
-using System;
 using System.Reactive.Disposables.Fluent;
 using ReactiveUI.Avalonia;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using ReactiveUI;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
-using Avalonia.Media.Imaging;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.Views;
 
@@ -36,7 +33,7 @@ public partial class TimetableLayoutView : ReactiveUserControl<TimetableLayoutBa
                         Width = 1600,
                         Height = 1000
                     };
-
+                    
                     var exportPanel = tempView.FindControl<Control>("ExportPanel");
                     exportPanel?.IsVisible = false;
 

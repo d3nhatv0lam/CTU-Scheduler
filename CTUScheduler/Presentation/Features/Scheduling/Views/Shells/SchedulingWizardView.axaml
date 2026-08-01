@@ -12,9 +12,9 @@
     xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels.Shells"
     x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.Shells.SchedulingWizardView">
 
-    <Design.DataContext>
-        <viewModels:SchedulingWizardViewModel />
-    </Design.DataContext>
+    <!-- <Design.DataContext> -->
+    <!--     <viewModels:SchedulingWizardViewModel /> -->
+    <!-- </Design.DataContext> -->
 
     <rxui:ReactiveUserControl.Styles>
         <Style Selector="Button.NavBtn">
