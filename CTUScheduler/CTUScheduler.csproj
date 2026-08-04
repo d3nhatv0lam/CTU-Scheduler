@@ -5,6 +5,9 @@
     <IsAotCompatible>true</IsAotCompatible>
     <LangVersion>latest</LangVersion>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+
+    <AssemblyTitle>CTUScheduler.Core</AssemblyTitle>
+    <Description>Core library for CTU Scheduler.</Description>
   </PropertyGroup>
     
   <ItemGroup>

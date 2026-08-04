@@ -1,38 +1,94 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <!--If you are willing to use Windows/MacOS native APIs you will need to create 3 projects.
-    One for Windows with net8.0-windows TFM, one for MacOS with net8.0-macos and one with net8.0 TFM for Linux.-->
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <IsAotCompatible>true</IsAotCompatible>
-    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
-    <RuntimeIdentifiers>
-      win-x64;
-      win-arm64;
-      linux-x64;
-      linux-arm64;
-      osx-x64;
-      osx-arm64
-    </RuntimeIdentifiers>
-    <PackageId>ctu-scheduler</PackageId>
-    <AssemblyName>CTUScheduler.Desktop</AssemblyName>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <!--If you are willing to use Windows/MacOS native APIs you will need to create 3 projects.
+        One for Windows with net8.0-windows TFM, one for MacOS with net8.0-macos and one with net8.0 TFM for Linux.-->
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <IsAotCompatible>true</IsAotCompatible>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <ApplicationIcon>icon.ico</ApplicationIcon>
+        <RuntimeIdentifiers>
+            win-x64;
+            win-arm64;
+            linux-x64;
+            linux-arm64;
+            osx-x64;
+            osx-arm64
+        </RuntimeIdentifiers>
+        
+        <PackageId>ctu-scheduler</PackageId>
+        <AssemblyName>CTUScheduler.Desktop</AssemblyName>
+        <AssemblyTitle>CTU Scheduler Desktop</AssemblyTitle>
+        <Description>CTU Scheduler desktop application.</Description>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Avalonia.Desktop" Version="12.1.1" />
-    <PackageReference Include="ReactiveUI.Avalonia.Microsoft.Extensions.DependencyInjection" Version="12.0.3" />
-    <PackageReference Include="Serilog.Enrichers.ShortTypeName" Version="1.1.0" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
-    <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-  </ItemGroup>
+    <!--Cấu hình NetBeauty-->
+    <PropertyGroup>
+        <!-- Disable NetBeauty (set to True to turn off all features). -->
+        <DisableBeauty>False</DisableBeauty>
 
-  <ItemGroup>
-    <ProjectReference Include="..\CTUScheduler\CTUScheduler.csproj" />
-  </ItemGroup>
-  
+        <!-- Enable shared runtime mode (set to True to share libraries across apps). -->
+        <BeautySharedRuntimeMode>False</BeautySharedRuntimeMode>
+
+        <!-- Directory for dependencies; default is 'libraries'. Use quotes if the path contains spaces. -->
+        <BeautyLibsDir Condition="$(BeautySharedRuntimeMode) == 'True'">../apps</BeautyLibsDir>
+        <BeautyLibsDir Condition="$(BeautySharedRuntimeMode) != 'True'">./apps</BeautyLibsDir>
+
+        <!-- DLLs you want to exclude from being moved (e.g., critical or custom files). -->
+        <!-- <BeautyExcludes>dll1.dll;lib*;...</BeautyExcludes> -->
+
+        <!-- Files to hide from end users (e.g., runtime or config files). Only supported on Windows. -->
+        <!-- <BeautyHiddens>hostfxr;hostpolicy;*.deps.json;*.runtimeconfig*.json</BeautyHiddens> -->
+
+        <!-- Only run NetBeauty on publish (set to True to skip on build). -->
+        <BeautyOnPublishOnly>True</BeautyOnPublishOnly>
+
+        <!-- Internal option: do not modify. -->
+        <BeautyNoRuntimeInfo>False</BeautyNoRuntimeInfo>
+
+        <!-- Loader version policy: auto, with, or without. -->
+        <BeautyNBLoaderVerPolicy>auto</BeautyNBLoaderVerPolicy>
+
+        <!-- Enable debugging support for third-party debuggers (e.g., dnSpy). -->
+        <BeautyEnableDebugging>False</BeautyEnableDebugging>
+
+        <!-- Use the patch to minimize file count (SCD mode only). Set to False to disable. -->
+        <BeautyUsePatch>True</BeautyUsePatch>
+
+        <!-- Customize AppHost entry point (relative to AppHostDir). See documentation for details. -->
+        <!-- <BeautyAppHostEntry>bin/MyApp.dll</BeautyAppHostEntry> -->
+
+        <!-- Customize AppHost directory (relative to BeautyDir). See documentation for details. -->
+        <!-- <BeautyAppHostDir>..</BeautyAppHostDir> -->
+
+        <!-- Specify custom MSBuild tasks to run after NetBeauty completes. -->
+        <!-- <BeautyAfterTasks></BeautyAfterTasks> -->
+
+        <!-- Log verbosity: Error, Detail, or Info. -->
+        <BeautyLogLevel>Info</BeautyLogLevel>
+
+        <!-- Use a mirror for GitHub resources if needed. -->
+        <!-- <BeautyGitCDN>https://gitee.com/liesauer/HostFXRPatcher</BeautyGitCDN> -->
+
+        <!-- Specify a branch or tag for the patcher repository. -->
+        <!-- <BeautyGitTree>master</BeautyGitTree> -->
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Desktop" Version="12.1.1"/>
+        <PackageReference Include="nulastudio.NetBeauty" Version="2.1.5"/>
+        <PackageReference Include="ReactiveUI.Avalonia.Microsoft.Extensions.DependencyInjection" Version="12.0.3"/>
+        <PackageReference Include="Serilog.Enrichers.ShortTypeName" Version="1.1.0"/>
+        <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1"/>
+        <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="7.0.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\CTUScheduler\CTUScheduler.csproj"/>
+    </ItemGroup>
+
 </Project>
