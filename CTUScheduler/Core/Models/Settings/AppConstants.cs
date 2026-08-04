@@ -12,7 +12,7 @@ public static class AppConstants
     // CÁC HẰNG SỐ CHUNG (ROOT LEVEL)
     // Những cái này dùng chung cho toàn app, không thuộc nhóm cụ thể nào
     // ====================================================
-    public const string AppVersion = "0.1";
+    public const string AppVersion = "1.0.1";
     public const string AppNameWindows = "CTUScheduler";
     public const string AppNameUnix = "ctu-scheduler";
 
