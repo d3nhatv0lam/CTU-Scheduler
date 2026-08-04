@@ -47,7 +47,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
         public ReactiveCommand<Unit, Unit> FocusTextBoxCommand { get; }
         public ReactiveCommand<Unit, Unit> UnfocusTextBoxCommand { get; }
         public ReactiveCommand<Unit, Course?> SearchCommand { get; }
-        public ReactiveCommand<Unit, Unit> AddCoursesCommand { get; }
+        public ReactiveCommand<Unit, bool> AddCoursesCommand { get; }
         public ReactiveCommand<CourseBlueprint, Unit> TreeRemoveCourseCommand { get; }
         public ReactiveCommand<CourseSection, Unit> TreeRemoveSectionCommand { get; }
         public ReactiveCommand<bool, Unit> ToggleSelectAllCommand { get; }
@@ -166,7 +166,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
 
                     var selectionChangedObservables = sections.Select(s => s.WhenAnyValue(x => x.IsSelected));
         
-                    return Observable.CombineLatest(selectionChangedObservables, states => states.All(isChecked => isChecked));
+                    return selectionChangedObservables.CombineLatest(states => states.All(isChecked => isChecked));
                 })
                 .Switch()
                 .ToProperty(this, nameof(IsSelectAllChecked), scheduler: RxSchedulers.MainThreadScheduler)
@@ -198,18 +198,30 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
                 .Delay(TimeSpan.FromMilliseconds(150), RxSchedulers.MainThreadScheduler)
                 .Subscribe(_ => TryOpenQuickSelectPopup())
                 .DisposeWith(_disposables);
-
-
+            
             var canAddCourse = this.WhenAnyValue(x => x.SearchedCourseSections,
                 searchedCourseSections => searchedCourseSections is not null && searchedCourseSections.Any());
 
             AddCoursesCommand = ReactiveCommand.Create(AddSelectedSectionsToCart, canAddCourse)
                 .DisposeWith(_disposables);
 
+            AddCoursesCommand.Where(x => x)
+                .ObserveOn(RxSchedulers.MainThreadScheduler)
+                .Subscribe(_ => userInteractionService.Toast.Light.Success("Thêm nhóm học phần thành công!"))
+                .DisposeWith(_disposables);
+            
             TreeRemoveCourseCommand = ReactiveCommand.Create<CourseBlueprint>(RemoveCourseFromTree)
+                .DisposeWith(_disposables);
+            
+            TreeRemoveCourseCommand.ObserveOn(RxSchedulers.MainThreadScheduler)
+                .Subscribe(_ => userInteractionService.Toast.Light.Success("Xóa học phần thành công!"))
                 .DisposeWith(_disposables);
 
             TreeRemoveSectionCommand = ReactiveCommand.Create<CourseSection>(RemoveSectionFromTree)
+                .DisposeWith(_disposables);
+            
+            TreeRemoveSectionCommand.ObserveOn(RxSchedulers.MainThreadScheduler)
+                .Subscribe(_ => userInteractionService.Toast.Light.Success("Xóa nhóm học phần thành công!"))
                 .DisposeWith(_disposables);
 
             #endregion
@@ -220,16 +232,16 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
             IsOpenQuickSelectPopup = IsTextBoxFocused && (QuickSelectCourses?.Any() ?? false);
         }
 
-        private void AddSelectedSectionsToCart()
+        private bool AddSelectedSectionsToCart()
         {
-            if (SearchedCourse is null) return;
+            if (SearchedCourse is null) return false;
 
             var selected = FilteredCourseSections
                 .Where(x => x.IsSelected)
                 .Select(x => x.Item)
                 .ToList();
 
-            if (selected.Count == 0) return;
+            if (selected.Count == 0) return false;
 
             var existingNode = _coursesSourceList.Items.FirstOrDefault(x => x.CoreCourse.Code == SearchedCourse.Code);
 
@@ -237,7 +249,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
             {
                 var selectedCourseNode = new CourseBlueprint(SearchedCourse, selected);
                 _coursesSourceList.Add(selectedCourseNode);
-                return;
+                return true;
             }
 
             existingNode.UpdateSections(list =>
@@ -246,6 +258,7 @@ namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Steps
 
                 list.AddRange(newItems);
             });
+            return true;
         }
 
         private void RemoveCourseFromTree(CourseBlueprint? course)
