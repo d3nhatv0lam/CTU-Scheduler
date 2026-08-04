@@ -1,17 +1,16 @@
 <Project>
     <PropertyGroup>
         <Nullable>enable</Nullable>
-        <AvaloniaVersion>11.1.0</AvaloniaVersion>
         <UseArtifactsOutput>true</UseArtifactsOutput>
 
-        <!--    // tên phiên bản //-->
+        <!-- // tên phiên bản //-->
         <Product>CTU-Scheduler</Product>
         <ProductName>CTU Scheduler</ProductName>
         <Authors>CTU Scheduler Contributors</Authors>
         
-        <Version>1.0.0</Version>
+        <Version>1.0.1</Version>
+        <FileVersion>1.0.1.0</FileVersion>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <FileVersion>1.0.0.0</FileVersion>
         <Copyright>© 2026 Duong Minh Duc</Copyright>
     </PropertyGroup>
 </Project>
