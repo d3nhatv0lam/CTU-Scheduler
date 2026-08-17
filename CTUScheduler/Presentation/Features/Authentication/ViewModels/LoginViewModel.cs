@@ -167,7 +167,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                     {
                         var options = new DialogOptions()
                         {
-                            SizeMode = DialogSizeMode.Responsive,
+                            SizeMode = DialogSizeMode.Content,
                             ResponsivePercentage = 1,          
                             ResponsiveHorizontalMargin = 80,   
                             ResponsiveVerticalMargin = 80,
