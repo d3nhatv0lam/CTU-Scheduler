@@ -53,14 +53,14 @@
         </Style>
 
         <Style Selector="ListBoxItem:pointerover /template/ Border#PART_HighlightBorder">
-            <Setter Property="Background" Value="{DynamicResource BaseBackgroundColor}" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorFill0}" />
         </Style>
 
         <Style Selector="ListBoxItem:selected /template/ Border#PART_HighlightBorder">
             <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
         </Style>
         <Style Selector="ListBoxItem:selected /template/ Border#PART_ContentBorder">
-            <Setter Property="Background" Value="{DynamicResource BaseBackgroundColor}" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
         </Style>
 
         <Style Selector="ListBoxItem materialIcons|MaterialIcon">
@@ -95,7 +95,7 @@
             <Setter Property="CornerRadius" Value="8" />
         </Style>
         <Style Selector="Button#BtnLogout:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource BaseBackgroundColor}" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorFill0}" />
         </Style>
 
     </rxui:ReactiveUserControl.Styles>
@@ -103,11 +103,12 @@
     <Grid ColumnDefinitions="auto *">
         <Border Grid.Column="0"
                 Classes="ShadowCard"
-                Background="White"
+                Background="{DynamicResource SemiColorBackground1}"
                 ZIndex="1"
                 ClipToBounds="False">
             <u:NavMenu x:Name="LeftDrawer"
                        ExpandWidth="250">
+                <!-- // nav header // -->
                 <u:NavMenu.Header>
                     <DockPanel Background="Transparent">
                         <Border Classes="header-bar" Background="{DynamicResource CtuGradientStartBrush}"
@@ -130,7 +131,7 @@
                         <!--// Student Info //-->
                         <StackPanel DockPanel.Dock="Top">
                             <Border MinHeight="90" CornerRadius="0,0,15,15"
-                                    Background="{DynamicResource BaseBackgroundColor}">
+                                    Background="{DynamicResource SemiColorBackground1}">
                                 <Border MinHeight="60">
                                     <Grid ColumnDefinitions="50 *">
                                         <materialIcons:MaterialIcon Grid.Column="0"
@@ -217,6 +218,7 @@
             </u:NavMenu>
         </Border>
 
+        <!-- // content side // -->
         <Border Background="{DynamicResource BaseBackgroundColor}"
                 Grid.Column="1">
             <Grid RowDefinitions="auto *">
