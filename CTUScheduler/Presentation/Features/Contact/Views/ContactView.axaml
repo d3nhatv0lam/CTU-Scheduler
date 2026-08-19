@@ -3,6 +3,9 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:rxui="http://reactiveui.net"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
     xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Contact.ViewModels;assembly=CTUScheduler"
     xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     x:DataType="vm:ContactViewModel"
@@ -16,66 +19,40 @@
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="0" />
             <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <DoubleTransition Property="Width" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                    <DoubleTransition Property="Width" Duration="0:0:0.25" Easing="CubicEaseOut" />
                     <BrushTransition Property="Background" Duration="0:0:0.25" />
-                </Transitions>
-            </Setter>
-        </Style>
-
-        <Style Selector="Button.SocialButton /template/ ContentPresenter">
-            <Setter Property="BoxShadow" Value="none" />
-        </Style>
-
-        <Style Selector="Button.SocialButton:pointerover">
-            <Setter Property="Width" Value="120" />
-        </Style>
-
-        <Style Selector="Button.SocialButton material|MaterialIcon.SocialIcon">
-            <Setter Property="Opacity" Value="1" />
-            <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="CubicEaseOut" />
-                </Transitions>
-            </Setter>
-        </Style>
-
-        <Style Selector="Button.SocialButton PathIcon.SocialIcon">
-            <Setter Property="Opacity" Value="1" />
-            <Setter Property="Transitions">
-                <Transitions>
                     <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="CubicEaseOut" />
                 </Transitions>
             </Setter>
         </Style>
         
-        <Style Selector="Button.SocialButton TextBlock.SocialText">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="CubicEaseOut" />
-                </Transitions>
-            </Setter>
+        <Style Selector="Button.SocialButton">
+            <Style Selector="^ material|MaterialIcon.SocialIcon, ^ PathIcon.SocialIcon">
+                <Setter Property="Opacity" Value="1" />
+            </Style>
+            <Style Selector="^ TextBlock.SocialText">
+                <Setter Property="Opacity" Value="0" />
+            </Style>
         </Style>
-
-        <Style Selector="Button.SocialButton:pointerover material|MaterialIcon.SocialIcon">
-            <Setter Property="Opacity" Value="0" />
-        </Style>
-        <Style Selector="Button.SocialButton:pointerover PathIcon.SocialIcon">
-            <Setter Property="Opacity" Value="0" />
-        </Style>
-        <Style Selector="Button.SocialButton:pointerover TextBlock.SocialText">
-            <Setter Property="Opacity" Value="1" />
+        
+        <Style Selector="Button.SocialButton:pointerover">
+            <Setter Property="Width" Value="100" />
+            <Style Selector="^ material|MaterialIcon.SocialIcon, ^ PathIcon.SocialIcon">
+                <Setter Property="Opacity" Value="0" />
+            </Style>
+            <Style Selector="^ TextBlock.SocialText">
+                <Setter Property="Opacity" Value="1" />
+            </Style>
         </Style>
         
         <Style Selector="Button.SocialButton /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="BoxShadow" Value="none" />
-            <Setter Property="Background" Value="{TemplateBinding Background}" />
-        </Style>
-
-        <Style Selector="Button.SocialButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{TemplateBinding Background}" />
         </Style>
 
@@ -86,7 +63,7 @@
 
         <!-- Contributor Card Base and Hover Styling -->
         <Style Selector="Border.ContributorCard">
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
             <Setter Property="BoxShadow" Value="0 4 15 0 #0D000000" />
             <Setter Property="RenderTransform" Value="none" />
             <Setter Property="Transitions">
@@ -109,7 +86,7 @@
         </Style>
 
         <Style Selector="Border.ContributorCard:pointerover">
-            <Setter Property="BorderBrush" Value="#00B0FF" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SecondaryColor}" />
             <Setter Property="RenderTransform" Value="translateY(-6px)" />
             <Setter Property="BoxShadow" Value="0 14 32 0 #1A000000" />
         </Style>
@@ -185,7 +162,7 @@
         </Interaction.Behaviors>
 
         <ScrollViewer>
-            <Grid Classes="main-grid" RowDefinitions="Auto, *" HorizontalAlignment="Center">
+            <Grid RowDefinitions="Auto, *" HorizontalAlignment="Center">
 
                 <Border Grid.Row="0" Margin="20,20,20,10">
                     <TextBlock Classes="PageTitle"
@@ -206,18 +183,18 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:ContributorViewModel">
-                            <Border Classes="ContributorCard" Margin="10" Background="White" CornerRadius="20"
-                                    Padding="0" MaxWidth="650" BorderBrush="#E5E7EB" BorderThickness="1">
+                            <Border Classes="ContributorCard" Margin="10" CornerRadius="20"
+                                    Padding="0" MaxWidth="650" BorderBrush="{DynamicResource SemiColorBorder}" BorderThickness="1">
                                 <Grid Classes="ContributorLayout" RowDefinitions="Auto, Auto"
                                       ColumnDefinitions="Auto, *">
 
                                     <!-- Avatar -->
                                     <Border Classes="AvatarContainer" Width="160" Height="160" CornerRadius="80"
-                                            BorderBrush="#00B0FF" BorderThickness="4" ClipToBounds="True"
-                                            Background="#F3F4F6">
+                                            BorderBrush="{DynamicResource SecondaryColor}" BorderThickness="4" ClipToBounds="True"
+                                            Background="{DynamicResource SemiColorBackground2}">
                                         <Panel>
                                             <TextBlock Text="{Binding FallbackLetter}" FontSize="48" FontWeight="Bold"
-                                                       Foreground="#9CA3AF"
+                                                       Foreground="{DynamicResource SemiColorText2}"
                                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
 
                                             <Ellipse Width="152" Height="152">
@@ -231,11 +208,11 @@
                                     <!-- Info -->
                                     <Grid Classes="InfoContainer" RowDefinitions="Auto, *, Auto">
                                         <TextBlock Grid.Row="0" Text="{Binding Name}" FontSize="24" FontWeight="Bold"
-                                                   Foreground="#1E5E9C" TextWrapping="Wrap" />
+                                                   Foreground="{DynamicResource PrimaryColor}" TextWrapping="Wrap" />
 
                                         <StackPanel Grid.Row="1" VerticalAlignment="Top" Margin="0,10,0,0">
                                             <TextBlock Text="{Binding Nickname, StringFormat='\{0\}'}"
-                                                       FontSize="16" Foreground="#6B7280" FontWeight="Medium"
+                                                       FontSize="16" Foreground="{DynamicResource SemiColorText1}" FontWeight="Medium"
                                                        IsVisible="{Binding Nickname, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
                                         </StackPanel>
 
@@ -251,18 +228,21 @@
                                                             Background="{Binding BackgroundColor}"
                                                             Command="{Binding $parent[UserControl].((vm:ContactViewModel)DataContext).OpenUrlCommand}"
                                                             CommandParameter="{Binding Url}">
-                                                        <Panel>
+                                                        <Panel Background="Transparent">
                                                             <material:MaterialIcon Classes="SocialIcon"
                                                                     Kind="{Binding Icon}" Width="24" Height="24"
                                                                     Foreground="White"
+                                                                    IsHitTestVisible="False"
                                                                     IsVisible="{Binding HasNormalIcon}" />
                                                             <PathIcon Classes="SocialIcon"
                                                                       Width="22" Height="22"
                                                                       Foreground="White"
+                                                                      IsHitTestVisible="False"
                                                                       Data="{Binding CustomIconData}"
                                                                       IsVisible="{Binding HasCustomIcon}" />
                                                             <TextBlock Classes="SocialText" Text="{Binding Title}"
                                                                        Foreground="White" FontWeight="Bold"
+                                                                       IsHitTestVisible="False"
                                                                        VerticalAlignment="Center"
                                                                        HorizontalAlignment="Center" />
                                                         </Panel>
