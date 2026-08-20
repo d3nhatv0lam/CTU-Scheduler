@@ -370,9 +370,17 @@
                 </Grid>
 
                 <ScrollViewer Grid.Row="1" 
+                              Classes="clip-to-bound"
                               Margin="16 0 16 16" 
-                              HorizontalScrollBarVisibility="Disabled" 
+                              HorizontalScrollBarVisibility="Disabled"
                               ClipToBounds="False">
+                    
+                    <ScrollViewer.Styles>
+                        <Style Selector="ScrollViewer.clip-to-bound /template/ ScrollContentPresenter#PART_ContentPresenter">
+                            <Setter Property="ClipToBounds" Value="False"></Setter>
+                        </Style>
+                    </ScrollViewer.Styles>
+                    
                     <Panel ClipToBounds="False">
                         <ItemsRepeater x:Name="itmRptTables"
                                        ClipToBounds="False"
