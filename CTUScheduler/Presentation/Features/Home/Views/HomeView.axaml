@@ -71,7 +71,7 @@
 
         <!-- UI tĩnh của Card -->
         <Style Selector="Border.Card">
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
             <Setter Property="CornerRadius" Value="12" />
             <Setter Property="Padding" Value="25" />
             <Setter Property="BoxShadow" Value="0 4 15 0 #0D000000" />
@@ -119,24 +119,24 @@
                                         <Grid ColumnDefinitions="*, Auto, *">
                                             <!-- Bắt đầu -->
                                             <StackPanel Grid.Column="0" Spacing="5">
-                                                <TextBlock Text="Bắt đầu" FontSize="12" Foreground="#6B7280"
+                                                <TextBlock Text="Bắt đầu" FontSize="12" Foreground="{DynamicResource SemiColorText1}"
                                                            FontWeight="Medium" />
                                                 <SelectableTextBlock
                                                     Text="{Binding StartDate, StringFormat='dd/MM/yyyy HH:mm'}"
-                                                    FontSize="15" FontWeight="Bold" Foreground="#111827" />
+                                                    FontSize="15" FontWeight="Bold" Foreground="{DynamicResource SemiColorText0}" />
                                             </StackPanel>
 
                                             <!-- Divider -->
-                                            <Border Grid.Column="1" Width="1" Height="35" Background="#E5E7EB"
+                                            <Border Grid.Column="1" Width="1" Height="35" Background="{DynamicResource SemiColorBorder}"
                                                     Margin="20,0" VerticalAlignment="Center" />
 
                                             <!-- Kết thúc -->
                                             <StackPanel Grid.Column="2" Spacing="5">
-                                                <TextBlock Text="Kết thúc" FontSize="12" Foreground="#6B7280"
+                                                <TextBlock Text="Kết thúc" FontSize="12" Foreground="{DynamicResource SemiColorText1}"
                                                            FontWeight="Medium" />
                                                 <SelectableTextBlock
                                                     Text="{Binding EndDate, StringFormat='dd/MM/yyyy HH:mm'}"
-                                                    FontSize="15" FontWeight="Bold" Foreground="#111827" />
+                                                    FontSize="15" FontWeight="Bold" Foreground="{DynamicResource SemiColorText0}" />
                                             </StackPanel>
                                         </Grid>
                                     </DataTemplate>
@@ -159,13 +159,13 @@
                                         <StackPanel>
                                             <TextBlock Text="{Binding AllowedGroupsDisplay, StringFormat='Nhóm \{0\}'}"
                                                        FontSize="24"
-                                                       FontWeight="Bold" Foreground="#111111" Margin="0,0,0,10" />
+                                                       FontWeight="Bold" Foreground="{DynamicResource SemiColorText0}" Margin="0,0,0,10" />
                                             <TextBlock
                                                 Text="{Binding GroupDescription}"
                                                 TextWrapping="WrapWithOverflow" Classes="ContentText"
-                                                Foreground="#555555" Margin="0,0,0,15" />
+                                                Foreground="{DynamicResource SemiColorText1}" Margin="0,0,0,15" />
                                             <TextBlock Text="{Binding Key}" Classes="ContentText"
-                                                       Foreground="#777777" />
+                                                       Foreground="{DynamicResource SemiColorText2}" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </ContentControl.ContentTemplate>
@@ -181,7 +181,7 @@
                         <Style Selector="Grid.HeaderRow > TextBlock">
                             <Setter Property="FontWeight" Value="Bold" />
                             <Setter Property="FontSize" Value="13" />
-                            <Setter Property="Foreground" Value="#374151" />
+                            <Setter Property="Foreground" Value="{DynamicResource SemiColorText1}" />
                             <Setter Property="Margin" Value="5,10" />
                             <Setter Property="VerticalAlignment" Value="Center" />
                         </Style>
@@ -189,7 +189,7 @@
                         <!-- Style dùng chung cho các chữ trong Body -->
                         <Style Selector="Grid.BodyRow > SelectableTextBlock, Grid.BodyRow > TextBlock">
                             <Setter Property="VerticalAlignment" Value="Center" />
-                            <Setter Property="Foreground" Value="#4B5563" />
+                            <Setter Property="Foreground" Value="{DynamicResource SemiColorText1}" />
                             <Setter Property="Margin" Value="5,12" />
                             <Setter Property="TextWrapping" Value="Wrap" />
                         </Style>
@@ -207,8 +207,8 @@
                                     <!-- HEADER -->
                                     <Grid Grid.Row="0" Classes="HeaderRow"
                                           ColumnDefinitions="80, 2*, 50, 60, 1.5*, 1.5*, 70"
-                                          Background="#F9FAFB">
-                                        <Border BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Grid.ColumnSpan="7" />
+                                          Background="{DynamicResource SemiColorBackground2}">
+                                        <Border BorderBrush="{DynamicResource SemiColorBorder}" BorderThickness="0,0,0,1" Grid.ColumnSpan="7" />
 
                                         <!-- Margin của 2 cột rìa được ghi đè trực tiếp để cách lề đẹp hơn -->
                                         <TextBlock Grid.Column="0" Text="Mã HP" Margin="15,10,5,10" />
@@ -226,14 +226,14 @@
                                         <ItemsRepeater ItemsSource="{Binding PlannedCourses}">
                                             <ItemsRepeater.ItemTemplate>
                                                 <DataTemplate x:DataType="{x:Type plannedCourse:PlannedCourse}">
-                                                    <Border BorderBrush="#F3F4F6" BorderThickness="0,0,0,1">
+                                                    <Border BorderBrush="{DynamicResource SemiColorBorder}" BorderThickness="0,0,0,1">
                                                         <Grid Classes="BodyRow"
                                                               ColumnDefinitions="80, 2*, 50, 60, 1.5*, 1.5*, 70">
 
                                                             <!-- Code (Ghi đè màu đậm và margin lề trái) -->
                                                             <SelectableTextBlock Grid.Column="0"
                                                                     Text="{Binding Code, Mode=OneWay}"
-                                                                    FontWeight="SemiBold" Foreground="#111827"
+                                                                    FontWeight="SemiBold" Foreground="{DynamicResource SemiColorText0}"
                                                                     Margin="15,12,5,12" />
 
                                                             <!-- Name -->
@@ -294,59 +294,59 @@
                                 <TextBlock Text="Học phí"
                                            FontSize="16"
                                            FontWeight="Bold"
-                                           Foreground="#111827" />
+                                           Foreground="{DynamicResource SemiColorText0}" />
 
                                 <Border CornerRadius="6"
                                         Padding="8,4"
                                         HorizontalAlignment="Left"
-                                        Background="#DEF7EC"
+                                        Background="{DynamicResource SemiColorSuccessLight}"
                                         IsVisible="{Binding !IsInDebt}">
                                     <StackPanel Orientation="Horizontal" Spacing="4">
-                                        <avalonia:MaterialIcon Kind="Check" Width="14" Height="14" Foreground="#03543F" />
+                                        <avalonia:MaterialIcon Kind="Check" Width="14" Height="14" Foreground="{DynamicResource SemiColorSuccess}" />
                                         <TextBlock Text="Đủ học phí" FontSize="12" FontWeight="SemiBold"
-                                                   Foreground="#03543F" />
+                                                   Foreground="{DynamicResource SemiColorSuccess}" />
                                     </StackPanel>
                                 </Border>
 
                                 <Border CornerRadius="6"
                                         Padding="8,4"
                                         HorizontalAlignment="Left"
-                                        Background="#FEF3C7"
+                                        Background="{DynamicResource SemiColorWarningLight}"
                                         IsVisible="{Binding IsNormalDebt}">
                                     <StackPanel Orientation="Horizontal" Spacing="4">
                                         <avalonia:MaterialIcon Kind="ClockOutline" Width="14" Height="14"
-                                                               Foreground="#92400E" />
+                                                               Foreground="{DynamicResource SemiColorWarning}" />
                                         <TextBlock Text="Quá hạn đóng học phí" FontSize="12" FontWeight="SemiBold"
-                                                   Foreground="#92400E" />
+                                                   Foreground="{DynamicResource SemiColorWarning}" />
                                     </StackPanel>
                                 </Border>
 
                                 <Border CornerRadius="6"
                                         Padding="8,4"
                                         HorizontalAlignment="Left"
-                                        Background="#FDE8E8"
+                                        Background="{DynamicResource SemiColorDangerLight}"
                                         IsVisible="{Binding IsCriticalDebt}">
                                     <StackPanel Orientation="Horizontal" Spacing="4">
                                         <avalonia:MaterialIcon Kind="AlertOctagonOutline" Width="14" Height="14"
-                                                               Foreground="#9B1C1C" />
+                                                               Foreground="{DynamicResource RedColor}" />
                                         <TextBlock Text="Nợ học phí" FontSize="12" FontWeight="SemiBold"
-                                                   Foreground="#9B1C1C" />
+                                                   Foreground="{DynamicResource RedColor}" />
                                     </StackPanel>
                                 </Border>
 
                                 <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,2,0,0"
                                             IsVisible="{Binding HasDeadline}">
                                     <avalonia:MaterialIcon Kind="CalendarClock" Width="14" Height="14"
-                                                           Foreground="#6B7280" VerticalAlignment="Center" />
+                                                           Foreground="{DynamicResource SemiColorText2}" VerticalAlignment="Center" />
                                     <TextBlock
                                         Text="{Binding PaymentDeadline, StringFormat='Hạn đóng: \{0:dd/MM/yyyy\}'}"
                                         FontSize="12"
-                                        Foreground="#6B7280"
+                                        Foreground="{DynamicResource SemiColorText2}"
                                         VerticalAlignment="Center" />
                                 </StackPanel>
                             </StackPanel>
 
-                            <Border Grid.Column="1" Width="1" Background="#E5E7EB" Margin="15,5"
+                            <Border Grid.Column="1" Width="1" Background="{DynamicResource SemiColorBorder}" Margin="15,5"
                                     VerticalAlignment="Stretch" />
 
                             <!-- // cột phải // -->
@@ -357,14 +357,14 @@
 
                                 <Grid.Styles>
                                     <Style Selector="TextBlock.FeeLabel">
-                                        <Setter Property="Foreground" Value="#6B7280" />
+                                        <Setter Property="Foreground" Value="{DynamicResource SemiColorText1}" />
                                         <Setter Property="Margin" Value="0,4" />
                                         <Setter Property="VerticalAlignment" Value="Center" />
 
                                     </Style>
                                     <Style Selector="TextBlock.FeeValue">
                                         <Setter Property="FontWeight" Value="Medium" />
-                                        <Setter Property="Foreground" Value="#111827" />
+                                        <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}" />
                                         <Setter Property="Margin" Value="0,4" />
                                         <Setter Property="VerticalAlignment" Value="Center" />
                                         <Setter Property="HorizontalAlignment" Value="Right" />
@@ -378,73 +378,82 @@
                                     <avalonia:MaterialIcon Kind="InformationOutline"
                                                            Background="Transparent"
                                                            Width="14" Height="14"
-                                                           Foreground="#9CA3AF"
+                                                           Foreground="{DynamicResource SemiColorText2}"
                                                            VerticalAlignment="Center">
                                         <ToolTip.Tip>
-                                            <StackPanel Spacing="10" Margin="5">
-                                                <StackPanel.Styles>
-                                                    <Style Selector="TextBlock.SubLabel">
-                                                        <Setter Property="Foreground" Value="#9CA3AF" />
-                                                        <Setter Property="FontSize" Value="11" />
-                                                    </Style>
-                                                    <Style Selector="TextBlock.SubValue">
-                                                        <Setter Property="FontSize" Value="11" />
-                                                        <Setter Property="FontWeight" Value="Medium" />
-                                                        <Setter Property="Foreground" Value="#F3F4F6" />
-                                                    </Style>
-                                                </StackPanel.Styles>
+                                            <ToolTip MaxWidth="500" 
+                                                     Background="{DynamicResource BaseBackgroundColor}" 
+                                                     BorderThickness="1">
+                                                <StackPanel Spacing="10" Margin="5" MinWidth="280">
+                                                    <StackPanel.Styles>
+                                                        <Style Selector="TextBlock.SubLabel">
+                                                            <Setter Property="Foreground" Value="{DynamicResource SemiColorText2}" />
+                                                            <Setter Property="FontSize" Value="11" />
+                                                        </Style>
+                                                        <Style Selector="TextBlock.SubValue">
+                                                            <Setter Property="FontSize" Value="11" />
+                                                            <Setter Property="FontWeight" Value="Medium" />
+                                                            <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}" />
+                                                        </Style>
+                                                    </StackPanel.Styles>
 
-                                                <TextBlock Text="Thông tin đơn giá tín chỉ"
-                                                           FontWeight="Bold"
-                                                           FontSize="12"
-                                                           Foreground="#FFFFFF" />
+                                                    <TextBlock Text="Thông tin đơn giá tín chỉ"
+                                                               FontWeight="Bold"
+                                                               FontSize="12"
+                                                               Foreground="{DynamicResource SemiColorText0}" />
 
-                                                <StackPanel Spacing="4"
-                                                            IsVisible="{Binding GeneralCreditFee, Converter={x:Static ObjectConverters.IsNotNull}}">
-                                                    <TextBlock Text="• Môn đại cương chung:"
-                                                               FontWeight="SemiBold"
-                                                               Foreground="#E5E7EB"
-                                                               FontSize="12" />
+                                                    <StackPanel Spacing="4"
+                                                                IsVisible="{Binding GeneralCreditFee, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                        <TextBlock Text="• Môn đại cương chung:"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource SemiColorText1}"
+                                                                   FontSize="12" />
 
-                                                    <StackPanel Orientation="Horizontal" Margin="12,0,0,0" Spacing="16">
-                                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                                            <TextBlock Text="Học phí gốc:" Classes="SubLabel" />
-                                                            <TextBlock
-                                                                Text="{Binding GeneralCreditFee.FeePerCredit, StringFormat='{}{0:N0} đ/TC'}"
-                                                                Classes="SubValue" Foreground="#F9FAFB" />
+                                                        <StackPanel Orientation="Horizontal" Margin="12,0,0,0" Spacing="16">
+                                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                                <TextBlock Text="Học phí gốc:" 
+                                                                           Classes="SubLabel" />
+                                                                <TextBlock
+                                                                    Text="{Binding GeneralCreditFee.FeePerCredit, StringFormat='{}{0:N0} đ/TC'}"
+                                                                    Classes="SubValue" 
+                                                                    Foreground="{DynamicResource SemiColorText0}" />
+                                                            </StackPanel>
+
+                                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                                <TextBlock Text="Miễn giảm:" Classes="SubLabel" />
+                                                                <TextBlock
+                                                                    Text="{Binding GeneralCreditFee.DiscountPerCredit, StringFormat='{}{0:N0} đ/TC'}"
+                                                                    Classes="SubValue" Foreground="{DynamicResource SemiColorSuccess}" />
+                                                            </StackPanel>
                                                         </StackPanel>
+                                                    </StackPanel>
 
-                                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                                            <TextBlock Text="Miễn giảm:" Classes="SubLabel" />
-                                                            <TextBlock
-                                                                Text="{Binding GeneralCreditFee.DiscountPerCredit, StringFormat='{}{0:N0} đ/TC'}"
-                                                                Classes="SubValue" Foreground="#34D399" />
+                                                    <StackPanel Spacing="4"
+                                                                IsVisible="{Binding MajorCreditFee, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                        <TextBlock Text="• Môn khối ngành / Chuyên ngành:"
+                                                                   FontWeight="SemiBold" Foreground="{DynamicResource SemiColorText1}" FontSize="12" />
+
+                                                        <StackPanel Orientation="Horizontal" Margin="12,0,0,0" Spacing="16">
+                                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                                <TextBlock Classes="SubLabel"
+                                                                           Text="Học phí gốc:"/>
+                                                                <TextBlock
+                                                                    Text="{Binding MajorCreditFee.FeePerCredit, StringFormat='{}{0:N0} đ/TC'}"
+                                                                    Classes="SubValue" Foreground="{DynamicResource SemiColorText0}" />
+                                                            </StackPanel>
+
+                                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                                <TextBlock Text="Miễn giảm:" 
+                                                                           Classes="SubLabel" />
+                                                                <TextBlock
+                                                                    Text="{Binding MajorCreditFee.DiscountPerCredit, StringFormat='{}{0:N0} đ/TC'}"
+                                                                    Classes="SubValue" 
+                                                                    Foreground="{DynamicResource SemiColorSuccess}" />
+                                                            </StackPanel>
                                                         </StackPanel>
                                                     </StackPanel>
                                                 </StackPanel>
-
-                                                <StackPanel Spacing="4"
-                                                            IsVisible="{Binding MajorCreditFee, Converter={x:Static ObjectConverters.IsNotNull}}">
-                                                    <TextBlock Text="• Môn khối ngành / Chuyên ngành:"
-                                                               FontWeight="SemiBold" Foreground="#E5E7EB" FontSize="12" />
-
-                                                    <StackPanel Orientation="Horizontal" Margin="12,0,0,0" Spacing="16">
-                                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                                            <TextBlock Text="Học phí gốc:" Classes="SubLabel" />
-                                                            <TextBlock
-                                                                Text="{Binding MajorCreditFee.FeePerCredit, StringFormat='{}{0:N0} đ/TC'}"
-                                                                Classes="SubValue" Foreground="#F9FAFB" />
-                                                        </StackPanel>
-
-                                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                                            <TextBlock Text="Miễn giảm:" Classes="SubLabel" />
-                                                            <TextBlock
-                                                                Text="{Binding MajorCreditFee.DiscountPerCredit, StringFormat='{}{0:N0} đ/TC'}"
-                                                                Classes="SubValue" Foreground="#34D399" />
-                                                        </StackPanel>
-                                                    </StackPanel>
-                                                </StackPanel>
-                                            </StackPanel>
+                                            </ToolTip>
                                         </ToolTip.Tip>
                                     </avalonia:MaterialIcon>
                                 </StackPanel>
@@ -460,13 +469,13 @@
                                            Classes="FeeValue" IsVisible="{Binding HasInsuranceFee}" />
 
                                 <TextBlock Grid.Row="2" Grid.Column="0" Text="Nợ học kỳ trước:"
-                                           Classes="FeeLabel" Foreground="#9B1C1C" IsVisible="{Binding HadOldDebt}" />
+                                           Classes="FeeLabel" Foreground="{DynamicResource RedColor}" IsVisible="{Binding HadOldDebt}" />
                                 <TextBlock Grid.Row="2" Grid.Column="1"
                                            Text="{Binding PreviousSemesterDebt, StringFormat='{}{0:N0} đ'}"
-                                           Classes="FeeValue" Foreground="#9B1C1C" FontWeight="Bold"
+                                           Classes="FeeValue" Foreground="{DynamicResource RedColor}" FontWeight="Bold"
                                            IsVisible="{Binding HadOldDebt}" />
 
-                                <Border Grid.Row="3" Grid.ColumnSpan="2" Height="1" Background="#F3F4F6" Margin="0,8" />
+                                <Border Grid.Row="3" Grid.ColumnSpan="2" Height="1" Background="{DynamicResource SemiColorBorder}" Margin="0,8" />
 
                                 <!-- // Thanh toán // -->
                                 <Grid Grid.Row="4" Grid.ColumnSpan="2" ColumnDefinitions="*, Auto, *, Auto">
@@ -476,22 +485,24 @@
                                                Classes="FeeValue" FontWeight="SemiBold" Margin="0,0,25,0" />
 
                                     <TextBlock Grid.Column="2" Text="Đã thanh toán:" Classes="FeeLabel"
-                                               Foreground="#047857" />
+                                               Foreground="{DynamicResource SemiColorSuccess}" />
                                     <TextBlock Grid.Column="3"
                                                Text="{Binding TotalPaidAmount, StringFormat='{}{0:N0} đ'}"
-                                               Classes="FeeValue" Foreground="#047857" FontWeight="SemiBold" />
+                                               Classes="FeeValue" Foreground="{DynamicResource SemiColorSuccess}" FontWeight="SemiBold" />
                                 </Grid>
 
-                                <StackPanel Grid.Row="5" Grid.ColumnSpan="2"
+                                <StackPanel Grid.Row="5" 
+                                            Grid.Column="0"
+                                            Grid.ColumnSpan="2"
                                             Orientation="Horizontal"
                                             HorizontalAlignment="Right"
                                             Margin="0,10,0,0"
                                             IsVisible="{Binding IsInDebt}">
                                     <TextBlock Text="Số tiền còn lại cần nộp: " VerticalAlignment="Center"
-                                               Foreground="#374151" FontSize="14" />
+                                               Foreground="{DynamicResource SemiColorText1}" FontSize="14" />
                                     <TextBlock Text="{Binding DebtAmount, StringFormat='{}{0:N0} đ'}"
                                                VerticalAlignment="Center"
-                                               Foreground="#B91C1C"
+                                               Foreground="{DynamicResource SemiColorDanger}"
                                                FontSize="18"
                                                FontWeight="Bold" />
                                 </StackPanel>
@@ -499,8 +510,8 @@
 
                             <!-- // An ủi quá hạn đóng học phí // -->
                             <Border Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3"
-                                    Background="#EFF6FF"
-                                    BorderBrush="#BFDBFE"
+                                    Background="{DynamicResource SemiColorPrimaryLightDefault}"
+                                    BorderBrush="{DynamicResource PrimaryColor}"
                                     BorderThickness="1"
                                     CornerRadius="6"
                                     Padding="12"
@@ -508,13 +519,13 @@
                                     IsVisible="{Binding IsNormalDebt}">
                                 <Grid ColumnDefinitions="Auto, *">
                                     <avalonia:MaterialIcon Grid.Column="0" Kind="LightbulbOnOutline" Width="18"
-                                                           Height="18" Foreground="#1D4ED8" VerticalAlignment="Top"
+                                                           Height="18" Foreground="{DynamicResource PrimaryColor}" VerticalAlignment="Top"
                                                            Margin="0,1,10,0" />
 
                                     <TextBlock Grid.Column="1"
                                                Text="Mình biết học phí là một áp lực rất lớn. Nếu đang gặp khó khăn chưa kịp đóng kỳ này, đừng lo một mình nha bạn ơi. Hãy liên hệ Phòng Tài chính để xin gia hạn kịp thời, tránh ảnh hưởng lịch thi nhé. Cố lên nè! 💙"
                                                FontSize="12"
-                                               Foreground="#1E40AF"
+                                               Foreground="{DynamicResource PrimaryColor}"
                                                TextWrapping="Wrap"
                                                LineHeight="18" />
                                 </Grid>
@@ -522,8 +533,8 @@
 
                             <!-- // Cảnh báo Nợ học phí // -->
                             <Border Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3"
-                                    Background="#FDF2F2"
-                                    BorderBrush="#F8D7DA"
+                                    Background="{DynamicResource SemiColorDangerLightDefault}"
+                                    BorderBrush="{DynamicResource RedColor}"
                                     BorderThickness="1"
                                     CornerRadius="6"
                                     Padding="12"
@@ -531,14 +542,14 @@
                                     IsVisible="{Binding IsCriticalDebt}">
                                 <Grid ColumnDefinitions="Auto, *">
                                     <avalonia:MaterialIcon Grid.Column="0" Kind="AlertOctagon" Width="18"
-                                                           Height="18" Foreground="#E02424" VerticalAlignment="Top"
+                                                           Height="18" Foreground="{DynamicResource RedColor}" VerticalAlignment="Top"
                                                            Margin="0,1,10,0" />
 
                                     <TextBlock Grid.Column="1"
                                                Text="Khoản nợ học phí từ học kỳ trước hiện đã rơi vào trạng thái quá hạn nguy hiểm. Theo quy chế học vụ, tình trạng này có thể dẫn đến đình chỉ hoặc buộc thôi học. Bạn hãy liên hệ gấp với Phòng Tài chính hoặc Phòng CTSV để được hỗ trợ phương án giải quyết sớm nhất nhé!"
                                                FontSize="12"
                                                FontWeight="Medium"
-                                               Foreground="#9B1C1C"
+                                               Foreground="{DynamicResource RedColor}"
                                                TextWrapping="Wrap"
                                                LineHeight="18" />
                                 </Grid>
@@ -557,6 +568,7 @@
                                        TextAlignment="Center"
                                        FontSize="{DynamicResource SemiFontSizeSmall}"
                                        FontWeight="Bold"
+                                       Foreground="{DynamicResource SemiColorWarningText}"
                                        TextWrapping="Wrap"
                                        Text="{Binding CalculationDate, 
                                             StringFormat={}Thông tin học phí sẽ được tính sau khi kết thúc thời gian đăng ký học phần (sau ngày: {0:dd/MM/yyyy}),
