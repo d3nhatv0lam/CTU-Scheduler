@@ -43,7 +43,7 @@
         </Style>
         <Style Selector="Button.outline-primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorBackground1}" />
         </Style>
 
         <Style Selector="Button.icon-btn">
@@ -63,7 +63,7 @@
             <Setter Property="Grid.ColumnSpan" Value="2" />
             <Setter Property="BorderThickness" Value="0,0,0,1" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
         </Style>
         <Style Selector="Border.content-area">
             <Setter Property="Grid.Row" Value="1" />
@@ -131,7 +131,7 @@
         <Grid x:Name="ResponsiveLayout"
               RowDefinitions="Auto, *"
               ColumnDefinitions="Auto, *"
-              Background="White"
+              Background="{DynamicResource SemiColorBackground1}"
               MaxWidth="{Binding $parent[ScrollViewer].Bounds.Width}">
 
             <Border Classes="sidebar">
@@ -345,7 +345,7 @@
                     <Border Grid.Row="2"
                             x:Name="ExportPanel"
                             Padding="24"
-                            Background="White"
+                            Background="{DynamicResource SemiColorBackground1}"
                             BorderThickness="0,1,0,0"
                             BorderBrush="{DynamicResource BorderColor}">
                         <Grid ColumnDefinitions="*, *">
