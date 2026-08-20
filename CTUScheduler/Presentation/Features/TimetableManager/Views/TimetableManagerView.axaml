@@ -36,7 +36,7 @@
         <Style Selector="TextBlock.SubTitle">
             <Setter Property="FontSize" Value="13" />
             <Setter Property="FontWeight" Value="Normal" />
-            <Setter Property="Foreground" Value="#a3a3a3" />
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText2}" />
         </Style>
 
         <Style Selector="TextBlock.expired-save">
@@ -61,7 +61,7 @@
         </Style>
 
         <Style Selector="Button.btnTopAction">
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
             <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="BorderThickness" Value="1" />
@@ -71,7 +71,7 @@
             <Setter Property="Cursor" Value="Hand" />
         </Style>
         <Style Selector="Button.btnTopAction:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource BaseBackgroundColor}" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorFill1}" />
             <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
             <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
         </Style>
@@ -101,7 +101,7 @@
         <Style Selector="Button.btnSecondary">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
             <Setter Property="Foreground" Value="{DynamicResource SecondaryBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBrush}" />
             <Setter Property="BorderThickness" Value="1" />
@@ -120,7 +120,7 @@
         <Style Selector="Button.btnDanger">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
             <Setter Property="Foreground" Value="{DynamicResource RedColor}" />
             <Setter Property="BorderBrush" Value="{DynamicResource RedColor}" />
             <Setter Property="BorderThickness" Value="1" />
@@ -139,7 +139,7 @@
         <Style Selector="Button.btnSuccess">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
             <Setter Property="Foreground" Value="#107c41" />
             <Setter Property="BorderBrush" Value="#107c41" />
             <Setter Property="BorderThickness" Value="1" />
@@ -156,7 +156,7 @@
         </Style>
 
         <Style Selector="Border.MainCard">
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
             <Setter Property="CornerRadius" Value="12" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
@@ -164,7 +164,7 @@
         </Style>
 
         <Style Selector="Border.TimetableCard">
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground2}" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="BorderThickness" Value="1" />
@@ -183,7 +183,7 @@
         </Style>
 
         <Style Selector="TextBlock.TotalCount">
-            <Setter Property="Foreground" Value="#a3a3a3" />
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText2}" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="FontSize" Value="13" />
         </Style>
@@ -196,7 +196,7 @@
 
         <Style Selector="TextBlock.CardMeta">
             <Setter Property="FontSize" Value="11" />
-            <Setter Property="Foreground" Value="#a3a3a3" />
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText2}" />
         </Style>
 
         <Style Selector="TextBlock.EmptyStateTitle">
@@ -209,7 +209,7 @@
         <Style Selector="TextBlock.EmptyStateSubtitle">
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="FontSize" Value="14" />
-            <Setter Property="Foreground" Value="#a3a3a3" />
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText2}" />
         </Style>
 
         <!-- small screen -->
@@ -369,9 +369,13 @@
                                Text="{Binding TimetableLayoutsCount, Mode=OneWay, StringFormat={}{0} Thời khóa biểu}" />
                 </Grid>
 
-                <ScrollViewer Grid.Row="1" Margin="16 0 16 16" HorizontalScrollBarVisibility="Disabled">
-                    <Panel>
+                <ScrollViewer Grid.Row="1" 
+                              Margin="16 0 16 16" 
+                              HorizontalScrollBarVisibility="Disabled" 
+                              ClipToBounds="False">
+                    <Panel ClipToBounds="False">
                         <ItemsRepeater x:Name="itmRptTables"
+                                       ClipToBounds="False"
                                        ItemsSource="{Binding TimetableLayouts, Mode=OneWay}">
                             <ItemsRepeater.Layout>
                                 <UniformGridLayout MinRowSpacing="24"
@@ -401,7 +405,7 @@
                                                        Text="{Binding LastUpdated.LocalDateTime, Mode=OneWay, StringFormat='Lần cuối cập nhật: \{0:dd/MM/yyyy HH:mm:ss\}'}" />
 
                                             <!-- Image Preview and Click area -->
-                                            <Grid Grid.Row="4" Margin="0 8 0 0">
+                                            <Panel Grid.Row="4" Margin="0 8 0 0">
                                                 <Border CornerRadius="6" ClipToBounds="True"
                                                         BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
                                                     <Viewbox Stretch="Uniform">
@@ -423,7 +427,7 @@
                                                         Command="{Binding Path=((viewModels:TimetableManagerViewModel)DataContext).ShowTimetableDetailsCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=views:TimetableManagerView}}"
                                                         CommandParameter="{Binding .}">
                                                 </Button>
-                                            </Grid>
+                                            </Panel>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
