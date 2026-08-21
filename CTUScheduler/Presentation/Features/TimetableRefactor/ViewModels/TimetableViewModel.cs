@@ -19,14 +19,21 @@ public class TimetableViewModel: ViewModelBase, IDisposable
     
     public ReadOnlyObservableCollection<ScheduleCellUi> ScheduleCells => _scheduleCells;
     public ReadOnlyObservableCollection<ScheduleGroupCellShared> UnscheduledCourses => _unscheduledCourses;
-    public bool HasItems { get; }
+    public bool HasItems { get; private set; }
     
     // private readonly ReadOnlyObservableCollection<ScheduleGroupCellShared> _courseList;
     // public ReadOnlyObservableCollection<ScheduleGroupCellShared> CourseList => _courseList;
 
     public TimetableViewModel(IObservableList<TimetableRenderItem> renderList)
     {
-        HasItems = renderList.Count > 0;
+        renderList.CountChanged
+            .StartWith(renderList.Count)
+            .Select(count => count > 0)
+            .DistinctUntilChanged()
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
+            .Subscribe(hasItems => HasItems = hasItems)
+            .DisposeWith(_disposables);
+        
         var renderStream = renderList.Connect();
         
         renderStream

@@ -9,13 +9,16 @@ using Avalonia.Threading;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
+using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
 using CTUScheduler.Presentation.Services.ControlRenderer;
+using CTUScheduler.Presentation.Services.Theme;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using DynamicData;
+using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
@@ -26,8 +29,7 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel,
 {
     private readonly CancellationTokenSource _cts = new();
     private readonly List<SectionChoice> _choices = [];
-    private bool _previewGenerationRequested;
-
+    private readonly HashSet<AppTheme> _requestedThemes = [];
     public IReadOnlyList<SectionChoice> Choices => _choices;
 
     [Reactive] private double _totalScore;
@@ -38,31 +40,20 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel,
     {
         get
         {
-            if (!_previewGenerationRequested)
+            var currentTheme = ThemeService.CurrentTheme;
+            if (TryGetCachedPreview(currentTheme, out var cachedBmp))
             {
-                _previewGenerationRequested = true;
-
-                try
-                {
-                    var token = _cts.Token;
-                    _ = Dispatcher.UIThread.InvokeAsync(async () =>
-                    {
-                        if (token.IsCancellationRequested) return;
-                        await GeneratePreviewAsync(token);
-                    }, DispatcherPriority.Background);
-                }
-                catch (ObjectDisposedException)
-                {
-                    // _cts đã bị Dispose, bỏ qua không đợi nữa
-                }
+                return cachedBmp;
             }
 
+            EnsurePreviewGeneratedForTheme(currentTheme);
+            
             return base.PreviewImage;
         }
         set => base.PreviewImage = value;
     }
 
-    private readonly object _visualizerLock = new();
+    private readonly Lock _visualizerLock = new();
 
     public override TimetableViewModel? VisualizerVM
     {
@@ -110,8 +101,9 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel,
         IExcelExporterService excelExporter,
         IControlRendererService controlRendererService,
         ITimetablePreviewRenderer timetablePreviewRenderer,
-        IUserInteractionService userInteractionService)
-        : base(excelExporter, controlRendererService, timetablePreviewRenderer, userInteractionService)
+        IUserInteractionService userInteractionService,
+        IThemeService themeService)
+        : base(excelExporter, controlRendererService, timetablePreviewRenderer, userInteractionService, themeService)
     {
         if (choices is null)
         {
@@ -124,6 +116,25 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel,
 
         SubjectsCount = _choices.Count;
         TotalCredits = _choices.Sum(x => x.Course.Credits);
+    }
+
+    private void EnsurePreviewGeneratedForTheme(AppTheme theme)
+    {
+        if (!_requestedThemes.Add(theme)) return;
+        try
+        {
+            var token = _cts.Token;
+
+            _ = Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                if (token.IsCancellationRequested) return;
+                await GenerateAndApplyPreviewAsync(token);
+            }, DispatcherPriority.Background);
+        }
+        catch (ObjectDisposedException)
+        {
+            // ignore
+        }
     }
 
     public override ScheduleBlueprint ToScheduleBlueprint()
@@ -145,6 +156,12 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel,
             LastUpdated = this.LastUpdated
         };
         return new ScheduleBlueprint(courses, profile);
+    }
+
+    protected override void OnThemeChanged(AppTheme newTheme)
+    {
+        base.OnThemeChanged(newTheme);
+        this.RaisePropertyChanged(nameof(PreviewImage));
     }
 
     protected override void Dispose(bool isDisposing)

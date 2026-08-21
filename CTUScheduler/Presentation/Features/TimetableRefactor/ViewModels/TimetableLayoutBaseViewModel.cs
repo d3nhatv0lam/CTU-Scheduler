@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -10,6 +12,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using Avalonia.Xaml.Interactions.DragAndDrop.Controls;
+using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Presentation.Base;
@@ -17,6 +21,7 @@ using CTUScheduler.Presentation.Features.TimetableRefactor.Interfaces;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Resources;
 using CTUScheduler.Presentation.Services.ControlRenderer;
+using CTUScheduler.Presentation.Services.Theme;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
@@ -26,10 +31,12 @@ namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 public abstract partial class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
 {
     private readonly CourseColorProvider _colorProvider = new();
+    private readonly Dictionary<AppTheme, Bitmap> _previewImagesCached  = new();
     protected readonly CompositeDisposable Disposables = new();
     protected readonly IExcelExporterService ExcelExporter;
     protected readonly ITimetablePreviewRenderer TimetablePreviewRenderer;
     protected readonly IUserInteractionService UserInteractionService;
+    protected readonly IThemeService ThemeService;
     private string _name = "New Schedule";
     private int _subjectCount = 0;
     private int _totalCredits = 0;
@@ -89,16 +96,7 @@ public abstract partial class TimetableLayoutBaseViewModel : ViewModelBase, IDis
     public virtual Bitmap? PreviewImage
     {
         get => _previewImage;
-        set
-        {
-            var oldImage = _previewImage;
-            if (oldImage == value) return;
-            this.RaiseAndSetIfChanged(ref _previewImage, value);
-            if (oldImage is not null)
-            {
-                Dispatcher.UIThread.Post(oldImage.Dispose, DispatcherPriority.Background);
-            }
-        }
+        set => this.RaiseAndSetIfChanged(ref _previewImage, value);
     }
 
     public ReactiveCommand<Unit, Unit> CopyToClipboardCommand { get; protected set; }
@@ -115,12 +113,14 @@ public abstract partial class TimetableLayoutBaseViewModel : ViewModelBase, IDis
         IExcelExporterService excelExporter,
         IControlRendererService controlRendererService,
         ITimetablePreviewRenderer timetablePreviewRenderer,
-        IUserInteractionService userInteractionService)
+        IUserInteractionService userInteractionService,
+        IThemeService themeService)
     {
         ExcelExporter = excelExporter;
         ControlRendererService = controlRendererService;
         TimetablePreviewRenderer = timetablePreviewRenderer;
         UserInteractionService = userInteractionService;
+        ThemeService = themeService;
 
         CopyToClipboardCommand = ReactiveCommand.CreateFromTask(async () =>
         {
@@ -169,19 +169,43 @@ public abstract partial class TimetableLayoutBaseViewModel : ViewModelBase, IDis
             )
             .ToProperty(this, nameof(IsEditing), initialValue: false, scheduler: RxSchedulers.MainThreadScheduler)
             .DisposeWith(Disposables);
+        
+        // theme
+        ThemeService.ThemeChanged
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
+            .Subscribe(OnThemeChanged)
+            .DisposeWith(Disposables);
     }
-
-    protected async Task GeneratePreviewAsync(CancellationToken cancellationToken)
+    
+    protected async Task<Bitmap?> GeneratePreviewAsync(CancellationToken cancellationToken)
     {
-        if (VisualizerVM is null) return;
-
+        if (VisualizerVM is null) return null;
         try
         {
-            PreviewImage = await TimetablePreviewRenderer.RenderPreviewAsync(VisualizerVM, cancellationToken);
+            return await TimetablePreviewRenderer.RenderPreviewAsync(VisualizerVM, cancellationToken);
         }
         catch (OperationCanceledException)
         {
-            // ignored
+            return null;
+        }
+    }
+
+    protected async Task GenerateAndApplyPreviewAsync(CancellationToken cancellationToken)
+    {
+        var targetTheme = ThemeService.CurrentTheme;
+        var bitmap = await GeneratePreviewAsync(cancellationToken);
+        
+        if (bitmap is not null && !cancellationToken.IsCancellationRequested)
+        {
+            if (_previewImagesCached.TryGetValue(targetTheme, out var oldImage))
+            {
+                oldImage.Dispose();
+            }
+            _previewImagesCached[targetTheme] = bitmap;
+            if (ThemeService.CurrentTheme == targetTheme)
+            {
+                PreviewImage = bitmap;
+            }
         }
     }
 
@@ -206,6 +230,44 @@ public abstract partial class TimetableLayoutBaseViewModel : ViewModelBase, IDis
 
     public abstract ScheduleBlueprint ToScheduleBlueprint();
 
+    protected virtual void OnThemeChanged(AppTheme newTheme)
+    {
+        if (_previewImagesCached.TryGetValue(newTheme, out var image))
+        {
+            PreviewImage = image;
+        }
+    }
+
+    protected void DisposePreviewImages()
+    {
+        if (_previewImagesCached.Count == 0 && _previewImage is null) return;
+
+        _previewImage = null;
+        try
+        {
+            foreach (var (_, image) in _previewImagesCached)
+            {
+                image?.Dispose();
+            }
+        }
+        catch (ObjectDisposedException)
+        {
+            // ignore   
+        }
+        finally
+        {
+            _previewImagesCached.Clear();
+        }
+    }
+
+    protected bool HasCachedPreview(AppTheme theme)
+    {
+        return _previewImagesCached.ContainsKey(theme);
+    }
+    
+    protected bool TryGetCachedPreview(AppTheme theme, [NotNullWhen(true)] out Bitmap? bitmap) 
+        => _previewImagesCached.TryGetValue(theme, out bitmap);
+    
     public void Dispose()
     {
         Dispose(true);
@@ -218,14 +280,7 @@ public abstract partial class TimetableLayoutBaseViewModel : ViewModelBase, IDis
 
         if (isDisposing)
         {
-            // gọi trực tiếp _previewImage để tránh gọi lazy property tự khởi tạo bitmap sau đó dispose
-            if (_previewImage is not null)
-            {
-                var img = _previewImage;
-                _previewImage = null;
-                Dispatcher.UIThread.Post(img.Dispose, DispatcherPriority.Background);
-            }
-
+            DisposePreviewImages();
             Disposables.Dispose();
         }
 
