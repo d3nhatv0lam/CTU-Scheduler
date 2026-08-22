@@ -11,10 +11,10 @@ namespace CTUScheduler.Presentation.Services.ControlRenderer;
 public class TimetablePreviewRenderer : ITimetablePreviewRenderer
 {
     private readonly IControlRendererService _controlRendererService;
-
+    
     private const int CachedViewWidth = 600;
     private const int CachedViewHeight = 375;
-    private const double CachedScale = 1.5D;
+    private const double CachedScale = 1.2D; 
 
     public TimetablePreviewRenderer(IControlRendererService controlRendererService)
     {
