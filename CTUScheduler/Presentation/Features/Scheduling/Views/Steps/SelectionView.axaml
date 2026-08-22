@@ -62,7 +62,7 @@
 		<Style Selector="TextBlock.CardDescription">
 			<Setter Property="FontWeight" Value="Normal"/>
 			<Setter Property="FontSize" Value="14"/>
-			<Setter Property="Foreground" Value="#616161"/>
+			<Setter Property="Foreground" Value="{DynamicResource SubTextColor}"/>
 			<Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="TextAlignment" Value="Center"/>

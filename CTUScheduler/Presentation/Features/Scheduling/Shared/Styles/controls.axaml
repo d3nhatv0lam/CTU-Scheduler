@@ -1,4 +1,4 @@
-﻿<Styles xmlns="https://github.com/avaloniaui"
+<Styles xmlns="https://github.com/avaloniaui"
         xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     
@@ -12,7 +12,7 @@
     <Style Selector="Button.BtnRemove">
         <Setter Property="Height" Value="20"/>
         <Setter Property="Width" Value="20"/>
-        <Setter Property="Background" Value="red"/>
+        <Setter Property="Background" Value="{DynamicResource RedColor}"/>
         <Setter Property="Padding" Value="2"/>
     </Style>
     

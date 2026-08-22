@@ -42,7 +42,7 @@
         </Style>
 
         <Style Selector="Border.Card">
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
             <Setter Property="CornerRadius" Value="12" />
             <Setter Property="Padding" Value="12" />
             <Setter Property="BoxShadow" Value="0 4 15 0 #0D000000" />
@@ -73,7 +73,7 @@
         </Style>
 
         <Style Selector="Border.CourseItem">
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="BorderThickness" Value="1" />
@@ -118,11 +118,11 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="CornerRadius" Value="6" />
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
         </Style>
 
         <Style Selector="Border.TimetableCard">
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="BorderThickness" Value="1" />
@@ -208,7 +208,7 @@
                         <TextBlock Text="Tiêu chí ưu tiên"
                                    FontSize="11"
                                    FontWeight="Bold"
-                                   Background="White"
+                                   Background="{DynamicResource SemiColorBackground1}"
                                    Padding="4 0"
                                    Margin="10 -7 0 0"
                                    VerticalAlignment="Top"
