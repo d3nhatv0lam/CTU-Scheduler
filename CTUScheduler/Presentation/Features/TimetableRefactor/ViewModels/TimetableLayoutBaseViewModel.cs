@@ -242,21 +242,23 @@ public abstract partial class TimetableLayoutBaseViewModel : ViewModelBase, IDis
     {
         if (_previewImagesCached.Count == 0 && _previewImage is null) return;
 
-        _previewImage = null;
-        try
+        PreviewImage = null;
+        var imagesToDispose = _previewImagesCached.Values.ToList();
+        _previewImagesCached.Clear();
+        
+        if (imagesToDispose.Count > 0)
         {
-            foreach (var (_, image) in _previewImagesCached)
+            Dispatcher.UIThread.Post(() =>
             {
-                image?.Dispose();
-            }
-        }
-        catch (ObjectDisposedException)
-        {
-            // ignore   
-        }
-        finally
-        {
-            _previewImagesCached.Clear();
+                foreach (var img in imagesToDispose)
+                {
+                    try
+                    {
+                        img.Dispose();
+                    }
+                    catch (ObjectDisposedException) { }
+                }
+            }, DispatcherPriority.Background);
         }
     }
 
