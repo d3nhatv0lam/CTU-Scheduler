@@ -11,7 +11,7 @@ using ReactiveUI.SourceGenerators;
 namespace CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components;
 
 /// <summary>
-/// Hỗ trợ đóng mở dropdown, tóm tắt trạng thái và sinh ra danh sách AvoidanceSlot cho thuật toán.
+/// Quản lý bộ lọc tránh học ngày/buổi
 /// </summary>
 public partial class AvoidanceFilterViewModel : ReactiveObject, IDisposable
 {
@@ -19,25 +19,21 @@ public partial class AvoidanceFilterViewModel : ReactiveObject, IDisposable
 
     public IReadOnlyList<DayAvoidanceItemViewModel> Days { get; }
 
-    [Reactive] private bool _isExpanded;
-
     [ObservableAsProperty] private bool _hasActiveFilters;
     [ObservableAsProperty] private string _summaryText = "Không áp dụng";
-    [ObservableAsProperty] private int _activeCount;
 
-    public ReactiveCommand<Unit, Unit> ToggleExpandCommand { get; }
     public ReactiveCommand<Unit, Unit> ClearAllCommand { get; }
 
     public AvoidanceFilterViewModel()
     {
         Days = new List<DayAvoidanceItemViewModel>
         {
-            new(DayOfWeek.Monday, "T2", "Thứ Hai"),
-            new(DayOfWeek.Tuesday, "T3", "Thứ Ba"),
+            new(DayOfWeek.Monday,    "T2", "Thứ Hai"),
+            new(DayOfWeek.Tuesday,   "T3", "Thứ Ba"),
             new(DayOfWeek.Wednesday, "T4", "Thứ Tư"),
-            new(DayOfWeek.Thursday, "T5", "Thứ Năm"),
-            new(DayOfWeek.Friday, "T6", "Thứ Sáu"),
-            new(DayOfWeek.Saturday, "T7", "Thứ Bảy")
+            new(DayOfWeek.Thursday,  "T5", "Thứ Năm"),
+            new(DayOfWeek.Friday,    "T6", "Thứ Sáu"),
+            new(DayOfWeek.Saturday,  "T7", "Thứ Bảy")
         };
 
         // Quan sát thay đổi từ bất kỳ ngày nào
@@ -50,20 +46,10 @@ public partial class AvoidanceFilterViewModel : ReactiveObject, IDisposable
             .Select(_ => Days.Any(d => d.IsAvoided))
             .ToProperty(this, nameof(HasActiveFilters), initialValue: false);
 
-        // ActiveCount
-        _activeCountHelper = changesObservable
-            .Select(_ => Days.Count(d => d.IsAvoided))
-            .ToProperty(this, nameof(ActiveCount), initialValue: 0);
-
         // SummaryText
         _summaryTextHelper = changesObservable
             .Select(_ => BuildSummary())
             .ToProperty(this, nameof(SummaryText), initialValue: "Không áp dụng");
-
-        ToggleExpandCommand = ReactiveCommand.Create(() =>
-        {
-            IsExpanded = !IsExpanded;
-        });
 
         ClearAllCommand = ReactiveCommand.Create(ClearAll);
     }
