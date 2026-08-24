@@ -122,7 +122,7 @@
         </Style>
     </rxui:ReactiveUserControl.Styles>
 
-    <Grid ColumnDefinitions="* 10 0.5*" Margin="10">
+    <Grid ColumnDefinitions="* 10 0.5*" Margin="10 0">
 
         <Border Grid.Column="0" Classes="box-container">
             <Border CornerRadius="10" BorderThickness="1" BorderBrush="{DynamicResource BorderColor}" Background="{DynamicResource SemiColorBackground1}">

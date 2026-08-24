@@ -177,7 +177,7 @@
         </Style>
     </rxui:ReactiveUserControl.Styles>
 
-    <Grid ColumnDefinitions="0.22* 16 0.5*" Margin="10">
+    <Grid ColumnDefinitions="0.22* 16 0.5*" Margin="10 0">
         <Border Grid.Column="0" Padding="0 3">
             <Border Classes="CornerBorder">
                 <Grid RowDefinitions="auto auto auto *" ClipToBounds="True">
