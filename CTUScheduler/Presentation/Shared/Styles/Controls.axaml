@@ -8,9 +8,9 @@
 
     <!-- Border -->
     <Style Selector="Border.CornerBorder">
-        <Setter Property="BorderBrush" Value="#e3e3e3" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Background" Value="White" />
+        <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
         <Setter Property="CornerRadius" Value="10" />
     </Style>
 

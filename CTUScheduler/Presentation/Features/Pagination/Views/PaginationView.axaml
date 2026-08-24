@@ -14,7 +14,7 @@
 
     <rxui:ReactiveUserControl.Styles>
         <Style Selector="Border.PaginationContainer">
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="8" />

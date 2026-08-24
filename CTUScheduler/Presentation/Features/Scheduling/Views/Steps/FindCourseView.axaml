@@ -74,7 +74,7 @@
             <Setter Property="Padding" Value="0 5 0 5" />
         </Style>
         <Style Selector="Border.SelectedColumn">
-            <Setter Property="Background" Value="#F2FBFF" />
+            <Setter Property="Background" Value="{DynamicResource SelectedColumnBg}" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="10" />
@@ -85,10 +85,10 @@
             <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Margin" Value="0 0 0 10" />
             <Setter Property="ClipToBounds" Value="True" />
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
         </Style>
         <Style Selector="Border.schedule-badge">
-            <Setter Property="Background" Value="#EEF2FB" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorFill1}" />
             <Setter Property="CornerRadius" Value="4" />
             <Setter Property="Padding" Value="8 4" />
             <Setter Property="Margin" Value="0 0 0 4" />
@@ -103,7 +103,7 @@
             <Setter Property="ClipToBounds" Value="True" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="ColumnHeaderHeight" Value="40" />
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
         </Style>
         <Style Selector="DataGrid TextBlock">
             <Setter Property="HorizontalAlignment" Value="Center" />
@@ -113,7 +113,7 @@
         </Style>
 
         <Style Selector="Border.PopupCard">
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="5" />
@@ -122,10 +122,10 @@
         </Style>
     </rxui:ReactiveUserControl.Styles>
 
-    <Grid ColumnDefinitions="* 10 0.5*" Margin="10">
+    <Grid ColumnDefinitions="* 10 0.5*" Margin="10 0">
 
         <Border Grid.Column="0" Classes="box-container">
-            <Border Classes="CornerBorder" Background="White">
+            <Border CornerRadius="10" BorderThickness="1" BorderBrush="{DynamicResource BorderColor}" Background="{DynamicResource SemiColorBackground1}">
                 <Grid RowDefinitions="Auto, 1, Auto, Auto, Auto, *" ClipToBounds="True">
 
                     <TextBlock Grid.Row="0"
