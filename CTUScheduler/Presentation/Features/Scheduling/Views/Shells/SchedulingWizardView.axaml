@@ -59,18 +59,18 @@
                                 x:Name="vmRounter" />
         
         <!-- Button navigate -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0 16 0 0">
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0 8 0 0">
             <Button x:Name="btnBack"
                     Classes="NavBtn BtnBack"
                     Content="Quay lại"
                     Command="{Binding NavigateBackCommand}" />
                     
-            <Grid Background="Transparent" Cursor="No">
+            <Panel Background="Transparent" Cursor="No">
                 <Button x:Name="btnNext"
                         Classes="NavBtn BtnNext"
                         Content="{Binding BtnNextContent}"
                         Command="{Binding NavigateNextCommand}" />
-            </Grid>
+            </Panel>
         </StackPanel>
     </Grid>
 
