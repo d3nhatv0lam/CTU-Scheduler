@@ -6,6 +6,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.AppServices.Services.TimetableGeneratorService;
 using CTUScheduler.Core.Interfaces;
@@ -160,9 +161,9 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                             }));
                     }))
             .DisposeWith(_disposables);
-        
+
         _hasNoResultsHelper = GenerateTimeTableCommand.Select(x => x.Count == 0)
-            .ToProperty(this, nameof(HasNoResults), scheduler: RxSchedulers.MainThreadScheduler, initialValue:false)
+            .ToProperty(this, nameof(HasNoResults), scheduler: RxSchedulers.MainThreadScheduler, initialValue: false)
             .DisposeWith(_disposables);
 
         GenerateTimeTableCommand

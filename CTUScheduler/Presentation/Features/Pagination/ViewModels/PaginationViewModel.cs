@@ -199,19 +199,12 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationVi
 
         if (isDisposing)
         {
-            Disposables.Dispose();
             if (_ownsData)
             {
-                foreach (var item in DataList.Items)
-                {
-                    if (item is IDisposable disposable)
-                    {
-                        disposable.Dispose();
-                    }
-                }
-
+                DataList.Clear();
                 DataList.Dispose();
             }
+            Disposables.Dispose();
         }
 
         _isDisposed = true;
