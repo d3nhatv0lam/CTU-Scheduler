@@ -11,6 +11,10 @@
   </PropertyGroup>
     
   <ItemGroup>
+    <InternalsVisibleTo Include="CTUScheduler.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
 	<AvaloniaResource Include="Presentation\Resources\**" />
   </ItemGroup>
