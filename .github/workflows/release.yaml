@@ -1,0 +1,112 @@
+﻿name: Multi-Platform Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          # 1. Windows: Tạo ctu-scheduler-Setup.exe
+          - os: windows-latest
+            rid: win-x64
+            main_exe: CTUScheduler.Desktop.exe
+            icon: CTUScheduler/Assets/Logo/icon.ico
+          
+          # 2. Linux: Tạo ctu-scheduler-...-linux-x64.AppImage
+          - os: ubuntu-latest
+            rid: linux-x64
+            main_exe: CTUScheduler.Desktop
+            icon: CTUScheduler/Assets/Logo/icon.png
+
+          # 3. macOS: Tạo ctu-scheduler-...-osx.pkg
+          - os: macos-latest
+            rid: osx-x64
+            main_exe: CTUScheduler.Desktop
+            icon: CTUScheduler/Assets/Logo/icon.icns
+
+    runs-on: ${{ matrix.os }}
+
+    # Dùng bash đồng nhất trên cả Windows, Linux và macOS
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install Velopack CLI
+        run: dotnet tool install -g vpk
+
+      # Chuẩn hóa Version: Bỏ chữ 'v' (v1.0.0 -> 1.0.0)
+      - name: Extract Clean SemVer
+        id: version
+        run: |
+          REF="${{ github.ref_name }}"
+          VER="${REF#v}"
+          # Nếu chạy thủ công từ nhánh không phải tag phiên bản, mặc định là 1.0.0
+          if [[ -z "$VER" || "$REF" == "$VER" && ! "$VER" =~ ^[0-9] ]]; then
+            VER="1.0.0"
+          fi
+          echo "Releasing SemVer: $VER"
+          echo "SEMVER=$VER" >> $GITHUB_OUTPUT
+
+      # Tải release cũ về để tạo bản vá Delta (bỏ qua lỗi nếu là lần đầu tiên chạy)
+      - name: Download Previous Releases
+        continue-on-error: true
+        run: |
+          vpk download github \
+            --repoUrl "${{ github.server_url }}/${{ github.repository }}" \
+            --token "${{ secrets.GITHUB_TOKEN }}" \
+            --outputDir "./Releases"
+
+      # Cài đặt FUSE trên Linux để appimagetool hoạt động
+      - name: Install Linux Dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libfuse2
+
+      # Publish .NET app
+      - name: Publish App
+        run: |
+          dotnet publish CTUScheduler.Desktop/CTUScheduler.Desktop.csproj \
+            -c Release \
+            -r ${{ matrix.rid }} \
+            --self-contained true \
+            -p:Version=${{ steps.version.outputs.SEMVER }} \
+            -o ./publish
+
+      # Đóng gói bằng Velopack
+      - name: Package with Velopack
+        run: |
+          vpk pack \
+            --packId "ctu-scheduler" \
+            --packVersion "${{ steps.version.outputs.SEMVER }}" \
+            --packDir "./publish" \
+            --mainExe "${{ matrix.main_exe }}" \
+            --icon "${{ matrix.icon }}" \
+            --outputDir "./Releases"
+
+      # Upload bản cập nhật và file cài đặt lên GitHub Release
+      - name: Upload Release
+        run: |
+          vpk upload github \
+            --repoUrl "${{ github.server_url }}/${{ github.repository }}" \
+            --token "${{ secrets.GITHUB_TOKEN }}" \
+            --publish \
+            --merge \
+            --outputDir "./Releases" \
+            --tag "v${{ steps.version.outputs.SEMVER }}"
