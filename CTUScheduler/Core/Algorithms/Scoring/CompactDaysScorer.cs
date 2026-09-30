@@ -9,7 +9,7 @@ namespace CTUScheduler.Core.Algorithms.Scoring;
 /// <summary>
 /// Chấm điểm dựa trên mật độ ngày học. Càng ít ngày học thì điểm càng cao.
 /// Thang điểm: 0.0 -> 1.0
-/// Công thức: 1.0 - (Số ngày có lịch / 7)
+/// Công thức: (MaxDay - NDay / MaxDay - MinDay)
 /// </summary>
 public class CompactDaysScorer : IScheduleScorer
 {
@@ -30,11 +30,8 @@ public class CompactDaysScorer : IScheduleScorer
             .Select(d => d.AttendingDay)
             .Distinct()
             .Count();
-
-        if (busyDays == 0) return 0;
-
-        // Công thức: 1.0 - (Số ngày học / 7)
-        double score = 1.0 - ((double)busyDays / 7.0);
+        
+        double score = (7.0 - busyDays) / 6.0;
         
         return Math.Clamp(score, ScoringConstants.MinScore, ScoringConstants.MaxScore);
     }
