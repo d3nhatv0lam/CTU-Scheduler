@@ -16,6 +16,7 @@
     xmlns:timetableModel="clr-namespace:CTUScheduler.Presentation.Shared.Models"
     xmlns:paginationViews="clr-namespace:CTUScheduler.Presentation.Features.Pagination.Views"
     xmlns:schedulingModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Models"
+    xmlns:components="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Views.Components"
     x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.Steps.TimetableSchedulerView">
 
     <rxui:ReactiveUserControl.Styles>
@@ -180,7 +181,7 @@
     <Grid ColumnDefinitions="0.22* 0.015* 0.5*">
         <Border Grid.Column="0" Padding="0 3">
             <Border Classes="CornerBorder">
-                <Grid RowDefinitions="auto auto auto *" ClipToBounds="True">
+                <Grid RowDefinitions="auto auto auto auto *" ClipToBounds="True">
                     <TextBlock
                         Grid.Row="0"
                         Classes="Title"
@@ -216,9 +217,15 @@
                                    Foreground="{StaticResource PrimaryBrush}" />
                     </Grid>
 
-                    <Border Grid.Row="2" Classes="Separator" />
+                    <!-- Tránh học ngày / buổi -->
+                    <components:AvoidanceFilterView
+                        Grid.Row="2"
+                        Margin="12 0 12 4"
+                        DataContext="{Binding AvoidanceFilterVM}" />
 
-                    <Border Grid.Row="3"
+                    <Border Grid.Row="3" Classes="Separator" />
+
+                    <Border Grid.Row="4"
                             Padding="8 4"
                             ClipToBounds="True">
                         <ScrollViewer

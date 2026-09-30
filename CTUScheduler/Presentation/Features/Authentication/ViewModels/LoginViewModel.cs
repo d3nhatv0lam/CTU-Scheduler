@@ -125,7 +125,7 @@ namespace CTUScheduler.Presentation.Features.Authentication.ViewModels
                         Expiration = TimeSpan.FromSeconds(30),
                     };
                     _userInteractionService.Notification.Light.Error(
-                        title: "Không tại được kế hoạch giảng dạy!",
+                        title: "Không tải được kế hoạch giảng dạy!",
                         content: "Bạn nên bật VPN và khởi động lại!",
                         options: options);
                 })
