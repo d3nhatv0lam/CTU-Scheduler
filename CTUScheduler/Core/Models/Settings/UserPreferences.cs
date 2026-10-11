@@ -11,7 +11,8 @@ public record UserPreferences
 
 public record AppearanceSettings
 {
-    public bool IsDarkMode { get; init; } = false;
+    // public bool IsDarkMode { get; init; } = false;
+    public AppTheme Theme { get; init; } = AppTheme.System;
     // public string LanguageCode { get; init; } = "vi-VN";
 }
 
@@ -33,5 +34,3 @@ public record BehaviorSettings
     public bool RunOnStartup { get; init; } = false;
     public bool MinimizeToTray { get; init; } = false;
 }
-
-
