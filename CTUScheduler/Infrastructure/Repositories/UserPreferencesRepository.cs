@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Helpers.Json;
@@ -21,6 +22,7 @@ public class UserPreferencesRepository : IUserPreferencesRepository
     {
         WriteIndented = true,
         IgnoreReadOnlyFields = true,
+        Converters = { new AppThemeJsonConverter() }
     };
 
     public UserPreferencesRepository(IOptions<UserPreferencesOptions> options,
@@ -72,7 +74,8 @@ public class UserPreferencesRepository : IUserPreferencesRepository
             }
 
             var preferences = await JsonHelper
-                .DeserializeFromFileAsync<UserPreferences>(filePath, token: cancellationToken)
+                .DeserializeFromFileAsync<UserPreferences>(filePath, options: _jsonSerializerOptions,
+                    token: cancellationToken)
                 .ConfigureAwait(false);
 
             if (preferences is null)

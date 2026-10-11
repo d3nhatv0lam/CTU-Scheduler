@@ -53,8 +53,8 @@
         ClipToBounds="True"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch"
-        Background="{StaticResource PrimaryColor}"
-        CornerRadius="{StaticResource SemiBorderRadiusLarge}">
+        Background="{DynamicResource PrimaryColor}"
+        CornerRadius="{DynamicResource SemiBorderRadiusLarge}">
 
         <Border.Transitions>
             <Transitions>

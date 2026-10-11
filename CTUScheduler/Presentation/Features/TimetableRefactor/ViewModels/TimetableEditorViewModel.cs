@@ -5,16 +5,19 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using System.Threading;
 using Avalonia.Threading;
 using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Academic.Curriculum.Schedule;
+using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Adapters;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Models;
 using CTUScheduler.Presentation.Services.ControlRenderer;
+using CTUScheduler.Presentation.Services.Theme;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using DynamicData;
 using ReactiveUI;
@@ -29,7 +32,7 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
     private readonly IObservableList<TimetableRenderItem> _sharedCourse;
 
     public ScheduleProfile ScheduleProfile => _scheduleProfile;
-    
+
 
     public TimetableEditorViewModel(
         ScheduleProfile scheduleProfile,
@@ -37,8 +40,9 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
         IExcelExporterService excelExporter,
         IControlRendererService controlRendererService,
         ITimetablePreviewRenderer timetablePreviewRenderer,
-        IUserInteractionService userInteractionService) : base(excelExporter, controlRendererService,
-        timetablePreviewRenderer, userInteractionService)
+        IUserInteractionService userInteractionService,
+        IThemeService themeService) : base(excelExporter, controlRendererService,
+        timetablePreviewRenderer, userInteractionService, themeService)
     {
         ArgumentNullException.ThrowIfNull(scheduleProfile);
 
@@ -103,7 +107,7 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
             .Take(1)
             .Throttle(TimeSpan.FromMilliseconds(100))
             .ObserveOn(RxSchedulers.MainThreadScheduler)
-            .Select(_ => Observable.FromAsync(GeneratePreviewAsync))
+            .Select(_ => Observable.FromAsync(GenerateAndApplyPreviewAsync))
             .Switch()
             .Subscribe()
             .DisposeWith(Disposables);
@@ -113,7 +117,11 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
             .Skip(1)
             .Throttle(TimeSpan.FromSeconds(1))
             .ObserveOn(RxSchedulers.MainThreadScheduler)
-            .Select(_ => Observable.FromAsync(GeneratePreviewAsync))
+            .Select(_ => Observable.FromAsync(async ct =>
+            {
+                DisposePreviewImages();
+                await GenerateAndApplyPreviewAsync(ct);
+            }))
             .Switch()
             .Subscribe()
             .DisposeWith(Disposables);
@@ -146,6 +154,17 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
         }
 
         return new ScheduleBlueprint(courses, _scheduleProfile);
+    }
+
+    protected override void OnThemeChanged(AppTheme newTheme)
+    {
+        base.OnThemeChanged(newTheme);
+
+        if (!HasCachedPreview(newTheme))
+        {
+            _ = GenerateAndApplyPreviewAsync(CancellationToken.None);
+        }
+        
     }
 
     protected override void Dispose(bool isDisposing)
