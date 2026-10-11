@@ -5,9 +5,12 @@ using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Infrastructure.Repositories;
 using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Infrastructure.Services.TeachingPlan;
+using CTUScheduler.Infrastructure.Services.Update;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Clients;
 using Microsoft.Extensions.DependencyInjection;
+using Velopack;
+using Velopack.Sources;
 
 namespace CTUScheduler.Infrastructure.Extensions;
 
@@ -27,7 +30,7 @@ public static class ServiceCollectionExtensions
         {
             options.FilePath = AppConstants.Paths.UserPreferencesFilePath;
         }).AddSingleton<IUserPreferencesRepository, UserPreferencesRepository>();
-        
+
         // --- Teaching Plan ---
         services.AddSingleton<ITeachingPlanPdfParser, TeachingPlanPdfParser>();
         services.AddHttpClient<ITeachingPlanPdfService, TeachingPlanPdfService>();
@@ -40,14 +43,18 @@ public static class ServiceCollectionExtensions
 
         services.AddHttpClient<IAuthClient, AuthClient>()
             .AddHttpMessageHandler<CtuLegacyCookieHandler>();
-        
+
         services.AddHttpClient<CourseRegistrationClient>()
             .AddHttpMessageHandler<CtuSessionRecoveryHandler>()
             .AddHttpMessageHandler<CtuJwtAuthHandler>();
         services.AddTransient<IRegistrationRulesClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());
         services.AddTransient<ICourseCatalogClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());
         services.AddTransient<ICourseRegistrationClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());
-        
+
+        //updater
+        services.AddSingleton<UpdateManager>(sp =>
+            new UpdateManager(new GithubSource(AppConstants.Urls.GithubRepo, string.Empty, false)));
+        services.AddSingleton<IUpdateService, VelopackUpdateService>();
 
         return services;
     }

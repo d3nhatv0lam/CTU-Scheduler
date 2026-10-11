@@ -5,12 +5,25 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.UserSettingService;
 using CTUScheduler.Core.Models.Settings;
+using CTUScheduler.Core.Models.Update;
 using CTUScheduler.Presentation.Base;
+using CTUScheduler.Presentation.Features.Authentication.ViewModels;
+using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
+using CTUScheduler.Presentation.Features.Updater.Models;
+using CTUScheduler.Presentation.Features.Updater.ViewModels;
 using CTUScheduler.Presentation.Services.ApplicationLifetime;
+using CTUScheduler.Presentation.Services.Factories;
+using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
+using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
+using CTUScheduler.Presentation.Shared.Dialogs.ViewModels;
 using CTUScheduler.Presentation.Shared.Interfaces;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
@@ -23,6 +36,11 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     private readonly IUserSettingService _userSettingService;
     private readonly IAppLifecycleService _appLifetime;
     private readonly CancellationTokenSource _localCts;
+    private readonly IUserInteractionService _userInteractionService;
+    private readonly IViewModelFactory _viewModelFactory;
+    private readonly IUpdateService _updateService;
+    private readonly ILogger<SplashScreenViewModel> _logger;
+
 
     private bool _isDisposed;
 
@@ -52,11 +70,20 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     public SplashScreenViewModel(
         IConnectivityService connectivityService,
         IUserSettingService userSettingService,
-        IAppLifecycleService appLifetime)
+        IAppLifecycleService appLifetime,
+        IUpdateService updateService,
+        IUserInteractionService userInteractionService,
+        IViewModelFactory viewModelFactory,
+        ILogger<SplashScreenViewModel> logger)
     {
         _connectivityService = connectivityService;
         _userSettingService = userSettingService;
         _appLifetime = appLifetime;
+        _updateService = updateService;
+        _logger = logger;
+
+        _userInteractionService = userInteractionService;
+        _viewModelFactory = viewModelFactory;
 
         _localCts = CancellationTokenSource.CreateLinkedTokenSource(appLifetime.ApplicationStopping);
 
@@ -78,10 +105,42 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
                 ShowMessage("Mạng đã được kết nối!",
                     TimeSpan.FromSeconds(1.5)))
             .SelectMany(_ =>
+                ShowMessage("Đang kiểm tra phiên bản",
+                    delay: TimeSpan.FromSeconds(1)))
+            .SelectMany(_ => Observable.FromAsync(CheckApplicationUpdates))
+            .SelectMany(updateOutcome =>
+            {
+                if (updateOutcome == UpdateOutcome.Updated)
+                {
+                    return ShowMessage("Cập nhật ứng dụng thành công!\nĐang Khởi động lại...",
+                        delay: TimeSpan.FromSeconds(5));
+                }
+
+                if (updateOutcome == UpdateOutcome.UpToDate)
+                {
+                    return ShowMessage("Kiểm tra phiên bản thành công!\nKhông có phiên bản mới",
+                        delay: TimeSpan.FromSeconds(1));
+                }
+
+                if (updateOutcome == UpdateOutcome.Failed)
+                {
+                    return ShowMessage("Có lỗi xảy ra trong quá trình cập nhật!\nSử dụng phiên bản hiện tại",
+                        delay: TimeSpan.FromSeconds(2));
+                }
+
+                if (updateOutcome is UpdateOutcome.Closed or UpdateOutcome.Ignored or UpdateOutcome.Cancelled)
+                {
+                    return ShowMessage("Cập nhật ứng dụng bị hủy bỏ\nSử dụng phiên bản hiện tại",
+                        delay: TimeSpan.FromSeconds(2));
+                }
+
+                return Observable.Return(Unit.Default);
+            })
+            .SelectMany(_ =>
                 ShowMessage("Đang kiểm tra dữ liệu",
                     TimeSpan.FromSeconds(1.5)))
             .ObserveOn(RxSchedulers.TaskpoolScheduler)
-            .SelectMany(_ => InitializeServices())
+            .SelectMany(_ => InitializeUserServices())
             .SelectMany(_ =>
                 ShowMessage("Kiểm tra dữ liệu thành công!",
                     TimeSpan.FromSeconds(1.5)))
@@ -92,6 +151,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
                 ex =>
                 {
                     if (ex is OperationCanceledException) return;
+                    _logger.LogError(ex, "Error when running SpashScreen");
                     Message = "Lỗi Khi khởi động, Hãy mở lại app!, tự động tắt sau 30s";
                     RxSchedulers.MainThreadScheduler.Schedule(TimeSpan.FromSeconds(30), CloseApplication);
                 })
@@ -108,9 +168,35 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
             .Delay(delay ?? TimeSpan.Zero, RxSchedulers.MainThreadScheduler);
     }
 
-    private IObservable<Unit> InitializeServices()
+    private IObservable<Unit> InitializeUserServices()
     {
         return Observable.FromAsync(async ct => { await _userSettingService.InitializeAsync(ct); });
+    }
+
+    private async Task<UpdateOutcome> CheckApplicationUpdates(CancellationToken cancellationToken)
+    {
+        var checkUpdate = await _updateService.CheckForUpdatesAsync(cancellationToken);
+
+        // if (!checkUpdate.IsUpdateAvailable)
+        //     return UpdateOutcome.UpToDate;
+
+        var updateViewModel = _viewModelFactory.Create<UpdateViewModel>();
+        updateViewModel.Initialize(checkUpdate);
+
+        var options = new WindowDialogOptions
+        {
+            ShowInTaskBar = true,
+            Buttons = DialogButtons.None,
+            SizeMode = DialogSizeMode.Content,
+            IsCloseButtonVisible = false
+        };
+
+        var updateOutcome =
+            await _userInteractionService.Dialog
+                .ShowWindowDialog<UpdateViewModel, UpdateOutcome>(
+                    updateViewModel, in options);
+
+        return updateOutcome;
     }
 
     private void CloseApplication()
