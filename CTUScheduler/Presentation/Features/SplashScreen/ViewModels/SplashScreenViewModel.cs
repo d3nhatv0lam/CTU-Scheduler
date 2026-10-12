@@ -177,8 +177,8 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     {
         var checkUpdate = await _updateService.CheckForUpdatesAsync(cancellationToken);
 
-        // if (!checkUpdate.IsUpdateAvailable)
-        //     return UpdateOutcome.UpToDate;
+        if (!checkUpdate.IsUpdateAvailable)
+            return UpdateOutcome.UpToDate;
 
         var updateViewModel = _viewModelFactory.Create<UpdateViewModel>();
         updateViewModel.Initialize(checkUpdate);

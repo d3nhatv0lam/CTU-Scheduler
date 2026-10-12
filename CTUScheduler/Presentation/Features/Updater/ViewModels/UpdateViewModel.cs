@@ -47,15 +47,17 @@ public partial class UpdateViewModel : ViewModelBase, IDialogContext, IDisposabl
 
     public void Initialize(UpdateCheckResult checkResult)
     {
-        // CurrentVersion = checkResult.CurrentVersion ?? "Chưa xác định";
-        // TargetVersion = checkResult.TargetVersion ?? string.Empty;
-        // FormattedSize = checkResult.FormattedSize;
-        // IsDowngrade = checkResult.IsDowngrade;
-        CurrentVersion = checkResult.CurrentVersion ?? "1.0.1";
-        TargetVersion = checkResult.TargetVersion ?? "1.1.0";
-        FormattedSize = "1000MB";
+        CurrentVersion = checkResult.CurrentVersion ?? "?";
+        TargetVersion = checkResult.TargetVersion ?? string.Empty;
+        FormattedSize = checkResult.FormattedSize;
         IsDowngrade = checkResult.IsDowngrade;
-        State = UpdateState.Available;
+        State = checkResult.IsUpdateAvailable ? UpdateState.Available : UpdateState.UpToDate;
+
+        // CurrentVersion = checkResult.CurrentVersion ?? "1.0.1";
+        // TargetVersion = checkResult.TargetVersion ?? "1.1.0";
+        // FormattedSize = "1000MB";
+        // IsDowngrade = checkResult.IsDowngrade;
+        // State = UpdateState.Available;
     }
 
     private async Task DownloadAndInstallAsync()

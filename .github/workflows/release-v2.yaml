@@ -1,0 +1,250 @@
+name: Multi-Platform Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 1.2.3, không cần prefix v)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  # ====================================================================
+  # JOB 1–5: BUILD SONG SONG TRÊN 5 PLATFORM (win-x64, win-arm64,
+  #           linux-x64, linux-arm64, osx-arm64)
+  # ====================================================================
+  build:
+    name: Build (${{ matrix.channel }})
+    strategy:
+      fail-fast: false # Nếu 1 OS lỗi, 2 OS còn lại vẫn tiếp tục build
+      matrix:
+        include:
+          # Job 1: Windows build (win-x64)
+          - os: windows-latest
+            rid: win-x64
+            channel: win
+            main_exe: CTUScheduler.Desktop.exe
+            icon: CTUScheduler/Assets/Logo/icon.ico
+
+          # Job 2: Windows ARM build (win-arm64) - cross-compile từ runner x64
+          - os: windows-latest
+            rid: win-arm64
+            channel: win-arm64
+            main_exe: CTUScheduler.Desktop.exe
+            icon: CTUScheduler/Assets/Logo/icon.ico
+
+          # Job 3: Linux build (linux-x64)
+          - os: ubuntu-latest
+            rid: linux-x64
+            channel: linux
+            main_exe: CTUScheduler.Desktop
+            icon: CTUScheduler/Assets/Logo/icon.png
+
+          # Job 4: Linux ARM build (linux-arm64) - cross-compile từ runner x64
+          - os: ubuntu-latest
+            rid: linux-arm64
+            channel: linux-arm64
+            main_exe: CTUScheduler.Desktop
+            icon: CTUScheduler/Assets/Logo/icon.png
+
+          # Job 5: macOS build (Apple Silicon osx-arm64)
+          - os: macos-latest
+            rid: osx-arm64
+            channel: osx
+            main_exe: CTUScheduler.Desktop
+            icon: CTUScheduler/Assets/Logo/icon.icns
+
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install Velopack CLI
+        run: dotnet tool install -g vpk
+
+      # Chuẩn hóa Version: v1.0.5 -> 1.0.5
+      - name: Extract Clean SemVer
+        id: version
+        env:
+          REF: ${{ github.ref_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [[ -n "$INPUT_VERSION" ]]; then
+            VER="$INPUT_VERSION"
+          else
+            VER="${REF#v}"
+            if [[ -z "$VER" || ("$REF" == "$VER" && ! "$VER" =~ ^[0-9]) ]]; then
+              VER="1.0.0"
+            fi
+          fi
+          echo "Releasing SemVer: $VER"
+          echo "SEMVER=$VER" >> $GITHUB_OUTPUT
+
+      # Tải release cũ của đúng channel này về để Velopack tự tính toán tạo Delta Package
+      - name: Download Previous Channel Release
+        continue-on-error: true
+        run: |
+          vpk download github \
+            --repoUrl "${{ github.server_url }}/${{ github.repository }}" \
+            --token "${{ secrets.GITHUB_TOKEN }}" \
+            --channel "${{ matrix.channel }}" \
+            --outputDir "./Releases"
+
+      # Cài đặt FUSE trên Linux (fallback an toàn cho cả Ubuntu 22.04 và 24.04)
+      - name: Install Linux Dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && (sudo apt-get install -y libfuse2 || sudo apt-get install -y libfuse2t64)
+
+      # Publish .NET app cho kiến trúc tương ứng
+      - name: Publish App
+        run: |
+          dotnet publish CTUScheduler.Desktop/CTUScheduler.Desktop.csproj \
+            -c Release \
+            -r ${{ matrix.rid }} \
+            --self-contained true \
+            -p:Version=${{ steps.version.outputs.SEMVER }} \
+            -o ./publish
+
+      # Đóng gói bằng Velopack với đầy đủ channel và runtime
+      - name: Package with Velopack
+        run: |
+          vpk pack \
+            --packId "ctu-scheduler" \
+            --packVersion "${{ steps.version.outputs.SEMVER }}" \
+            --packDir "./publish" \
+            --mainExe "${{ matrix.main_exe }}" \
+            --icon "${{ matrix.icon }}" \
+            --channel "${{ matrix.channel }}" \
+            --runtime "${{ matrix.rid }}" \
+            --outputDir "./Releases"
+
+      # Upload thư mục Releases của OS này thành Artifact riêng
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.channel }}
+          path: ./Releases/*
+          if-no-files-found: error
+          retention-days: 1
+
+  # ====================================================================
+  # JOB 4: GOM ARTIFACTS & UPLOAD LÊN GITHUB RELEASE
+  # ====================================================================
+  release:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install Velopack CLI
+        run: dotnet tool install -g vpk
+
+      # Chuẩn hóa Version tag
+      - name: Extract Clean SemVer
+        id: version
+        env:
+          REF: ${{ github.ref_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [[ -n "$INPUT_VERSION" ]]; then
+            VER="$INPUT_VERSION"
+          else
+            VER="${REF#v}"
+            if [[ -z "$VER" || ("$REF" == "$VER" && ! "$VER" =~ ^[0-9]) ]]; then
+              VER="1.0.0"
+            fi
+          fi
+          echo "SEMVER=$VER" >> $GITHUB_OUTPUT
+
+      # Tải toàn bộ artifacts từ cả 3 job build và gộp vào chung thư mục ./merged-releases
+      - name: Download All Release Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: ./merged-releases
+          merge-multiple: true
+
+      # Liệt kê kiểm tra danh sách file đã gom đủ trước khi upload
+      - name: Inspect Merged Files
+        run: |
+          echo "=== Danh sách file packages gom được ==="
+          ls -la ./merged-releases
+
+      # Upload tuần tự từng channel vào cùng 1 bản GitHub Release.
+      # CẢNH BÁO: Các bước upload PHẢI chạy tuần tự và KHÔNG được thêm continue-on-error.
+      # Nếu bất kỳ bước nào thất bại, release sẽ bị dở dang (thiếu file của channel đó).
+      # --publish chỉ đặt ở bước CUỐI để đảm bảo tất cả channel đã upload xong mới công bố.
+      - name: Upload Windows Channel
+        run: |
+          vpk upload github \
+            --repoUrl "${{ github.server_url }}/${{ github.repository }}" \
+            --token "${{ secrets.GITHUB_TOKEN }}" \
+            --channel "win" \
+            --outputDir "./merged-releases" \
+            --merge \
+            --tag "v${{ steps.version.outputs.SEMVER }}"
+
+      - name: Upload Windows ARM Channel
+        run: |
+          vpk upload github \
+            --repoUrl "${{ github.server_url }}/${{ github.repository }}" \
+            --token "${{ secrets.GITHUB_TOKEN }}" \
+            --channel "win-arm64" \
+            --outputDir "./merged-releases" \
+            --merge \
+            --tag "v${{ steps.version.outputs.SEMVER }}"
+
+      - name: Upload Linux Channel
+        run: |
+          vpk upload github \
+            --repoUrl "${{ github.server_url }}/${{ github.repository }}" \
+            --token "${{ secrets.GITHUB_TOKEN }}" \
+            --channel "linux" \
+            --outputDir "./merged-releases" \
+            --merge \
+            --tag "v${{ steps.version.outputs.SEMVER }}"
+
+      - name: Upload Linux ARM Channel
+        run: |
+          vpk upload github \
+            --repoUrl "${{ github.server_url }}/${{ github.repository }}" \
+            --token "${{ secrets.GITHUB_TOKEN }}" \
+            --channel "linux-arm64" \
+            --outputDir "./merged-releases" \
+            --merge \
+            --tag "v${{ steps.version.outputs.SEMVER }}"
+
+      # Lệnh upload cuối cùng kèm cờ --publish để chính thức công bố Release
+      - name: Upload macOS Channel and Publish Release
+        run: |
+          vpk upload github \
+            --repoUrl "${{ github.server_url }}/${{ github.repository }}" \
+            --token "${{ secrets.GITHUB_TOKEN }}" \
+            --channel "osx" \
+            --outputDir "./merged-releases" \
+            --merge \
+            --publish \
+            --tag "v${{ steps.version.outputs.SEMVER }}"

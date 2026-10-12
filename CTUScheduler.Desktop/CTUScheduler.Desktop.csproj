@@ -27,7 +27,7 @@
     <!--Cấu hình NetBeauty-->
     <PropertyGroup>
         <!-- Disable NetBeauty (set to True to turn off all features). -->
-        <DisableBeauty>False</DisableBeauty>
+        <DisableBeauty>True</DisableBeauty>
 
         <!-- Enable shared runtime mode (set to True to share libraries across apps). -->
         <BeautySharedRuntimeMode>False</BeautySharedRuntimeMode>

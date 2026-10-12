@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.Core.Models.Settings;
@@ -51,9 +53,17 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ICourseCatalogClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());
         services.AddTransient<ICourseRegistrationClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());
 
-        //updater
-        services.AddSingleton<UpdateManager>(sp =>
-            new UpdateManager(new GithubSource(AppConstants.Urls.GithubRepo, string.Empty, false)));
+// Khi cần test local, chỉ cần trỏ vào 1 thư mục trên máy (ví dụ: D:\TestReleases)
+#if DEBUG
+        var testReleasesDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "CTUScheduler");
+        services.AddSingleton(sp => Directory.Exists(testReleasesDir)
+            ? new UpdateManager(testReleasesDir) // Đọc từ thư mục máy tính
+            : new UpdateManager(new GithubSource(AppConstants.Urls.GithubRepo, string.Empty, false)));
+#else
+    services.AddSingleton(sp => new UpdateManager(new GithubSource(AppConstants.Urls.GithubRepo, string.Empty, false)));
+#endif
         services.AddSingleton<IUpdateService, VelopackUpdateService>();
 
         return services;
