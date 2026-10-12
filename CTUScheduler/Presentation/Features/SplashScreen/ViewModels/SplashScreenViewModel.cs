@@ -195,7 +195,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
             await _userInteractionService.Dialog
                 .ShowWindowDialog<UpdateViewModel, UpdateOutcome>(
                     updateViewModel, in options);
-
+        
         return updateOutcome;
     }
 

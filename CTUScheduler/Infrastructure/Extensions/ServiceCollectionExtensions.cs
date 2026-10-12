@@ -53,17 +53,17 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ICourseCatalogClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());
         services.AddTransient<ICourseRegistrationClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());
 
-// Khi cần test local, chỉ cần trỏ vào 1 thư mục trên máy (ví dụ: D:\TestReleases)
-#if DEBUG
-        var testReleasesDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "CTUScheduler");
-        services.AddSingleton(sp => Directory.Exists(testReleasesDir)
-            ? new UpdateManager(testReleasesDir) // Đọc từ thư mục máy tính
-            : new UpdateManager(new GithubSource(AppConstants.Urls.GithubRepo, string.Empty, false)));
-#else
-    services.AddSingleton(sp => new UpdateManager(new GithubSource(AppConstants.Urls.GithubRepo, string.Empty, false)));
-#endif
+        services.AddSingleton<UpdateManager>(sp =>
+        {
+            // const string localTestDir = @"D:\LocalReleases";
+            // // Nếu trên máy tính có tồn tại thư mục D:\LocalReleases -> Dùng cho việc test
+            // if (Directory.Exists(localTestDir))
+            // {
+            //     return new UpdateManager(localTestDir);
+            // }
+            // Mặc định (trên máy sinh viên hoặc GitHub Actions không có thư mục này) -> Dùng GitHub
+            return new UpdateManager(new GithubSource(AppConstants.Urls.GithubRepo, string.Empty, false));
+        });
         services.AddSingleton<IUpdateService, VelopackUpdateService>();
 
         return services;
