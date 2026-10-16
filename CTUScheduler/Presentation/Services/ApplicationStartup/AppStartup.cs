@@ -44,8 +44,8 @@ public sealed class AppStartup : IAppStartup
                 handler = (_) =>
                 {
                     requestClose.RequestClose -= handler;
-                    MainWindow mainWindow = _sp.GetRequiredService<MainWindow>();
-                    mainWindow.DataContext = _sp.GetService<MainViewModel>();
+
+                    var mainWindow = _sp.GetRequiredService<MainWindow>();
 
                     desktop.MainWindow = mainWindow;
                     desktop.MainWindow.Show();

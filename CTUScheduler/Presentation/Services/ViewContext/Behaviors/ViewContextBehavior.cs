@@ -3,47 +3,54 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Xaml.Interactivity;
 using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
+using DynamicData;
 
 namespace CTUScheduler.Presentation.Services.ViewContext.Behaviors;
 
 public sealed class ViewContextBehavior : Behavior<Control>
 {
-    protected override void OnAttachedToVisualTree()
+    private IDisposable? _dataContextSubscription;
+
+    protected override void OnAttached()
     {
-        base.OnAttachedToVisualTree();
+        base.OnAttached();
+        if (AssociatedObject is null) return;
+
+        _dataContextSubscription = AssociatedObject
+            .GetObservable(StyledElement.DataContextProperty)
+            .Subscribe(_ => UpdateViewContext());
+
+        AssociatedObject.AttachedToVisualTree += OnAssociatedObjectAttachedToVisualTree;
+        AssociatedObject.DetachedFromVisualTree += OnAssociatedObjectDetachedFromVisualTree;
         UpdateViewContext();
-        // var topLevel = TopLevel.GetTopLevel(AssociatedObject);
-        // if (topLevel is null)
-        //     return;
-        //
-        // if (AssociatedObject?.DataContext is IViewContext context)
-        // {
-        //     context.ViewContext.SetTopLevel(topLevel);
-        // }
-        // else
-        // {
-        //     throw new InvalidOperationException(
-        //         $"Behavior must be attached to a control with a DataContext that implements {typeof(IViewContext).FullName}");
-        // }
     }
 
-    protected override void OnDetachedFromVisualTree()
+    protected override void OnDetaching()
     {
+        _dataContextSubscription?.Dispose();
+        _dataContextSubscription = null;
+
+        if (AssociatedObject is not null)
+        {
+            AssociatedObject.AttachedToVisualTree -= OnAssociatedObjectAttachedToVisualTree;
+            AssociatedObject.DetachedFromVisualTree -= OnAssociatedObjectDetachedFromVisualTree;
+        }
+
         ResetViewContext();
 
-        base.OnDetachedFromVisualTree();
+        base.OnDetaching();
     }
 
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    private void OnAssociatedObjectAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
     {
-        base.OnPropertyChanged(change);
-
-        if (change.Property == StyledElement.DataContextProperty)
-        {
-            UpdateViewContext();
-        }
+        ResetViewContext();
     }
 
+    private void OnAssociatedObjectDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        UpdateViewContext();
+    }
+    
     private void UpdateViewContext()
     {
         var topLevel = TopLevel.GetTopLevel(AssociatedObject);
