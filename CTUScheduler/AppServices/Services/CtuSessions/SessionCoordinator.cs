@@ -10,6 +10,7 @@ using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Core.Networking;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
+using CTUScheduler.Infrastructure.Sites.CTU.Models.Auth;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.AppServices.Services.CtuSessions;
@@ -59,6 +60,24 @@ public class SessionCoordinator : ISessionCoordinator
                 kind: OperationFailureReason.Validation);
         try
         {
+            var ctuStatus = await _authClient.PingAuthServerAsync(cancellationToken: ct);
+
+            switch (ctuStatus)
+            {
+                case AuthServerStatus.CaptchaBlocked:
+                    return OperationResult.Failed("Kẹt Captcha, hãy bật vpn hoặc đổi mạng",
+                        "Auth.CaptchaRequired",
+                        kind: OperationFailureReason.Forbidden);
+                case AuthServerStatus.Maintenance:
+                    return OperationResult.Failed("Máy chủ CTU đang bảo trì",
+                        "Auth.Maintenance",
+                        kind: OperationFailureReason.ServiceUnavailable);
+                case AuthServerStatus.Unreachable:
+                    return OperationResult.Failed("Không thể kết nối đến máy chủ CTU",
+                        "Auth.Unreachable",
+                        kind: OperationFailureReason.Network);
+            }
+
             var session = await _authClient.AuthenticateAsync(username, password, ct);
             _sessionStore.Update(session);
             _heartbeatService.Start();

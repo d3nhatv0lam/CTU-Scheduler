@@ -5,7 +5,7 @@
         One for Windows with net8.0-windows TFM, one for MacOS with net8.0-macos and one with net8.0 TFM for Linux.-->
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <IsAotCompatible>true</IsAotCompatible>
+        <IsAotCompatible>false</IsAotCompatible>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <ApplicationIcon>icon.ico</ApplicationIcon>
@@ -27,7 +27,7 @@
     <!--Cấu hình NetBeauty-->
     <PropertyGroup>
         <!-- Disable NetBeauty (set to True to turn off all features). -->
-        <DisableBeauty>False</DisableBeauty>
+        <DisableBeauty>True</DisableBeauty>
 
         <!-- Enable shared runtime mode (set to True to share libraries across apps). -->
         <BeautySharedRuntimeMode>False</BeautySharedRuntimeMode>
@@ -77,7 +77,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia.Desktop" Version="12.1.1"/>
+        <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
         <PackageReference Include="nulastudio.NetBeauty" Version="2.1.5"/>
         <PackageReference Include="ReactiveUI.Avalonia.Microsoft.Extensions.DependencyInjection" Version="12.0.3"/>
         <PackageReference Include="Serilog.Enrichers.ShortTypeName" Version="1.1.0"/>
@@ -85,6 +85,7 @@
         <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1"/>
         <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0"/>
         <PackageReference Include="Serilog.Sinks.File" Version="7.0.0"/>
+        <PackageReference Include="Velopack" Version="1.2.161" />
     </ItemGroup>
 
     <ItemGroup>

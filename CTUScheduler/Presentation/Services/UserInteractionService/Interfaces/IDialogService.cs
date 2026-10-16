@@ -13,4 +13,7 @@ public interface IDialogService
 
     Task<TResult?> ShowModal<TViewModel, TResult>(TViewModel viewModel, in DialogOptions options = default)
         where TViewModel : class;
+    
+    Task<TResult?> ShowWindowDialog<TViewModel, TResult>(
+        TViewModel viewModel, in WindowDialogOptions options = default) where TViewModel : class;
 }

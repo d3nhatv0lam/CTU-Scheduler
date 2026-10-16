@@ -11,6 +11,7 @@ using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Networking;
 using CTUScheduler.Core.Utils;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
+using CTUScheduler.Infrastructure.Sites.CTU.Models.Auth;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 
@@ -22,13 +23,79 @@ internal sealed record SamlLoginContext(string LoginSamlResponse);
 
 internal sealed class AuthClient : IAuthClient
 {
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly HttpClient _pingHttpClient;
     private readonly ILogger<AuthClient> _logger;
 
-    public AuthClient(HttpClient pingHttpClient, ILogger<AuthClient> logger)
+    public AuthClient(IHttpClientFactory httpClientFactory, HttpClient pingHttpClient, ILogger<AuthClient> logger)
     {
+        _httpClientFactory = httpClientFactory;
         _pingHttpClient = pingHttpClient;
         _logger = logger;
+    }
+
+    public async Task<AuthServerStatus> PingAuthServerAsync(CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Ping CTU Auth Server");
+        try
+        {
+            using var httpClient = _httpClientFactory.CreateClient();
+            httpClient.Timeout = TimeSpan.FromSeconds(10);
+
+            using var response = await httpClient.GetAsync(HtqlEndpoints.SessionKey, cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            if ((int)response.StatusCode >= 500)
+            {
+                _logger.LogWarning("CTU Server return error code {StatusCode}", response.StatusCode);
+                return AuthServerStatus.Maintenance;
+            }
+
+            await using var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            var doc = new HtmlDocument();
+            doc.Load(contentStream);
+
+            var captchaFormNode = doc.DocumentNode.SelectSingleNode(
+                "//form[@action='/captcha_resp'] | //input[@name='captcha_resp_txt'] | //img[@src='/captcha.gif']");
+
+            if (captchaFormNode is not null)
+            {
+                _logger.LogWarning("CTU Captcha detected!");
+                return AuthServerStatus.CaptchaBlocked;
+            }
+
+            var inputNode = doc.DocumentNode.SelectSingleNode("//form[@id='loginForm']//input[@name='sessionDataKey']");
+            
+            var sessionKey = inputNode?.GetAttributeValue("value", string.Empty);
+            if (!string.IsNullOrEmpty(sessionKey))
+            {
+                _logger.LogInformation("Ping CTU Server successful!");
+                return AuthServerStatus.Healthy;
+            }
+
+            _logger.LogWarning("Not found Login page and captcha form? {htmlDoc}", doc.DocumentNode.ToString());
+            return AuthServerStatus.Unreachable;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "Lỗi kết nối mạng khi ping máy chủ CTU.");
+            return AuthServerStatus.Unreachable;
+        }
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogWarning("Ping máy chủ CTU bị quá thời gian chờ (Timeout).");
+            return AuthServerStatus.Unreachable;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogInformation("Tác vụ ping Auth Server đã bị hủy bởi người dùng.");
+            throw; 
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi không xác định khi ping máy chủ CTU.");
+            return AuthServerStatus.Unreachable;
+        }
     }
 
     public async Task<CtuSession> AuthenticateAsync(string username, string password, CancellationToken ct = default)
@@ -41,10 +108,10 @@ internal sealed class AuthClient : IAuthClient
 
         _logger.LogDebug("Khởi tạo session key (Bootstrap)...");
         var bootstrapContext = await BootstrapAsync(httpClient, ct);
-        
+
         _logger.LogDebug("Gửi thông tin đăng nhập xác thực SSO...");
         var samlContext = await SubmitCredentialAsync(httpClient, bootstrapContext, username, password, ct);
-        
+
         _logger.LogDebug("Hoàn tất thiết lập phiên trên Web HTQL...");
         var isAuthenticated = await CompleteAuthenticationAsync(httpClient, samlContext, ct);
 
@@ -172,7 +239,8 @@ internal sealed class AuthClient : IAuthClient
             DkmhSession? refreshedDkmh = null;
             try
             {
-                bool jwtSuccess = await ExecuteDkmhJwtHandshakeAsync(httpClient, cookiesContainer, currentSession.StudentId, ct);
+                bool jwtSuccess =
+                    await ExecuteDkmhJwtHandshakeAsync(httpClient, cookiesContainer, currentSession.StudentId, ct);
                 if (jwtSuccess)
                 {
                     var dkmhCookies = cookiesContainer.GetCookies(HtqlEndpoints.BaseDomain);
@@ -200,10 +268,12 @@ internal sealed class AuthClient : IAuthClient
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Lỗi nghiêm trọng khi cố gắng khôi phục phiên ngầm HtqlSession (TrySilentReAuthAsync).");
+            _logger.LogError(ex,
+                "Lỗi nghiêm trọng khi cố gắng khôi phục phiên ngầm HtqlSession (TrySilentReAuthAsync).");
             return null;
         }
     }
+
     /// <summary>
     /// Thực hiện bắt tay SSO Legacy PHP (Gửi định danh rỗng mật khẩu -> Lấy SAML -> POST SAML -> Hoàn tất)
     /// </summary>
