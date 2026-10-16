@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
@@ -23,6 +24,26 @@ public class VelopackUpdateService : IUpdateService
     }
 
     public bool IsInstalled => _updateManager.IsInstalled;
+
+    public string CurrentVersion
+    {
+        get
+        {
+            if (_updateManager is { IsInstalled: true, CurrentVersion: not null })
+            {
+                return _updateManager.CurrentVersion.ToNormalizedString();
+            }
+
+            var asm = Assembly.GetEntryAssembly() ?? typeof(VelopackUpdateService).Assembly;
+            var infoVer = asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+            if (!string.IsNullOrWhiteSpace(infoVer))
+            {
+                return infoVer.Split('+')[0];
+            }
+
+            return asm.GetName().Version?.ToString(3) ?? "1.0.0-beta";
+        }
+    }
 
     public async Task<UpdateCheckResult> CheckForUpdatesAsync(CancellationToken cancellationToken = default)
     {

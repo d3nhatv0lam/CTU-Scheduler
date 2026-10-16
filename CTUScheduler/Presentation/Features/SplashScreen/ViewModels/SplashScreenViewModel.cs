@@ -6,22 +6,15 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia;
-using Avalonia.Controls;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.UserSettingService;
-using CTUScheduler.Core.Models.Settings;
-using CTUScheduler.Core.Models.Update;
 using CTUScheduler.Presentation.Base;
-using CTUScheduler.Presentation.Features.Authentication.ViewModels;
-using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Features.Updater.Models;
 using CTUScheduler.Presentation.Features.Updater.ViewModels;
 using CTUScheduler.Presentation.Services.ApplicationLifetime;
 using CTUScheduler.Presentation.Services.Factories;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs;
-using CTUScheduler.Presentation.Shared.Dialogs.ViewModels;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
@@ -56,7 +49,7 @@ public partial class SplashScreenViewModel : ViewModelBase, IDisposable, IReques
     [Reactive] private double _windowWidth = SMALL_WIDTH;
     [Reactive] private double _windowHeight = SMALL_HEIGHT;
 
-    public string Version => AppConstants.AppVersion;
+    public string Version => _updateService.CurrentVersion;
 
     public ReactiveCommand<Unit, Unit> CloseAppCommand { get; }
 

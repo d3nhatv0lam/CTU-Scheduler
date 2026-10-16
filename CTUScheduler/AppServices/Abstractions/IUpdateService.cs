@@ -12,6 +12,11 @@ public interface IUpdateService
     /// Nếu chạy ở môi trường Debug/Dev trong IDE, thuộc tính này sẽ là false.
     /// </summary>
     bool IsInstalled { get; }
+    
+    /// <summary>
+    /// Version hiện tại của ứng dụng.
+    /// </summary>
+    string CurrentVersion { get; }
 
     /// <summary>
     /// Kiểm tra trên GitHub xem có phiên bản mới hơn không.
