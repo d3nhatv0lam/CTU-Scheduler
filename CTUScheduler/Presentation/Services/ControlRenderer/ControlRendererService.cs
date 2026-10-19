@@ -46,7 +46,7 @@ public class ControlRendererService : IControlRendererService
                 control, logicalWidth, logicalHeight, scale, dpi, cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
-            bitmap.Save(targetStream);
+            bitmap.Save(targetStream, PngBitmapEncoderOptions.Default);
         });
     }
 

@@ -12,7 +12,6 @@ public static class AppConstants
     // CÁC HẰNG SỐ CHUNG (ROOT LEVEL)
     // Những cái này dùng chung cho toàn app, không thuộc nhóm cụ thể nào
     // ====================================================
-    public const string AppVersion = "1.0.1";
     public const string AppNameWindows = "CTUScheduler";
     public const string AppNameUnix = "ctu-scheduler";
 
@@ -43,7 +42,7 @@ public static class AppConstants
         public static string BaseLocalPath =>
             StandardPathBuilder.GetLocalCachePath(PublisherConstants.Name, AppNameWindows, AppNameUnix);
 
-        public static string UserPreferencesFilePath => Path.Combine(BaseAppContext, Files.UserPreferences);
+        public static string UserPreferencesFilePath => Path.Combine(BaseRoamingPath, Files.UserPreferences);
 
         public static string AppLogFilePath => Path.Combine(BaseRoamingPath, Files.AppLog);
     }

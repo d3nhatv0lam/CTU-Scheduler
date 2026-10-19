@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/CTUScheduler.Benchmarks/CTUScheduler.Benchmarks.csproj" />
+  </Folder>
   <Folder Name="/Tests/">
     <Project Path="tests/CTUScheduler.Tests/CTUScheduler.Tests.csproj" />
   </Folder>

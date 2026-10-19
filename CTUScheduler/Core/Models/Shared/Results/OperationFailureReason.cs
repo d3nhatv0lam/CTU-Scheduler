@@ -9,5 +9,7 @@ public enum OperationFailureReason
     Unauthorized,
     System,
     Database,
-    UserAction
+    UserAction,
+    ServiceUnavailable ,
+    Forbidden 
 }
