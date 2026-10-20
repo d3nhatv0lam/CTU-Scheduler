@@ -81,7 +81,7 @@ internal sealed class AuthClient : IAuthClient
             _logger.LogError(ex, "Lỗi kết nối mạng khi ping máy chủ CTU.");
             return AuthServerStatus.Unreachable;
         }
-        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             _logger.LogWarning("Ping máy chủ CTU bị quá thời gian chờ (Timeout).");
             return AuthServerStatus.Unreachable;
