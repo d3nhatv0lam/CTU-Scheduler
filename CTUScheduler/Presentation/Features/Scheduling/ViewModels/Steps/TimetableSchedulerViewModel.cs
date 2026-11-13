@@ -50,6 +50,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
     public IReadOnlyList<SchedulingPreset> Presets { get; } = SchedulingPresetViewModel.DefaultPresets;
     public SchedulingCourseCoordinatorViewModel SchedulingCourseCoordinatorVM { get; }
     public TimetablePaginationViewModel PaginationTimeTableViewModel { get; }
+    public AvoidanceFilterViewModel AvoidanceFilterVM { get; }
 
 
     public IObservable<bool> CanNavigateNext { get; }
@@ -84,6 +85,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
             .DisposeWith(_disposables);
 
         _selectedPreset = Presets[0];
+        AvoidanceFilterVM = new AvoidanceFilterViewModel().DisposeWith(_disposables);
 
         var maxCanSelect = profileQueryService.ProfileUsageState
             .Select(x => x.Limit - x.Current)
@@ -120,11 +122,19 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                             CourseSectionsTrackerFlatten(SchedulingCourseCoordinatorVM.GetGroupedCourses());
                         var scorers = SelectedPreset?.Profile.Scorers;
 
+                        var avoidanceSlots = AvoidanceFilterVM.GetActiveAvoidanceSlots();
+                        List<IPruningRule> pruningRules = [];
+                        if (avoidanceSlots.Count > 0)
+                        {
+                            pruningRules.Add(new AvoidTimePruningRule(avoidanceSlots));
+                        }
+
                         var options = new ScheduleGenerationOptions()
                         {
                             CancellationToken = cts.Token,
                             MaxResults = 1000,
                             Scorers = scorers ?? [],
+                            AdditionalPruningRules = pruningRules
                         };
 
 
@@ -173,6 +183,13 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
             .Throttle(TimeSpan.FromMilliseconds(300))
             .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Select(_ => Unit.Default)
+            .InvokeCommand(GenerateTimeTableCommand)
+            .DisposeWith(_disposables);
+
+        // Tự động tạo lại lịch khi bộ lọc tránh ngày/buổi thay đổi và đóng Flyout
+        AvoidanceFilterVM.FilterCommitted
+            .Where(_ => _hasGeneratedAtLeastOnce)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
             .InvokeCommand(GenerateTimeTableCommand)
             .DisposeWith(_disposables);
 

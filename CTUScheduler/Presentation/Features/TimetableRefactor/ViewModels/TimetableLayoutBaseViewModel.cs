@@ -156,7 +156,7 @@ public abstract partial class TimetableLayoutBaseViewModel : ViewModelBase, IDis
         {
             Name = TempName;
             LastUpdated = DateTimeOffset.Now;
-            UserInteractionService.Toast.Light.Success("Cập nhật thông tin thơi khóa biểu thành công!");
+            UserInteractionService.Toast.Light.Success("Cập nhật thông tin thời khóa biểu thành công!");
         }).DisposeWith(Disposables);
 
         CancelCommand = ReactiveCommand.Create(() => { TempName = Name; })
