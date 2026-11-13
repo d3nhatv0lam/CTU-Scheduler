@@ -10,6 +10,7 @@ using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.Navigation.Models;
+using CTUScheduler.Presentation.Services.Theme;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models;
 using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
@@ -50,6 +51,8 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
         INavigationRegionManager navigationRegionManager,
         IViewContextService viewContextService,
         IUserInteractionService userInteractionService,
+        // invoke theme service
+        IThemeService themeService,
         ILogger<MainViewModel> logger)
     {
         ViewContext = viewContextService;

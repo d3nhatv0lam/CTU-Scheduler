@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI.Avalonia.Splat;
 using Serilog;
 using Splat.Microsoft.Extensions.DependencyInjection;
+using Velopack;
 
 namespace CTUScheduler.Desktop;
 
@@ -32,7 +33,10 @@ class Program
     public static void Main(string[] args)
     {
         LoggingConfig.Init();
-
+        VelopackApp.Build()
+            .SetLogger(new VelopackSerilogAdapter())
+            .Run();
+        
         // Bắt lỗi ở các Thread phụ (Background threads)
         AppDomain.CurrentDomain.UnhandledException += (_, appDomainArgs) =>
         {
@@ -66,7 +70,7 @@ class Program
             LoggingConfig.CloseAndFlush();
         }
     }
-    
+
     // Avalonia configuration
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
@@ -81,16 +85,16 @@ class Program
 
                     var controller = sp?.GetRequiredService<IAppLifecycleController>();
                     controller?.NotifyStarted();
-                }, 
-                 withReactiveUIBuilder: rxui =>
-                 {
-                     rxui.WithExceptionHandler( Observer.Create<Exception>(ex => 
-                     {
-                         var rxLog = Log.ForContext("ShortTypeName", "UI");
-                         rxLog.Error(ex, "ReactiveUI Pipeline/Command Exception");
-                         // có thể hiển thị Dialog báo lỗi cho User tại đây
-                     }));
-                 })
+                },
+                withReactiveUIBuilder: rxui =>
+                {
+                    rxui.WithExceptionHandler(Observer.Create<Exception>(ex =>
+                    {
+                        var rxLog = Log.ForContext("ShortTypeName", "UI");
+                        rxLog.Error(ex, "ReactiveUI Pipeline/Command Exception");
+                        // có thể hiển thị Dialog báo lỗi cho User tại đây
+                    }));
+                })
             .AfterSetup(builder =>
             {
                 if (builder.Instance is not App app)
@@ -121,7 +125,7 @@ class Program
             hostLog.Warning("Service provider is null. Skipping disposal.");
             return;
         }
-        
+
         hostLog.Information("Cleaning up DI and infrastructure resources...");
 
         // Sử dụng Task.Run để giải phóng ThreadPool, ngăn chặn rủi ro Deadlock

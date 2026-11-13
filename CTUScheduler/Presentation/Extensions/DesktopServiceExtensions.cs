@@ -15,6 +15,7 @@ using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
 using CTUScheduler.Presentation.Services.Viewport;
 using CTUScheduler.Presentation.Services.ControlRenderer;
 using CTUScheduler.Presentation.Services.ApplicationStartup;
+using CTUScheduler.Presentation.Services.Theme;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using CTUScheduler.Presentation.Shells.AppShell.ViewModels;
 using CTUScheduler.Presentation.Shells.AppShell.Views;
@@ -85,9 +86,10 @@ public static class DesktopServiceExtensions
             .AddSingleton<IAppLifecycleService>(sp => sp.GetRequiredService<AppLifecycleManager>());
         services.AddSingleton<IUiShutdownCoordinator, UiShutdownCoordinator>();
         services.AddSingleton<IAppStartup, AppStartup>();
+        services.AddSingleton<IThemeService, ThemeService>();
 
         services.AddTransient<SplashScreenWindow>();
-        services.AddTransient<MainWindow>();
+        services.AddTransient<MainWindow>(sp =>  new MainWindow() {DataContext = sp.GetRequiredService<MainViewModel>()});
 
         return services;
     }

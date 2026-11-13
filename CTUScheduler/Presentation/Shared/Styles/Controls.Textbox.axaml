@@ -15,12 +15,12 @@
     <Style Selector="TextBox.input.floating">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0 0 0 1" />
-        <Setter Property="BorderBrush" Value="Black" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SemiGrey5}" />
         <Setter Property="CornerRadius" Value="0" />
         <Setter Property="Padding" Value="0 8" />
         <Setter Property="FontSize" Value="16" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="Foreground" Value="Black" />
+        <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}" />
         <Setter Property="CaretBrush" Value="{DynamicResource PrimaryBrush}" />
         <Setter Property="SelectionBrush" Value="{DynamicResource PrimaryBrush}" />
         <Setter Property="Template">
@@ -43,7 +43,7 @@
                             </TextBlock.Transitions>
                         </TextBlock>
 
-                        <Border Name="PART_Border"
+                        <Border Name="PART_CustomBorder"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"

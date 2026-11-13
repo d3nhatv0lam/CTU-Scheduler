@@ -115,10 +115,10 @@ public partial class TimelineNodeViewModel : ReactiveObject, IDisposable
         ? new BoxShadows(new BoxShadow
         {
             OffsetX = 0,
-            OffsetY = 6,
-            Blur = 20,
-            Spread = 0,
-            Color = WithAlpha(ProgressColor, 0x1A) // Dynamic soft glow matching remaining time color
+            OffsetY = 8,
+            Blur = 24,
+            Spread = 1,
+            Color = WithAlpha(ProgressColor, 0x59) // Dynamic rich 35% glowing aura
         })
         : null;
 
@@ -129,14 +129,14 @@ public partial class TimelineNodeViewModel : ReactiveObject, IDisposable
             EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
             GradientStops = new GradientStops
             {
-                new GradientStop(WithAlpha(ProgressColor, 0x0A), 0.0), // Dynamic matching very soft tint (approx 4%)
-                new GradientStop(Color.Parse("#FFFFFF"), 1.0) // Blending into pure white
+                new GradientStop(WithAlpha(ProgressColor, 0x40), 0.0), // Vibrant 25% tint on top-left
+                new GradientStop(WithAlpha(ProgressColor, 0x0D), 1.0)  // Soft 5% tint on bottom-right
             }
         }
         : null;
 
     public IBrush? CardBorderBrush => State == TimelineState.Active
-        ? new SolidColorBrush(WithAlpha(ProgressColor, 0x4D)) // Dynamic matching border (30% opacity)
+        ? new SolidColorBrush(WithAlpha(ProgressColor, 0xBF)) // High contrast 75% opacity border
         : null;
 
     public TimelineNodeViewModel(TimelineNode node)

@@ -23,18 +23,19 @@
     <rxui:ReactiveUserControl.Styles>
         <!-- Card Border Styles for State Classes -->
         <Style Selector="Border.upcoming">
-            <Setter Property="Background" Value="#FFFFFF" /> <!-- Clean white -->
-            <Setter Property="BorderBrush" Value="#F1F5F9" /> <!-- Slate-100 (clean & soft outline) -->
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}" />
         </Style>
         <Style Selector="Border.completed">
-            <Setter Property="Background" Value="#F8FAFC" /> <!-- Slate-50 -->
-            <Setter Property="BorderBrush" Value="#E2E8F0" /> <!-- Slate-200 -->
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground2}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}" />
             <Setter Property="BoxShadow" Value="0 2 6 0 #080F172A" /> <!-- Subtle elevation shadow for completed -->
         </Style>
         <Style Selector="Border.active" x:DataType="vm:TimelineNodeViewModel">
             <Setter Property="Background" Value="{Binding CardBackground, Mode=OneWay}" />
             <Setter Property="BorderBrush" Value="{Binding CardBorderBrush, Mode=OneWay}" />
             <Setter Property="BoxShadow" Value="{Binding CardBoxShadow, Mode=OneWay}" />
+            <Setter Property="BorderThickness" Value="3,1,1,1" />
         </Style>
 
         <!-- TextBlock styles for Title -->
@@ -42,25 +43,25 @@
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
         <Style Selector="Border.active TextBlock.title">
-            <Setter Property="Foreground" Value="#1E1B4B" /> <!-- Indigo-950 (extremely sharp & premium) -->
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}" />
             <Setter Property="FontWeight" Value="Bold" />
         </Style>
         <Style Selector="Border.completed TextBlock.title">
-            <Setter Property="Foreground" Value="#334155" /> <!-- Slate-700 -->
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText1}" />
         </Style>
         <Style Selector="Border.upcoming TextBlock.title">
-            <Setter Property="Foreground" Value="#94A3B8" /> <!-- Slate-400 (slightly dimmed) -->
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText2}" />
         </Style>
 
         <!-- TextBlock styles for Date -->
         <Style Selector="Border.active TextBlock.date">
-            <Setter Property="Foreground" Value="#4F46E5" /> <!-- Indigo-600 accent -->
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorInformation}" />
         </Style>
         <Style Selector="Border.completed TextBlock.date">
-            <Setter Property="Foreground" Value="#64748B" /> <!-- Slate-500 -->
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText2}" />
         </Style>
         <Style Selector="Border.upcoming TextBlock.date">
-            <Setter Property="Foreground" Value="#CBD5E1" /> <!-- Slate-300 -->
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorText2}" />
         </Style>
     </rxui:ReactiveUserControl.Styles>
 
@@ -76,7 +77,7 @@
                             <Border Width="2"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Stretch"
-                                    Background="#E2E8F0" />
+                                    Background="{DynamicResource SemiColorBorder}" />
 
                             <!-- Lớp hiệu ứng "Tỏa Sáng" đặt dưới Ellipse -->
                             <Border Width="16"
@@ -141,7 +142,7 @@
                                            FontSize="11.5"
                                            TextWrapping="Wrap" />
                                 <TextBlock Text="{Binding Subtitle}"
-                                           Foreground="#0284C7"
+                                           Foreground="{DynamicResource SemiColorInformation}"
                                            Opacity="0.95"
                                            FontSize="11.5"
                                            FontWeight="Medium"

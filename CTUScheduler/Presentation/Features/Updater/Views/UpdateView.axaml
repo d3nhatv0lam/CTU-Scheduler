@@ -1,0 +1,139 @@
+﻿<rxui:ReactiveUserControl x:TypeArguments="vm:UpdateViewModel"
+                          xmlns="https://github.com/avaloniaui"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                          mc:Ignorable="d" d:DesignWidth="440" d:DesignHeight="250"
+                          xmlns:rxui="http://reactiveui.net"
+                          x:DataType="vm:UpdateViewModel"
+                          x:CompileBindings="True"
+                          Width="440"
+                          Height="250"
+                          xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Updater.ViewModels"
+                          xmlns:models="clr-namespace:CTUScheduler.Presentation.Features.Updater.Models"
+                          x:Class="CTUScheduler.Presentation.Features.Updater.Views.UpdateView">
+
+    <Border Padding="24" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+            Background="{DynamicResource SemiColorBackground0}">
+        <StackPanel Spacing="16">
+            <!-- HEADER -->
+            <Grid ColumnDefinitions="Auto, *">
+                <Border Grid.Column="0"
+                        Width="40" Height="40"
+                        CornerRadius="20"
+                        Background="{DynamicResource SemiColorPrimaryLight}"
+                        Margin="0,0,14,0">
+                    <PathIcon
+                        Data="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"
+                        Foreground="{DynamicResource SemiColorPrimary}"
+                        Width="20" Height="20" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="Cập nhật ứng dụng"
+                               FontWeight="SemiBold"
+                               FontSize="16"
+                               Foreground="{DynamicResource SemiColorText0}" />
+                    <TextBlock Text="Đã có phiên bản mới sẵn sàng để nâng cấp"
+                               FontSize="12"
+                               Foreground="{DynamicResource SemiColorText2}" />
+                </StackPanel>
+            </Grid>
+
+            <Separator Background="{DynamicResource SemiColorBorder0}" Margin="0, -4, 0, 0" />
+
+            <!-- TRẠNG THÁI 1: CÓ BẢN CẬP NHẬT (AVAILABLE) -->
+            <StackPanel Spacing="14"
+                        IsVisible="{Binding State, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static models:UpdateState.Available}}">
+                <!-- Info Badges -->
+                <Grid ColumnDefinitions="auto *" Margin="0, 4">
+                    <Border Background="{DynamicResource SemiColorFill0}"
+                            CornerRadius="6"
+                            Padding="10, 6"
+                            Margin="0, 0, 8, 8">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="{Binding CurrentVersion, StringFormat='v{0}'}"
+                                       Foreground="{DynamicResource SemiColorText2}" FontSize="12" />
+                            <TextBlock Text="➔" Foreground="{DynamicResource SemiColorPrimary}" FontSize="12" />
+                            <TextBlock Text="{Binding TargetVersion, StringFormat='v{0}'}"
+                                       FontWeight="Bold" Foreground="{DynamicResource SemiColorPrimary}" FontSize="12" />
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="1" Background="{DynamicResource SemiColorFill0}"
+                            CornerRadius="6"
+                            Padding="10, 6"
+                            Margin="0, 0, 8, 8"
+                            IsVisible="{Binding FormattedSize, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <TextBlock Text="{Binding FormattedSize, StringFormat='Dung lượng: {0}'}"
+                                   Foreground="{DynamicResource SemiColorText1}" FontSize="12" />
+                    </Border>
+                </Grid>
+                <TextBlock Text="Ứng dụng sẽ tự động tải về và khởi động lại sau khi hoàn tất cập nhật."
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource SemiColorText2}" />
+                <!-- Action Buttons -->
+                <Grid ColumnDefinitions="Auto, *, Auto, Auto" Margin="0, 8, 0, 0">
+                    <Button Grid.Column="0"
+                            Content="Bỏ qua bản này"
+                            Theme="{DynamicResource BorderlessButton}"
+                            Command="{Binding IgnoreVersionCommand}" />
+                    <Button Grid.Column="2"
+                            Content="Để sau"
+                            Margin="0, 0, 8, 0"
+                            Command="{Binding CloseCommand}" />
+                    <Button Grid.Column="3"
+                            Content="Cập nhật ngay"
+                            Classes="Primary"
+                            Command="{Binding DownloadAndInstallCommand}" />
+                </Grid>
+            </StackPanel>
+
+            <!-- TRẠNG THÁI 2: ĐANG TẢI (DOWNLOADING) -->
+
+            <StackPanel Spacing="14"
+                        IsVisible="{Binding State, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static models:UpdateState.Downloading}}">
+                <Grid ColumnDefinitions="*, Auto">
+                    <TextBlock Grid.Column="0" Text="Đang tải gói cập nhật..." FontSize="13"
+                               Foreground="{DynamicResource SemiColorText1}" />
+                    <TextBlock Grid.Column="1" Text="{Binding DownloadProgress, StringFormat='{}{0}%'}"
+                               FontWeight="SemiBold" Foreground="{DynamicResource SemiColorPrimary}" />
+                </Grid>
+                <ProgressBar Value="{Binding DownloadProgress}"
+                             Minimum="0" Maximum="100"
+                             Height="6"
+                             CornerRadius="3"
+                             Classes="Primary" />
+                <TextBlock Text="Vui lòng không tắt ứng dụng trong quá trình tải xuống."
+                           FontSize="11"
+                           Foreground="{DynamicResource SemiColorText3}" />
+                <StackPanel HorizontalAlignment="Right" Margin="0, 8, 0, 0">
+                    <Button Content="Hủy tải"
+                            Classes="Danger"
+                            Command="{Binding CancelDownloadCommand}" />
+                </StackPanel>
+            </StackPanel>
+            <!-- TRẠNG THÁI 3: THẤT BẠI (FAILED) -->
+            <StackPanel Spacing="12"
+                        IsVisible="{Binding State, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static models:UpdateState.Failed}}">
+                <Border Background="{DynamicResource SemiColorDangerLight}"
+                        BorderBrush="{DynamicResource SemiColorDanger}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="12">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Quá trình cập nhật thất bại" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource SemiColorDanger}" FontSize="13" />
+                        <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource SemiColorDanger}" FontSize="12" />
+                    </StackPanel>
+                </Border>
+                <StackPanel HorizontalAlignment="Right" Margin="0, 8, 0, 0">
+                    <Button Content="Đóng"
+                            Classes="Primary"
+                            Command="{Binding CloseCommand}" />
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+
+</rxui:ReactiveUserControl>

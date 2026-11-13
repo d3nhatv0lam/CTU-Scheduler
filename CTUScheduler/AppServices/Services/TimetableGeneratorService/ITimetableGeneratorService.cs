@@ -10,6 +10,4 @@ public interface ITimetableGeneratorService
 {
     IObservable<IReadOnlyList<RawTimetableData>> Generate(IEnumerable<IReadOnlyList<SectionChoice>> sets,
         ScheduleGenerationOptions? options = null);
-
-    double RecalculateScore(IReadOnlyList<SectionChoice> schedule, IReadOnlyList<IScheduleScorer> scorers);
 }

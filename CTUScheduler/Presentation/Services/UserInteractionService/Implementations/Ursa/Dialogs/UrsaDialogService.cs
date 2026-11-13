@@ -13,9 +13,9 @@ using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Ursa.Controls;
-// Alias để tránh trùng tên
-using DialogOptions =
-    CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs.DialogOptions;
+using UrsaDialogOptions = Ursa.Controls.DialogOptions;
+using DialogOptions = CTUScheduler.Presentation.Services.UserInteractionService.Models.Dialogs.DialogOptions;
+
 
 namespace CTUScheduler.Presentation.Services.UserInteractionService.Implementations.Ursa.Dialogs;
 
@@ -79,17 +79,30 @@ public class UrsaDialogService : IDialogService
             options: MapOptions(in options));
     }
 
-
+    public Task<TResult?> ShowWindowDialog<TViewModel, TResult>(TViewModel viewModel, in WindowDialogOptions options = default) where TViewModel : class
+    {
+        var control = GetControl(viewModel, options);
+    
+        if (control is null)
+            return Task.FromException<TResult?>(
+                new InvalidOperationException($"Không tìm thấy View cho {typeof(TViewModel).Name}"));
+    
+        var action = options.OnClosed;
+        if (action is not null)
+        {
+            control.Unloaded += (_, _) => action();
+        }
+    
+        var owner = _viewContextService.CurrentTopLevel as Window;
+        var windowOptions = MapWindowDialogOptions(in options);
+        return Dialog.ShowCustomAsync<TResult>(control, viewModel, owner: owner, options: windowOptions);
+    }
+    
     private Control? GetControl<TViewModel>(TViewModel viewModel, in DialogOptions options)
     {
-        var dataTemplate = Application.Current?.DataTemplates.FirstOrDefault(t => t.Match(viewModel));
-
-        var control = dataTemplate is not null
-            ? dataTemplate.Build(viewModel)
-            : _viewLocator.ResolveView(viewModel) as Control;
-
+        var control = ResolveControl(viewModel);
         if (control is null) return null;
-
+        
         return options.SizeMode switch
         {
             DialogSizeMode.Absolute => new Border
@@ -101,6 +114,23 @@ public class UrsaDialogService : IDialogService
 
             DialogSizeMode.Responsive => CreateResponsiveBorder(control, options),
 
+            _ => control
+        };
+    }
+    
+    private Control? GetControl<TViewModel>(TViewModel viewModel, in WindowDialogOptions options)
+    {
+        var control = ResolveControl(viewModel);
+        if (control is null) return null;
+        
+        return options.SizeMode switch
+        {
+            DialogSizeMode.Absolute => new Border
+            {
+                Child = control,
+                Width = options.Width ?? double.NaN,
+                Height = options.Height ?? double.NaN
+            },
             _ => control
         };
     }
@@ -191,6 +221,14 @@ public class UrsaDialogService : IDialogService
 
         return border;
     }
+    
+    private Control? ResolveControl<TViewModel>(TViewModel viewModel)
+    {
+        var dataTemplate = Application.Current?.DataTemplates.FirstOrDefault(t => t.Match(viewModel));
+        return dataTemplate is not null
+            ? dataTemplate.Build(viewModel)
+            : _viewLocator.ResolveView(viewModel) as Control;
+    }
 
     private OverlayDialogOptions MapOptions(in DialogOptions options)
     {
@@ -221,6 +259,23 @@ public class UrsaDialogService : IDialogService
             TopLevelHashCode = options.HostId == null
                 ? _viewContextService.CurrentTopLevel?.GetHashCode()
                 : null
+        };
+    }
+    
+    private UrsaDialogOptions MapWindowDialogOptions(in WindowDialogOptions options)
+    {
+        return new UrsaDialogOptions
+        {
+            Title = options.Title,
+            StartupLocation = options.StartupLocation,
+            Position = options.Position,
+            ShowInTaskBar = options.ShowInTaskBar,
+            IsCloseButtonVisible = options.IsCloseButtonVisible,
+            CanDragMove = options.CanDragMove,
+            CanResize = options.CanResize,
+            StyleClass = options.StyleClass,
+            Button = MapButtons(options.Buttons),
+            Mode = DialogMode.None 
         };
     }
 

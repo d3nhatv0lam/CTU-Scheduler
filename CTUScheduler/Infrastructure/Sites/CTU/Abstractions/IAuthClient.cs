@@ -1,11 +1,21 @@
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Networking;
+using CTUScheduler.Infrastructure.Sites.CTU.Models.Auth;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 
 public interface IAuthClient
 {
+    /// <summary>
+    /// Ping the server to check if it is reachable.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns>
+    /// true if the server is reachable, false otherwise (reason: your internet is captcha detected, or the server is down).
+    /// </returns>
+    Task<AuthServerStatus> PingAuthServerAsync(CancellationToken cancellationToken = default);
+    
     Task<CtuSession> AuthenticateAsync(string username, string password, CancellationToken ct = default);
     
     /// <summary>

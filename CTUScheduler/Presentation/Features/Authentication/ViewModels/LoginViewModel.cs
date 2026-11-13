@@ -15,6 +15,7 @@ using CTUScheduler.Core.Models.Shared.Results;
 using CTUScheduler.Core.Models.TeachingPlan;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Services.Navigation;
+using CTUScheduler.Presentation.Services.Theme;
 using CTUScheduler.Presentation.Services.UserInteractionService.Interfaces;
 using CTUScheduler.Presentation.Services.UserInteractionService.Models;
 using CTUScheduler.Presentation.Shared.Models.Identifiers;
