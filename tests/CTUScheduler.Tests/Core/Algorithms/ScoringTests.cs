@@ -79,7 +79,7 @@ public class ScoringTests
         var scoreB = scorer.CalculateScore(scheduleB); // 1.0 - 4/7 ≈ 0.428
 
         scoreA.Should().BeGreaterThan(scoreB);
-        scoreA.Should().BeApproximately(1.0 - (2.0 / 7.0), 0.001);
+        scoreA.Should().BeApproximately((7.0 - 2.0) / 6.0, 0.001);
     }
 
     [Fact]

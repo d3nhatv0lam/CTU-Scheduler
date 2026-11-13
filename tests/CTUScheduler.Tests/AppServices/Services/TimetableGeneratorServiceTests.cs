@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using CTUScheduler.Core.Algorithms.Scoring;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.TimetableGeneratorService;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Shared;
@@ -91,6 +88,48 @@ public class TimetableGeneratorServiceTests
         var results = await _service.Generate(sets, options).FirstAsync();
 
         results.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task Generate_WhenAllSectionsConflict_ShouldReturnEmpty()
+    {
+        var choice1 = CreateChoice("CT101", 2, "123-------");
+        var choice2 = CreateChoice("CT102", 2, "123-------"); // Trùng hoàn toàn Thứ 2 tiết 1..3
+        var sets = new List<IReadOnlyList<SectionChoice>>
+        {
+            new[] { choice1 },
+            new[] { choice2 }
+        };
+
+        var results = await _service.Generate(sets).FirstAsync();
+
+        results.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Generate_WithScoring_ShouldRankResultsMonotonicallyDecreasing()
+    {
+        var set1 = new List<SectionChoice>
+        {
+            CreateChoice("CT101", 2, "12--------"),
+            CreateChoice("CT101", 3, "12--------")
+        };
+        var set2 = new List<SectionChoice>
+        {
+            CreateChoice("CT102", 2, "----56----"),
+            CreateChoice("CT102", 4, "12--------")
+        };
+        var sets = new List<IReadOnlyList<SectionChoice>> { set1, set2 };
+
+        var options = new ScheduleGenerationOptions
+        {
+            Scorers = [new MinimizeGapsScorer(1.0)]
+        };
+
+        var results = await _service.Generate(sets, options).FirstAsync();
+
+        results.Should().NotBeEmpty();
+        results.Should().BeInDescendingOrder(r => r.Score);
     }
 
     private static SectionChoice CreateChoice(string courseCode, int day, string period)
