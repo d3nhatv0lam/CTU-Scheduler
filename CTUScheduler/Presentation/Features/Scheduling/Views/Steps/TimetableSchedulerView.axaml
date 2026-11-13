@@ -343,7 +343,7 @@
                                         <ItemsRepeater.Layout>
                                             <UniformGridLayout
                                                 Orientation="Horizontal"
-                                                ItemsJustification="Start"
+                                                ItemsJustification="SpaceEvenly"
                                                 MinRowSpacing="30"
                                                 MinColumnSpacing="30">
                                             </UniformGridLayout>
