@@ -45,6 +45,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
 
     [Reactive] private SchedulingPreset? _selectedPreset;
     [ObservableAsProperty] private bool _hasNoResults;
+    private bool _hasGeneratedAtLeastOnce;
 
     public IReadOnlyList<SchedulingPreset> Presets { get; } = SchedulingPresetViewModel.DefaultPresets;
     public SchedulingCourseCoordinatorViewModel SchedulingCourseCoordinatorVM { get; }
@@ -96,30 +97,9 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                     PageSize = 12,
                     SortObservable =
                         Observable.Return(
-                            SortExpressionComparer<SelectableTimetableLayout>.Descending(x => x.Item.TotalScore)),
-                    AutoRefresh =
-                    [
-                        new AutoRefreshOptions<SelectableTimetableLayout>
-                        {
-                            Property = x => x.Item.TotalScore,
-                            RefreshBuffer = TimeSpan.FromMilliseconds(300)
-                        }
-                    ]
+                            SortExpressionComparer<SelectableTimetableLayout>.Descending(x => x.Item.TotalScore))
                 })
             .DisposeWith(_disposables);
-
-        this.WhenAnyValue(x => x.SelectedPreset)
-            .WhereNotNull()
-            .ObserveOn(RxSchedulers.TaskpoolScheduler)
-            .Subscribe(preset =>
-            {
-                var scorers = preset.Profile.Scorers;
-                foreach (var layout in PaginationTimeTableViewModel.CurrentData)
-                {
-                    var vm = layout.Item;
-                    vm.TotalScore = timetableGeneratorService.RecalculateScore(vm.Choices, scorers);
-                }
-            }).DisposeWith(_disposables);
 
         CanNavigateNext = PaginationTimeTableViewModel.SelectedItemCountChanged
             .Select(count => count > 0);
@@ -134,6 +114,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                     () => new CancellationTokenSource(),
                     cts =>
                     {
+                        _hasGeneratedAtLeastOnce = true;
                         PaginationTimeTableViewModel.Clear();
                         var courseSectionFlatten =
                             CourseSectionsTrackerFlatten(SchedulingCourseCoordinatorVM.GetGroupedCourses());
@@ -182,6 +163,17 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
 
                 PaginationTimeTableViewModel.AddRange(timetableLayout);
             })
+            .DisposeWith(_disposables);
+
+        // Tự động tạo lại lịch theo tiêu chí mới nếu trước đó đã từng tạo lịch
+        this.WhenAnyValue(x => x.SelectedPreset)
+            .Skip(1)
+            .WhereNotNull()
+            .Where(_ => _hasGeneratedAtLeastOnce)
+            .Throttle(TimeSpan.FromMilliseconds(300))
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
+            .Select(_ => Unit.Default)
+            .InvokeCommand(GenerateTimeTableCommand)
             .DisposeWith(_disposables);
 
         ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<SelectableTimetableLayout>(async

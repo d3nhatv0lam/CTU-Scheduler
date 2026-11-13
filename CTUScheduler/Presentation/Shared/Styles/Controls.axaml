@@ -1,5 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:helpers="clr-namespace:CTUScheduler.Presentation.Shared.Helpers">
     <Design.PreviewWith>
         <Border Padding="20">
             <!-- Add Controls for Previewer Here -->
@@ -24,6 +25,11 @@
     <!-- box shadow of dialog -->
     <Style Selector=":is(Border).dialog-boxshadow">
         <Setter Property="BoxShadow" Value="0 0 1 #4a000000, 0 4 14 #1a000000"></Setter>
+    </Style>
+
+    <!-- Prevent mouse wheel from changing ComboBox selection when closed -->    
+    <Style Selector="ComboBox">
+        <Setter Property="helpers:ComboBoxHelper.DisableWheelChange" Value="True" />
     </Style>
 
 </Styles>
