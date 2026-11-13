@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls;
 using ReactiveUI.Avalonia;
 using CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components;
@@ -11,11 +12,13 @@ public partial class AvoidanceFilterView : ReactiveUserControl<AvoidanceFilterVi
         InitializeComponent();
     }
 
-    private void OnComboBoxSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    private void OnFlyoutOpened(object? sender, EventArgs e)
     {
-        if (sender is ComboBox comboBox && comboBox.SelectedItem != null)
-        {
-            comboBox.SelectedItem = null;
-        }
+        ViewModel?.NotifyFlyoutOpened();
+    }
+
+    private void OnFlyoutClosed(object? sender, EventArgs e)
+    {
+        ViewModel?.NotifyFlyoutClosed();
     }
 }

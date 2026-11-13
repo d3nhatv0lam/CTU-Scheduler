@@ -186,6 +186,13 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
             .InvokeCommand(GenerateTimeTableCommand)
             .DisposeWith(_disposables);
 
+        // Tự động tạo lại lịch khi bộ lọc tránh ngày/buổi thay đổi và đóng Flyout
+        AvoidanceFilterVM.FilterCommitted
+            .Where(_ => _hasGeneratedAtLeastOnce)
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
+            .InvokeCommand(GenerateTimeTableCommand)
+            .DisposeWith(_disposables);
+
         ShowTimetableDetailsCommand = ReactiveCommand.CreateFromTask<SelectableTimetableLayout>(async
                 selectableTimetableLayout =>
             {

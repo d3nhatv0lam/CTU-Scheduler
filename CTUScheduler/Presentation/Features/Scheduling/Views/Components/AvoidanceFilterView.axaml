@@ -8,154 +8,248 @@
     xmlns:rxui="http://reactiveui.net"
     x:DataType="viewModels:AvoidanceFilterViewModel"
     x:CompileBindings="True"
+    ClipToBounds="False"
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:sys="using:System"
+    xmlns:timeOfDay="using:CTUScheduler.Core.Models.Timetable"
     xmlns:viewModels="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.ViewModels.Components"
-    xmlns:models="clr-namespace:CTUScheduler.Presentation.Features.Scheduling.Models"
     x:Class="CTUScheduler.Presentation.Features.Scheduling.Views.Components.AvoidanceFilterView">
 
     <rxui:ReactiveUserControl.Styles>
         <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
         <StyleInclude Source="avares://CTUScheduler/Presentation/Features/Scheduling/Shared/Styles/controls.axaml" />
 
-        <Style Selector="ComboBox.CourseCombo ComboBoxItem">
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="Margin" Value="0" />
-            <Setter Property="CornerRadius" Value="4" />
-            <Setter Property="Focusable" Value="False" />
-            <Setter Property="Cursor" Value="Arrow" />
-            <Setter Property="Background" Value="Transparent" />
-        </Style>
-        <Style Selector="ComboBox.CourseCombo ComboBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="Transparent" />
-        </Style>
-        <Style Selector="ComboBox.CourseCombo ComboBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
-        </Style>
-        <Style Selector="ComboBox.CourseCombo ComboBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="Transparent" />
-        </Style>
-
-        <!-- SubCombo -->
-        <Style Selector="ComboBox.SubCombo">
-            <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="Height" Value="28" />
-            <Setter Property="MinHeight" Value="28" />
-            <Setter Property="FontSize" Value="12" />
+        <!-- Nút trigger mở Flyout ở Sidebar -->
+        <Style Selector="Button.FilterTrigger">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="CornerRadius" Value="6" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
-            <Setter Property="CornerRadius" Value="4" />
-            <Setter Property="Padding" Value="8 2" />
-            <Setter Property="Background" Value="White" />
-        </Style>
-        <Style Selector="ComboBox.SubCombo:pointerover /template/ Border#PART_Border">
-            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
-        </Style>
-        <Style Selector="ComboBox.SubCombo[IsDropDownOpen=True] /template/ Border#PART_Border">
-            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
-        </Style>
-        <Style Selector="ComboBox.SubCombo[IsDropDownOpen=True] /template/ PathIcon">
-            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
-        </Style>
-
-        <!-- SubCombo Popup Items-->
-        <Style Selector="ComboBox.SubCombo ComboBoxItem">
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Padding" Value="10 8" />
-            <Setter Property="MinHeight" Value="32" />
-            <Setter Property="CornerRadius" Value="4" />
-            <Setter Property="Margin" Value="2 1" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
+            <Setter Property="Padding" Value="10 0" />
             <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Focusable" Value="True" />
-            <Setter Property="Background" Value="Transparent" />
         </Style>
-        <Style Selector="ComboBox.SubCombo ComboBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#F5F5F5" />
-        </Style>
-        <Style Selector="ComboBox.SubCombo ComboBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#EBF4FF" />
-            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
-        </Style>
-        <Style Selector="ComboBox.SubCombo ComboBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#DCEEFF" />
-            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+        <Style Selector="Button.FilterTrigger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
         </Style>
 
-        <Style Selector="Border.DayRowBorder">
-            <Setter Property="Background" Value="Transparent" />
-        </Style>
-        <Style Selector="Border.DayRowBorder:pointerover">
-            <Setter Property="Background" Value="#F5F5F5" />
-        </Style>
-        <Style Selector="Border.DayRowBorder.is-avoided">
-            <Setter Property="Background" Value="#EBF4FF" />
-        </Style>
-        <Style Selector="Border.DayRowBorder.is-avoided:pointerover">
-            <Setter Property="Background" Value="#DCEEFF" />
-        </Style>
-
-        <Style Selector="Button.ClearBtn">
+        <!-- Nút chọn nhanh (Preset chip) -->
+        <Style Selector="ToggleButton.PresetChip">
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Padding" Value="8 0" />
+            <Setter Property="CornerRadius" Value="13" />
             <Setter Property="FontSize" Value="11" />
-            <Setter Property="Padding" Value="6 3" />
-            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
             <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="{StaticResource RedColor}" />
         </Style>
-        <Style Selector="Button.ClearBtn:disabled">
+        <Style Selector="ToggleButton.PresetChip:checked">
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+        </Style>
+
+        <!-- Tiêu đề ngày / buổi (bấm để toggle cả cột/hàng) -->
+        <Style Selector="Button.HeaderBtn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource SubTextColor}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.HeaderBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
+        </Style>
+
+        <!-- Ô ma trận 7x3 -->
+        <Style Selector="ToggleButton.MatrixCell">
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground0}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="ToggleButton.MatrixCell:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+        </Style>
+        <Style Selector="ToggleButton.MatrixCell:checked">
+            <Setter Property="Background" Value="#1AE63946" />
+            <Setter Property="BorderBrush" Value="{DynamicResource RedColor}" />
+        </Style>
+        <Style Selector="ToggleButton.MatrixCell:checked /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1AE63946" />
+            <Setter Property="BorderBrush" Value="{DynamicResource RedColor}" />
+        </Style>
+
+        <!-- Nút Xóa tất cả -->
+        <Style Selector="Button.ClearAllBtn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="6 2" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Foreground" Value="{DynamicResource RedColor}" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.ClearAllBtn:disabled">
             <Setter Property="Opacity" Value="0.35" />
         </Style>
     </rxui:ReactiveUserControl.Styles>
 
-    <Grid Margin="0 8 0 8">
-        <ComboBox Classes="CourseCombo"
-                  PlaceholderText="{Binding SummaryText}"
-                  ItemsSource="{Binding Days}"
-                  HorizontalAlignment="Stretch"
-                  SelectionChanged="OnComboBoxSelectionChanged">
-            <ComboBox.ItemTemplate>
-                <DataTemplate x:DataType="viewModels:DayAvoidanceItemViewModel">
-                    <Border Classes="DayRowBorder"
-                            Classes.is-avoided="{Binding IsAvoided}"
-                            Padding="4 3"
-                            Margin="1 1"
-                            CornerRadius="4">
-                        <Grid ColumnDefinitions="115 *" Margin="2 1">
-                            <CheckBox Grid.Column="0"
-                                      IsChecked="{Binding IsAvoided}"
-                                      Content="{Binding FullLabel}"
-                                      FontSize="12"
-                                      Cursor="Hand"
-                                      HorizontalAlignment="Stretch"
-                                      VerticalAlignment="Stretch"
-                                      VerticalContentAlignment="Center"
-                                      Background="Transparent" />
+    <Grid>
+        <!-- Nút Trigger mở Flyout ở Sidebar -->
+        <Button Classes="FilterTrigger"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch">
+            <Button.Flyout>
+                <Flyout Placement="BottomEdgeAlignedLeft"
+                        ShowMode="Standard"
+                        Opened="OnFlyoutOpened"
+                        Closed="OnFlyoutClosed">
+                    <Border Width="380" Padding="8">
+                        <StackPanel Spacing="10">
+                            <!-- Tiêu đề Flyout & Nút Xóa -->
+                            <Grid ColumnDefinitions="* Auto">
+                                <TextBlock Grid.Column="0"
+                                           Text="BỘ LỌC TRÁNH HỌC"
+                                           FontWeight="Bold"
+                                           FontSize="12"
+                                           VerticalAlignment="Center"
+                                           Foreground="{DynamicResource PrimaryBrush}" />
 
-                            <ComboBox Grid.Column="1"
-                                      Classes="SubCombo"
-                                      IsEnabled="{Binding IsAvoided}"
-                                      ItemsSource="{Binding Options}"
-                                      SelectedItem="{Binding SelectedOption}">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate x:DataType="models:DayAvoidanceOption">
-                                        <TextBlock Text="{Binding DisplayName}" FontSize="12" />
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                        </Grid>
+                                <Button Grid.Column="1"
+                                        Classes="ClearAllBtn"
+                                        Command="{Binding ClearAllCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <materialIcons:MaterialIcon Kind="DeleteSweepOutline" Width="14" Height="14" />
+                                        <TextBlock Text="Xóa tất cả" FontSize="11" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <Border Height="1" Background="{DynamicResource BorderColor}" />
+
+                            <!-- Khối chọn nhanh (Quick Presets) -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Chọn nhanh:" FontSize="11" Foreground="{DynamicResource SubTextColor}" />
+                                <WrapPanel Orientation="Horizontal">
+                                    <ToggleButton Classes="PresetChip"
+                                                  IsChecked="{Binding IsWeekendPresetActive, Mode=OneWay}"
+                                                  Command="{Binding ToggleWeekendPresetCommand}"
+                                                  Margin="0 0 6 6">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <materialIcons:MaterialIcon Kind="CalendarWeek" Width="13" Height="13" />
+                                            <TextBlock Text="Nghỉ cuối tuần (T7, CN)" />
+                                        </StackPanel>
+                                    </ToggleButton>
+
+                                    <ToggleButton Classes="PresetChip"
+                                                  IsChecked="{Binding IsEveningPresetActive, Mode=OneWay}"
+                                                  Command="{Binding ToggleEveningPresetCommand}"
+                                                  Margin="0 0 6 6">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <materialIcons:MaterialIcon Kind="WeatherNight" Width="13" Height="13" />
+                                            <TextBlock Text="Tránh học tối" />
+                                        </StackPanel>
+                                    </ToggleButton>
+                                </WrapPanel>
+                            </StackPanel>
+
+                            <!-- Bảng ma trận 7 ngày x 3 buổi -->
+                            <Grid RowDefinitions="Auto Auto" ColumnDefinitions="42 *">
+                                <!-- Hàng tiêu đề thứ (T2..CN) -->
+                                <UniformGrid Grid.Row="0" Grid.Column="1" Columns="7" Margin="0 0 0 4">
+                                    <Button Classes="HeaderBtn" Content="T2" Command="{Binding ToggleDayCommand}" CommandParameter="{x:Static sys:DayOfWeek.Monday}" ToolTip.Tip="Bật/Tắt cả ngày Thứ Hai" />
+                                    <Button Classes="HeaderBtn" Content="T3" Command="{Binding ToggleDayCommand}" CommandParameter="{x:Static sys:DayOfWeek.Tuesday}" ToolTip.Tip="Bật/Tắt cả ngày Thứ Ba" />
+                                    <Button Classes="HeaderBtn" Content="T4" Command="{Binding ToggleDayCommand}" CommandParameter="{x:Static sys:DayOfWeek.Wednesday}" ToolTip.Tip="Bật/Tắt cả ngày Thứ Tư" />
+                                    <Button Classes="HeaderBtn" Content="T5" Command="{Binding ToggleDayCommand}" CommandParameter="{x:Static sys:DayOfWeek.Thursday}" ToolTip.Tip="Bật/Tắt cả ngày Thứ Năm" />
+                                    <Button Classes="HeaderBtn" Content="T6" Command="{Binding ToggleDayCommand}" CommandParameter="{x:Static sys:DayOfWeek.Friday}" ToolTip.Tip="Bật/Tắt cả ngày Thứ Sáu" />
+                                    <Button Classes="HeaderBtn" Content="T7" Command="{Binding ToggleDayCommand}" CommandParameter="{x:Static sys:DayOfWeek.Saturday}" ToolTip.Tip="Bật/Tắt cả ngày Thứ Bảy" />
+                                    <Button Classes="HeaderBtn" Content="CN" Command="{Binding ToggleDayCommand}" CommandParameter="{x:Static sys:DayOfWeek.Sunday}" ToolTip.Tip="Bật/Tắt cả ngày Chủ Nhật" />
+                                </UniformGrid>
+
+                                <!-- Cột tiêu đề buổi (Sáng, Chiều, Tối) -->
+                                <UniformGrid Grid.Row="1" Grid.Column="0" Rows="3" Margin="0 0 4 0">
+                                    <Button Classes="HeaderBtn" Content="Sáng" Command="{Binding ToggleTimeCommand}" CommandParameter="{x:Static timeOfDay:TimeOfDay.Morning}" ToolTip.Tip="Bật/Tắt buổi Sáng cả tuần" />
+                                    <Button Classes="HeaderBtn" Content="Chiều" Command="{Binding ToggleTimeCommand}" CommandParameter="{x:Static timeOfDay:TimeOfDay.Afternoon}" ToolTip.Tip="Bật/Tắt buổi Chiều cả tuần" />
+                                    <Button Classes="HeaderBtn" Content="Tối" Command="{Binding ToggleTimeCommand}" CommandParameter="{x:Static timeOfDay:TimeOfDay.Evening}" ToolTip.Tip="Bật/Tắt buổi Tối cả tuần" />
+                                </UniformGrid>
+
+                                <!-- Lưới 21 ô ToggleButton -->
+                                <ItemsControl Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Cells}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="7" Rows="3" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="viewModels:AvoidanceCellViewModel">
+                                            <ToggleButton Classes="MatrixCell"
+                                                          IsChecked="{Binding IsAvoided, Mode=TwoWay}">
+                                                <Panel>
+                                                    <materialIcons:MaterialIcon Kind="Close"
+                                                                                Width="12" Height="12"
+                                                                                Foreground="{DynamicResource RedColor}"
+                                                                                IsVisible="{Binding IsAvoided}" />
+                                                </Panel>
+                                            </ToggleButton>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+
+                            <!-- Hướng dẫn nhanh -->
+                            <TextBlock Text="💡 Mẹo: Bấm vào chữ T2..CN hoặc Sáng/Chiều để chọn cả hàng/cột."
+                                       FontSize="10"
+                                       Foreground="{DynamicResource SubTextColor}"
+                                       Margin="0 4 0 0" />
+                        </StackPanel>
                     </Border>
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
+                </Flyout>
+            </Button.Flyout>
 
+            <!-- Giao diện hiển thị nút đóng ở Sidebar -->
+            <Grid ColumnDefinitions="Auto * Auto">
+                <materialIcons:MaterialIcon Grid.Column="0"
+                                            Kind="CalendarRemoveOutline"
+                                            Width="16" Height="16"
+                                            Foreground="{DynamicResource PrimaryBrush}"
+                                            Margin="0 0 6 0" />
+                <TextBlock Grid.Column="1"
+                           Text="{Binding SummaryText}"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" />
+                <materialIcons:MaterialIcon Grid.Column="2"
+                                            Kind="ChevronDown"
+                                            Width="16" Height="16"
+                                            Foreground="{DynamicResource SubTextColor}"
+                                            Margin="4 0 0 0" />
+            </Grid>
+        </Button>
+
+        <!-- Floating Label trên viền giống ComboBox Tiêu chí ưu tiên -->
         <TextBlock Text="Tránh học ngày / buổi"
                    FontSize="11"
                    FontWeight="Bold"
-                   Background="White"
+                   Background="{DynamicResource SemiColorBackground1}"
                    Padding="4 0"
                    Margin="10 -7 0 0"
                    VerticalAlignment="Top"
                    HorizontalAlignment="Left"
-                   Foreground="{StaticResource PrimaryBrush}"
+                   Foreground="{DynamicResource PrimaryBrush}"
                    IsHitTestVisible="False" />
     </Grid>
 </rxui:ReactiveUserControl>

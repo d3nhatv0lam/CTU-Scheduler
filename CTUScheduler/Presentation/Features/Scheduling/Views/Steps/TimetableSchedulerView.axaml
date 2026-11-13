@@ -342,9 +342,10 @@
                                                    ItemsSource="{Binding PaginationTimeTableViewModel.PagedData}">
                                         <ItemsRepeater.Layout>
                                             <UniformGridLayout
+                                                Orientation="Horizontal"
+                                                ItemsJustification="Start"
                                                 MinRowSpacing="30"
-                                                MinColumnSpacing="30"
-                                                ItemsJustification="SpaceEvenly">
+                                                MinColumnSpacing="30">
                                             </UniformGridLayout>
                                         </ItemsRepeater.Layout>
 
