@@ -106,11 +106,6 @@ public class TimetableGeneratorService : ITimetableGeneratorService
         });
     }
 
-    public double RecalculateScore(IReadOnlyList<SectionChoice> schedule, IReadOnlyList<IScheduleScorer> scorers)
-    {
-        return CalculateScore(schedule, scorers.ToArray());
-    }
-    
     private static bool ValidateCandidate(
         ReadOnlySpan<SectionChoice> path,
         SectionChoice candidate,
