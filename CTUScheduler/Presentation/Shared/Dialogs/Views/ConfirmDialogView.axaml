@@ -159,6 +159,13 @@
                 </StackPanel>
             </Grid>
 
+            <!-- Checkbox Không hỏi lại lần sau (Chỉ hiện khi ShowDoNotAskAgain == true) -->
+            <CheckBox Content="Không hỏi lại lần sau"
+                      IsVisible="{Binding ShowDoNotAskAgain}"
+                      IsChecked="{Binding DoNotAskAgain}"
+                      FontSize="12"
+                      Margin="24, 0, 24, 12" />
+
             <Border Classes="DialogSeparator" />
 
             <StackPanel Orientation="Horizontal"
