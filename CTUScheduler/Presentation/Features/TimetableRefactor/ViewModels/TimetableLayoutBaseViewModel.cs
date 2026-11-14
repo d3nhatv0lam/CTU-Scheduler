@@ -44,6 +44,8 @@ public abstract partial class TimetableLayoutBaseViewModel : ViewModelBase, IDis
     private TimetableViewModel? _visualizerVM = null;
     private bool _isSelected;
     private Bitmap? _previewImage;
+    private bool _hasFullSections;
+    private string? _fullSectionsWarningText;
 
     [ObservableAsProperty] private bool _isEditing;
 
@@ -97,6 +99,18 @@ public abstract partial class TimetableLayoutBaseViewModel : ViewModelBase, IDis
     {
         get => _previewImage;
         set => this.RaiseAndSetIfChanged(ref _previewImage, value);
+    }
+
+    public bool HasFullSections
+    {
+        get => _hasFullSections;
+        protected set => this.RaiseAndSetIfChanged(ref _hasFullSections, value);
+    }
+
+    public string? FullSectionsWarningText
+    {
+        get => _fullSectionsWarningText;
+        protected set => this.RaiseAndSetIfChanged(ref _fullSectionsWarningText, value);
     }
 
     public ReactiveCommand<Unit, Unit> CopyToClipboardCommand { get; protected set; }

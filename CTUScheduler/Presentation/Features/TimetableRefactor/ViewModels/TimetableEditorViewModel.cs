@@ -92,6 +92,31 @@ public class TimetableEditorViewModel : TimetableLayoutBaseViewModel, INeedArgs<
             .DisposeWith(Disposables);
 
         _sharedCourse.Connect()
+            .Transform(item => item.SharedData)
+            .AutoRefresh(shared => shared.RemainingStudents)
+            .Throttle(TimeSpan.FromMilliseconds(50))
+            .ObserveOn(RxSchedulers.MainThreadScheduler)
+            .Subscribe(_ =>
+            {
+                var fullItems = _sharedCourse.Items
+                    .Where(x => x.SharedData.RemainingStudents <= 0)
+                    .ToList();
+
+                if (fullItems.Count > 0)
+                {
+                    HasFullSections = true;
+                    var details = fullItems.Select(x => $"• {x.SharedData.CourseCode} - {x.SharedData.CourseName_VN} (Nhóm {x.SharedData.Group}: {x.SharedData.RemainingStudents}/{x.SharedData.TotalStudents})");
+                    FullSectionsWarningText = $"Có {fullItems.Count} lớp học phần đã hết slot:\n{string.Join("\n", details)}";
+                }
+                else
+                {
+                    HasFullSections = false;
+                    FullSectionsWarningText = null;
+                }
+            })
+            .DisposeWith(Disposables);
+
+        _sharedCourse.Connect()
             .Throttle(TimeSpan.FromSeconds(1))
             .Skip(1)
             .ObserveOn(RxSchedulers.MainThreadScheduler)

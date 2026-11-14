@@ -116,6 +116,17 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel,
 
         SubjectsCount = _choices.Count;
         TotalCredits = _choices.Sum(x => x.Course.Credits);
+
+        var fullSections = _choices
+            .Where(x => x.Section.RemainingStudents <= 0)
+            .ToList();
+
+        if (fullSections.Count > 0)
+        {
+            HasFullSections = true;
+            var details = fullSections.Select(x => $"• {x.Course.Code} - {x.Course.Name_VN} (Nhóm {x.Section.Group}: {x.Section.RemainingStudents}/{x.Section.TotalStudents})");
+            FullSectionsWarningText = $"Có {fullSections.Count} lớp học phần đã hết slot:\n{string.Join("\n", details)}";
+        }
     }
 
     private void EnsurePreviewGeneratedForTheme(AppTheme theme)

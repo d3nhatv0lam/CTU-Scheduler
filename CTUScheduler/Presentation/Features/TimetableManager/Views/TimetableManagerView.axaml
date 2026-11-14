@@ -395,10 +395,26 @@
                                 <DataTemplate x:DataType="timetableViewModel:TimetableLayoutBaseViewModel">
                                     <Border Classes="TimetableCard" Width="260" Height="248">
                                         <Grid RowDefinitions="Auto Auto Auto Auto *">
-                                            <!-- Checkbox/Select -->
-                                            <CheckBox Grid.Row="0"
-                                                      IsChecked="{Binding IsSelected}"
-                                                      Content="Chọn" />
+                                            <!-- Checkbox/Select & Warning Icon -->
+                                            <Grid Grid.Row="0" ColumnDefinitions="* Auto">
+                                                <CheckBox Grid.Column="0"
+                                                          IsChecked="{Binding IsSelected}"
+                                                          Content="Chọn" />
+                                                <Border Grid.Column="1"
+                                                        Width="22" Height="22"
+                                                        CornerRadius="11"
+                                                        Background="{DynamicResource SemiColorWarningLight}"
+                                                        IsVisible="{Binding HasFullSections}"
+                                                        ToolTip.Tip="{Binding FullSectionsWarningText}"
+                                                        Cursor="Help"
+                                                        VerticalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="AlertCircle"
+                                                                                Width="15" Height="15"
+                                                                                Foreground="{DynamicResource SemiColorWarning}"
+                                                                                HorizontalAlignment="Center"
+                                                                                VerticalAlignment="Center" />
+                                                </Border>
+                                            </Grid>
 
                                             <!-- Title / Name -->
                                             <TextBlock Grid.Row="1"
