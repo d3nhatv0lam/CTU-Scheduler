@@ -354,10 +354,27 @@
                                                 <Border Classes="TimetableCard">
                                                     <Grid
                                                         RowDefinitions="auto auto auto auto *">
-                                                        <CheckBox Grid.Row="0"
-                                                                  IsEnabled="{Binding IsEnabled}"
-                                                                  IsChecked="{Binding IsSelected}"
-                                                                  Content="Chọn" />
+                                                        <!-- Checkbox/Select & Warning Icon -->
+                                                        <Grid Grid.Row="0" ColumnDefinitions="* Auto">
+                                                            <CheckBox Grid.Column="0"
+                                                                      IsEnabled="{Binding IsEnabled}"
+                                                                      IsChecked="{Binding IsSelected}"
+                                                                      Content="Chọn" />
+                                                            <Border Grid.Column="1"
+                                                                    Width="22" Height="22"
+                                                                    CornerRadius="11"
+                                                                    Background="{DynamicResource SemiColorWarningLight}"
+                                                                    IsVisible="{Binding Item.HasFullSections}"
+                                                                    ToolTip.Tip="{Binding Item.FullSectionsWarningText}"
+                                                                    Cursor="Help"
+                                                                    VerticalAlignment="Center">
+                                                                <materialIcons:MaterialIcon Kind="AlertCircle"
+                                                                                            Width="15" Height="15"
+                                                                                            Foreground="{DynamicResource SemiColorWarning}"
+                                                                                            HorizontalAlignment="Center"
+                                                                                            VerticalAlignment="Center" />
+                                                            </Border>
+                                                        </Grid>
                                                         <TextBlock Grid.Row="1"
                                                                    FontSize="12"
                                                                    Text="{Binding Item.SubjectsCount, StringFormat=Số môn học: {0}}" />
