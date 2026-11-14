@@ -16,6 +16,8 @@ namespace CTUScheduler.Presentation.Shared.Dialogs.ViewModels
         private string _confirmText = "";
         private string _cancelText = "";
         private bool _isDestructive = false;
+        private bool _showDoNotAskAgain = false;
+        private bool _doNotAskAgain = false;
 
 
         public string Title
@@ -46,6 +48,18 @@ namespace CTUScheduler.Presentation.Shared.Dialogs.ViewModels
         {
             get => _isDestructive;
             set => this.RaiseAndSetIfChanged(ref _isDestructive, value);
+        }
+
+        public bool ShowDoNotAskAgain
+        {
+            get => _showDoNotAskAgain;
+            set => this.RaiseAndSetIfChanged(ref _showDoNotAskAgain, value);
+        }
+
+        public bool DoNotAskAgain
+        {
+            get => _doNotAskAgain;
+            set => this.RaiseAndSetIfChanged(ref _doNotAskAgain, value);
         }
 
         public ReactiveCommand<Unit, Unit> AcceptCommand { get; }

@@ -92,7 +92,7 @@ public static class DesktopServiceExtensions
         services.AddSingleton<IThemeService, ThemeService>();
 
         services.AddTransient<SplashScreenWindow>();
-        services.AddTransient<MainWindow>(sp =>  new MainWindow() {DataContext = sp.GetRequiredService<MainViewModel>()});
+        services.AddTransient<MainWindow>();
 
         // crash report
         services.AddSingleton<ICrashReportService, CrashReportService>();
