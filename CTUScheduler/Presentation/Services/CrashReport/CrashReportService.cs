@@ -8,6 +8,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using CTUScheduler.Presentation.Features.CrashReport.ViewModels;
 using CTUScheduler.Presentation.Features.CrashReport.Views;
+using CTUScheduler.Presentation.Services.ApplicationLifetime;
 using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -16,17 +17,20 @@ namespace CTUScheduler.Presentation.Services.CrashReport;
 public class CrashReportService : ICrashReportService
 {
     private readonly ILogger<CrashReportService> _logger;
-    private readonly IViewContextService? _viewContextService;
-    private readonly HashSet<string> _mutedSignatures = new();
+    private readonly IViewContextService _viewContextService;
+    private readonly IAppLifecycleService _appLifecycleService;
+    private readonly HashSet<string> _mutedSignatures = [];
     private readonly Lock _lock = new();
     private bool _isWindowOpen;
 
     public CrashReportService(
         ILogger<CrashReportService> logger,
-        IViewContextService? viewContextService = null)
+        IViewContextService viewContextService,
+        IAppLifecycleService appLifecycleService)
     {
         _logger = logger;
         _viewContextService = viewContextService;
+        _appLifecycleService = appLifecycleService;
     }
 
     public bool IsMuted(Exception exception)
@@ -72,7 +76,7 @@ public class CrashReportService : ICrashReportService
         {
             try
             {
-                var vm = new CrashReportViewModel(exception, isFatal);
+                var vm = new CrashReportViewModel(exception, isFatal, _appLifecycleService);
                 var window = new CrashReportWindow { DataContext = vm };
 
                 window.Closed += (_, _) =>
@@ -90,11 +94,11 @@ public class CrashReportService : ICrashReportService
 
                     if (isFatal)
                     {
-                        Environment.Exit(1);
+                        _appLifecycleService.Shutdown();
                     }
                 };
 
-                Window? owner = _viewContextService?.CurrentTopLevel as Window;
+                Window? owner = _viewContextService.CurrentTopLevel as Window;
                 if (owner == null && Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 {
                     owner = desktop.Windows.FirstOrDefault(w => w.IsVisible && w is not CrashReportWindow)

@@ -1,14 +1,20 @@
 using System;
+using CTUScheduler.Presentation.Services.ApplicationLifetime;
 using CTUScheduler.Presentation.Services.CrashReport;
+using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 using Xunit;
 
 namespace CTUScheduler.Tests.Presentation.Features.CrashReport;
 
 public class CrashReportServiceTests
 {
-    private readonly CrashReportService _service = new(NullLogger<CrashReportService>.Instance);
+    private readonly CrashReportService _service = new(
+        NullLogger<CrashReportService>.Instance,
+        Substitute.For<IViewContextService>(),
+        Substitute.For<IAppLifecycleService>());
 
     [Fact]
     public void IsMuted_ReturnsFalse_Initially()

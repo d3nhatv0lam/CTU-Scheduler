@@ -1,6 +1,9 @@
 using System;
+using System.Reactive.Linq;
 using CTUScheduler.Presentation.Features.CrashReport.ViewModels;
+using CTUScheduler.Presentation.Services.ApplicationLifetime;
 using FluentAssertions;
+using NSubstitute;
 using Xunit;
 
 namespace CTUScheduler.Tests.Presentation.Features.CrashReport;
@@ -70,5 +73,33 @@ public class CrashReportViewModelTests
 
         // Assert
         vm.MuteThisError.Should().BeTrue();
+    }
+
+    [Fact]
+    public void RestartAppCommand_CallsAppLifecycleServiceRestart()
+    {
+        // Arrange
+        var appLifecycle = Substitute.For<IAppLifecycleService>();
+        var vm = new CrashReportViewModel(new Exception("test"), isFatal: true, appLifecycle);
+
+        // Act
+        vm.RestartAppCommand.Execute().Subscribe();
+
+        // Assert
+        appLifecycle.Received(1).Restart();
+    }
+
+    [Fact]
+    public void CloseCommand_WhenFatal_CallsAppLifecycleServiceShutdown()
+    {
+        // Arrange
+        var appLifecycle = Substitute.For<IAppLifecycleService>();
+        var vm = new CrashReportViewModel(new Exception("test"), isFatal: true, appLifecycle);
+
+        // Act
+        vm.CloseCommand.Execute().Subscribe();
+
+        // Assert
+        appLifecycle.Received(1).Shutdown();
     }
 }

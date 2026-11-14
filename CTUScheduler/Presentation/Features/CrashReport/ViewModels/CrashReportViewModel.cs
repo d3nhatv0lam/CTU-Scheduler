@@ -38,9 +38,9 @@ public partial class CrashReportViewModel : ViewModelBase, IRequestClose
     public ReactiveCommand<Unit, Unit> CloseCommand { get; }
 
     public CrashReportViewModel(
-        Exception? exception = null,
-        bool isFatal = false,
-        IAppLifecycleService? appLifecycleService = null)
+        Exception? exception,
+        bool isFatal,
+        IAppLifecycleService appLifecycleService)
     {
         _appLifecycleService = appLifecycleService;
         IsFatal = isFatal;
@@ -63,6 +63,11 @@ public partial class CrashReportViewModel : ViewModelBase, IRequestClose
         OpenLogFolderCommand = ReactiveCommand.Create(OpenLogFolder);
         RestartAppCommand = ReactiveCommand.Create(RestartApp);
         CloseCommand = ReactiveCommand.Create(() => Close());
+    }
+
+    public CrashReportViewModel(Exception? exception = null, bool isFatal = false)
+        : this(exception, isFatal, null!)
+    {
     }
 
     private static string BuildErrorDetails(Exception? ex)
@@ -133,6 +138,18 @@ public partial class CrashReportViewModel : ViewModelBase, IRequestClose
 
     private void RestartApp()
     {
+        if (_appLifecycleService != null)
+        {
+            _appLifecycleService.Restart();
+        }
+        else
+        {
+            FallbackRestart();
+        }
+    }
+
+    private void FallbackRestart()
+    {
         try
         {
             var exePath = Environment.ProcessPath;
@@ -141,7 +158,8 @@ public partial class CrashReportViewModel : ViewModelBase, IRequestClose
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = exePath,
-                    UseShellExecute = true
+                    UseShellExecute = true,
+                    WorkingDirectory = AppContext.BaseDirectory
                 });
             }
         }
