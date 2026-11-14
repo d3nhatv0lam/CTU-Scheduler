@@ -9,4 +9,5 @@ public interface IAppLifecycleService
     public CancellationToken ApplicationStopping { get; }
     public CancellationToken ApplicationStopped { get; }
     public void Shutdown();
+    public void Restart();
 }

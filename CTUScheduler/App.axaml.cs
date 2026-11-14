@@ -3,6 +3,7 @@ using Avalonia.Markup.Xaml;
 using Serilog;
 using Avalonia.Threading;
 using CTUScheduler.Presentation.Services.ApplicationStartup;
+using CTUScheduler.Presentation.Services.CrashReport;
 
 namespace CTUScheduler;
 
@@ -25,7 +26,8 @@ public class App : Application
         {
             var uiLog = Log.ForContext("ShortTypeName", "UI");
             uiLog.Error(e.Exception, "Avalonia UI Thread Unhandled Exception");
-            // e.Handled = true;   // Chỉ bật nếu bạn chắc chắn muốn app tiếp tục (rủi ro cao)
+            e.Handled = true;
+            CrashReporter.Show(e.Exception, isFatal: false);
         };
 
         if (ApplicationLifetime is not null)
