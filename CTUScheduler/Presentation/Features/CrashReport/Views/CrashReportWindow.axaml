@@ -1,0 +1,144 @@
+<u:ReactiveUrsaWindow
+    x:TypeArguments="vm:CrashReportViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.CrashReport.ViewModels"
+    x:Class="CTUScheduler.Presentation.Features.CrashReport.Views.CrashReportWindow"
+    x:DataType="vm:CrashReportViewModel"
+    x:CompileBindings="True"
+    Title="{Binding WindowTitle}"
+    Icon="avares://CTUScheduler/Assets/Logo/icon.ico"
+    Width="560" Height="450"
+    MinWidth="460" MinHeight="380"
+    MaxWidth="900" MaxHeight="700"
+    CanResize="True"
+    WindowStartupLocation="CenterScreen"
+    Background="{DynamicResource SemiColorBackground1}">
+
+    <u:ReactiveUrsaWindow.Styles>
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.Button.axaml" />
+    </u:ReactiveUrsaWindow.Styles>
+
+    <Grid Margin="20" RowDefinitions="Auto, 14, *, 12, Auto, 16, Auto">
+        <!-- Hàng 0: Header với Icon và Tiêu đề -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto, 14, *">
+            <!-- Icon Cam cho lỗi Non-Fatal -->
+            <Border Grid.Column="0"
+                    Width="40" Height="40"
+                    CornerRadius="20"
+                    VerticalAlignment="Top"
+                    Background="{DynamicResource SemiColorWarningLight}"
+                    IsVisible="{Binding !IsFatal}">
+                <materialIcons:MaterialIcon Kind="AlertCircle"
+                                            Width="22" Height="22"
+                                            Foreground="{DynamicResource SemiColorWarning}"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" />
+            </Border>
+
+            <!-- Icon Đỏ cho lỗi Fatal -->
+            <Border Grid.Column="0"
+                    Width="40" Height="40"
+                    CornerRadius="20"
+                    VerticalAlignment="Top"
+                    Background="{DynamicResource SemiColorDangerLight}"
+                    IsVisible="{Binding IsFatal}">
+                <materialIcons:MaterialIcon Kind="CloseCircle"
+                                            Width="22" Height="22"
+                                            Foreground="{DynamicResource SemiColorDanger}"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" />
+            </Border>
+
+            <!-- Tiêu đề và diễn giải -->
+            <StackPanel Grid.Column="2" Spacing="4" VerticalAlignment="Center">
+                <TextBlock Text="{Binding HeaderTitle}"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource SemiColorText0}" />
+                <TextBlock Text="{Binding HeaderSubtitle}"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource SemiColorText2}" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Hàng 2: Hộp chi tiết lỗi (TextBox cuộn dọc, bôi đen copy được, co dãn theo chiều cao) -->
+        <Border Grid.Row="2"
+                CornerRadius="6"
+                BorderThickness="1"
+                BorderBrush="{DynamicResource SemiColorBorder}"
+                Background="{DynamicResource SemiColorBackground0}">
+            <TextBox Text="{Binding ErrorDetailsText}"
+                     IsReadOnly="True"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     FontFamily="Consolas, Cascadia Code, monospace"
+                     FontSize="11"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     Padding="10" />
+        </Border>
+
+        <!-- Hàng 4: Checkbox không hiện lại lỗi trong phiên này (Chỉ hiện khi !IsFatal) -->
+        <CheckBox Grid.Row="4"
+                  IsVisible="{Binding !IsFatal}"
+                  IsChecked="{Binding MuteThisError}"
+                  Content="Không hiện lại thông báo này trong phiên làm việc này"
+                  FontSize="12" />
+
+        <!-- Hàng 6: Thanh nút bấm (Responsive Toolbar) -->
+        <Grid Grid.Row="6" ColumnDefinitions="Auto, *, Auto">
+            <!-- Cụm bên trái: Mở log & Sao chép -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                <Button Command="{Binding OpenLogFolderCommand}"
+                        ToolTip.Tip="Mở thư mục chứa file nhật ký hệ thống">
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <materialIcons:MaterialIcon Kind="FolderOpenOutline" Width="14" Height="14" />
+                        <TextBlock Text="Mở thư mục Log" FontSize="12" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <Button Command="{Binding CopyErrorCommand}"
+                        ToolTip.Tip="Sao chép toàn bộ thông tin lỗi vào bộ nhớ tạm">
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <materialIcons:MaterialIcon Kind="ContentCopy" Width="14" Height="14" />
+                        <TextBlock Text="{Binding CopyButtonText}" FontSize="12" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+            <!-- Cụm bên phải: Nút hành động chính theo chế độ -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                <!-- Nút Tiếp tục (Khi !IsFatal) -->
+                <Button Classes="Primary"
+                        IsVisible="{Binding !IsFatal}"
+                        Command="{Binding CloseCommand}">
+                    <TextBlock Text="Tiếp tục" FontSize="12" FontWeight="SemiBold" />
+                </Button>
+
+                <!-- Nút Khởi động lại (Khi IsFatal) -->
+                <Button Classes="Primary"
+                        IsVisible="{Binding IsFatal}"
+                        Command="{Binding RestartAppCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <materialIcons:MaterialIcon Kind="Restart" Width="14" Height="14" />
+                        <TextBlock Text="Khởi động lại" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Nút Đóng ứng dụng (Khi IsFatal) -->
+                <Button Classes="Danger"
+                        IsVisible="{Binding IsFatal}"
+                        Command="{Binding CloseCommand}">
+                    <TextBlock Text="Đóng ứng dụng" FontSize="12" />
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</u:ReactiveUrsaWindow>

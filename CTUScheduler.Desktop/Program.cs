@@ -10,6 +10,7 @@ using CTUScheduler.Infrastructure.Extensions;
 using CTUScheduler.Presentation.Extensions;
 using CTUScheduler.Presentation.Services.ApplicationLifetime;
 using CTUScheduler.Presentation.Services.ApplicationStartup;
+using CTUScheduler.Presentation.Services.CrashReport;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI.Avalonia.Splat;
@@ -44,6 +45,7 @@ class Program
             var logger = Log.ForContext("ShortTypeName", "Application");
             logger.Fatal(ex, "APP CRASH: Unhandled Exception on Non-UI Thread {IsTerminating}",
                 appDomainArgs.IsTerminating);
+            CrashReporter.Show(ex, isFatal: true);
         };
 
         // Bắt lỗi ở Task (Task bị lỗi mà không có await hoặc try-catch)
@@ -63,6 +65,7 @@ class Program
         {
             Log.ForContext("ShortTypeName", "Host")
                 .Fatal(ex, "Host terminated unexpectedly during start-up");
+            CrashReporter.Show(ex, isFatal: true);
         }
         finally
         {
@@ -83,6 +86,8 @@ class Program
                 {
                     _serviceProvider = sp;
 
+                    CrashReporter.Current = sp?.GetService<ICrashReportService>();
+
                     var controller = sp?.GetRequiredService<IAppLifecycleController>();
                     controller?.NotifyStarted();
                 },
@@ -92,7 +97,7 @@ class Program
                     {
                         var rxLog = Log.ForContext("ShortTypeName", "UI");
                         rxLog.Error(ex, "ReactiveUI Pipeline/Command Exception");
-                        // có thể hiển thị Dialog báo lỗi cho User tại đây
+                        CrashReporter.Show(ex, isFatal: false);
                     }));
                 })
             .AfterSetup(builder =>

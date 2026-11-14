@@ -1,9 +1,12 @@
 using System.Reflection;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Features.Authentication.Views;
+using CTUScheduler.Presentation.Features.CrashReport.ViewModels;
+using CTUScheduler.Presentation.Features.CrashReport.Views;
 using CTUScheduler.Presentation.Features.Scheduling.Models.Strategies;
 using CTUScheduler.Presentation.Features.SplashScreen.Views;
 using CTUScheduler.Presentation.Services.ApplicationLifetime;
+using CTUScheduler.Presentation.Services.CrashReport;
 using CTUScheduler.Presentation.Services.Factories;
 using CTUScheduler.Presentation.Services.Navigation;
 using CTUScheduler.Presentation.Services.UserInteractionService;
@@ -90,6 +93,11 @@ public static class DesktopServiceExtensions
 
         services.AddTransient<SplashScreenWindow>();
         services.AddTransient<MainWindow>(sp =>  new MainWindow() {DataContext = sp.GetRequiredService<MainViewModel>()});
+
+        // crash report
+        services.AddSingleton<ICrashReportService, CrashReportService>();
+        services.AddTransient<CrashReportWindow>();
+        services.AddTransient<CrashReportViewModel>();
 
         return services;
     }
