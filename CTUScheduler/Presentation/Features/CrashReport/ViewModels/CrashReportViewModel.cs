@@ -10,6 +10,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input.Platform;
 using CTUScheduler.Core.Helpers;
 using CTUScheduler.Presentation.Base;
+using CTUScheduler.Presentation.Services.ApplicationLifetime;
 using CTUScheduler.Presentation.Shared.Interfaces;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
@@ -18,6 +19,8 @@ namespace CTUScheduler.Presentation.Features.CrashReport.ViewModels;
 
 public partial class CrashReportViewModel : ViewModelBase, IRequestClose
 {
+    private readonly IAppLifecycleService? _appLifecycleService;
+
     public event Action<object?>? RequestClose;
 
     public bool IsFatal { get; }
@@ -34,8 +37,12 @@ public partial class CrashReportViewModel : ViewModelBase, IRequestClose
     public ReactiveCommand<Unit, Unit> RestartAppCommand { get; }
     public ReactiveCommand<Unit, Unit> CloseCommand { get; }
 
-    public CrashReportViewModel(Exception? exception = null, bool isFatal = false)
+    public CrashReportViewModel(
+        Exception? exception = null,
+        bool isFatal = false,
+        IAppLifecycleService? appLifecycleService = null)
     {
+        _appLifecycleService = appLifecycleService;
         IsFatal = isFatal;
 
         WindowTitle = isFatal
@@ -124,7 +131,7 @@ public partial class CrashReportViewModel : ViewModelBase, IRequestClose
         }
     }
 
-    private static void RestartApp()
+    private void RestartApp()
     {
         try
         {
@@ -144,7 +151,7 @@ public partial class CrashReportViewModel : ViewModelBase, IRequestClose
         }
         finally
         {
-            Environment.Exit(1);
+            ShutdownApp();
         }
     }
 
@@ -152,6 +159,22 @@ public partial class CrashReportViewModel : ViewModelBase, IRequestClose
     {
         RequestClose?.Invoke(result);
         if (IsFatal)
+        {
+            ShutdownApp();
+        }
+    }
+
+    private void ShutdownApp()
+    {
+        if (_appLifecycleService != null)
+        {
+            _appLifecycleService.Shutdown();
+        }
+        else if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.Shutdown(1);
+        }
+        else
         {
             Environment.Exit(1);
         }

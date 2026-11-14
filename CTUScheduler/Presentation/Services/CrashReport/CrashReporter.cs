@@ -1,4 +1,9 @@
 using System;
+using System.Linq;
+using System.Threading;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using CTUScheduler.Presentation.Features.CrashReport.ViewModels;
 using CTUScheduler.Presentation.Features.CrashReport.Views;
@@ -36,22 +41,64 @@ public static class CrashReporter
     {
         if (Dispatcher.UIThread.CheckAccess())
         {
-            OpenEmergencyWindow(exception, isFatal);
+            OpenEmergencyWindow(exception, isFatal, null);
         }
         else
         {
-            Dispatcher.UIThread.Post(() => OpenEmergencyWindow(exception, isFatal));
+            var waitHandle = new ManualResetEventSlim(false);
+            Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    OpenEmergencyWindow(exception, isFatal, waitHandle);
+                }
+                catch
+                {
+                    waitHandle.Set();
+                }
+            });
+
+            if (isFatal)
+            {
+                waitHandle.Wait();
+            }
         }
     }
 
-    private static void OpenEmergencyWindow(Exception exception, bool isFatal)
+    private static async void OpenEmergencyWindow(Exception exception, bool isFatal, ManualResetEventSlim? waitHandle)
     {
         var vm = new CrashReportViewModel(exception, isFatal);
         var window = new CrashReportWindow { DataContext = vm };
-        if (isFatal)
+        window.Closed += (_, _) =>
         {
-            window.Closed += (_, _) => Environment.Exit(1);
+            waitHandle?.Set();
+            if (isFatal)
+            {
+                if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    desktop.Shutdown(1);
+                }
+                else
+                {
+                    Environment.Exit(1);
+                }
+            }
+        };
+
+        Window? owner = null;
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            owner = desktop.Windows.FirstOrDefault(w => w.IsVisible && w is not CrashReportWindow) ?? desktop.MainWindow;
         }
-        window.Show();
+
+        if (owner != null && owner.IsVisible)
+        {
+            await window.ShowDialog(owner);
+        }
+        else
+        {
+            window.Show();
+            window.Activate();
+        }
     }
 }

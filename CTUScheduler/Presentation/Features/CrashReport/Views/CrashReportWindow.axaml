@@ -14,6 +14,7 @@
     MinWidth="460" MinHeight="380"
     MaxWidth="900" MaxHeight="700"
     CanResize="True"
+    Topmost="True"
     WindowStartupLocation="CenterScreen"
     Background="{DynamicResource SemiColorBackground1}">
 

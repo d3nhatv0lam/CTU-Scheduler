@@ -1,8 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using CTUScheduler.Presentation.Features.CrashReport.ViewModels;
 using CTUScheduler.Presentation.Features.CrashReport.Views;
+using CTUScheduler.Presentation.Services.ViewContext.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Presentation.Services.CrashReport;
@@ -10,13 +16,17 @@ namespace CTUScheduler.Presentation.Services.CrashReport;
 public class CrashReportService : ICrashReportService
 {
     private readonly ILogger<CrashReportService> _logger;
+    private readonly IViewContextService? _viewContextService;
     private readonly HashSet<string> _mutedSignatures = new();
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private bool _isWindowOpen;
 
-    public CrashReportService(ILogger<CrashReportService> logger)
+    public CrashReportService(
+        ILogger<CrashReportService> logger,
+        IViewContextService? viewContextService = null)
     {
         _logger = logger;
+        _viewContextService = viewContextService;
     }
 
     public bool IsMuted(Exception exception)
@@ -56,7 +66,9 @@ public class CrashReportService : ICrashReportService
             _isWindowOpen = true;
         }
 
-        Dispatcher.UIThread.Post(() =>
+        var waitHandle = new ManualResetEventSlim(false);
+
+        Dispatcher.UIThread.Post(async () =>
         {
             try
             {
@@ -74,13 +86,30 @@ public class CrashReportService : ICrashReportService
                         _isWindowOpen = false;
                     }
 
+                    waitHandle.Set();
+
                     if (isFatal)
                     {
                         Environment.Exit(1);
                     }
                 };
 
-                window.Show();
+                Window? owner = _viewContextService?.CurrentTopLevel as Window;
+                if (owner == null && Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    owner = desktop.Windows.FirstOrDefault(w => w.IsVisible && w is not CrashReportWindow)
+                           ?? desktop.MainWindow;
+                }
+
+                if (owner is { IsVisible: true })
+                {
+                    await window.ShowDialog(owner);
+                }
+                else
+                {
+                    window.Show();
+                    window.Activate();
+                }
             }
             catch (Exception ex)
             {
@@ -89,8 +118,15 @@ public class CrashReportService : ICrashReportService
                 {
                     _isWindowOpen = false;
                 }
+                waitHandle.Set();
             }
         });
+
+        if (isFatal && !Dispatcher.UIThread.CheckAccess())
+        {
+            // Chặn thread nền để CLR không huỷ process ngay lập tức trước khi UI kịp hiển thị cửa sổ báo lỗi
+            waitHandle.Wait();
+        }
     }
 
     private static string GetExceptionSignature(Exception ex)
