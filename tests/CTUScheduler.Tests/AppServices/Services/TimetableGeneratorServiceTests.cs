@@ -68,6 +68,40 @@ public class TimetableGeneratorServiceTests
     }
 
     [Fact]
+    public async Task Generate_WhenMaxCreditsPruningRuleProvided_ShouldPruneOverCreditTimetables()
+    {
+        // Course 1 (3 credits)
+        var choice1 = CreateChoice("CT101", 2, "12--------");
+        var set1 = new List<SectionChoice> { choice1 };
+
+        // Course 2: Option A (4 credits) -> Total 3 + 4 = 7
+        //           Option B (2 credits) -> Total 3 + 2 = 5
+        var section2A = new CourseSection(false, 1, "CT102", "01", "GV", "gv@ctu.edu.vn", 40, 10,
+            new[] { new ClassDay(3, "12--------", "P1") });
+        var course2A = new Course("CT102", "Môn 2A", 4, 40, 0, new[] { section2A });
+        var choice2A = new SectionChoice(course2A, section2A);
+
+        var section2B = new CourseSection(false, 2, "CT102", "02", "GV", "gv@ctu.edu.vn", 40, 10,
+            new[] { new ClassDay(3, "34--------", "P1") });
+        var course2B = new Course("CT102", "Môn 2B", 2, 20, 0, new[] { section2B });
+        var choice2B = new SectionChoice(course2B, section2B);
+
+        var set2 = new List<SectionChoice> { choice2A, choice2B };
+        var sets = new List<IReadOnlyList<SectionChoice>> { set1, set2 };
+
+        // MaxCredits = 6 -> Choice 2A (total 7) should be pruned, only Choice 2B (total 5) should remain
+        var options = new ScheduleGenerationOptions
+        {
+            AdditionalPruningRules = [new MaxCreditsPruningRule(6)]
+        };
+
+        var results = await _service.Generate(sets, options).FirstAsync();
+
+        results.Should().HaveCount(1);
+        results[0].Choices.Should().Contain(choice2B);
+    }
+
+    [Fact]
     public async Task Generate_WithMaxResults_ShouldRespectLimit()
     {
         var set1 = new List<SectionChoice>
