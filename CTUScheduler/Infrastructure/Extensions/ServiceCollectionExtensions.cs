@@ -43,8 +43,13 @@ public static class ServiceCollectionExtensions
         services.AddTransient<CtuJwtAuthHandler>();
         services.AddTransient<CtuLegacyCookieHandler>();
 
-        services.AddHttpClient<IAuthClient, AuthClient>()
+        services.AddHttpClient<AuthClient>()
             .AddHttpMessageHandler<CtuLegacyCookieHandler>();
+
+        services.AddHttpClient<LegacyAuthClient>()
+            .AddHttpMessageHandler<CtuLegacyCookieHandler>();
+
+        services.AddSingleton<IAuthClient, AuthClientOrchestrator>();
 
         services.AddHttpClient<CourseRegistrationClient>()
             .AddHttpMessageHandler<CtuSessionRecoveryHandler>()

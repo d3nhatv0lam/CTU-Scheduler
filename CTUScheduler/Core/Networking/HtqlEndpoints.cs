@@ -25,6 +25,9 @@ internal static class HtqlEndpoints
     public static readonly Uri SsoAuth =
         new($"{DkmhBase}/htql/sinhvien/dang_nhap_sso.php");
 
+    public static readonly Uri LegacyLogin =
+        new($"{DkmhBase}/htql/sinhvien/dang_nhap.php");
+
     public static readonly Uri StudentHome =
         new($"{DkmhBase}/htql/sinhvien/hindex.php");
 }
