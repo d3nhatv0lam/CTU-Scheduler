@@ -7,8 +7,10 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CTUScheduler.AppServices.Services.CtuSessions;
 using CTUScheduler.AppServices.Services.ScheduleService;
 using CTUScheduler.AppServices.Services.TimetableGeneratorService;
+using CTUScheduler.AppServices.Services.UserSessionService;
 using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Academic.Curriculum.CourseData;
 using CTUScheduler.Core.Models.Shared;
@@ -42,6 +44,8 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
     private readonly ILogger<TimetableSchedulerViewModel> _logger;
     private readonly IScheduleRegistrationService _scheduleRegistrationService;
     private readonly ITimetableGeneratorService _timetableGeneratorService;
+    private readonly IUserSessionService _userSessionService;
+    private readonly ICtuSessionAccessor _ctuSessionAccessor;
 
     [Reactive] private SchedulingPreset? _selectedPreset;
     [ObservableAsProperty] private bool _hasNoResults;
@@ -61,6 +65,8 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
     public TimetableSchedulerViewModel(SchedulingWizardContext context,
         IScheduleRegistrationService scheduleRegistrationService,
         ITimetableGeneratorService timetableGeneratorService,
+        IUserSessionService userSessionService,
+        ICtuSessionAccessor ctuSessionAccessor,
         IUserInteractionService userInteractionService,
         IProfileQueryService profileQueryService,
         IViewModelFactory viewModelFactory,
@@ -68,6 +74,8 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
     {
         _scheduleRegistrationService = scheduleRegistrationService;
         _timetableGeneratorService = timetableGeneratorService;
+        _userSessionService = userSessionService;
+        _ctuSessionAccessor = ctuSessionAccessor;
         _logger = loggerFactory.CreateLogger<TimetableSchedulerViewModel>();
 
         var courseStream = context.CourseBlueprints.Connect()
@@ -90,8 +98,7 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
         var maxCanSelect = profileQueryService.ProfileUsageState
             .Select(x => x.Limit - x.Current)
             .DistinctUntilChanged();
-
-
+        
         PaginationTimeTableViewModel = new TimetablePaginationViewModel(
                 maxCanSelect,
                 new PaginationOptions<SelectableTimetableLayout>
@@ -127,6 +134,12 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
                         if (avoidanceSlots.Count > 0)
                         {
                             pruningRules.Add(new AvoidTimePruningRule(avoidanceSlots));
+                        }
+
+                        int? maxCredits = ResolveMaxCredits();
+                        if (maxCredits.HasValue)
+                        {
+                            pruningRules.Add(new MaxCreditsPruningRule(maxCredits.Value));
                         }
 
                         var options = new ScheduleGenerationOptions()
@@ -209,6 +222,24 @@ public partial class TimetableSchedulerViewModel : ViewModelBase, IWizardStep, I
             .DisposeWith(_disposables);
     }
 
+
+    private int? ResolveMaxCredits()
+    {
+        if (_userSessionService.CurrentContext?.MaxCreditPerSemester is { } ctxLimit and > 0)
+            return ctxLimit;
+
+        if (_ctuSessionAccessor.Current?.Profile is { } profile)
+        {
+            const int summerSemester = 3; // hk hè
+            var limit = profile.CurrentSemester == summerSemester 
+                ? profile.MaxCreditsSummerSemester
+                : profile.MaxCreditsMainSemester;
+
+            if (limit > 0) return limit;
+        }
+
+        return null;
+    }
 
     private IReadOnlyList<IReadOnlyList<SectionChoice>> CourseSectionsTrackerFlatten(
         IReadOnlyList<IReadOnlyList<Course>> courseSets)
