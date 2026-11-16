@@ -237,8 +237,7 @@ jobs:
             --merge \
             --tag "v${{ steps.version.outputs.SEMVER }}"
 
-      # Lệnh upload cuối cùng kèm cờ --publish để chính thức công bố Release
-      # Lệnh upload cuối cùng kèm cờ --draft để tạo bản nháp (Draft Release)
+      # Lệnh upload cuối cùng: Mặc định không truyền --publish thì Velopack sẽ tự để ở dạng Draft Release
       - name: Upload macOS Channel and Publish Release
         run: |
           vpk upload github \
@@ -247,5 +246,4 @@ jobs:
             --channel "osx" \
             --outputDir "./merged-releases" \
             --merge \
-            --draft \
             --tag "v${{ steps.version.outputs.SEMVER }}"
