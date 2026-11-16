@@ -16,16 +16,16 @@ public interface IAuthClient
     /// </returns>
     Task<AuthServerStatus> PingAuthServerAsync(CancellationToken cancellationToken = default);
     
-    Task<CtuSession> AuthenticateAsync(string username, string password, CancellationToken ct = default);
+    Task<CtuSession> AuthenticateAsync(string username, string password, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gửi một request siêu nhẹ (HEAD/GET) để giữ nhịp (heartbeat), 
     /// tránh cho phiên làm việc PHP (PHPSESSID) bị hết hạn do không hoạt động.
     /// </summary>
-    Task<bool> PingSessionAsync(CancellationToken ct = default);
+    Task<bool> PingSessionAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Thực hiện bắt tay SSO trung tâm ngầm định bằng Cookie SESSISID để làm mới phiên PHP (PHPSESSID) mà không cần mật khẩu.
     /// </summary>
-    Task<CtuSession?> TrySilentReAuthAsync(CtuSession currentSession, CancellationToken ct = default);
+    Task<CtuSession?> TrySilentReAuthAsync(CtuSession currentSession, CancellationToken cancellationToken = default);
 }

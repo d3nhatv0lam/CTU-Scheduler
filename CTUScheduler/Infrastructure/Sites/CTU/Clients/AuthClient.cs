@@ -98,7 +98,7 @@ internal sealed class AuthClient : IAuthClient
         }
     }
 
-    public async Task<CtuSession> AuthenticateAsync(string username, string password, CancellationToken ct = default)
+    public async Task<CtuSession> AuthenticateAsync(string username, string password, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Bắt đầu tiến trình xác thực SSO CTU cho tài khoản {Username}...", username);
         var cookiesContainer = new CookieContainer();
@@ -107,13 +107,13 @@ internal sealed class AuthClient : IAuthClient
         using var httpClient = new HttpClient(httpHandler);
 
         _logger.LogDebug("Khởi tạo session key (Bootstrap)...");
-        var bootstrapContext = await BootstrapAsync(httpClient, ct);
+        var bootstrapContext = await BootstrapAsync(httpClient, cancellationToken);
 
         _logger.LogDebug("Gửi thông tin đăng nhập xác thực SSO...");
-        var samlContext = await SubmitCredentialAsync(httpClient, bootstrapContext, username, password, ct);
+        var samlContext = await SubmitCredentialAsync(httpClient, bootstrapContext, username, password, cancellationToken);
 
         _logger.LogDebug("Hoàn tất thiết lập phiên trên Web HTQL...");
-        var isAuthenticated = await CompleteAuthenticationAsync(httpClient, samlContext, ct);
+        var isAuthenticated = await CompleteAuthenticationAsync(httpClient, samlContext, cancellationToken);
 
         if (!isAuthenticated)
         {
@@ -121,7 +121,7 @@ internal sealed class AuthClient : IAuthClient
         }
 
         _logger.LogDebug("Thực hiện bắt tay SSO lấy Token API JWT...");
-        var jwtSsoSuccess = await ExecuteDkmhJwtHandshakeAsync(httpClient, cookiesContainer, username, ct);
+        var jwtSsoSuccess = await ExecuteDkmhJwtHandshakeAsync(httpClient, cookiesContainer, username, cancellationToken);
         if (!jwtSsoSuccess)
         {
             throw new InvalidOperationException(
@@ -160,18 +160,18 @@ internal sealed class AuthClient : IAuthClient
         );
     }
 
-    public async Task<bool> PingSessionAsync(CancellationToken ct = default)
+    public async Task<bool> PingSessionAsync(CancellationToken cancellationToken = default)
     {
-        using var response = await _pingHttpClient.GetAsync(HtqlEndpoints.StudentHome, ct);
+        using var response = await _pingHttpClient.GetAsync(HtqlEndpoints.StudentHome, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
             return false;
 
-        var htmlContent = await response.Content.ReadAsStringAsync(ct);
+        var htmlContent = await response.Content.ReadAsStringAsync(cancellationToken);
         return !htmlContent.Contains("location.href='../logout.php'");
     }
 
-    public async Task<CtuSession?> TrySilentReAuthAsync(CtuSession currentSession, CancellationToken ct = default)
+    public async Task<CtuSession?> TrySilentReAuthAsync(CtuSession currentSession, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -224,7 +224,7 @@ internal sealed class AuthClient : IAuthClient
             httpClient.DefaultRequestHeaders.Add("Accept-Language", "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7");
 
             // bắt tay xin lại PHPSESSID
-            bool isSuccess = await ExecuteLegacySsoHandshakeAsync(httpClient, currentSession.StudentId, ct);
+            bool isSuccess = await ExecuteLegacySsoHandshakeAsync(httpClient, currentSession.StudentId, cancellationToken);
             if (!isSuccess) return null;
 
             // Trích xuất và cập nhật các legacy cookies mới nhận được sau khi re-auth
@@ -240,7 +240,7 @@ internal sealed class AuthClient : IAuthClient
             try
             {
                 bool jwtSuccess =
-                    await ExecuteDkmhJwtHandshakeAsync(httpClient, cookiesContainer, currentSession.StudentId, ct);
+                    await ExecuteDkmhJwtHandshakeAsync(httpClient, cookiesContainer, currentSession.StudentId, cancellationToken);
                 if (jwtSuccess)
                 {
                     var dkmhCookies = cookiesContainer.GetCookies(HtqlEndpoints.BaseDomain);
@@ -475,7 +475,7 @@ internal sealed class AuthClient : IAuthClient
         return response.IsSuccessStatusCode;
     }
 
-    private static (StudentProfile Profile, DateTimeOffset ExpiresAt) ParseJwt(string jwtToken)
+    internal static (StudentProfile Profile, DateTimeOffset ExpiresAt) ParseJwt(string jwtToken)
     {
         var jwtDecoded = JwtRawDecoder.Decode(jwtToken);
 
@@ -541,7 +541,7 @@ internal sealed class AuthClient : IAuthClient
         return samlResponse;
     }
 
-    private static (Dictionary<string, string> Cookies, DateTimeOffset ExpiresAt) ExtractLegacyCookies(
+    internal static (Dictionary<string, string> Cookies, DateTimeOffset ExpiresAt) ExtractLegacyCookies(
         CookieContainer cookieContainer,
         IEnumerable<Uri> domains,
         IDictionary<string, string>? initialCookies = null)
