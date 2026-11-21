@@ -15,6 +15,9 @@
 - **Evidence & Objectivity**:
   - Verify codebase assertions using CodeGraph, XERJ, or direct file reads before stating facts.
   - Always cite specific sources as `file:line` or `Folder/File.cs`. Never invent or assume implementations.
+- **Git Commit Policy**:
+  - Never run `git commit` or `git push` autonomously. Always leave changes in the working tree for user inspection.
+  - Suggest a Conventional Commit message upon completing a task or plan. Execute the commit only when explicitly commanded by the user.
 
 ## 3. Specialized Rules Organization
 Detailed rules are modularized under `.agents/rules/` and activated conditionally via YAML frontmatter triggers:

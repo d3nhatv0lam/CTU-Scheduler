@@ -18,6 +18,8 @@ Strictly distinguish between Build and Test. Successful compilation verifies syn
   - Do not run code build or tests unless source code was touched.
 - **Honest Reporting**:
   - Report success only for steps actually executed in the session. Never claim tests passed if only build ran.
+- **No Autonomous Commit in Tool Loop**:
+  - The verification loop ends at running build/tests. Leave changes unstaged in the working tree for user inspection; do not proceed to run `git commit`.
 
 ## 2. RTK CLI Proxy (Optional with Transparent Fallback)
 

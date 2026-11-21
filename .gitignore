@@ -460,7 +460,12 @@ $RECYCLE.BIN/
 
 ## Code graph
 .codegraph/
-GEMINI.md
 .mcp.json
 .gemini/
 .claude/
+
+# Backup files
+*.bak
+# Tool data & local artifacts
+.archify/
+.xerj-data*/
