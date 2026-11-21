@@ -42,9 +42,14 @@ public class TeachingPlanLoaderService : ITeachingPlanLoaderService
             if (announcementResult.IsFailed || announcementResult.Content is null ||
                 announcementResult.Content.Count == 0)
             {
+                if (announcementResult.IsFailed)
+                {
+                    return OperationResult<TeachingPlanData>.FailureFrom(announcementResult);
+                }
+
                 return OperationResult<TeachingPlanData>.Failed(
                     new OperationError("TeachingPlan.NotificationsMissing",
-                        "Không lấy được danh sách thông báo từ hệ thống trường"),
+                        "Không tìm thấy thông báo kế hoạch giảng dạy từ hệ thống trường"),
                     OperationFailureReason.Network);
             }
 
@@ -74,19 +79,12 @@ public class TeachingPlanLoaderService : ITeachingPlanLoaderService
             _logger.LogDebug("Found latest teaching plan announcement: '{Title}' at index {Index}", target.Title,
                 targetIndex);
 
-            // Tìm kiếm thông báo đóng website phụ xuất hiện sau (có chỉ số index nhỏ hơn trong danh sách sắp xếp giảm dần)
-            SchoolAnnouncement? closingTarget = null;
-            for (int i = 0; i < targetIndex; i++)
-            {
-                var item = announcementResult.Content[i];
-                if (!string.IsNullOrWhiteSpace(item.Title) &&
-                    item.Title.Contains("đóng website", StringComparison.OrdinalIgnoreCase) &&
-                    item.Title.Contains("kế hoạch học tập", StringComparison.OrdinalIgnoreCase))
-                {
-                    closingTarget = item;
-                    break;
-                }
-            }
+            // Tìm kiếm thông báo đóng website phụ đi kèm (nếu có)
+            var closingTarget = announcementResult.Content.FirstOrDefault(item =>
+                item != target &&
+                !string.IsNullOrWhiteSpace(item.Title) &&
+                item.Title.Contains("đóng website", StringComparison.OrdinalIgnoreCase) &&
+                item.Title.Contains("kế hoạch học tập", StringComparison.OrdinalIgnoreCase));
 
             string? mainPdfPath;
             DateTime? preciseClosingDateTime = null;
