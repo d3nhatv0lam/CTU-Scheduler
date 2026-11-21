@@ -36,7 +36,9 @@ public static class ServiceCollectionExtensions
         // --- Teaching Plan ---
         services.AddSingleton<ITeachingPlanPdfParser, TeachingPlanPdfParser>();
         services.AddHttpClient<ITeachingPlanPdfService, TeachingPlanPdfService>();
-        services.AddHttpClient<ISchoolAnnouncementService, SchoolAnnouncementService>();
+        services.AddHttpClient<HtqlHtmlAnnouncementService>();
+        services.AddHttpClient<HtqlJsonAnnouncementService>();
+        services.AddTransient<ISchoolAnnouncementService, AggregatedSchoolAnnouncementService>();
 
 
         services.AddTransient<CtuSessionRecoveryHandler>();
