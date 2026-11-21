@@ -5,22 +5,22 @@
 - **Core Stack**: .NET 10 · C# latest · Avalonia 12 · ReactiveUI · Microsoft.Extensions.DependencyInjection · Serilog.
 - **Solution Layout**: Single primary project `CTUScheduler` (divided by namespaces: `Core`, `Infrastructure`, `AppServices`, `Presentation`), `CTUScheduler.Desktop` (bootstrapper executable), and `tests/CTUScheduler.Tests`.
 
-## 2. Decision-Making & Behavior Policy
+## 2. Decision-Making & Behavioral Policy
 - **Autonomous Technical Decisions**:
-  - Tự chủ áp dụng các giải pháp kỹ thuật tiêu chuẩn, mức độ rủi ro thấp theo mẫu sẵn có trong codebase.
-  - Chỉ hỏi người dùng khi: Yêu cầu mơ hồ, có sự đánh đổi kiến trúc lớn, bổ sung thư viện phụ thuộc mới, hoặc thay đổi có tính chất breaking change.
-- **Kỷ luật phạm vi (Scope Discipline)**:
-  - Chỉ chỉnh sửa các tệp liên quan trực tiếp đến tác vụ được giao.
-  - Không tiện tay tái cấu trúc (refactor) các đoạn mã không liên quan. Nếu phát hiện vấn đề cần cải tiến ngoài phạm vi, ghi chú lại ở cuối câu trả lời.
-- **Dẫn chứng thực tế (Evidence & Objectivity)**:
-  - Mọi khẳng định về mã nguồn hiện có phải được kiểm chứng bằng CodeGraph, XERJ hoặc đọc file trước khi phát biểu.
-  - Luôn trích dẫn nguồn cụ thể dạng `file:line` hoặc `Folder/File.cs`. Không đoán mò hoặc tự suy diễn cách triển khai.
+  - Autonomously choose standard, low-risk technical solutions following existing project patterns.
+  - Ask the user only when: requirements are ambiguous, a major architectural tradeoff is involved, a new dependency is required, or a breaking change is proposed.
+- **Scope Discipline**:
+  - Modify only files directly related to the assigned task.
+  - Never perform unrelated refactoring. Note out-of-scope improvements at the end of the response.
+- **Evidence & Objectivity**:
+  - Verify codebase assertions using CodeGraph, XERJ, or direct file reads before stating facts.
+  - Always cite specific sources as `file:line` or `Folder/File.cs`. Never invent or assume implementations.
 
 ## 3. Specialized Rules Organization
-Hệ thống quy tắc chi tiết của dự án được phân tách thành các module chuyên biệt trong thư mục `.agents/rules/`, tự động kích hoạt theo ngữ cảnh qua YAML Frontmatter:
+Detailed rules are modularized under `.agents/rules/` and activated conditionally via YAML frontmatter triggers:
 
-- [.agents/rules/architecture.md](.agents/rules/architecture.md): Bất biến luồng phân tầng (`Desktop → Presentation → AppServices → Core ← Infrastructure`), Core framework-free, Composition Root, ReactiveUI MVVM, DI lifetimes, `OperationResult`, và bảo tồn thuật toán lập lịch.
-- [.agents/rules/coding.md](.agents/rules/coding.md): Quy chuẩn C# (tuân thủ `.editorconfig`), quản lý `Span<T>` theo C# 13, xUnit/FluentAssertions/NSubstitute testing conventions, Serilog structured logging, và performance threading.
-- [.agents/rules/tools.md](.agents/rules/tools.md): Verification Loop (Definition of Done: build + test), RTK CLI proxy (optional & fallback), và cơ chế điều hướng mã nguồn CodeGraph / XERJ với fallback tiêu chuẩn.
-- [.agents/rules/planning.md](.agents/rules/planning.md): Quy trình lập kế hoạch tác vụ phức tạp, Implementation Plan Artifact, duy trì workspace plan tại `docs/plans/`, và giao thức khôi phục khi lệch trạng thái.
-- [.agents/rules/communication.md](.agents/rules/communication.md): Quy ước giao tiếp trực diện, gãy gọn, loại bỏ văn mẫu AI, và sử dụng tiếng Việt tự nhiên.
+- [.agents/rules/architecture.md](.agents/rules/architecture.md): Layer dependency invariants (`Desktop → Presentation → AppServices → Core ← Infrastructure`), Core independence, Composition Root, ReactiveUI MVVM, DI lifetimes, `OperationResult`, and schedule algorithm preservation.
+- [.agents/rules/coding.md](.agents/rules/coding.md): C# standards (following `.editorconfig`), C# 13 `Span<T>` handling, xUnit/FluentAssertions/NSubstitute testing conventions, Serilog structured logging, and performance threading.
+- [.agents/rules/tools.md](.agents/rules/tools.md): Verification Loop (Definition of Done: build + test), RTK CLI proxy (optional with transparent fallback), and CodeGraph / XERJ navigation with standard fallbacks.
+- [.agents/rules/planning.md](.agents/rules/planning.md): Complex task planning, Implementation Plan Artifacts, persistent workspace plans in `docs/plans/`, and state drift recovery protocols.
+- [.agents/rules/communication.md](.agents/rules/communication.md): Direct, anti-AI communication style, no filler, and natural language matching (Vietnamese by default when prompted in Vietnamese).

@@ -5,50 +5,50 @@ trigger: model_decision
 
 # Long-Running Task Planning & Artifact Management
 
-## 1. Cơ chế quản lý 2 tầng (Two-Tier Planning Mechanism)
+## 1. Two-Tier Planning Mechanism
 
-- **Tầng 1 — Implementation Plan Artifact (Đánh giá tương tác)**:
-  - Áp dụng cho: Tác vụ đa tầng, nhiều file, thay đổi kiến trúc, rủi ro cao, hoặc yêu cầu mơ hồ.
-  - Mục đích: Trình bày kế hoạch có cấu trúc để người dùng review, phản biện và bấm duyệt (Proceed) trước khi can thiệp vào mã nguồn.
-- **Tầng 2 — Workspace Plan (Lưu trữ trạng thái dài hạn)**:
-  - Áp dụng cho: Tác vụ dài hơi, chia nhiều giai đoạn (phases), hoặc kéo dài qua nhiều phiên làm việc.
-  - Vị trí lưu trữ: `docs/plans/<task-name>.md` bên trong repository.
-  - Mục đích: Nguồn sự thật bền vững lưu trữ tiến độ, các quyết định kỹ thuật đã thống nhất, checkpoints, và công việc còn lại xuyên suốt các phiên chat.
+- **Tier 1 — Implementation Plan Artifact (Interactive Review)**:
+  - Applies to: Multi-layer, multi-file, architectural, high-risk, or ambiguous tasks.
+  - Purpose: Present a structured implementation plan for the user to review, critique, and approve (Proceed button) before touching code.
+- **Tier 2 — Workspace Plan (Durable State Tracking)**:
+  - Applies to: Long-running, multi-phase tasks spanning across sessions or context boundaries.
+  - Storage location: `docs/plans/<task-name>.md` inside the repository.
+  - Purpose: Durable source of truth recording task progress, architectural decisions, checkpoints, and remaining work across chat sessions.
 
-## 2. Tiêu chí kích hoạt
+## 2. Activation Criteria
 
-- **Task nhỏ, rõ ràng** (sửa typo, đổi tên, fix bug 1-file rõ nguyên nhân): Thực thi trực tiếp sau một câu tóm tắt mục đích. Tuyệt đối không tạo artifact hay workspace plan cho tác vụ đơn giản.
-- **Task phức tạp**: Tạo Implementation Plan Artifact trước khi code. Nếu task dự kiến qua nhiều session, tạo song song tệp workspace plan trong `docs/plans/`.
+- **Simple, Clear Tasks** (typo fixes, renaming, localized single-file bug fixes): Execute directly after a one-sentence intent summary. Never create artifacts or workspace plans for trivial tasks.
+- **Complex Tasks**: Create an Implementation Plan Artifact before coding. If the task spans multiple sessions, maintain a corresponding workspace plan under `docs/plans/`.
 
-## 3. Cấu trúc một Workspace Plan chuẩn
+## 3. Workspace Plan Structure
 
-Một tệp kế hoạch trong `docs/plans/` cần bao gồm:
-1. Mục tiêu, phạm vi và tiêu chí nghiệm thu (acceptance criteria).
-2. Các quyết định kiến trúc và lý do lựa chọn.
-3. Danh sách tác vụ có thứ tự, phân chia theo từng phase rõ ràng.
-4. Danh sách các file và component bị ảnh hưởng.
-5. Rủi ro, ràng buộc và các câu hỏi mở.
-6. Lệnh kiểm chứng (build/test) và kết quả kỳ vọng.
-7. Checklist tiến độ và các đầu việc còn lại.
+A standard workspace plan under `docs/plans/` contains:
+1. Objective, scope, and acceptance criteria.
+2. Architectural decisions and technical rationale.
+3. Ordered task list grouped into clear phases.
+4. Affected files and components.
+5. Risks, constraints, and open questions.
+6. Verification commands (build/test) and expected outcomes.
+7. Progress checklist and remaining items.
 
-## 4. Quản lý ngữ cảnh & Xử lý sai lệch trạng thái
+## 4. Context Management & State Drift Recovery
 
-- **Quy tắc khôi phục (Resuming Protocol)**:
-  - Khi tiếp tục một task từ phiên trước, Agent **bắt buộc phải đọc lại tệp workspace plan hiện tại trong `docs/plans/` và kiểm tra mã nguồn thực tế**, tuyệt đối không dựa hoàn toàn vào lịch sử hội thoại (conversation history).
-  - Duy trì một tóm tắt tiến độ ngắn gọn trong context đang hoạt động.
-- **Tình huống A: Khi Workspace Plan không tồn tại (Missing Plan)**:
-  - Nếu người dùng yêu cầu tiếp tục một task nhưng không tìm thấy plan trong `docs/plans/`:
-  - Tuyệt đối không tự suy đoán hoặc bịa đặt tiến độ.
-  - Phải kiểm tra repository: xem `git log`, `git status`, đọc các commit gần nhất và mã nguồn liên quan.
-  - Báo cáo minh bạch cho người dùng những phần đã làm và những quyết định chưa xác định trước khi tiếp tục.
-- **Tình huống B: Khi Mã nguồn thực tế khác với Workspace Plan (State Drift)**:
-  - Nếu tệp plan ghi nhận một trạng thái nhưng mã nguồn thực tế đã thay đổi:
-  - Không được tiếp tục chạy máy móc theo checklist cũ.
-  - Bắt buộc dừng lại đối chiếu: xem `git diff`, kiểm tra kết quả build/test thực tế.
-  - Cập nhật lại workspace plan để phản ánh đúng hiện trạng mã nguồn trước khi bắt đầu giai đoạn tiếp theo.
+- **Resuming Protocol**:
+  - When resuming a task from a prior session, the agent **must re-read the active workspace plan in `docs/plans/` and inspect current source code**, never relying exclusively on conversation history.
+  - Maintain a concise progress summary in active context.
+- **Situation A: Missing Workspace Plan**:
+  - If requested to resume a task but no plan exists in `docs/plans/`:
+  - Never speculate or invent past decisions.
+  - Inspect git history (`git log`, `git status`, recent diffs) and related code.
+  - Transparently report to the user what was determined and what remains unknown before proceeding.
+- **Situation B: State Drift (Code Differs from Plan)**:
+  - If the workspace plan records a state that contradicts actual source code:
+  - Stop and do not blindly follow the outdated checklist.
+  - Reconcile using `git diff`, current code, and build/test status.
+  - Update the workspace plan to match ground reality before starting the next phase.
 
-## 5. Cập nhật tiến độ sau mỗi giai đoạn
+## 5. Phase Checkpoints
 
-- Cập nhật tệp plan sau khi hoàn thành mỗi giai đoạn có ý nghĩa.
-- Ghi nhận kết quả thực thi thực tế, kết quả build/test, các sai lệch hoặc quyết định phát sinh so với kế hoạch ban đầu.
-- Tuyệt đối không đánh dấu hoàn thành task nếu chưa kiểm chứng các tiêu chí nghiệm thu.
+- Update the plan file upon completing each meaningful phase.
+- Record actual implementation results, build/test output, deviations, and remaining tasks.
+- Never mark a task complete without verifying all acceptance criteria.

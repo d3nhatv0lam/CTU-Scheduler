@@ -7,52 +7,50 @@ globs: "**/CTUScheduler*/**/*.cs, **/CTUScheduler*/**/*.axaml, **/tests/**/*.cs,
 # Coding Conventions & Quality Guidelines
 
 > [!IMPORTANT]
-> **Phạm vi áp dụng**: Chỉ áp dụng cho mã nguồn viết tay. Agent phải chủ động bỏ qua mã tự sinh (`*.g.cs`, `*.AssemblyInfo.cs`), các thư mục build output (`bin/**`, `obj/**`, `artifacts/**`), và các thư viện vendor/third-party.
+> **Scope**: Applies strictly to handwritten source code. Automatically ignore compiler-generated files (`*.g.cs`, `*.AssemblyInfo.cs`), build output directories (`bin/**`, `obj/**`, `artifacts/**`), and vendor/third-party assets.
 
 ## 1. C# Implementation Standards
 
 - **Syntax & Formatting**:
-  - Tuân thủ `.editorconfig` làm nguồn chân lý (file-scoped namespaces, quy ước đặt tên `I*` cho interface, `_camelCase` cho private field, quy tắc dùng `var`, tự động dọn `using` thừa).
-- **Kiểu dữ liệu & Collections**:
-  - `record`: Ưu tiên cho các immutable domain model, DTO hoặc state snapshot; dùng `class` thông thường khi cần quản lý trạng thái mutable hoặc entity.
-  - `IReadOnlyList<T>`: Mặc định cho các public API cần truy cập danh sách chỉ đọc theo chỉ mục.
-  - `IList<T>`, `ISet<T>`: Dùng khi hợp đồng API thực sự đòi hỏi khả năng thêm/xóa phần tử hoặc đảm bảo tính duy nhất.
-  - `Span<T>` / `ReadOnlySpan<T>`: Tuân thủ các giới hạn của `ref struct` theo phiên bản C# đang sử dụng (C# 13 / .NET 10). Chỉ dùng trong các đoạn xử lý vùng nhớ liên tục, thuật toán parsing hiệu năng cao. Cho phép sử dụng trong `async` method nếu biến không tồn tại xuyên qua các điểm suspension (như `await` hoặc `yield`).
+  - `.editorconfig` is the single source of truth (file-scoped namespaces, `I*` interface naming, `_camelCase` private fields, `var` usage rules, automatic unused `using` removal).
+- **Types & Collections**:
+  - `record`: Preferred for immutable domain models, DTOs, and state snapshots. Use standard `class` when managing mutable entity state.
+  - `IReadOnlyList<T>`: Default contract for public APIs exposing read-only indexed collections.
+  - `IList<T>`, `ISet<T>`: Used when the API contract genuinely requires element mutation or uniqueness guarantees.
+  - `Span<T>` / `ReadOnlySpan<T>`: Adhere to `ref struct` rules under C# 13 / .NET 10. Reserved for contiguous memory processing and high-performance parsing. Permitted inside `async` methods provided variables do not cross suspension points (`await`, `yield`).
 - **Async Safety**:
-  - `ConfigureAwait(false)`: Áp dụng ở tầng non-UI (Core, Infrastructure, AppServices) khi phù hợp để tránh context capture; không ép buộc mù quáng ở nơi cần đồng bộ ngữ cảnh luồng.
-  - Cấm `async void` (trừ event handler UI bắt buộc do chữ ký framework; phải kèm comment giải thích).
-  - Cấm `.Result` hoặc `.Wait()` — luôn dùng `await`.
-  - Null-safety: Không dùng `!` (null-forgiving operator) trừ khi có comment giải thích rõ lý do an toàn.
+  - `ConfigureAwait(false)`: Apply in non-UI layers (Core, Infrastructure, AppServices) when appropriate to prevent unnecessary context capture; do not apply blindly where context synchronization is required.
+  - Never use `async void` (except for UI event handler signatures mandated by the framework; must be documented with a comment).
+  - Never use `.Result` or `.Wait()` — always `await`.
+  - Null-safety: Avoid `!` (null-forgiving operator) unless accompanied by an explanatory comment.
 
 ## 2. Unit Testing
 
-- **Stack kiểm thử**: `xUnit` + `FluentAssertions` + `NSubstitute` (theo cấu hình tại `tests/CTUScheduler.Tests/CTUScheduler.Tests.csproj`).
-- **Quy ước đặt tên test**: `MethodName_StateUnderTest_ExpectedBehavior`.
-- **Cấu trúc test**: Phân định rõ 3 khối Arrange - Act - Assert (ngăn cách bằng dòng trống).
-- **Phạm vi kiểm thử**:
-  - Tập trung test các thuật toán lập lịch, business rules, validator, state machine, converter và các trường hợp biên (edge cases).
-  - Không ép test máy móc 100% các property getter/setter hoặc DTO tầm thường.
-- **Tính độc lập**: Unit test không tạo side effect thực tế (không gọi network thật, không ghi đè file hệ thống thật).
+- **Testing Stack**: `xUnit` + `FluentAssertions` + `NSubstitute` (as configured in `tests/CTUScheduler.Tests/CTUScheduler.Tests.csproj`).
+- **Naming Convention**: `MethodName_StateUnderTest_ExpectedBehavior`.
+- **Structure**: Clear Arrange / Act / Assert blocks separated by blank lines.
+- **Scope**: Focus unit tests on scheduling algorithms, business rules, validators, state machines, converters, and edge cases. Do not mandate boilerplate tests for trivial getters/setters or simple DTOs.
+- **Isolation**: Unit tests must produce zero external side effects (no real network calls, no real filesystem mutations).
 
 ## 3. Structured Logging (Serilog)
 
-- Tiêm `ILogger<T>` qua constructor.
-- Bắt buộc dùng static message templates với named properties:
+- Inject `ILogger<T>` via constructor.
+- Static message templates with named properties are mandatory:
   ```csharp
   Log.Information("Loaded {CourseCount} courses for semester {SemesterId}", count, semesterId);
   ```
-- Cấm dùng string interpolation hoặc cộng chuỗi trong message template của câu lệnh log.
-- *Lưu ý*: Không cấm string interpolation ngoài ngữ cảnh log (trong code C# thông thường, nối chuỗi `$""` là hoàn toàn hợp lệ).
+- String interpolation and concatenation are strictly prohibited inside logging message templates.
+- *Note*: String interpolation (`$""`) remains completely valid in regular C# logic outside logging calls.
 
 ## 4. Performance & Threading
 
-- **Tác vụ CPU-bound nặng** (thuật toán sinh tổ hợp lịch, chấm điểm ma trận): Chạy trên `Task.Run()` để không làm đơ UI thread.
-- **Tác vụ I/O bất đồng bộ** (mạng HTTP, đọc file, parse PDF): Dùng `async/await` chuẩn, không bọc `Task.Run()` thừa thãi.
-- **Cập nhật UI từ luồng nền trong Rx**: Dùng `.ObserveOn(RxApp.MainThreadScheduler)`. Dùng `Dispatcher.UIThread.InvokeAsync()` hoặc `Post()` khi tương tác trực tiếp với Avalonia UI ngoài observable stream.
-- **Bộ nhớ**: Giải phóng (Dispose) các đối tượng đồ họa/hình ảnh (`Bitmap`) sau khi dùng. Tránh closure capture các object lớn trong Rx chain kéo dài.
+- **CPU-Bound Work** (schedule permutation solving, scoring matrices): Run on `Task.Run()` to keep the UI thread responsive.
+- **Asynchronous I/O** (HTTP network requests, file reading, PDF parsing): Use standard `async/await` without wrapping in redundant `Task.Run()`.
+- **UI Thread Dispatching from Rx**: Use `.ObserveOn(RxApp.MainThreadScheduler)`. Use `Dispatcher.UIThread.InvokeAsync()` or `Post()` only when interacting directly with Avalonia controls outside observable streams.
+- **Resource Management**: Dispose imaging objects (`Bitmap`) promptly. Prevent closure captures of large objects inside long-lived Rx subscriptions.
 
 ## 5. Comments & Documentation
 
-- **Comment "why", không comment "what"**: Chỉ viết chú thích khi logic phức tạp, có magic number, workaround vì lý do đặc biệt hoặc ràng buộc không thể diễn đạt bằng mã.
-- Đánh dấu giải pháp rút gọn có chủ đích bằng `// ponytail: <lý do và hướng nâng cấp>`.
-- **XML doc (`///`)**: Viết trên các public/internal member trong `Core` và `AppServices` khi tên hàm chưa thể hiện hết ràng buộc tham số, ngoại lệ hoặc thuật toán. Bỏ qua khi tên hàm đã hoàn toàn tự tường minh (`IsLoading`, `Dispose()`).
+- **Comment "Why", Not "What"**: Document non-obvious steps, magic numbers, technical workarounds, or constraints unexpressed in code.
+- Mark intentional shortcuts with `// ponytail: <rationale and upgrade path>`.
+- **XML Docs (`///`)**: Provide on public/internal members in `Core` and `AppServices` only when names do not convey parameter constraints, exceptions, or algorithms. Skip when self-explanatory (`IsLoading`, `Dispose()`).

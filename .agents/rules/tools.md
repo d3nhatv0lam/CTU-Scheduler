@@ -7,42 +7,42 @@ trigger: model_decision
 
 ## 1. Verification Loop (Definition of Done)
 
-Phân biệt rạch ròi giữa Build và Test. Build thành công chỉ xác nhận cú pháp và kiểu dữ liệu hợp lệ; Test thành công mới chứng minh logic hoạt động đúng.
+Strictly distinguish between Build and Test. Successful compilation verifies syntax and type safety; only passing tests verify correct behavioral logic.
 
-- **Đối với tác vụ thay đổi mã nguồn (C# / AXAML)**:
-  - Bắt buộc chạy build: `rtk dotnet build --no-restore` (hoặc `dotnet build --no-restore` nếu không có RTK).
-  - Bắt buộc chạy các unit test liên quan: `rtk dotnet test` (hoặc `dotnet test`).
-  - Chính sách Zero Warnings: Không để lại lỗi biên dịch hoặc cảnh báo compiler mới phát sinh.
-- **Đối với tác vụ chỉ thay đổi Agent Rules / Documentation / Config**:
-  - Bắt buộc kiểm tra tính hợp lệ của YAML frontmatter, tính nhất quán của nội dung và trigger.
-  - Không bắt buộc build mã nguồn nếu không đụng chạm đến source code.
-- **Nguyên tắc báo cáo trung thực**:
-  - Chỉ báo "Thành công" đối với những bước thực sự đã thực thi trong phiên làm việc. Tuyệt đối không khẳng định test đã pass nếu chỉ mới chạy lệnh build.
+- **Code Modification Tasks (C# / AXAML)**:
+  - Build is mandatory: `rtk dotnet build --no-restore` (or `dotnet build --no-restore`).
+  - Running affected tests is mandatory: `rtk dotnet test` (or `dotnet test`).
+  - Zero Warnings Policy: Never leave new compiler errors or warnings behind.
+- **Rule / Documentation / Configuration Tasks**:
+  - Validate YAML frontmatter syntax, content consistency, and trigger definitions.
+  - Do not run code build or tests unless source code was touched.
+- **Honest Reporting**:
+  - Report success only for steps actually executed in the session. Never claim tests passed if only build ran.
 
-## 2. RTK CLI Proxy (Tùy chọn & Fallback trong suốt)
+## 2. RTK CLI Proxy (Optional with Transparent Fallback)
 
-- RTK (`rtk`) là công cụ tùy chọn (optional) dùng để lọc và nén output của câu lệnh terminal trước khi đưa vào context LLM.
-- **Quy tắc sử dụng**:
-  - Tự động thêm tiền tố `rtk` cho các lệnh shell được hỗ trợ khi khả dụng:
+- RTK (`rtk`) is an optional tool for filtering and compressing command output before it enters the LLM context.
+- **Usage**:
+  - Automatically prefix supported shell commands with `rtk` when available:
     ```bash
     rtk git status
     rtk git diff
     rtk dotnet build CTUScheduler/CTUScheduler.csproj --no-restore
     rtk dotnet test tests/CTUScheduler.Tests/CTUScheduler.Tests.csproj
     ```
-- **Cơ chế Fallback trong suốt**:
-  - Nếu `rtk` không được cài đặt, báo lỗi, hoặc môi trường không hỗ trợ: tự động chuyển sang câu lệnh tiêu chuẩn thông thường (`dotnet`, `git`).
-  - Tuyệt đối không bao giờ làm gián đoạn, làm fail task hoặc dừng công việc vì lý do thiếu RTK.
+- **Transparent Fallback**:
+  - If `rtk` is missing, encounters errors, or is unsupported in the environment, transparently fall back to standard commands (`dotnet`, `git`).
+  - Never interrupt, fail, or abandon a task due to a missing RTK executable.
 
-## 3. Điều hướng mã nguồn & Cơ chế Fallback
+## 3. Codebase Navigation & Fallbacks
 
-Không giả định các công cụ nâng cao luôn tồn tại trên mọi máy lập trình viên:
+Never assume specialized developer tools exist across all machines:
 
 - **CodeGraph**:
-  - Công cụ ưu tiên để tra cứu symbol graph, call hierarchy, và phụ thuộc giữa các tầng trong CTU-Scheduler.
-  - Gọi qua MCP tool `codegraph_explore` hoặc shell command `codegraph explore "<query>"`.
-  - *Fallback*: Nếu không có thư mục `.codegraph/` hoặc công cụ thiếu vắng, chuyển sang dùng `read_file` và tìm kiếm mã nguồn tiêu chuẩn (`git grep`, grep/ripgrep).
+  - Primary tool for symbol graphs, call hierarchies, and inter-layer dependencies inside CTU-Scheduler.
+  - Invoke via MCP tool `codegraph_explore` or shell command `codegraph explore "<query>"`.
+  - *Fallback*: If `.codegraph/` is missing or the tool is unavailable, fall back to `read_file` and standard source search (`git grep`, grep/ripgrep).
 - **XERJ (Code Search & Reference Coding)**:
-  - Dùng để tìm kiếm đoạn mã (`xerj search --prefix ctu-scheduler "<query>"`), tra cứu định nghĩa ký hiệu (`xerj def "<symbol>" --prefix ctu-scheduler`), hoặc tham khảo giải thuật xếp lịch (`xerj code timetable-refs "<problem>"`).
-  - Luôn trích dẫn `file:line` cụ thể khi báo cáo kết quả.
-  - *Fallback*: Nếu `xerj` chưa được cài đặt hoặc thiếu index, sử dụng tìm kiếm văn bản thông thường và tài liệu dự án tiêu chuẩn.
+  - Use for plain-English code searches (`xerj search --prefix ctu-scheduler "<query>"`), symbol definitions (`xerj def "<symbol>" --prefix ctu-scheduler`), and reference schedule corpora (`xerj code timetable-refs "<problem>"`).
+  - Always cite specific `file:line` references when reporting findings.
+  - *Fallback*: If `xerj` is uninstalled or unindexed, fall back to standard text search and official project documentation.

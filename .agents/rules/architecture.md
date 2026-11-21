@@ -5,52 +5,52 @@ trigger: model_decision
 
 # Architecture & Structural Constraints
 
-## 1. Architectural Invariants (Bắt buộc tuân thủ)
+## 1. Architectural Invariants (Strictly Enforced)
 
-Bắt buộc tuân thủ trong mọi thay đổi thông thường. Chỉ được phép điều chỉnh khi có quyết định kiến trúc rõ ràng, được người dùng chấp thuận và ghi nhận lý do kỹ thuật.
+Enforced across all routine work. Adjust only with an explicit architectural decision, user approval, and documented rationale.
 
-- **Chiều phụ thuộc nghiệp vụ**: `Desktop → Presentation → AppServices → Core ← Infrastructure`.
-  - Đây là bất biến kiến trúc, độc lập với việc mã nguồn đang nằm chung `CTUScheduler.csproj` (bảo vệ bằng namespace `CTUScheduler.<Layer>.<Area>`) hay sau này tách thành nhiều `.csproj`.
-  - Nếu tương lai tách project, các ProjectReference phải tiếp tục tuân thủ đúng chiều phụ thuộc này.
-  - Trách nhiệm của các tầng không thay đổi theo cấu trúc project.
-- **Tính độc lập của `Core`**:
-  - `Core` chỉ chứa business logic, domain models, thuật toán và interfaces trừu tượng.
-  - Tuyệt đối không phụ thuộc vào framework UI (Avalonia), thư viện MVVM (ReactiveUI), các cài đặt cụ thể của Infrastructure (HTTP client, PDF, Excel), hoặc DI container.
-  - Cho phép sử dụng các thư viện pure domain/math nếu có lý do kỹ thuật chính đáng và không vi phạm tính độc lập framework.
+- **Business Dependency Direction**: `Desktop → Presentation → AppServices → Core ← Infrastructure`.
+  - This is an architectural invariant, independent of whether layers currently reside within a single `CTUScheduler.csproj` (enforced via namespaces: `CTUScheduler.<Layer>.<Area>`) or are split into separate `.csproj` projects in the future.
+  - If layers are separated into individual projects later, project references must continue enforcing this exact dependency direction.
+  - Layer responsibilities remain unchanged regardless of project packaging.
+- **Core Independence**:
+  - `Core` contains only business domain logic, models, algorithms, and abstract interfaces.
+  - Never depend on UI frameworks (Avalonia), MVVM libraries (ReactiveUI), concrete Infrastructure implementations (HTTP, PDF, Excel), or DI containers.
+  - Pure domain or mathematical libraries are permitted if technically justified without violating framework independence.
 - **Dependency Injection**:
-  - Bắt buộc constructor injection.
-  - Tuyệt đối cấm Service Locator pattern (truy cập tĩnh qua `App.Current.Services` hoặc static accessors để giải quyết service).
-- **Bảo tồn thuật toán lập lịch**:
-  - Bảo vệ tính đúng đắn và hành vi nghiệp vụ của thuật toán lập lịch trong `Core/Models/Academic/`, `IScheduleScorer`, `ScheduleValidator`.
-  - *Task không liên quan*: Tuyệt đối không tự ý chỉnh sửa hoặc refactor các tệp giải thuật xếp lịch.
-  - *Bug fix*: Được phép sửa trong phạm vi hẹp cần thiết, bắt buộc bổ sung unit test hồi quy (regression test).
-  - *Refactor*: Được phép nếu bảo toàn 100% hành vi nghiệp vụ và kết quả đầu ra.
-  - *Thay đổi thuật toán / scoring / độ ưu tiên*: Bắt buộc có yêu cầu tường minh từ người dùng và kiểm chứng kết quả thực tế.
+  - Constructor injection is mandatory.
+  - The Service Locator pattern is strictly forbidden (no static access via `App.Current.Services` or static accessors to resolve dependencies).
+- **Preservation of Scheduling Logic**:
+  - Protect the correctness and domain behavior of scheduling algorithms in `Core/Models/Academic/`, `IScheduleScorer`, and `ScheduleValidator`.
+  - *Unrelated tasks*: Never modify or refactor scheduling algorithm files.
+  - *Bug fixes*: Permitted within the minimal required scope; must include regression tests.
+  - *Refactoring*: Permitted only when preserving 100% of business behavior and existing test outcomes.
+  - *Algorithm / scoring / priority changes*: Require explicit user requirements and empirical verification.
 
-## 2. Project Conventions (Quy ước dự án mặc định)
+## 2. Project Conventions (Default Patterns)
 
-Mặc định áp dụng, có thể điều chỉnh khi có lý do kỹ thuật chính đáng.
+Applied by default; adaptable when there is a clear technical justification.
 
 - **Composition Root**:
-  - `Desktop` là Composition Root, hợp lệ khi tham chiếu `Infrastructure` để cấu hình DI container. Sơ đồ phân tầng nghiệp vụ không ngăn cản việc cấu hình DI tại Composition Root.
-  - Mỗi tầng tự đóng gói đăng ký DI qua extension method (ví dụ: `AddAppServices()`, `AddInfrastructure()`).
+  - `Desktop` acts as the Composition Root and is permitted to reference `Infrastructure` to configure the DI container. The layered dependency diagram does not prohibit DI bootstrapping at the Composition Root.
+  - Each layer encapsulates its DI registrations via extension methods (e.g., `AddAppServices()`, `AddInfrastructure()`).
 - **DI Lifetimes**:
-  - Mặc định: `Singleton` cho Stores dữ liệu (`PlannedCourseStore`, `TuitionFeeStore`, `CtuSessionStore`, `TeachingPlanStore`) và `AppState`; `Transient` cho Use Case services không trạng thái và ViewModels.
-  - HTTP clients và Delegating Handlers tuân theo cơ chế quản lý vòng đời chuyên biệt của `IHttpClientFactory`; không tự ý áp đặt lifetime chung.
-  - Không cấm `Scoped` trong tương lai nếu xuất hiện use-case phù hợp (ví dụ worker nền, scoped session).
-- **Điều hướng (Navigation)**:
-  - `INavigationRegionManager` là convention điều hướng mặc định hiện tại; không gọi `Router.Navigate` trực tiếp. Không ngăn cản nâng cấp kiến trúc điều hướng khi có yêu cầu mới.
-- **Xử lý kết quả & Ngoại lệ (Error Handling)**:
-  - `OperationResult` (trong `Core/Models/Shared/Results/`) là lựa chọn mặc định cho các lỗi nghiệp vụ dự kiến trước (expected domain failures: trùng lịch, hết chỗ, sai định dạng dữ liệu đầu vào).
-  - Không ép mọi lỗi kỹ thuật hoặc exceptional failure phải chuyển thành Result; Exceptions vẫn là cơ chế chuẩn mực cho các sự cố kỹ thuật bất ngờ (mất kết nối mạng, lỗi I/O ổ đĩa, crash hệ thống).
-  - Bắt cụ thể ngoại lệ, cấm `catch {}` rỗng hoặc nuốt exception im lặng.
+  - Defaults: `Singleton` for data stores (`PlannedCourseStore`, `TuitionFeeStore`, `CtuSessionStore`, `TeachingPlanStore`) and `AppState`; `Transient` for stateless Use Case services and ViewModels.
+  - HTTP clients and delegating handlers follow `IHttpClientFactory` lifecycle management; do not impose standard lifetime rules onto them.
+  - `Scoped` is not forbidden if a legitimate future use case arises (e.g., background worker scopes or isolated sessions).
+- **Navigation**:
+  - `INavigationRegionManager` is the default navigation convention; do not call `Router.Navigate` directly. This does not prevent upgrading navigation architecture when required.
+- **Error Handling & OperationResult**:
+  - `OperationResult` (in `Core/Models/Shared/Results/`) is the default mechanism for expected domain failures (e.g., schedule conflicts, full classes, invalid input data).
+  - Do not force unexpected technical faults or catastrophic infrastructure failures into Result objects; standard Exceptions remain the appropriate mechanism for unrecoverable errors (network drops, disk I/O errors, crashes).
+  - Catch specific exceptions; never use empty `catch {}` blocks or swallow exceptions silently.
 
-## 3. Contextual Recommendations (Khuyến nghị theo ngữ cảnh)
+## 3. Contextual Recommendations (Flexible Guidelines)
 
-Lựa chọn linh hoạt tùy theo tình huống thực tế.
+Applied flexibly based on situational context.
 
 - **ReactiveUI & MVVM**:
-  - ViewModels kế thừa `ViewModelBase` hoặc `SessionSyncViewModelBase`.
-  - Sử dụng ReactiveUI Source Generators (`[Reactive]`, `[ObservableAsProperty]`).
-  - View không chứa business logic, chỉ khởi tạo UI; ViewModel không tham chiếu trực tiếp các kiểu Avalonia `Control`.
-  - Quản lý Rx subscriptions: Sử dụng `.DisposeWith(_disposables)` khi vòng đời của subscription cần gắn chặt với ViewModel/Component. Không áp đặt cho observable tự complete hoặc dịch vụ singleton có cơ chế tự giải phóng riêng (`ICleanup`).
+  - ViewModels inherit from `ViewModelBase` or `SessionSyncViewModelBase`.
+  - Use ReactiveUI Source Generators (`[Reactive]`, `[ObservableAsProperty]`).
+  - Views contain no business logic (initialization only); ViewModels never reference Avalonia `Control` types directly.
+  - Rx Subscriptions: Use `.DisposeWith(_disposables)` when a subscription lifecycle must bind to the ViewModel/Component lifecycle. Do not force onto self-completing observables or singletons with dedicated disposal lifecycles (`ICleanup`).
