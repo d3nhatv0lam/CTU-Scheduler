@@ -1,0 +1,84 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.cs]
+# Namespace declaration: file-scoped
+csharp_style_namespace_declarations = file_scoped:error
+
+# var preferences
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = false:suggestion
+
+# Null checking preferences
+csharp_style_throw_expression = true:suggestion
+csharp_style_null_propagation = true:suggestion
+
+# Naming conventions
+dotnet_naming_rule.interface_should_be_prefixed_with_i.severity = error
+dotnet_naming_rule.interface_should_be_prefixed_with_i.symbols = interface
+dotnet_naming_rule.interface_should_be_prefixed_with_i.style = prefix_i
+
+dotnet_naming_symbols.interface.applicable_kinds = interface
+dotnet_naming_style.prefix_i.required_prefix = I
+dotnet_naming_style.prefix_i.capitalization = pascal_case
+
+dotnet_naming_rule.private_fields_should_be_prefixed.severity = suggestion
+dotnet_naming_rule.private_fields_should_be_prefixed.symbols = private_fields
+dotnet_naming_rule.private_fields_should_be_prefixed.style = prefix_underscore
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.prefix_underscore.required_prefix = _
+dotnet_naming_style.prefix_underscore.capitalization = camel_case
+
+dotnet_naming_rule.types_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.types_should_be_pascal_case.symbols = types
+dotnet_naming_rule.types_should_be_pascal_case.style = pascal_case_style
+dotnet_naming_symbols.types.applicable_kinds = class, struct, interface, enum, delegate
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+
+# Formatting
+csharp_new_line_before_open_brace = all
+
+# Using directives
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+# Avoid unnecessary this qualification
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
+dotnet_style_qualification_for_method = false:suggestion
+dotnet_style_qualification_for_event = false:suggestion
+
+# Expression-bodied members
+csharp_style_expression_bodied_methods = false:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+csharp_style_expression_bodied_accessors = true:suggestion
+
+# Pattern matching
+csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
+csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
+
+# Initializers
+csharp_style_object_initializer = true:suggestion
+csharp_style_collection_initializer = true:suggestion
+
+# Conditional expressions
+csharp_style_prefer_conditional_expression = true:suggestion
+
+# Remove unnecessary using
+dotnet_diagnostic.IDE0005.severity = warning
+
+# Simplify object creation
+dotnet_diagnostic.IDE0090.severity = suggestion
+
+# Prefer collection expressions (C# 12+)
+dotnet_diagnostic.IDE0300.severity = suggestion
