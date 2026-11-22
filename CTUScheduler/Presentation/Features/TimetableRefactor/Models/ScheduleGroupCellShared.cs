@@ -80,15 +80,6 @@ public partial class ScheduleGroupCellShared : ReactiveObject, IDisposable
 
     public IBrush BackgroundColor { get; }
 
-    public IBrush TextColor => IsColorDark(BackgroundColor)
-        ? new SolidColorBrush(Colors.White)
-        : new SolidColorBrush(Color.Parse("#051c3b"));
-
-    public IBrush SecondaryTextColor => IsColorDark(BackgroundColor)
-        ? new SolidColorBrush(Color.Parse("#E6FFFFFF"))
-        : new SolidColorBrush(Color.Parse("#343A40"));
-
-
     public bool IsHighStatus => _isHighStatus.Value;
     public bool IsMediumStatus => _isMediumStatus.Value;
     public bool IsLowStatus => _isLowStatus.Value;
@@ -104,17 +95,5 @@ public partial class ScheduleGroupCellShared : ReactiveObject, IDisposable
         if (ratio < 0.1) return RemainingLevel.Low;
         if (ratio <= 0.4) return RemainingLevel.Medium;
         return RemainingLevel.High;
-    }
-
-    private static bool IsColorDark(IBrush brush)
-    {
-        if (brush is ISolidColorBrush solidColorBrush)
-        {
-            var color = solidColorBrush.Color;
-            double luminance = (0.299 * color.R + 0.587 * color.G + 0.114 * color.B) / 255;
-            return luminance < 0.5;
-        }
-
-        return false;
     }
 }

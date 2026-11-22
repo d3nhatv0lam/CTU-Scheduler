@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
@@ -30,8 +31,13 @@ namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
 public abstract partial class TimetableLayoutBaseViewModel : ViewModelBase, IDisposable
 {
+    private static readonly PngBitmapEncoderOptions SmallestSizePngOptions = new()
+    {
+        CompressionLevel = CompressionLevel.SmallestSize
+    };
+
     private readonly CourseColorProvider _colorProvider = new();
-    private readonly Dictionary<AppTheme, Bitmap> _previewImagesCached  = new();
+    private readonly Dictionary<AppTheme, byte[]> _previewBytesCached = new();
     protected readonly CompositeDisposable Disposables = new();
     protected readonly IExcelExporterService ExcelExporter;
     protected readonly ITimetablePreviewRenderer TimetablePreviewRenderer;
@@ -191,7 +197,7 @@ public abstract partial class TimetableLayoutBaseViewModel : ViewModelBase, IDis
             .DisposeWith(Disposables);
     }
     
-    protected async Task<Bitmap?> GeneratePreviewAsync(CancellationToken cancellationToken)
+    protected virtual async Task<Bitmap?> GeneratePreviewAsync(CancellationToken cancellationToken)
     {
         if (VisualizerVM is null) return null;
         try
@@ -207,18 +213,31 @@ public abstract partial class TimetableLayoutBaseViewModel : ViewModelBase, IDis
     protected async Task GenerateAndApplyPreviewAsync(CancellationToken cancellationToken)
     {
         var targetTheme = ThemeService.CurrentTheme;
-        var bitmap = await GeneratePreviewAsync(cancellationToken);
+        using var rawBitmap = await GeneratePreviewAsync(cancellationToken);
         
-        if (bitmap is not null && !cancellationToken.IsCancellationRequested)
+        if (rawBitmap is not null && !cancellationToken.IsCancellationRequested)
         {
-            if (_previewImagesCached.TryGetValue(targetTheme, out var oldImage))
-            {
-                oldImage.Dispose();
-            }
-            _previewImagesCached[targetTheme] = bitmap;
+            using var ms = new MemoryStream();
+            rawBitmap.Save(ms, SmallestSizePngOptions);
+            var pngBytes = ms.ToArray();
+
+            _previewBytesCached[targetTheme] = pngBytes;
+
             if (ThemeService.CurrentTheme == targetTheme)
             {
-                PreviewImage = bitmap;
+                using var readStream = new MemoryStream(pngBytes);
+                var newBitmap = new Bitmap(readStream);
+                var oldBitmap = _previewImage;
+                PreviewImage = newBitmap;
+
+                if (oldBitmap is not null)
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        try { oldBitmap.Dispose(); }
+                        catch (ObjectDisposedException) { }
+                    }, DispatcherPriority.Background);
+                }
             }
         }
     }
@@ -246,43 +265,47 @@ public abstract partial class TimetableLayoutBaseViewModel : ViewModelBase, IDis
 
     protected virtual void OnThemeChanged(AppTheme newTheme)
     {
-        if (_previewImagesCached.TryGetValue(newTheme, out var image))
+        if (_previewBytesCached.TryGetValue(newTheme, out var bytes))
         {
-            PreviewImage = image;
+            using var stream = new MemoryStream(bytes);
+            var newBitmap = new Bitmap(stream);
+            var oldBitmap = _previewImage;
+            PreviewImage = newBitmap;
+
+            if (oldBitmap is not null)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    try { oldBitmap.Dispose(); }
+                    catch (ObjectDisposedException) { }
+                }, DispatcherPriority.Background);
+            }
         }
     }
 
     protected void DisposePreviewImages()
     {
-        if (_previewImagesCached.Count == 0 && _previewImage is null) return;
-
+        _previewBytesCached.Clear();
+        var oldImage = _previewImage;
         PreviewImage = null;
-        var imagesToDispose = _previewImagesCached.Values.ToList();
-        _previewImagesCached.Clear();
-        
-        if (imagesToDispose.Count > 0)
+
+        if (oldImage is not null)
         {
             Dispatcher.UIThread.Post(() =>
             {
-                foreach (var img in imagesToDispose)
-                {
-                    try
-                    {
-                        img.Dispose();
-                    }
-                    catch (ObjectDisposedException) { }
-                }
+                try { oldImage.Dispose(); }
+                catch (ObjectDisposedException) { }
             }, DispatcherPriority.Background);
         }
     }
 
     protected bool HasCachedPreview(AppTheme theme)
     {
-        return _previewImagesCached.ContainsKey(theme);
+        return _previewBytesCached.ContainsKey(theme);
     }
     
-    protected bool TryGetCachedPreview(AppTheme theme, [NotNullWhen(true)] out Bitmap? bitmap) 
-        => _previewImagesCached.TryGetValue(theme, out bitmap);
+    protected bool TryGetCachedPreviewBytes(AppTheme theme, [NotNullWhen(true)] out byte[]? bytes) 
+        => _previewBytesCached.TryGetValue(theme, out bytes);
     
     public void Dispose()
     {

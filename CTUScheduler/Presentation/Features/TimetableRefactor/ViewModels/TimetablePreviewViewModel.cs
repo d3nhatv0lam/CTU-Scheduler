@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CTUScheduler.Core.Interfaces;
@@ -33,6 +35,7 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel,
     public IReadOnlyList<SectionChoice> Choices => _choices;
 
     [Reactive] private double _totalScore;
+    private AppTheme? _currentImageTheme;
 
     double IScorable.Score => TotalScore;
 
@@ -41,19 +44,40 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel,
         get
         {
             var currentTheme = ThemeService.CurrentTheme;
-            if (TryGetCachedPreview(currentTheme, out var cachedBmp))
+            if (TryGetCachedPreviewBytes(currentTheme, out var bytes))
             {
-                return cachedBmp;
+                if (_currentImageTheme != currentTheme || base.PreviewImage is null)
+                {
+                    var oldImage = base.PreviewImage;
+                    using var stream = new MemoryStream(bytes);
+                    base.PreviewImage = new Bitmap(stream);
+                    _currentImageTheme = currentTheme;
+
+                    if (oldImage is not null)
+                    {
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            try { oldImage.Dispose(); }
+                            catch (ObjectDisposedException) { }
+                        }, DispatcherPriority.Background);
+                    }
+                }
+                return base.PreviewImage;
             }
 
             EnsurePreviewGeneratedForTheme(currentTheme);
             
             return base.PreviewImage;
         }
-        set => base.PreviewImage = value;
+        set
+        {
+            _currentImageTheme = ThemeService.CurrentTheme;
+            base.PreviewImage = value;
+        }
     }
 
     private readonly Lock _visualizerLock = new();
+    private readonly SerialDisposable _visualizerDisposable = new();
 
     public override TimetableViewModel? VisualizerVM
     {
@@ -75,25 +99,56 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel,
 
                 sourceList.AddRange(items);
 
-                Disposable.Create(sourceList, list =>
+                var vm = new TimetableViewModel(sourceList);
+
+                _visualizerDisposable.Disposable = Disposable.Create(() =>
                 {
-                    foreach (var item in list.Items)
+                    foreach (var item in sourceList.Items)
                     {
                         item.Dispose();
                     }
 
-                    list.Dispose();
-                }).DisposeWith(Disposables);
-
-                var vm = new TimetableViewModel(sourceList)
-                    .DisposeWith(Disposables);
+                    sourceList.Dispose();
+                    vm.Dispose();
+                });
 
                 base.VisualizerVM = vm;
             }
 
             return base.VisualizerVM;
         }
-        protected set => base.VisualizerVM = value;
+        protected set
+        {
+            if (value is null)
+            {
+                _visualizerDisposable.Disposable = Disposable.Empty;
+            }
+            base.VisualizerVM = value;
+        }
+    }
+
+    protected override async Task<Bitmap?> GeneratePreviewAsync(CancellationToken cancellationToken)
+    {
+        if (_choices.Count == 0) return null;
+
+        using var tempSourceList = new SourceList<TimetableRenderItem>();
+        var items = _choices.Select(choice =>
+        {
+            var adapter = new StaticCourseAdapter(choice.Course, choice.Section);
+            return CreateRenderItem(adapter);
+        }).ToList();
+        tempSourceList.AddRange(items);
+
+        using var tempVm = new TimetableViewModel(tempSourceList);
+
+        try
+        {
+            return await TimetablePreviewRenderer.RenderPreviewAsync(tempVm, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            return null;
+        }
     }
 
     public TimetablePreviewViewModel(
@@ -188,6 +243,8 @@ public partial class TimetablePreviewViewModel : TimetableLayoutBaseViewModel,
             {
                 // ignored
             }
+
+            _visualizerDisposable.Dispose();
         }
 
         base.Dispose(isDisposing);

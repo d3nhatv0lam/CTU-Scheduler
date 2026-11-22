@@ -1,3 +1,6 @@
+using System;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Layout;
@@ -6,6 +9,7 @@ using Avalonia.Threading;
 using CTUScheduler.Core.Utils;
 using CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableRefactor.Views;
+using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Services.ControlRenderer;
 
@@ -32,13 +36,17 @@ public class TimetablePreviewRenderer : ITimetablePreviewRenderer
 
         try
         {
-            int checkCount = 0;
-            while (visualizerVM.ScheduleCells.Count == 0 &&
-                   visualizerVM.UnscheduledCourses.Count == 0 &&
-                   checkCount < 30) // Tối đa 300ms
+            if (visualizerVM.ScheduleCells.Count == 0 && visualizerVM.UnscheduledCourses.Count == 0)
             {
-                await Task.Delay(10, cancellationToken);
-                checkCount++;
+                var cellsReady = visualizerVM.WhenAnyValue(x => x.ScheduleCells.Count)
+                    .Where(count => count > 0);
+                var unscheduledReady = visualizerVM.WhenAnyValue(x => x.UnscheduledCourses.Count)
+                    .Where(count => count > 0);
+
+                await cellsReady.Merge(unscheduledReady)
+                    .Take(1)
+                    .Timeout(TimeSpan.FromMilliseconds(500), Observable.Return(0))
+                    .ToTask(cancellationToken);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
