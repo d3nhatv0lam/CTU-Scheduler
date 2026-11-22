@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -8,6 +8,8 @@ using System.Reactive;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
+using CTUScheduler.AppServices.Helpers;
 using CTUScheduler.Core.Models.Contributors;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Presentation.Base;
@@ -26,27 +28,30 @@ public class ContactViewModel : ViewModelBase, IRoutableViewModel, IDisposable
     public IReadOnlyList<ContributorViewModel> Contributors { get; }
     public ReactiveCommand<string, Unit> OpenUrlCommand { get; }
 
-    public ContactViewModel(IScreen hostScreen, ILogger<ContactViewModel> logger)
+    public ContactViewModel(
+        IScreen hostScreen,
+        IHttpClientFactory httpClientFactory,
+        ILogger<ContactViewModel> logger)
     {
         HostScreen = hostScreen;
         _logger = logger;
 
-        Contributors = AppConstants.AppCredits.AllContributors.Select(c => new ContributorViewModel(c)).ToList();
+        var httpClient = httpClientFactory.CreateClient();
+
+        Contributors = AppConstants.AppCredits.AllContributors
+            .Select(c => new ContributorViewModel(c, httpClient))
+            .ToList();
 
         OpenUrlCommand = ReactiveCommand.Create<string>(url =>
         {
             if (string.IsNullOrWhiteSpace(url)) return;
             try
             {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = url,
-                    UseShellExecute = true
-                });
+                ProcessHelper.OpenUrl(url);
             }
-            catch
+            catch (Exception ex)
             {
-                // ignored
+                _logger.LogWarning(ex, "Failed to open URL: {Url}", url);
             }
         });
     }
@@ -66,7 +71,7 @@ public class ContactViewModel : ViewModelBase, IRoutableViewModel, IDisposable
 
 public class ContributorViewModel : ReactiveObject, IDisposable
 {
-    private static readonly HttpClient HttpClient = new();
+    private static readonly ConcurrentDictionary<string, Bitmap> AvatarCache = new();
     private readonly CancellationTokenSource _cts = new();
     private bool _isDisposed;
 
@@ -84,7 +89,7 @@ public class ContributorViewModel : ReactiveObject, IDisposable
         private set => this.RaiseAndSetIfChanged(ref _avatarImage, value);
     }
 
-    public ContributorViewModel(ContributorProfile profile)
+    public ContributorViewModel(ContributorProfile profile, HttpClient httpClient)
     {
         Name = profile.Name;
         Nickname = profile.Nickname;
@@ -97,36 +102,55 @@ public class ContributorViewModel : ReactiveObject, IDisposable
 
         if (!string.IsNullOrWhiteSpace(profile.AvatarUrl))
         {
-            var token = _cts.Token;
-            Task.Run(async () =>
-            {
-                try
-                {
-                    using var response = await HttpClient.GetAsync(profile.AvatarUrl, token);
-                    response.EnsureSuccessStatusCode();
-                    await using var stream = await response.Content.ReadAsStreamAsync(token);
-                    using var ms = new MemoryStream();
-                    await stream.CopyToAsync(ms, token);
-                    ms.Seek(0, SeekOrigin.Begin);
-
-                    if (token.IsCancellationRequested) return;
-
-                    var bitmap = new Bitmap(ms);
-
-                    if (token.IsCancellationRequested)
-                    {
-                        bitmap.Dispose();
-                        return;
-                    }
-
-                    AvatarImage = bitmap;
-                }
-                catch
-                {
-                    // ignored
-                }
-            }, token);
+            LoadAvatar(profile.AvatarUrl, httpClient);
         }
+    }
+
+    private void LoadAvatar(string url, HttpClient httpClient)
+    {
+        if (AvatarCache.TryGetValue(url, out var cachedBitmap))
+        {
+            AvatarImage = cachedBitmap;
+            return;
+        }
+
+        var token = _cts.Token;
+        Task.Run(async () =>
+        {
+            try
+            {
+                using var response = await httpClient.GetAsync(url, token);
+                response.EnsureSuccessStatusCode();
+                await using var stream = await response.Content.ReadAsStreamAsync(token);
+                using var ms = new MemoryStream();
+                await stream.CopyToAsync(ms, token);
+                ms.Seek(0, SeekOrigin.Begin);
+
+                if (token.IsCancellationRequested || _isDisposed) return;
+
+                var bitmap = new Bitmap(ms);
+
+                var actualBitmap = AvatarCache.GetOrAdd(url, bitmap);
+                if (!ReferenceEquals(actualBitmap, bitmap))
+                {
+                    bitmap.Dispose();
+                }
+
+                if (token.IsCancellationRequested || _isDisposed) return;
+
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (!_isDisposed)
+                    {
+                        AvatarImage = actualBitmap;
+                    }
+                });
+            }
+            catch
+            {
+                // ignored
+            }
+        }, token);
     }
 
     public void Dispose()
@@ -145,7 +169,6 @@ public class ContributorViewModel : ReactiveObject, IDisposable
 
         _cts.Dispose();
 
-        _avatarImage?.Dispose();
         _avatarImage = null;
     }
 }
