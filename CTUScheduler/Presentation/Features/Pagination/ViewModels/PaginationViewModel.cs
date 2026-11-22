@@ -154,11 +154,6 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationVi
             .DisposeWith(Disposables);
     }
 
-    ~PaginationViewModel()
-    {
-        Dispose(false);
-    }
-
     public virtual void Add(T item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -187,25 +182,16 @@ public class PaginationViewModel<T> : ReactiveObject, IDisposable, IPaginationVi
         CurrentPage--;
     }
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool isDisposing)
+    public virtual void Dispose()
     {
         if (_isDisposed) return;
 
-        if (isDisposing)
+        if (_ownsData)
         {
-            if (_ownsData)
-            {
-                DataList.Clear();
-                DataList.Dispose();
-            }
-            Disposables.Dispose();
+            DataList.Clear();
+            DataList.Dispose();
         }
+        Disposables.Dispose();
 
         _isDisposed = true;
     }
