@@ -1,17 +1,16 @@
 ﻿using System;
 
-namespace CTUScheduler.Core.Exceptions
+namespace CTUScheduler.Core.Exceptions;
+
+public class NoInternetException: Exception
 {
-    public class NoInternetException: Exception
+    public NoInternetException(string message) : base(message)
     {
-        public NoInternetException(string message) : base(message)
-        {
-        }
-        public NoInternetException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-        public NoInternetException()
-        {
-        }
+    }
+    public NoInternetException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+    public NoInternetException()
+    {
     }
 }

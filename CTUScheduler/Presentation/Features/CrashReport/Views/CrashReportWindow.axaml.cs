@@ -1,5 +1,9 @@
+using System;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using CTUScheduler.Presentation.Features.CrashReport.ViewModels;
 using CTUScheduler.Presentation.Shared.Interfaces;
+using ReactiveUI;
 using Ursa.ReactiveUIExtension;
 
 namespace CTUScheduler.Presentation.Features.CrashReport.Views;
@@ -10,12 +14,15 @@ public partial class CrashReportWindow : ReactiveUrsaWindow<CrashReportViewModel
     {
         InitializeComponent();
 
-        DataContextChanged += (_, _) =>
+        this.WhenActivated(disposables =>
         {
-            if (DataContext is IRequestClose requestClose)
+            if (ViewModel is IRequestClose requestClose)
             {
-                requestClose.RequestClose += _ => Close();
+                Action<object?> handler = _ => Close();
+                requestClose.RequestClose += handler;
+                Disposable.Create(() => requestClose.RequestClose -= handler)
+                    .DisposeWith(disposables);
             }
-        };
+        });
     }
 }
