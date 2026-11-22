@@ -21,8 +21,6 @@ public class StateStore<T> : IStateStore<T>, ICleanup, IDisposable
         _logger = logger;
     }   
     
-    ~StateStore() => Dispose(false);
-    
     public virtual void Update(T value)
     {
        ArgumentNullException.ThrowIfNull(value);
@@ -36,22 +34,13 @@ public class StateStore<T> : IStateStore<T>, ICleanup, IDisposable
 
     public virtual void Cleanup() => Clear();
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-    
-    protected virtual void Dispose(bool disposing)
+    public virtual void Dispose()
     {
         if (_isDisposed) return;
 
-        if (disposing)
-        {
-            _subject.Dispose();
-            _logger.LogDebug("Disposed!");
-        }
-        
+        _subject.Dispose();
+        _logger.LogDebug("Disposed");
+
         _isDisposed = true;
     }
 }

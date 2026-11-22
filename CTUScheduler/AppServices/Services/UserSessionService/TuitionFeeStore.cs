@@ -19,8 +19,6 @@ public class TuitionFeeStore : ITuitionFeeStore, ICleanup, IDisposable
         TuitionFeeSummaryChanged = _subject.AsObservable();
     }
 
-    ~TuitionFeeStore() => Dispose(false);
-
     public IObservable<TuitionFeeSummary?> TuitionFeeSummaryChanged { get; }
     public TuitionFeeSummary? CurrentTuitionFeeSummary => _subject.Value;
 
@@ -37,23 +35,13 @@ public class TuitionFeeStore : ITuitionFeeStore, ICleanup, IDisposable
 
     public void Cleanup() => Clear();
 
-
     public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    private void Dispose(bool disposing)
     {
         if (_isDisposed) return;
 
-        if (disposing)
-        {
-            _subject.Dispose();
-        }
+        _subject.Dispose();
+        _logger.LogDebug("{ClassName} disposed!", nameof(TuitionFeeStore));
 
         _isDisposed = true;
-        _logger.LogDebug(nameof(TuitionFeeStore) + " disposed!");
     }
 }

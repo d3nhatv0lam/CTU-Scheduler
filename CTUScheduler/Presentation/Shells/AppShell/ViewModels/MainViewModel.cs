@@ -143,24 +143,12 @@ public partial class MainViewModel : ViewModelBase, IScreen, IActivatableViewMod
         return isConfirmed;
     }
 
-    ~MainViewModel() => Dispose(false);
-
-
     public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    private void Dispose(bool disposing)
     {
         if (_isDisposed) return;
 
-        if (disposing)
-        {
-            _disposables.Dispose();
-            _logger.LogDebug("Disposed");
-        }
+        _disposables.Dispose();
+        _logger.LogDebug("{ClassName} disposed!", nameof(MainViewModel));
 
         _isDisposed = true;
     }
