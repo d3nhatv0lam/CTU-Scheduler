@@ -30,9 +30,18 @@ public class TimelineViewModel : ReactiveObject, IViewModel, IDisposable
     //     Nodes.Add(new TimelineNodeViewModel(node));
     // }
 
+    public void Clear()
+    {
+        foreach (var node in Nodes)
+        {
+            node.Dispose();
+        }
+        Nodes.Clear();
+    }
+
     public void Dispose()
     {
-        foreach (var node in Nodes) node.Dispose();
+        Clear();
     }
 }
 

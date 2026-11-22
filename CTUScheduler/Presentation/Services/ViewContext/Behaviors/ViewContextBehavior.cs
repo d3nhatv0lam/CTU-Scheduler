@@ -43,12 +43,12 @@ public sealed class ViewContextBehavior : Behavior<Control>
 
     private void OnAssociatedObjectAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
     {
-        ResetViewContext();
+        UpdateViewContext();
     }
 
     private void OnAssociatedObjectDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
     {
-        UpdateViewContext();
+        ResetViewContext();
     }
     
     private void UpdateViewContext()

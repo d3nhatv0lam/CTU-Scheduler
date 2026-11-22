@@ -145,7 +145,7 @@ public partial class HomeViewModel : SessionSyncViewModelBase, IRoutableViewMode
             return;
         }
 
-        TimelineViewModel.Nodes.Clear();
+        TimelineViewModel.Clear();
         foreach (var item in teachingPlan.RegistrationTimeline)
         {
             TimelineViewModel.Nodes.Add(new TimelineNodeViewModel(item));
