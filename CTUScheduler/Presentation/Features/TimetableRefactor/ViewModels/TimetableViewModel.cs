@@ -1,6 +1,5 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
@@ -11,45 +10,25 @@ using ReactiveUI;
 
 namespace CTUScheduler.Presentation.Features.TimetableRefactor.ViewModels;
 
-public class TimetableViewModel: ViewModelBase, IDisposable
+public class TimetableViewModel : ViewModelBase, IDisposable
 {
     private readonly CompositeDisposable _disposables = new();
     private readonly ReadOnlyObservableCollection<ScheduleCellUi> _scheduleCells;
     private readonly ReadOnlyObservableCollection<ScheduleGroupCellShared> _unscheduledCourses;
-    
+
     public ReadOnlyObservableCollection<ScheduleCellUi> ScheduleCells => _scheduleCells;
     public ReadOnlyObservableCollection<ScheduleGroupCellShared> UnscheduledCourses => _unscheduledCourses;
-    public bool HasItems { get; private set; }
-    
-    // private readonly ReadOnlyObservableCollection<ScheduleGroupCellShared> _courseList;
-    // public ReadOnlyObservableCollection<ScheduleGroupCellShared> CourseList => _courseList;
 
     public TimetableViewModel(IObservableList<TimetableRenderItem> renderList)
     {
-        renderList.CountChanged
-            .StartWith(renderList.Count)
-            .Select(count => count > 0)
-            .DistinctUntilChanged()
-            .ObserveOn(RxSchedulers.MainThreadScheduler)
-            .Subscribe(hasItems => HasItems = hasItems)
-            .DisposeWith(_disposables);
-        
         var renderStream = renderList.Connect();
-        
+
         renderStream
             .TransformMany(item => item.Cells)
             .ObserveOn(RxSchedulers.MainThreadScheduler)
             .Bind(out _scheduleCells)
             .Subscribe()
             .DisposeWith(_disposables);
-        
-        // show all courses
-        // renderStream
-        //     .Transform(item => item.SharedData)
-        //     .ObserveOn(RxSchedulers.MainThreadScheduler)
-        //     .Bind(out _courseList)
-        //     .Subscribe()
-        //     .DisposeWith(_disposables);
 
         renderStream
             .Filter(item => item.Cells is { Count: 0 })
