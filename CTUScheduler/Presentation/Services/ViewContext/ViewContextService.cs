@@ -12,7 +12,7 @@ public class ViewContextService: IViewContextService, IDisposable
     private readonly BehaviorSubject<TopLevel?> _toplevelSubject = new(null);
     private readonly ILogger<ViewContextService> _logger;
     private bool _isDisposed;
-    
+
     public TopLevel? CurrentTopLevel => _toplevelSubject.Value;
     public IObservable<TopLevel?> WhenTopLevelChanged { get; }
 
@@ -21,18 +21,18 @@ public class ViewContextService: IViewContextService, IDisposable
         _logger = logger;
         WhenTopLevelChanged = _toplevelSubject.AsObservable();
     }
-    
+
     public void SetTopLevel(TopLevel? topLevel)
     {
-        _logger.LogDebug("Set TopLevel to {TopLevel}", topLevel?.GetType().Name);
         _toplevelSubject.OnNext(topLevel);
+        _logger.LogDebug("Set TopLevel to {TopLevel}", topLevel?.GetType().Name);
     }
 
     public void Dispose()
     {
         if (_isDisposed) return;
         _toplevelSubject.Dispose();
-        _logger.LogDebug("ViewContextService disposed");
+        _logger.LogDebug("disposed");
         _isDisposed = true;
     }
 }

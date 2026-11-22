@@ -54,8 +54,6 @@ public sealed class ViewContextBehavior : Behavior<Control>
     private void UpdateViewContext()
     {
         var topLevel = TopLevel.GetTopLevel(AssociatedObject);
-        if (topLevel is null)
-            return;
         if (AssociatedObject?.DataContext is IViewContext context)
         {
             context.ViewContext.SetTopLevel(topLevel);
