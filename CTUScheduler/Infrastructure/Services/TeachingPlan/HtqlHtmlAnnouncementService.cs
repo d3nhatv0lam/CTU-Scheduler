@@ -13,8 +13,8 @@ namespace CTUScheduler.Infrastructure.Services.TeachingPlan;
 
 public class HtqlHtmlAnnouncementService : ISchoolAnnouncementService
 {
-    private const string LoginUrl = "https://htql.ctu.edu.vn/htql/login.php";
-    private static readonly Uri BaseUri = new("https://htql.ctu.edu.vn/htql/");
+    private const string LoginUrl = "https://htql.ctu.edu.vn/login.php";
+    private static readonly Uri BaseUri = new("https://htql.ctu.edu.vn/");
 
     private readonly HttpClient _httpClient;
     private readonly ILogger<HtqlHtmlAnnouncementService> _logger;
