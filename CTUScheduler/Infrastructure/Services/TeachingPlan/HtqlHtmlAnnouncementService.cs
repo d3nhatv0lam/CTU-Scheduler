@@ -27,7 +27,6 @@ public class HtqlHtmlAnnouncementService : ISchoolAnnouncementService
 
         _httpClient = httpClient;
         _logger = logger;
-        _httpClient.Timeout = TimeSpan.FromSeconds(15);
     }
 
     public const string CaptchaErrorMessage = "Kẹt Captcha, hãy bật VPN hoặc đổi mạng";
@@ -39,8 +38,6 @@ public class HtqlHtmlAnnouncementService : ISchoolAnnouncementService
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, LoginUrl);
-            request.Headers.Add("User-Agent",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
             request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
 
             using var response = await _httpClient.SendAsync(request, cancellationToken);

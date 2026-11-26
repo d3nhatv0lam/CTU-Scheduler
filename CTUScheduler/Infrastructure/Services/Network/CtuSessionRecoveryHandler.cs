@@ -131,24 +131,13 @@ public class CtuSessionRecoveryHandler : DelegatingHandler
         // clone Content
         if (req.Content != null)
         {
-            var ms = new MemoryStream();
-            try
-            {
-                await req.Content.CopyToAsync(ms);
-                ms.Position = 0;
-                
-                clone.Content = new StreamContent(ms);
-                
-                // clone content headers
-                foreach (var header in req.Content.Headers)
-                    clone.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
-            }
-            catch
-            {
-                await ms.DisposeAsync();
-                clone.Dispose();
-                throw;
-            }
+            using var ms = new MemoryStream();
+            await req.Content.CopyToAsync(ms);
+            clone.Content = new ByteArrayContent(ms.ToArray());
+
+            // clone content headers
+            foreach (var header in req.Content.Headers)
+                clone.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
         }
 
         return clone;

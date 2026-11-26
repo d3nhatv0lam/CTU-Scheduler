@@ -17,10 +17,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Core.Networking;
+using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Helpers;
 using CTUScheduler.Infrastructure.Sites.CTU.Models.Auth;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Clients;
 
@@ -29,23 +31,30 @@ internal sealed class LegacyAuthClient : IAuthClient
     private readonly HttpClient _pingHttpClient;
     private readonly ILogger<LegacyAuthClient> _logger;
     private readonly Func<CookieContainer, HttpMessageHandler> _authHandlerFactory;
+    private readonly CtuHttpClientOptions _httpOptions;
 
-    public LegacyAuthClient(HttpClient pingHttpClient, ILogger<LegacyAuthClient> logger)
+    public LegacyAuthClient(
+        HttpClient pingHttpClient,
+        ILogger<LegacyAuthClient> logger,
+        IOptions<CtuHttpClientOptions>? httpOptions = null)
         : this(
             pingHttpClient,
             logger,
-            cookies => new HttpClientHandler { CookieContainer = cookies })
+            cookies => new HttpClientHandler { CookieContainer = cookies },
+            httpOptions)
     {
     }
 
     internal LegacyAuthClient(
         HttpClient pingHttpClient,
         ILogger<LegacyAuthClient> logger,
-        Func<CookieContainer, HttpMessageHandler> authHandlerFactory)
+        Func<CookieContainer, HttpMessageHandler> authHandlerFactory,
+        IOptions<CtuHttpClientOptions>? httpOptions = null)
     {
         _pingHttpClient = pingHttpClient;
         _logger = logger;
         _authHandlerFactory = authHandlerFactory;
+        _httpOptions = httpOptions?.Value ?? new CtuHttpClientOptions();
     }
 
     public async Task<AuthServerStatus> PingAuthServerAsync(CancellationToken cancellationToken = default)
@@ -98,10 +107,7 @@ internal sealed class LegacyAuthClient : IAuthClient
         var cookiesContainer = new CookieContainer();
         using var httpHandler = _authHandlerFactory(cookiesContainer);
         using var httpClient = new HttpClient(httpHandler);
-
-        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-        httpClient.DefaultRequestHeaders.Add("Accept-Language", "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7");
+        _httpOptions.ApplyBrowserHeaders(httpClient.DefaultRequestHeaders);
 
         // Gửi thông tin đăng nhập trực tiếp lấy PHPSESSID và cookie WAF
         using var loginRequest = new HttpRequestMessage(HttpMethod.Post, HtqlEndpoints.LegacyLogin);
