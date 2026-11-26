@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Models.Academic;
 using CTUScheduler.Core.Models.Shared.Results;
+using CTUScheduler.Infrastructure.Sites.CTU.Helpers;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Services.TeachingPlan;
@@ -24,7 +25,6 @@ public class HtqlJsonAnnouncementService : ISchoolAnnouncementService
 
         _httpClient = httpClient;
         _logger = logger;
-        _httpClient.Timeout = TimeSpan.FromSeconds(15);
     }
 
     public const string CaptchaErrorMessage = "Kẹt Captcha, hãy bật VPN hoặc đổi mạng";
@@ -36,8 +36,6 @@ public class HtqlJsonAnnouncementService : ISchoolAnnouncementService
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
-            request.Headers.Add("User-Agent",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
             request.Headers.Add("Referer", "https://accounts.ctu.edu.vn/");
             request.Headers.Add("Origin", "https://accounts.ctu.edu.vn");
             request.Headers.Add("Accept", "application/json, text/javascript, */*; q=0.01");
@@ -70,16 +68,8 @@ public class HtqlJsonAnnouncementService : ISchoolAnnouncementService
         }
     }
 
-    public static bool IsCaptchaResponse(string? responseContent)
-    {
-        if (string.IsNullOrWhiteSpace(responseContent))
-            return false;
-
-        var trimmed = responseContent.TrimStart();
-        return trimmed.StartsWith('<') &&
-               (trimmed.Contains("/captcha_resp", StringComparison.OrdinalIgnoreCase) ||
-                trimmed.Contains("/captcha.gif", StringComparison.OrdinalIgnoreCase));
-    }
+    public static bool IsCaptchaResponse(string? responseContent) =>
+        CtuCaptchaDetector.IsCaptchaResponse(responseContent);
 
     public static IReadOnlyList<SchoolAnnouncement> ParseAnnouncementsFromJson(string json)
     {

@@ -50,7 +50,6 @@ public partial class TeachingPlanPdfService : ITeachingPlanPdfService
             _logger.LogInformation("Checking remote PDF headers via HTTP HEAD for {Url}", pdfUrl);
 
             using var headRequest = new HttpRequestMessage(HttpMethod.Head, pdfUrl);
-            headRequest.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
 
             using var headResponse = await _httpClient.SendAsync(headRequest, HttpCompletionOption.ResponseHeadersRead, linkedCts.Token);
             if (headResponse.IsSuccessStatusCode)
@@ -104,7 +103,6 @@ public partial class TeachingPlanPdfService : ITeachingPlanPdfService
             _logger.LogInformation("Downloading PDF teaching plan from {Url}", pdfUrl);
 
             using var request = new HttpRequestMessage(HttpMethod.Get, pdfUrl);
-            request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
 
             using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, linkedCts.Token);
             response.EnsureSuccessStatusCode();

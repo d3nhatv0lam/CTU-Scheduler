@@ -11,6 +11,7 @@ using CTUScheduler.Infrastructure.Services.Update;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Clients;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Velopack;
 using Velopack.Sources;
 
@@ -33,29 +34,47 @@ public static class ServiceCollectionExtensions
             options.FilePath = AppConstants.Paths.UserPreferencesFilePath;
         }).AddSingleton<IUserPreferencesRepository, UserPreferencesRepository>();
 
+        // --- CTU HTTP Configuration ---
+        services.Configure<CtuHttpClientOptions>(_ => { });
+        services.AddHttpClient(CtuHttpClientOptions.AnonymousClientName)
+            .ConfigureHttpClient((sp, client) =>
+            {
+                var options = sp.GetRequiredService<IOptions<CtuHttpClientOptions>>().Value;
+                options.ApplyBrowserHeaders(client.DefaultRequestHeaders);
+                client.Timeout = options.PingTimeout;
+            });
+
         // --- Teaching Plan ---
         services.AddSingleton<ITeachingPlanPdfParser, TeachingPlanPdfParser>();
-        services.AddHttpClient<ITeachingPlanPdfService, TeachingPlanPdfService>();
-        services.AddHttpClient<HtqlHtmlAnnouncementService>();
-        services.AddHttpClient<HtqlJsonAnnouncementService>();
+        services.AddHttpClient<ITeachingPlanPdfService, TeachingPlanPdfService>()
+            .ConfigureCtuDefaults();
+        services.AddHttpClient<HtqlHtmlAnnouncementService>()
+            .ConfigureCtuDefaults();
+        services.AddHttpClient<HtqlJsonAnnouncementService>()
+            .ConfigureCtuDefaults();
         services.AddTransient<ISchoolAnnouncementService, AggregatedSchoolAnnouncementService>();
 
 
         services.AddTransient<CtuSessionRecoveryHandler>();
         services.AddTransient<CtuJwtAuthHandler>();
         services.AddTransient<CtuLegacyCookieHandler>();
+        services.AddTransient<HttpDebugTracingHandler>();
 
         services.AddHttpClient<AuthClient>()
+            .ConfigureCtuDefaults()
             .AddHttpMessageHandler<CtuLegacyCookieHandler>();
 
         services.AddHttpClient<LegacyAuthClient>()
+            .ConfigureCtuDefaults()
             .AddHttpMessageHandler<CtuLegacyCookieHandler>();
 
         services.AddSingleton<IAuthClient, AuthClientOrchestrator>();
 
         services.AddHttpClient<CourseRegistrationClient>()
+            .ConfigureCtuDefaults()
             .AddHttpMessageHandler<CtuSessionRecoveryHandler>()
             .AddHttpMessageHandler<CtuJwtAuthHandler>();
+
         services.AddTransient<IRegistrationRulesClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());
         services.AddTransient<ICourseCatalogClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());
         services.AddTransient<ICourseRegistrationClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());

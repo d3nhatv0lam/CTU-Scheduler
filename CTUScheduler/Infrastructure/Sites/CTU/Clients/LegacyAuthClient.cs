@@ -15,10 +15,14 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Core.Networking;
+using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
+using CTUScheduler.Infrastructure.Sites.CTU.Helpers;
 using CTUScheduler.Infrastructure.Sites.CTU.Models.Auth;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Clients;
 
@@ -26,11 +30,31 @@ internal sealed class LegacyAuthClient : IAuthClient
 {
     private readonly HttpClient _pingHttpClient;
     private readonly ILogger<LegacyAuthClient> _logger;
+    private readonly Func<CookieContainer, HttpMessageHandler> _authHandlerFactory;
+    private readonly CtuHttpClientOptions _httpOptions;
 
-    public LegacyAuthClient(HttpClient pingHttpClient, ILogger<LegacyAuthClient> logger)
+    public LegacyAuthClient(
+        HttpClient pingHttpClient,
+        ILogger<LegacyAuthClient> logger,
+        IOptions<CtuHttpClientOptions>? httpOptions = null)
+        : this(
+            pingHttpClient,
+            logger,
+            cookies => new HttpClientHandler { CookieContainer = cookies },
+            httpOptions)
+    {
+    }
+
+    internal LegacyAuthClient(
+        HttpClient pingHttpClient,
+        ILogger<LegacyAuthClient> logger,
+        Func<CookieContainer, HttpMessageHandler> authHandlerFactory,
+        IOptions<CtuHttpClientOptions>? httpOptions = null)
     {
         _pingHttpClient = pingHttpClient;
         _logger = logger;
+        _authHandlerFactory = authHandlerFactory;
+        _httpOptions = httpOptions?.Value ?? new CtuHttpClientOptions();
     }
 
     public async Task<AuthServerStatus> PingAuthServerAsync(CancellationToken cancellationToken = default)
@@ -38,14 +62,30 @@ internal sealed class LegacyAuthClient : IAuthClient
         _logger.LogInformation("Ping CTU Legacy Auth Server ({Url})...", HtqlEndpoints.LegacyLogin);
         try
         {
-            using var response = await _pingHttpClient.GetAsync(HtqlEndpoints.LegacyLogin, cancellationToken);
+            using var response = await _pingHttpClient.GetAsync(HtqlEndpoints.LegacyLogin, cancellationToken)
+                .ConfigureAwait(false);
             if ((int)response.StatusCode >= 500)
             {
                 _logger.LogWarning("CTU Legacy Server trả về mã lỗi {StatusCode}", response.StatusCode);
                 return AuthServerStatus.Maintenance;
             }
 
-            return response.IsSuccessStatusCode ? AuthServerStatus.Healthy : AuthServerStatus.Unreachable;
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("CTU Legacy Server trả về mã lỗi {StatusCode}", response.StatusCode);
+                return AuthServerStatus.Unreachable;
+            }
+
+            var html = await response.Content.ReadAsStringAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            if (CtuCaptchaDetector.IsCaptcha(html))
+            {
+                _logger.LogWarning("CTU Legacy Captcha detected!");
+                return AuthServerStatus.CaptchaBlocked;
+            }
+
+            return AuthServerStatus.Healthy;
         }
         catch (HttpRequestException ex)
         {
@@ -59,17 +99,15 @@ internal sealed class LegacyAuthClient : IAuthClient
         }
     }
 
-    public async Task<CtuSession> AuthenticateAsync(string username, string password, CancellationToken cancellationToken = default)
+    public async Task<CtuSession> AuthenticateAsync(string username, string password,
+        CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Bắt đầu xác thực cơ chế cũ (Legacy Direct Form) cho tài khoản {Username}...", username);
 
         var cookiesContainer = new CookieContainer();
-        using var httpHandler = new HttpClientHandler { CookieContainer = cookiesContainer };
+        using var httpHandler = _authHandlerFactory(cookiesContainer);
         using var httpClient = new HttpClient(httpHandler);
-
-        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-        httpClient.DefaultRequestHeaders.Add("Accept-Language", "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7");
+        _httpOptions.ApplyBrowserHeaders(httpClient.DefaultRequestHeaders);
 
         // Gửi thông tin đăng nhập trực tiếp lấy PHPSESSID và cookie WAF
         using var loginRequest = new HttpRequestMessage(HttpMethod.Post, HtqlEndpoints.LegacyLogin);
@@ -80,8 +118,15 @@ internal sealed class LegacyAuthClient : IAuthClient
             { "login", string.Empty }
         });
 
-        using var loginResponse = await httpClient.SendAsync(loginRequest, cancellationToken);
+        using var loginResponse = await httpClient.SendAsync(loginRequest, cancellationToken).ConfigureAwait(false);
         loginResponse.EnsureSuccessStatusCode();
+
+        var loginHtml = await loginResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        if (CtuCaptchaDetector.IsCaptcha(loginHtml))
+        {
+            _logger.LogWarning("Phát hiện Captcha CTU khi gửi form đăng nhập Legacy.");
+            throw new CaptchaBlockedException("Kẹt Captcha, hãy bật VPN hoặc đổi mạng");
+        }
 
         // Kích hoạt phiên trên phân hệ ĐKMH để nhận cookie access_token (JWT) trực tiếp
         using var jwtRequest = new HttpRequestMessage(HttpMethod.Post, DkmhEndpoints.Login);
@@ -91,8 +136,15 @@ internal sealed class LegacyAuthClient : IAuthClient
             { "txtMatKhau", "p" }
         });
 
-        using var jwtResponse = await httpClient.SendAsync(jwtRequest, cancellationToken);
+        using var jwtResponse = await httpClient.SendAsync(jwtRequest, cancellationToken).ConfigureAwait(false);
         jwtResponse.EnsureSuccessStatusCode();
+
+        var jwtHtml = await jwtResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        if (CtuCaptchaDetector.IsCaptcha(jwtHtml))
+        {
+            _logger.LogWarning("Phát hiện Captcha CTU khi lấy token ĐKMH từ luồng Legacy.");
+            throw new CaptchaBlockedException("Kẹt Captcha, hãy bật VPN hoặc đổi mạng");
+        }
 
         // Trích xuất access_token (JWT)
         var targetDomains = new[]
@@ -108,14 +160,16 @@ internal sealed class LegacyAuthClient : IAuthClient
 
         if (string.IsNullOrEmpty(dkmhJwtToken))
         {
-            throw new InvalidOperationException("Không tìm thấy Cookie 'access_token' trong CookieContainer sau khi đăng nhập cơ chế cũ.");
+            throw new InvalidOperationException(
+                "Không tìm thấy Cookie 'access_token' trong CookieContainer sau khi đăng nhập cơ chế cũ.");
         }
 
         // Tái sử dụng logic trích xuất legacy cookies và parse JWT từ AuthClient
         var (legacyCookies, cookiesExpiresAt) = AuthClient.ExtractLegacyCookies(cookiesContainer, targetDomains);
         var (studentProfile, dkmhJwtExpiresAt) = AuthClient.ParseJwt(dkmhJwtToken);
 
-        _logger.LogInformation("Xác thực Legacy thành công cho sinh viên {StudentName} ({StudentId})!", studentProfile.Name, studentProfile.Mssv);
+        _logger.LogInformation("Xác thực Legacy thành công cho sinh viên {StudentName} ({StudentId})!",
+            studentProfile.Name, studentProfile.Mssv);
 
         return new CtuSession(
             Dkmh: new DkmhSession(dkmhJwtToken, dkmhJwtExpiresAt, studentProfile),
@@ -132,7 +186,8 @@ internal sealed class LegacyAuthClient : IAuthClient
         return !htmlContent.Contains("location.href='../logout.php'");
     }
 
-    public Task<CtuSession?> TrySilentReAuthAsync(CtuSession currentSession, CancellationToken cancellationToken = default)
+    public Task<CtuSession?> TrySilentReAuthAsync(CtuSession currentSession,
+        CancellationToken cancellationToken = default)
     {
         // Cơ chế cũ không có cookie trung gian SSO (SESSISID) để xin lại session bằng mật khẩu rỗng.
         // Trả về null để Coordinator xử lý Graceful Degradation (vô hiệu hóa HTQL nhưng vẫn giữ JWT).

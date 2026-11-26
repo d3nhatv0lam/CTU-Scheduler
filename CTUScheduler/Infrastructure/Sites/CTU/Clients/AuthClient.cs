@@ -10,10 +10,13 @@ using CTUScheduler.Core.Exceptions;
 using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Networking;
 using CTUScheduler.Core.Utils;
+using CTUScheduler.Infrastructure.Services.Network;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
+using CTUScheduler.Infrastructure.Sites.CTU.Helpers;
 using CTUScheduler.Infrastructure.Sites.CTU.Models.Auth;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace CTUScheduler.Infrastructure.Sites.CTU.Clients;
 
@@ -26,12 +29,18 @@ internal sealed class AuthClient : IAuthClient
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly HttpClient _pingHttpClient;
     private readonly ILogger<AuthClient> _logger;
+    private readonly CtuHttpClientOptions _httpOptions;
 
-    public AuthClient(IHttpClientFactory httpClientFactory, HttpClient pingHttpClient, ILogger<AuthClient> logger)
+    public AuthClient(
+        IHttpClientFactory httpClientFactory,
+        HttpClient pingHttpClient,
+        ILogger<AuthClient> logger,
+        IOptions<CtuHttpClientOptions>? httpOptions = null)
     {
         _httpClientFactory = httpClientFactory;
         _pingHttpClient = pingHttpClient;
         _logger = logger;
+        _httpOptions = httpOptions?.Value ?? new CtuHttpClientOptions();
     }
 
     public async Task<AuthServerStatus> PingAuthServerAsync(CancellationToken cancellationToken = default)
@@ -39,8 +48,7 @@ internal sealed class AuthClient : IAuthClient
         _logger.LogInformation("Ping CTU Auth Server");
         try
         {
-            using var httpClient = _httpClientFactory.CreateClient();
-            httpClient.Timeout = TimeSpan.FromSeconds(10);
+            using var httpClient = _httpClientFactory.CreateClient(CtuHttpClientOptions.AnonymousClientName);
 
             using var response = await httpClient.GetAsync(HtqlEndpoints.SessionKey, cancellationToken);
             response.EnsureSuccessStatusCode();
@@ -55,10 +63,7 @@ internal sealed class AuthClient : IAuthClient
             var doc = new HtmlDocument();
             doc.Load(contentStream);
 
-            var captchaFormNode = doc.DocumentNode.SelectSingleNode(
-                "//form[@action='/captcha_resp'] | //input[@name='captcha_resp_txt'] | //img[@src='/captcha.gif']");
-
-            if (captchaFormNode is not null)
+            if (CtuCaptchaDetector.IsCaptcha(doc))
             {
                 _logger.LogWarning("CTU Captcha detected!");
                 return AuthServerStatus.CaptchaBlocked;
@@ -105,6 +110,7 @@ internal sealed class AuthClient : IAuthClient
         using var httpHandler = new HttpClientHandler();
         httpHandler.CookieContainer = cookiesContainer;
         using var httpClient = new HttpClient(httpHandler);
+        _httpOptions.ApplyBrowserHeaders(httpClient.DefaultRequestHeaders);
 
         _logger.LogDebug("Khởi tạo session key (Bootstrap)...");
         var bootstrapContext = await BootstrapAsync(httpClient, cancellationToken);
@@ -218,10 +224,7 @@ internal sealed class AuthClient : IAuthClient
             using var httpHandler = new HttpClientHandler();
             httpHandler.CookieContainer = cookiesContainer;
             using var httpClient = new HttpClient(httpHandler);
-
-            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-            httpClient.DefaultRequestHeaders.Add("Accept-Language", "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7");
+            _httpOptions.ApplyBrowserHeaders(httpClient.DefaultRequestHeaders);
 
             // bắt tay xin lại PHPSESSID
             bool isSuccess = await ExecuteLegacySsoHandshakeAsync(httpClient, currentSession.StudentId, cancellationToken);

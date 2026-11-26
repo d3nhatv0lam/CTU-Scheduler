@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Models.Academic;
 using CTUScheduler.Core.Models.Shared.Results;
+using CTUScheduler.Infrastructure.Sites.CTU.Helpers;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 
@@ -26,10 +27,8 @@ public class HtqlHtmlAnnouncementService : ISchoolAnnouncementService
 
         _httpClient = httpClient;
         _logger = logger;
-        _httpClient.Timeout = TimeSpan.FromSeconds(15);
     }
 
-    public const string CaptchaXPath = "//form[@action='/captcha_resp'] | //input[@name='captcha_resp_txt'] | //img[@src='/captcha.gif']";
     public const string CaptchaErrorMessage = "Kẹt Captcha, hãy bật VPN hoặc đổi mạng";
     public const string CaptchaErrorCode = "TeachingPlan.CaptchaBlocked";
 
@@ -39,8 +38,6 @@ public class HtqlHtmlAnnouncementService : ISchoolAnnouncementService
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, LoginUrl);
-            request.Headers.Add("User-Agent",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
             request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
 
             using var response = await _httpClient.SendAsync(request, cancellationToken);
@@ -70,29 +67,9 @@ public class HtqlHtmlAnnouncementService : ISchoolAnnouncementService
         }
     }
 
-    public static bool IsCaptchaPage(HtmlDocument? doc)
-    {
-        if (doc?.DocumentNode is null)
-            return false;
+    public static bool IsCaptchaPage(HtmlDocument? doc) => CtuCaptchaDetector.IsCaptcha(doc);
 
-        return doc.DocumentNode.SelectSingleNode(CaptchaXPath) is not null;
-    }
-
-    public static bool IsCaptchaHtml(string? html)
-    {
-        if (string.IsNullOrWhiteSpace(html))
-            return false;
-
-        if (html.Contains("/captcha_resp", StringComparison.OrdinalIgnoreCase) ||
-            html.Contains("/captcha.gif", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        var doc = new HtmlDocument();
-        doc.LoadHtml(html);
-        return IsCaptchaPage(doc);
-    }
+    public static bool IsCaptchaHtml(string? html) => CtuCaptchaDetector.IsCaptcha(html);
 
     public static IReadOnlyList<SchoolAnnouncement> ParseAnnouncementsFromHtml(string html)
     {
