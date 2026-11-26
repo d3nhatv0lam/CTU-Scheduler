@@ -11,6 +11,7 @@ using CTUScheduler.Core.Models.Shared;
 using CTUScheduler.Core.Networking;
 using CTUScheduler.Core.Utils;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
+using CTUScheduler.Infrastructure.Sites.CTU.Helpers;
 using CTUScheduler.Infrastructure.Sites.CTU.Models.Auth;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
@@ -55,10 +56,7 @@ internal sealed class AuthClient : IAuthClient
             var doc = new HtmlDocument();
             doc.Load(contentStream);
 
-            var captchaFormNode = doc.DocumentNode.SelectSingleNode(
-                "//form[@action='/captcha_resp'] | //input[@name='captcha_resp_txt'] | //img[@src='/captcha.gif']");
-
-            if (captchaFormNode is not null)
+            if (CtuCaptchaDetector.IsCaptcha(doc))
             {
                 _logger.LogWarning("CTU Captcha detected!");
                 return AuthServerStatus.CaptchaBlocked;

@@ -44,6 +44,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<CtuSessionRecoveryHandler>();
         services.AddTransient<CtuJwtAuthHandler>();
         services.AddTransient<CtuLegacyCookieHandler>();
+        services.AddTransient<HttpDebugTracingHandler>();
 
         services.AddHttpClient<AuthClient>()
             .AddHttpMessageHandler<CtuLegacyCookieHandler>();
@@ -56,6 +57,7 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient<CourseRegistrationClient>()
             .AddHttpMessageHandler<CtuSessionRecoveryHandler>()
             .AddHttpMessageHandler<CtuJwtAuthHandler>();
+
         services.AddTransient<IRegistrationRulesClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());
         services.AddTransient<ICourseCatalogClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());
         services.AddTransient<ICourseRegistrationClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());

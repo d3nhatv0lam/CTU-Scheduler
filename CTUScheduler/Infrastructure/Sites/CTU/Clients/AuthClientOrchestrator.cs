@@ -54,7 +54,9 @@ internal sealed class AuthClientOrchestrator : IAuthClient
             return AuthServerStatus.Healthy;
         }
 
-        return legacyStatus;
+        return ssoStatus == AuthServerStatus.CaptchaBlocked
+            ? AuthServerStatus.CaptchaBlocked
+            : legacyStatus;
     }
 
     public Task<CtuSession> AuthenticateAsync(

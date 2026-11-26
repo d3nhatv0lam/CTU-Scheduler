@@ -88,6 +88,12 @@ public class SessionCoordinator : ISessionCoordinator
         {
             return OperationResult.Failed(ex.Message, "Auth.Validation", kind: OperationFailureReason.Validation);
         }
+        catch (CaptchaBlockedException ex)
+        {
+            _logger.LogWarning(ex, "Đăng nhập bị chặn bởi Captcha CTU.");
+            return OperationResult.Failed(ex.Message, "Auth.CaptchaRequired",
+                kind: OperationFailureReason.Forbidden);
+        }
         catch (InvalidOperationException ex)
         {
             _logger.LogError(ex, "Failed to login");

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Models.Academic;
 using CTUScheduler.Core.Models.Shared.Results;
+using CTUScheduler.Infrastructure.Sites.CTU.Helpers;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 
@@ -29,7 +30,6 @@ public class HtqlHtmlAnnouncementService : ISchoolAnnouncementService
         _httpClient.Timeout = TimeSpan.FromSeconds(15);
     }
 
-    public const string CaptchaXPath = "//form[@action='/captcha_resp'] | //input[@name='captcha_resp_txt'] | //img[@src='/captcha.gif']";
     public const string CaptchaErrorMessage = "Kẹt Captcha, hãy bật VPN hoặc đổi mạng";
     public const string CaptchaErrorCode = "TeachingPlan.CaptchaBlocked";
 
@@ -70,29 +70,9 @@ public class HtqlHtmlAnnouncementService : ISchoolAnnouncementService
         }
     }
 
-    public static bool IsCaptchaPage(HtmlDocument? doc)
-    {
-        if (doc?.DocumentNode is null)
-            return false;
+    public static bool IsCaptchaPage(HtmlDocument? doc) => CtuCaptchaDetector.IsCaptcha(doc);
 
-        return doc.DocumentNode.SelectSingleNode(CaptchaXPath) is not null;
-    }
-
-    public static bool IsCaptchaHtml(string? html)
-    {
-        if (string.IsNullOrWhiteSpace(html))
-            return false;
-
-        if (html.Contains("/captcha_resp", StringComparison.OrdinalIgnoreCase) ||
-            html.Contains("/captcha.gif", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        var doc = new HtmlDocument();
-        doc.LoadHtml(html);
-        return IsCaptchaPage(doc);
-    }
+    public static bool IsCaptchaHtml(string? html) => CtuCaptchaDetector.IsCaptcha(html);
 
     public static IReadOnlyList<SchoolAnnouncement> ParseAnnouncementsFromHtml(string html)
     {

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.Core.Models.Academic;
 using CTUScheduler.Core.Models.Shared.Results;
+using CTUScheduler.Infrastructure.Sites.CTU.Helpers;
 using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Services.TeachingPlan;
@@ -70,16 +71,8 @@ public class HtqlJsonAnnouncementService : ISchoolAnnouncementService
         }
     }
 
-    public static bool IsCaptchaResponse(string? responseContent)
-    {
-        if (string.IsNullOrWhiteSpace(responseContent))
-            return false;
-
-        var trimmed = responseContent.TrimStart();
-        return trimmed.StartsWith('<') &&
-               (trimmed.Contains("/captcha_resp", StringComparison.OrdinalIgnoreCase) ||
-                trimmed.Contains("/captcha.gif", StringComparison.OrdinalIgnoreCase));
-    }
+    public static bool IsCaptchaResponse(string? responseContent) =>
+        CtuCaptchaDetector.IsCaptchaResponse(responseContent);
 
     public static IReadOnlyList<SchoolAnnouncement> ParseAnnouncementsFromJson(string json)
     {

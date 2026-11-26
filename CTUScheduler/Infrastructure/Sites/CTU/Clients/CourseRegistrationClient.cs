@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.Core.Exceptions;
@@ -62,7 +61,7 @@ public class CourseRegistrationClient : IRegistrationRulesClient, ICourseRegistr
             }
         };
 
-        using var response = await _httpClient.PostAsJsonAsync(DkmhEndpoints.FilterHocPhan, requestBody, ct);
+        using var response = await _httpClient.PostBufferedJsonAsync(DkmhEndpoints.FilterHocPhan, requestBody, ct);
 
         if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {
@@ -130,7 +129,7 @@ public class CourseRegistrationClient : IRegistrationRulesClient, ICourseRegistr
             dkmh_tu_dien_hoc_ky_ma = semester
         };
 
-        using var response = await _httpClient.PostAsJsonAsync(DkmhEndpoints.HocPhi, requestBody, ct);
+        using var response = await _httpClient.PostBufferedJsonAsync(DkmhEndpoints.HocPhi, requestBody, ct);
 
         if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {
