@@ -249,8 +249,8 @@
                                 <TextBlock Grid.Row="0" Text="Môn lịch tự sắp xếp" Classes="label"
                                            ToolTip.Tip="Lịch tự dàn xếp với giảng viên" Margin="0,0,0,8" />
 
-                                <ItemsRepeater Grid.Row="1" ItemsSource="{Binding VisualizerVM.UnscheduledCourses}">
-                                    <ItemsRepeater.ItemTemplate>
+                                <ItemsControl Grid.Row="1" ItemsSource="{Binding VisualizerVM.UnscheduledCourses}">
+                                    <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="timetableVm:ScheduleGroupCellShared">
 
                                             <Border Background="Transparent" Padding="0,0,0,8">
@@ -335,8 +335,8 @@
                                                 </Border>
                                             </Border>
                                         </DataTemplate>
-                                    </ItemsRepeater.ItemTemplate>
-                                </ItemsRepeater>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                             </Grid>
 
                         </Grid>
