@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - master
+      - main
 
 permissions:
   contents: read
@@ -25,6 +26,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
+          dotnet-quality: 'ga'
 
       - name: Restore
         run: dotnet restore "CTU Scheduler.slnx"
@@ -33,4 +35,4 @@ jobs:
         run: dotnet build "CTU Scheduler.slnx" --no-restore -c Release
 
       - name: Test
-        run: dotnet test "tests/CTUScheduler.Tests/CTUScheduler.Tests.csproj" --no-build -c Release
+        run: dotnet test "tests/CTUScheduler.Tests/CTUScheduler.Tests.csproj" --no-build -c Release --logger "github-actions"
