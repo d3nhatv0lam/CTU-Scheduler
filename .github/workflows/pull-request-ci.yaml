@@ -17,6 +17,8 @@ jobs:
   build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
+    env:
+        TEST_LOGGER: "GitHubActions"
 
     steps:
       - name: Checkout Code
@@ -35,4 +37,4 @@ jobs:
         run: dotnet build "CTU Scheduler.slnx" --no-restore -c Release
 
       - name: Test
-        run: dotnet test "tests/CTUScheduler.Tests/CTUScheduler.Tests.csproj" --no-build -c Release --logger "github-actions"
+        run: dotnet test "tests/CTUScheduler.Tests/CTUScheduler.Tests.csproj" --no-build -c Release --logger "${{ env.TEST_LOGGER }}"
