@@ -75,11 +75,11 @@ public class ScoringTests
             CreateChoice("CT104", 5, "1---------")
         };
 
-        var scoreA = scorer.CalculateScore(scheduleA); // 1.0 - 2/7 ≈ 0.714
-        var scoreB = scorer.CalculateScore(scheduleB); // 1.0 - 4/7 ≈ 0.428
+        var scoreA = scorer.CalculateScore(scheduleA); // (7.0 - 2) / 6.0 ≈ 0.833
+        var scoreB = scorer.CalculateScore(scheduleB); // (7.0 - 4) / 6.0 = 0.500
 
         scoreA.Should().BeGreaterThan(scoreB);
-        scoreA.Should().BeApproximately(1.0 - (2.0 / 7.0), 0.001);
+        scoreA.Should().BeApproximately((7.0 - 2.0) / 6.0, 0.001);
     }
 
     [Fact]

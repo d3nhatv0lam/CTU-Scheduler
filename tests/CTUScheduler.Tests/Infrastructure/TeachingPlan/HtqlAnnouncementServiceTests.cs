@@ -35,22 +35,23 @@ public class HtqlAnnouncementServiceTests
                         <!-- <li><a href="old_hk1.pdf">Kế hoạch học tập HK1 2025</a></li> -->
                         <li><a href="KeHoachGiangDayVaDangKyHocphan_HK2_2026_2027.signed.signed.signed.signed.pdf">Kế hoạch giảng dạy và đăng ký học phần HK2 (2026-2027)</a></li>
                         <li><a href="#">Mục chỉ dẫn không có link</a></li>
-                        <li><a href="https://htql.ctu.edu.vn/htql/ThongBaoDongWebsite.pdf">Thông báo đóng website kế hoạch học tập</a></li>
+                        <li><a href="https://example.test/ThongBaoDongWebsite.pdf">Thông báo đóng website kế hoạch học tập</a></li>
                     </ul>
                 </td>
             </body>
             </html>
             """;
 
-        var result = HtqlHtmlAnnouncementService.ParseAnnouncementsFromHtml(html);
+        var baseUri = new Uri("https://example.test/sub/");
+        var result = HtqlHtmlAnnouncementService.ParseAnnouncementsFromHtml(html, baseUri);
 
         result.Should().HaveCount(2);
 
         result[0].Title.Should().Be("Kế hoạch giảng dạy và đăng ký học phần HK2 (2026-2027)");
-        result[0].Link.Should().Be("https://htql.ctu.edu.vn/htql/KeHoachGiangDayVaDangKyHocphan_HK2_2026_2027.signed.signed.signed.signed.pdf");
+        result[0].Link.Should().Be("https://example.test/sub/KeHoachGiangDayVaDangKyHocphan_HK2_2026_2027.signed.signed.signed.signed.pdf");
 
         result[1].Title.Should().Be("Thông báo đóng website kế hoạch học tập");
-        result[1].Link.Should().Be("https://htql.ctu.edu.vn/htql/ThongBaoDongWebsite.pdf");
+        result[1].Link.Should().Be("https://example.test/ThongBaoDongWebsite.pdf");
     }
 
     [Theory]
@@ -101,16 +102,16 @@ public class HtqlAnnouncementServiceTests
         var htmlContent = """
             <td id="module-thongbao">
                 <ul class="thongbao">
-                    <li><a href="hk2.pdf">Kế hoạch HK2</a></li>
-                    <li><a href="shared.pdf">Tiêu đề bản tin HTML</a></li>
+                    <li><a href="https://example.test/hk2.pdf">Kế hoạch HK2</a></li>
+                    <li><a href="https://example.test/shared.pdf">Tiêu đề bản tin HTML</a></li>
                 </ul>
             </td>
             """;
 
         var jsonContent = """
             [
-                { "noidung": "Kế hoạch HK1", "link": "https://htql.ctu.edu.vn/htql/hk1.pdf" },
-                { "noidung": "Tiêu đề bản tin JSON", "link": "https://htql.ctu.edu.vn/htql/shared.pdf" }
+                { "noidung": "Kế hoạch HK1", "link": "https://example.test/hk1.pdf" },
+                { "noidung": "Tiêu đề bản tin JSON", "link": "https://example.test/shared.pdf" }
             ]
             """;
 
@@ -134,13 +135,13 @@ public class HtqlAnnouncementServiceTests
         result.Content.Should().HaveCount(3);
 
         // Thứ tự: HTML được ưu tiên trước, và liên kết trùng thì giữ thông tin từ HTML
-        result.Content![0].Link.Should().Be("https://htql.ctu.edu.vn/htql/hk2.pdf");
+        result.Content![0].Link.Should().Be("https://example.test/hk2.pdf");
         result.Content[0].Title.Should().Be("Kế hoạch HK2");
 
-        result.Content[1].Link.Should().Be("https://htql.ctu.edu.vn/htql/shared.pdf");
+        result.Content[1].Link.Should().Be("https://example.test/shared.pdf");
         result.Content[1].Title.Should().Be("Tiêu đề bản tin HTML");
 
-        result.Content[2].Link.Should().Be("https://htql.ctu.edu.vn/htql/hk1.pdf");
+        result.Content[2].Link.Should().Be("https://example.test/hk1.pdf");
         result.Content[2].Title.Should().Be("Kế hoạch HK1");
     }
 
