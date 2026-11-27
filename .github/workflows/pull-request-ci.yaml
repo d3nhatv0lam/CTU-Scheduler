@@ -1,0 +1,40 @@
+name: PR Build & Test
+
+on:
+  pull_request:
+    branches:
+      - master
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    env:
+        TEST_LOGGER: "GitHubActions"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: 'ga'
+
+      - name: Restore
+        run: dotnet restore "CTU Scheduler.slnx"
+
+      - name: Build
+        run: dotnet build "CTU Scheduler.slnx" --no-restore -c Release
+
+      - name: Test
+        run: dotnet test "tests/CTUScheduler.Tests/CTUScheduler.Tests.csproj" --no-build -c Release --logger "${{ env.TEST_LOGGER }}"
