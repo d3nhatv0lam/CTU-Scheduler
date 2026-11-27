@@ -71,7 +71,7 @@ public class HtqlHtmlAnnouncementService : ISchoolAnnouncementService
 
     public static bool IsCaptchaHtml(string? html) => CtuCaptchaDetector.IsCaptcha(html);
 
-    public static IReadOnlyList<SchoolAnnouncement> ParseAnnouncementsFromHtml(string html)
+    public static IReadOnlyList<SchoolAnnouncement> ParseAnnouncementsFromHtml(string html, Uri? baseUri = null)
     {
         if (string.IsNullOrWhiteSpace(html))
             return [];
@@ -92,7 +92,7 @@ public class HtqlHtmlAnnouncementService : ISchoolAnnouncementService
             if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(href) || href == "#")
                 continue;
 
-            var absoluteUrl = Uri.TryCreate(BaseUri, href, out var uri) ? uri.ToString() : href;
+            var absoluteUrl = Uri.TryCreate(baseUri ?? BaseUri, href, out var uri) ? uri.ToString() : href;
             list.Add(new SchoolAnnouncement(title, absoluteUrl));
         }
 
