@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using CTUScheduler.AppServices.Abstractions;
 using CTUScheduler.AppServices.Services.UserSessionService;
+using CTUScheduler.Core.Interfaces;
 using CTUScheduler.Core.Models.Settings;
 using CTUScheduler.Infrastructure.Excel;
 using CTUScheduler.Infrastructure.Repositories;
@@ -10,6 +11,7 @@ using CTUScheduler.Infrastructure.Services.TeachingPlan;
 using CTUScheduler.Infrastructure.Services.Update;
 using CTUScheduler.Infrastructure.Sites.CTU.Abstractions;
 using CTUScheduler.Infrastructure.Sites.CTU.Clients;
+using CTUScheduler.Infrastructure.Sites.CTU.Parsers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Velopack;
@@ -78,6 +80,13 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IRegistrationRulesClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());
         services.AddTransient<ICourseCatalogClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());
         services.AddTransient<ICourseRegistrationClient>(sp => sp.GetRequiredService<CourseRegistrationClient>());
+
+        // --- Academic Grades ---
+        services.AddSingleton<IAcademicGradeHtmlParser, AcademicGradeHtmlParser>();
+        services.AddHttpClient<IAcademicGradeClient, AcademicGradeClient>()
+            .ConfigureCtuDefaults()
+            .AddHttpMessageHandler<CtuSessionRecoveryHandler>()
+            .AddHttpMessageHandler<CtuLegacyCookieHandler>();
 
         services.AddSingleton<UpdateManager>(sp =>
         {

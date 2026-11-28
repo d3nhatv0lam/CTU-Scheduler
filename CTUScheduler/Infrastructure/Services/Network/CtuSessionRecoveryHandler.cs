@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CTUScheduler.AppServices.Services.CtuSessions;
@@ -10,11 +11,16 @@ using Microsoft.Extensions.Logging;
 
 namespace CTUScheduler.Infrastructure.Services.Network;
 
-public class CtuSessionRecoveryHandler : DelegatingHandler
+public partial class CtuSessionRecoveryHandler : DelegatingHandler
 {
     private readonly ICtuSessionStore _sessionStore;
     private readonly ISessionCoordinator _sessionCoordinator;
     private readonly ILogger<CtuSessionRecoveryHandler> _logger;
+
+    [GeneratedRegex(
+        @"(?:(?:window|document)\.)?location(?:\.href)?\s*=\s*['""][^'""]*(?:login|logout|dang_nhap)\.php['""]|location\.replace\s*\(\s*['""][^'""]*(?:login|logout|dang_nhap)\.php['""]\s*\)",
+        RegexOptions.IgnoreCase)]
+    private static partial Regex LegacySessionRedirectRegex();
 
     public CtuSessionRecoveryHandler(
         ICtuSessionStore sessionStore,
@@ -46,7 +52,7 @@ public class CtuSessionRecoveryHandler : DelegatingHandler
 
             var session = _sessionStore.Current;
 
-            // Nếu đã hết hạn cứng lý thuyết 
+            // Nếu đã hết hạn cứng lý thuyết
             if (session == null || session.IsExpired)
             {
                 _logger.LogWarning("Phát hiện phiên làm việc bị từ chối nhưng phiên đã hết hạn cứng lý thuyết. Tiến hành đăng xuất cưỡng bức...");
@@ -72,15 +78,15 @@ public class CtuSessionRecoveryHandler : DelegatingHandler
             if (refreshedSession is not null)
             {
                 _logger.LogInformation("Khôi phục phiên ngầm tập trung thành công! Tiến hành tạo bản sao và gửi lại request...");
-                
+
                 var clonedRequest = await CloneHttpRequestMessageAsync(request);
-                
+
                 // Đánh dấu request retry để chặn vòng lặp vô hạn
                 clonedRequest.Headers.TryAddWithoutValidation("X-Ctu-Retry-Attempt", "1");
-                
+
                 // Giải phóng response lỗi cũ và gửi lại
                 response.Dispose();
-                
+
                 return await base.SendAsync(clonedRequest, cancellationToken);
             }
         }
@@ -96,15 +102,25 @@ public class CtuSessionRecoveryHandler : DelegatingHandler
             return true;
         }
 
+        // Trường hợp server trả HTTP 302 và HttpClient tự follow sang trang login/logout
+        var finalPath = response.RequestMessage?.RequestUri?.AbsolutePath;
+        if (!string.IsNullOrEmpty(finalPath) &&
+            (finalPath.EndsWith("/login.php", StringComparison.OrdinalIgnoreCase) ||
+             finalPath.EndsWith("/logout.php", StringComparison.OrdinalIgnoreCase) ||
+             finalPath.EndsWith("/dang_nhap.php", StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
         // Phân hệ Web cũ (PHP): Trả về 200 OK kèm HTML chứa script chuyển hướng logout
-        if (response is { IsSuccessStatusCode: true, Content: not null })
+        if (response is { IsSuccessStatusCode: true })
         {
             var mediaType = response.Content.Headers.ContentType?.MediaType;
             if (mediaType != null && mediaType.Contains("text/html", StringComparison.OrdinalIgnoreCase))
             {
                 // chú ý ở đây khá nặng nếu load trang không phải hết hạn
                 var html = await response.Content.ReadAsStringAsync(ct);
-                if (html.Contains("location.href='../logout.php'"))
+                if (LegacySessionRedirectRegex().IsMatch(html))
                 {
                     return true;
                 }
