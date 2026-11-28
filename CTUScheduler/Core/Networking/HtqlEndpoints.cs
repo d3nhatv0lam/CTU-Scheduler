@@ -30,4 +30,8 @@ internal static class HtqlEndpoints
 
     public static readonly Uri StudentHome =
         new($"{DkmhBase}/htql/sinhvien/hindex.php");
+
+    public static readonly Uri AcademicGrades =
+        // 201 là id của QL điểm
+        new($"{DkmhBase}/htql/sinhvien/qldiem/codes/index.php?mID=201");
 }

@@ -128,6 +128,8 @@ internal sealed class LegacyAuthClient : IAuthClient
             throw new CaptchaBlockedException("Kẹt Captcha, hãy bật VPN hoặc đổi mạng");
         }
 
+        await AuthClient.WarmupStudentHomeAsync(httpClient, _logger, cancellationToken).ConfigureAwait(false);
+
         // Kích hoạt phiên trên phân hệ ĐKMH để nhận cookie access_token (JWT) trực tiếp
         using var jwtRequest = new HttpRequestMessage(HttpMethod.Post, DkmhEndpoints.Login);
         jwtRequest.Content = new FormUrlEncodedContent(new Dictionary<string, string>

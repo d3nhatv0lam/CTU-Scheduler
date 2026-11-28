@@ -194,4 +194,58 @@ public class CtuHttpConfigurationTests
         retryContentLength.Should().Be(7);
         retryContentType.Should().Be("application/json");
     }
+
+    [Fact]
+    public async Task CtuSessionRecoveryHandler_WhenLegacyPageRedirectsToRelativeLogin_RefreshesAndRetries()
+    {
+        var initialSession = CreateDummySession(cookieValue: "expired-sess");
+        var refreshedSession = CreateDummySession(cookieValue: "fresh-sess");
+
+        var store = Substitute.For<ICtuSessionStore>();
+        store.Current.Returns(initialSession);
+
+        var coordinator = Substitute.For<ISessionCoordinator>();
+        coordinator.RefreshSessionAsync(initialSession, Arg.Any<CancellationToken>())
+            .Returns(refreshedSession);
+
+        int attempt = 0;
+        var recoveryHandler = new CtuSessionRecoveryHandler(
+            store,
+            coordinator,
+            NullLogger<CtuSessionRecoveryHandler>.Instance)
+        {
+            InnerHandler = new CapturingHandler(_ =>
+            {
+                attempt++;
+                if (attempt == 1)
+                {
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent(
+                            "<html><script language=\"javascript\">location.href='../../login.php';</script></html>",
+                            Encoding.UTF8,
+                            "text/html")
+                    };
+                }
+
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        "<html><body><form name=\"frmXemDiem\"></form></body></html>",
+                        Encoding.UTF8,
+                        "text/html")
+                };
+            })
+        };
+
+        using var invoker = new HttpMessageInvoker(recoveryHandler);
+        var request = new HttpRequestMessage(HttpMethod.Post, "https://dkmh.ctu.edu.vn/htql/sinhvien/qldiem/codes/index.php?mID=201");
+
+        using var response = await invoker.SendAsync(request, CancellationToken.None);
+        string body = await response.Content.ReadAsStringAsync();
+
+        attempt.Should().Be(2);
+        await coordinator.Received(1).RefreshSessionAsync(initialSession, Arg.Any<CancellationToken>());
+        body.Should().Contain("frmXemDiem");
+    }
 }

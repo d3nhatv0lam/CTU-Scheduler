@@ -10,6 +10,7 @@ using CTUScheduler.AppServices.Services.CtuSessions;
 using CTUScheduler.AppServices.Services.StudentAcademicService;
 using CTUScheduler.AppServices.State;
 using CTUScheduler.Core.Interfaces;
+using CTUScheduler.Core.Models.Academic.Grades;
 using Microsoft.Extensions.DependencyInjection;
 
 
@@ -38,6 +39,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ICourseRegistrationService, CourseRegistrationService>();
         services.AddTransient<ICourseCatalogService, CourseCatalogService>();
         services.AddTransient<ITuitionFeeService, TuitionFeeService>();
+        services.AddTransient<IGradeService, GradeService>();
         services.AddTransient<ITeachingPlanLoaderService, TeachingPlanLoaderService>();
         services.AddSingleton<ITimetableGeneratorService, TimetableGeneratorService>();
 
@@ -59,6 +61,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<TeachingPlanStore>()
             .AddSingleton<ITeachingPlanStore>(sp => sp.GetRequiredService<TeachingPlanStore>())
             .AddSingleton<ICleanup>(sp => sp.GetRequiredService<TeachingPlanStore>());
+
+        services.AddSingleton<GradeStore>()
+            .AddSingleton<IGradeStore>(sp => sp.GetRequiredService<GradeStore>())
+            .AddSingleton<IStateStore<GradeTranscript>>(sp => sp.GetRequiredService<GradeStore>())
+            .AddSingleton<ICleanup>(sp => sp.GetRequiredService<GradeStore>());
 
         // --- Schedule Manager Pattern ---
         services.AddSingleton<ScheduleManager>()

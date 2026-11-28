@@ -1,137 +1,146 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <IsAotCompatible>false</IsAotCompatible>
-    <LangVersion>latest</LangVersion>
-    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <IsAotCompatible>false</IsAotCompatible>
+        <LangVersion>latest</LangVersion>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
 
-    <AssemblyTitle>CTUScheduler.Core</AssemblyTitle>
-    <Description>Core library for CTU Scheduler.</Description>
-  </PropertyGroup>
-    
-  <ItemGroup>
-    <InternalsVisibleTo Include="CTUScheduler.Tests" />
-  </ItemGroup>
+        <AssemblyTitle>CTUScheduler.Core</AssemblyTitle>
+        <Description>Core library for CTU Scheduler.</Description>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
-	<AvaloniaResource Include="Presentation\Resources\**" />
-  </ItemGroup>
-    
-  <ItemGroup>
-    <PackageReference Include="Avalonia" Version="12.1.6" />
-    <PackageReference Include="Avalonia.Controls.ItemsRepeater" Version="12.0.0" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.6" />
-    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.6" />
-    <!--Condition below is needed to remove AvaloniaUI.DiagnosticsSupport package from build output in Release configuration.-->
+    <ItemGroup>
+        <InternalsVisibleTo Include="CTUScheduler.Tests" />
+    </ItemGroup>
 
-    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3" Condition="'$(Configuration)' == 'Debug'" />
-    <PackageReference Include="ClosedXML" Version="0.105.1" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.13.1" />
-    <PackageReference Include="Humanizer.Core.vi" Version="3.0.10" />
-    <PackageReference Include="Irihi.Ursa" Version="2.3.1" />
-    <PackageReference Include="Irihi.Ursa.ReactiveUIExtension" Version="2.0.0" />
-    <PackageReference Include="Irihi.Ursa.Themes.Semi" Version="2.3.1" />
-    <PackageReference Include="Material.Icons.Avalonia" Version="3.0.2" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.15" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.15" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.15" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.15" />
-    <PackageReference Include="PdfPig" Version="0.1.16" />
-    <PackageReference Include="ReactiveUI.Avalonia" Version="12.0.3" />
-    <PackageReference Include="ReactiveUI.SourceGenerators" Version="3.2.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Scrutor" Version="7.0.0" />
-    <PackageReference Include="Semi.Avalonia" Version="12.1.0.2" />
-    <PackageReference Include="Semi.Avalonia.DataGrid" Version="12.1.0.2" />
-    <PackageReference Include="Serilog" Version="4.4.0" />
-    <PackageReference Include="Velopack" Version="1.2.161" />
-    <PackageReference Include="Xaml.Behaviors.Avalonia" Version="12.1.5" />
-  </ItemGroup>
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**" />
+        <AvaloniaResource Include="Presentation\Resources\**" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Presentation\Shells\MainShell\Views\MainShellView.axaml.cs">
-      <DependentUpon>MainLayoutView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Shells\AppShell\Views\MainView.axaml.cs">
-      <DependentUpon>MainView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Shells\AppShell\Views\MainWindow.axaml.cs">
-      <DependentUpon>MainWindow.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Features\Home\Views\HomeView.axaml.cs">
-      <DependentUpon>HomeView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Features\Scheduling\Views\Steps\FindCourseView.axaml.cs">
-      <DependentUpon>HandmadeFindCourseView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Features\Scheduling\Views\Steps\TimetableSchedulerView.axaml.cs">
-      <DependentUpon>TimetableSchedulerView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Features\Scheduling\Views\Steps\SelectionView.axaml.cs">
-      <DependentUpon>SelectionView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Features\Setting\Views\SettingView.axaml.cs">
-      <DependentUpon>SettingView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Features\SplashScreen\Views\SplashScreenWindow.axaml.cs">
-      <DependentUpon>SplashScreenWindow.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Features\TimetableManager\Views\TimetableManagerView.axaml.cs">
-      <DependentUpon>TimetableManagerView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Features\Authentication\Views\LoginView.axaml.cs">
-      <DependentUpon>LoginView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Features\Scheduling\Views\Shells\SchedulingDialogView.axaml.cs">
-      <DependentUpon>SchedulingDialogView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Features\Scheduling\Views\Shells\SchedulingWizardView.axaml.cs">
-      <DependentUpon>SchedulingWizardView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Features\TimetableRefactor\Views\TimetableLayoutView.axaml.cs">
-      <DependentUpon>TimetableLayoutView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Presentation\Features\TimetableRefactor\Views\TimetableView.axaml.cs">
-      <DependentUpon>TimetableView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="12.1.6" />
+        <PackageReference Include="Avalonia.Controls.ItemsRepeater" Version="12.0.0" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.6" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.6" />
+        <!--Condition below is needed to remove AvaloniaUI.DiagnosticsSupport package from build output in Release configuration.-->
 
-  <ItemGroup>
-    <AdditionalFiles Include="Presentation\Features\Authentication\Views\LoginView.axaml" />
-    <AdditionalFiles Include="Presentation\Features\Home\Views\HomeView.axaml" />
-    <AdditionalFiles Include="Presentation\Features\Scheduling\Shared\Styles\controls.axaml" />
-    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Steps\TimetableSchedulerView.axaml" />
-    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Steps\SelectionView.axaml" />
-    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Shells\SchedulingDialogView.axaml" />
-    <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Shells\SchedulingWizardView.axaml" />
-    <AdditionalFiles Include="Presentation\Features\Setting\Views\SettingView.axaml" />
-    <AdditionalFiles Include="Presentation\Features\SplashScreen\Views\SplashScreenWindow.axaml" />
-    <AdditionalFiles Include="Presentation\Features\TimetableManager\Views\TimetableManagerView.axaml" />
-    <AdditionalFiles Include="Presentation\Features\TimetableRefactor\Views\TimetableLayoutView.axaml" />
-    <AdditionalFiles Include="Presentation\Shared\Styles\Controls.axaml" />
-  </ItemGroup>
+        <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3" Condition="'$(Configuration)' == 'Debug'" />
+        <PackageReference Include="ClosedXML" Version="0.105.1" />
+        <PackageReference Include="HtmlAgilityPack" Version="1.13.1" />
+        <PackageReference Include="Humanizer.Core.vi" Version="3.0.10" />
+        <PackageReference Include="Irihi.Ursa" Version="2.3.1" />
+        <PackageReference Include="Irihi.Ursa.ReactiveUIExtension" Version="2.0.0" />
+        <PackageReference Include="Irihi.Ursa.Themes.Semi" Version="2.3.1" />
+        <PackageReference Include="LiveChartsCore.SkiaSharpView.Avalonia" Version="2.2.0" />
+        <PackageReference Include="Material.Icons.Avalonia" Version="3.0.2" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.15" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.15" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.15" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.15" />
+        <PackageReference Include="PdfPig" Version="0.1.16" />
+        <PackageReference Include="ReactiveUI.Avalonia" Version="12.0.3" />
+        <PackageReference Include="ReactiveUI.SourceGenerators" Version="3.2.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Scrutor" Version="7.0.0" />
+        <PackageReference Include="Semi.Avalonia" Version="12.1.0.2" />
+        <PackageReference Include="Semi.Avalonia.DataGrid" Version="12.1.0.2" />
+        <PackageReference Include="Serilog" Version="4.4.0" />
+        <PackageReference Include="Velopack" Version="1.2.161" />
+        <PackageReference Include="Xaml.Behaviors.Avalonia" Version="12.1.5" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Presentation\Shared\Styles\Ripple\" />
-  </ItemGroup>
-  
+    <ItemGroup>
+        <Compile Update="Presentation\Shells\MainShell\Views\MainShellView.axaml.cs">
+            <DependentUpon>MainLayoutView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Presentation\Shells\AppShell\Views\MainView.axaml.cs">
+            <DependentUpon>MainView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Presentation\Shells\AppShell\Views\MainWindow.axaml.cs">
+            <DependentUpon>MainWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Presentation\Features\Home\Views\HomeView.axaml.cs">
+            <DependentUpon>HomeView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Presentation\Features\Scheduling\Views\Steps\FindCourseView.axaml.cs">
+            <DependentUpon>HandmadeFindCourseView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Presentation\Features\Scheduling\Views\Steps\TimetableSchedulerView.axaml.cs">
+            <DependentUpon>TimetableSchedulerView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Presentation\Features\Scheduling\Views\Steps\SelectionView.axaml.cs">
+            <DependentUpon>SelectionView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Presentation\Features\Setting\Views\SettingView.axaml.cs">
+            <DependentUpon>SettingView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Presentation\Features\SplashScreen\Views\SplashScreenWindow.axaml.cs">
+            <DependentUpon>SplashScreenWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Presentation\Features\TimetableManager\Views\TimetableManagerView.axaml.cs">
+            <DependentUpon>TimetableManagerView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Presentation\Features\Authentication\Views\LoginView.axaml.cs">
+            <DependentUpon>LoginView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Presentation\Features\Scheduling\Views\Shells\SchedulingDialogView.axaml.cs">
+            <DependentUpon>SchedulingDialogView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Presentation\Features\Scheduling\Views\Shells\SchedulingWizardView.axaml.cs">
+            <DependentUpon>SchedulingWizardView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Presentation\Features\TimetableRefactor\Views\TimetableLayoutView.axaml.cs">
+            <DependentUpon>TimetableLayoutView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Presentation\Features\TimetableRefactor\Views\TimetableView.axaml.cs">
+            <DependentUpon>TimetableView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Presentation\Features\Grades\Views\GradesView.axaml.cs">
+            <DependentUpon>GradesView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Presentation\Features\Grades\Views\Components\GradeTranscriptListView.axaml.cs">
+            <DependentUpon>GradeTranscriptListView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+        <AdditionalFiles Include="Presentation\Features\Authentication\Views\LoginView.axaml" />
+        <AdditionalFiles Include="Presentation\Features\Home\Views\HomeView.axaml" />
+        <AdditionalFiles Include="Presentation\Features\Scheduling\Shared\Styles\controls.axaml" />
+        <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Steps\TimetableSchedulerView.axaml" />
+        <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Steps\SelectionView.axaml" />
+        <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Shells\SchedulingDialogView.axaml" />
+        <AdditionalFiles Include="Presentation\Features\Scheduling\Views\Shells\SchedulingWizardView.axaml" />
+        <AdditionalFiles Include="Presentation\Features\Setting\Views\SettingView.axaml" />
+        <AdditionalFiles Include="Presentation\Features\SplashScreen\Views\SplashScreenWindow.axaml" />
+        <AdditionalFiles Include="Presentation\Features\TimetableManager\Views\TimetableManagerView.axaml" />
+        <AdditionalFiles Include="Presentation\Features\TimetableRefactor\Views\TimetableLayoutView.axaml" />
+        <AdditionalFiles Include="Presentation\Shared\Styles\Controls.axaml" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Presentation\Shared\Styles\Ripple\" />
+    </ItemGroup>
+
 </Project>
