@@ -1,0 +1,75 @@
+name: Tag & Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 1.2.3, without the v prefix)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  # Push annotated tag using GITHUB_TOKEN so push.tags in release-v2.yaml is not re-triggered,
+  # then invoke release-v2.yaml once via workflow_call.
+  create-tag:
+    name: Validate & Create Git Tag
+    runs-on: ubuntu-latest
+    outputs:
+      semver: ${{ steps.validate.outputs.SEMVER }}
+      tag: ${{ steps.validate.outputs.TAG }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Validate Version & Check Existing Tag
+        id: validate
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          read -r RAW_VER EXTRA <<< "$INPUT_VERSION"
+          SEMVER="${RAW_VER#[vV]}"
+
+          if [[ -n "$EXTRA" || ! "$SEMVER" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Invalid SemVer version '$INPUT_VERSION'. Expected format like 1.2.3 or 1.2.3-beta.1."
+            exit 1
+          fi
+
+          TAG="v${SEMVER}"
+          REMOTE_TAG=$(git ls-remote --tags origin "refs/tags/${TAG}")
+          if [[ -n "$REMOTE_TAG" ]] || git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            echo "::error::Tag '${TAG}' already exists."
+            exit 1
+          fi
+
+          echo "SEMVER=${SEMVER}" >> "$GITHUB_OUTPUT"
+          echo "TAG=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Validated release tag: ${TAG} (SemVer: ${SEMVER})"
+
+      - name: Warn if Stable Version Differs from Directory.Build.props
+        if: ${{ !contains(steps.validate.outputs.SEMVER, '-') }}
+        run: |
+          PROPS_VER=$(sed -n 's/.*<Version>\([^<]*\)<\/Version>.*/\1/p' Directory.Build.props | head -n 1 | tr -d '[:space:]')
+          if [[ -n "$PROPS_VER" && "$PROPS_VER" != "${{ steps.validate.outputs.SEMVER }}" ]]; then
+            echo "::warning file=Directory.Build.props::Directory.Build.props <Version> ($PROPS_VER) differs from stable release tag ${{ steps.validate.outputs.TAG }}."
+          fi
+
+      - name: Create and Push Annotated Tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.validate.outputs.TAG }}" -m "Release ${{ steps.validate.outputs.TAG }}"
+          git push origin "refs/tags/${{ steps.validate.outputs.TAG }}"
+
+  trigger-release:
+    name: Multi-Platform Release
+    needs: create-tag
+    uses: ./.github/workflows/release-v2.yaml
+    with:
+      version: ${{ needs.create-tag.outputs.semver }}
+    secrets: inherit
