@@ -11,6 +11,7 @@ using CTUScheduler.AppServices.Services.CtuSessions;
 using CTUScheduler.Presentation.Base;
 using CTUScheduler.Presentation.Features.Authentication.ViewModels;
 using CTUScheduler.Presentation.Features.Contact.ViewModels;
+using CTUScheduler.Presentation.Features.Grades.ViewModels;
 using CTUScheduler.Presentation.Features.Home.ViewModels;
 using CTUScheduler.Presentation.Features.TimetableManager.ViewModels;
 using CTUScheduler.Presentation.Services.Navigation;
@@ -58,6 +59,7 @@ public partial class MainShellViewModel : SessionSyncViewModelBase, IScreen, IRo
         [
             new NavigationItem("Trang chủ", MaterialIconKind.HomeOutline, typeof(HomeViewModel)),
             new NavigationItem("Học phần", MaterialIconKind.TableCog, typeof(TimetableManagerViewModel)),
+            new NavigationItem("Kết quả học tập", MaterialIconKind.ChartBoxOutline, typeof(GradesViewModel)),
             new NavigationItem("Liên hệ", MaterialIconKind.EmailOutline, typeof(ContactViewModel))
             // new NavigationItem("Cài đặt", MaterialIconKind.CogOutline,typeof(SettingViewModel))
         ];

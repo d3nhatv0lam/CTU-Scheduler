@@ -1,9 +1,12 @@
 using Avalonia;
 using Avalonia.Markup.Xaml;
-using Serilog;
 using Avalonia.Threading;
 using CTUScheduler.Presentation.Services.ApplicationStartup;
 using CTUScheduler.Presentation.Services.CrashReport;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
+using Serilog;
+using SkiaSharp;
 
 namespace CTUScheduler;
 
@@ -14,10 +17,22 @@ public class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+        ConfigureLiveCharts();
         SetupGlobalExceptionHandling();
 #if DEBUG
         this.AttachDeveloperTools();
 #endif
+    }
+
+    private static void ConfigureLiveCharts()
+    {
+        var vietnameseTypeface = SKFontManager.Default.MatchCharacter('Đ')
+            ?? SKTypeface.FromFamilyName("Segoe UI")
+            ?? SKTypeface.Default;
+
+        LiveCharts.Configure(config => config
+            .UseDefaults()
+            .HasTextSettings(new TextSettings { DefaultTypeface = vietnameseTypeface }));
     }
 
     public override void OnFrameworkInitializationCompleted()

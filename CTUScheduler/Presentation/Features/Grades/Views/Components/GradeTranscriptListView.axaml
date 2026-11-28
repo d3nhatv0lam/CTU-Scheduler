@@ -1,0 +1,275 @@
+<rxui:ReactiveUserControl
+    x:TypeArguments="vm:GradeTranscriptListViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="650"
+    xmlns:rxui="http://reactiveui.net"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Grades.ViewModels.Components"
+    xmlns:conv="clr-namespace:CTUScheduler.Presentation.Features.Grades.Converters"
+    x:DataType="vm:GradeTranscriptListViewModel"
+    x:CompileBindings="True"
+    x:Class="CTUScheduler.Presentation.Features.Grades.Views.Components.GradeTranscriptListView">
+
+    <rxui:ReactiveUserControl.Resources>
+        <conv:GradeLetterToBrushConverter x:Key="GradeLetterToBrushConverter" />
+    </rxui:ReactiveUserControl.Resources>
+
+    <rxui:ReactiveUserControl.Styles>
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
+
+        <Style Selector="Border.SemesterCard">
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="BoxShadow" Value="0 4 15 0 #0D000000" />
+        </Style>
+
+        <Style Selector="Expander.SemesterExpander">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="16,12" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+
+        <Style Selector="DataGrid.GradeTable">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="ColumnHeaderHeight" Value="38" />
+            <Setter Property="RowHeight" Value="42" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource BorderColor}" />
+            <Setter Property="HeadersVisibility" Value="Column" />
+        </Style>
+
+        <Style Selector="DataGrid.GradeTable DataGridRow.even">
+            <Setter Property="Background" Value="{DynamicResource SemiColorFill0}" />
+        </Style>
+
+        <Style Selector="DataGrid.GradeTable DataGridRow:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SelectedColumnBg}" />
+        </Style>
+
+        <Style Selector="Border.FailedHighlight">
+            <Setter Property="BorderBrush" Value="{DynamicResource RedColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="6,2" />
+        </Style>
+
+        <Style Selector="TextBlock.FailedText">
+            <Setter Property="Foreground" Value="{DynamicResource RedColor}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+    </rxui:ReactiveUserControl.Styles>
+
+    <StackPanel Spacing="12">
+        <!-- Thanh lọc -->
+        <Border Background="{DynamicResource SemiColorBackground1}"
+                BorderBrush="{DynamicResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="14">
+            <WrapPanel Orientation="Horizontal" ItemSpacing="12" LineSpacing="10">
+                <TextBox Width="280"
+                         PlaceholderText="Tìm mã HP hoặc tên học phần..."
+                         Text="{Binding SearchText, Mode=TwoWay}">
+                    <TextBox.InnerLeftContent>
+                        <materialIcons:MaterialIcon Kind="Magnify"
+                                                    Width="16"
+                                                    Height="16"
+                                                    Margin="8,0,0,0"
+                                                    Foreground="{DynamicResource SubTextColor}" />
+                    </TextBox.InnerLeftContent>
+                </TextBox>
+
+                <u:TreeComboBox MinWidth="240"
+                                MaxDropDownHeight="320"
+                                PlaceholderText="Chọn năm học / học kỳ"
+                                ItemsSource="{Binding SemesterOptions, Mode=OneWay}"
+                                SelectedItem="{Binding SelectedSemester, Mode=TwoWay}">
+                    <u:TreeComboBox.ItemTemplate>
+                        <TreeDataTemplate x:DataType="vm:SemesterFilterOption"
+                                          ItemsSource="{Binding Children, Mode=OneWay}">
+                            <TextBlock Text="{Binding DisplayName, Mode=OneWay}" />
+                        </TreeDataTemplate>
+                    </u:TreeComboBox.ItemTemplate>
+                    <u:TreeComboBox.SelectedItemTemplate>
+                        <DataTemplate x:DataType="vm:SemesterFilterOption">
+                            <TextBlock Text="{Binding SelectedDisplayName, Mode=OneWay}" />
+                        </DataTemplate>
+                    </u:TreeComboBox.SelectedItemTemplate>
+                </u:TreeComboBox>
+
+                <CheckBox Content="Ẩn sinh hoạt lớp (SHCVHT)"
+                          VerticalAlignment="Center"
+                          IsChecked="{Binding HideAdvisoryCourses, Mode=TwoWay}" />
+            </WrapPanel>
+        </Border>
+
+        <!-- Trạng thái không có kết quả lọc -->
+        <Border IsVisible="{Binding IsEmptyFilterResult, Mode=OneWay}"
+                Background="{DynamicResource SemiColorBackground1}"
+                BorderBrush="{DynamicResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="24">
+            <StackPanel HorizontalAlignment="Center" Spacing="8">
+                <materialIcons:MaterialIcon Kind="FileSearchOutline"
+                                            Width="32"
+                                            Height="32"
+                                            Foreground="{DynamicResource SubTextColor}" />
+                <TextBlock Text="Không tìm thấy học phần phù hợp với bộ lọc."
+                           Foreground="{DynamicResource SubTextColor}"
+                           FontSize="14" />
+            </StackPanel>
+        </Border>
+
+        <!-- Danh sách học kỳ -->
+        <ItemsRepeater ItemsSource="{Binding SemesterGroups, Mode=OneWay}">
+            <ItemsRepeater.Layout>
+                <StackLayout Spacing="12" />
+            </ItemsRepeater.Layout>
+            <ItemsRepeater.ItemTemplate>
+                <DataTemplate x:DataType="vm:SemesterGradeGroupViewModel">
+                    <Border Classes="SemesterCard">
+                        <Expander Classes="SemesterExpander"
+                                  IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
+                            <Expander.Header>
+                                <Grid ColumnDefinitions="*, Auto" ColumnSpacing="12" Margin="4,0">
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding Title, Mode=OneWay}"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource Grey}"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding SummaryText, Mode=OneWay}"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource PrimaryBrush}"
+                                               FontWeight="Medium"
+                                               VerticalAlignment="Center" />
+                                </Grid>
+                            </Expander.Header>
+
+                            <DataGrid Classes="GradeTable"
+                                      Margin="0,8,0,0"
+                                      IsReadOnly="True"
+                                      CanUserReorderColumns="False"
+                                      CanUserSortColumns="False"
+                                      CanUserResizeColumns="True"
+                                      SelectionMode="Single"
+                                      AutoGenerateColumns="False"
+                                      LoadingRow="GradeDataGrid_OnLoadingRow"
+                                      ItemsSource="{Binding Courses, Mode=OneWay}">
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="STT" Width="54">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="vm:CourseGradeItemViewModel">
+                                                <TextBlock Text="{Binding Index, Mode=OneWay}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource SubTextColor}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Mã HP" Width="115">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="vm:CourseGradeItemViewModel">
+                                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="6,0">
+                                                    <Border Width="3"
+                                                            Height="20"
+                                                            CornerRadius="2"
+                                                            IsVisible="{Binding IsFailed, Mode=OneWay}"
+                                                            Background="{DynamicResource RedColor}" />
+                                                    <Border Classes.FailedHighlight="{Binding IsFailed, Mode=OneWay}">
+                                                        <TextBlock Text="{Binding CourseCode, Mode=OneWay}"
+                                                                   Classes.FailedText="{Binding IsFailed, Mode=OneWay}"
+                                                                   FontWeight="Medium"
+                                                                   VerticalAlignment="Center" />
+                                                    </Border>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Tên học phần" Width="*" MinWidth="240">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="vm:CourseGradeItemViewModel">
+                                                <TextBlock Text="{Binding CourseName, Mode=OneWay}"
+                                                           Classes.FailedText="{Binding IsFailed, Mode=OneWay}"
+                                                           TextWrapping="Wrap"
+                                                           VerticalAlignment="Center"
+                                                           Margin="6,0" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTextColumn Header="Nhóm"
+                                                        Width="80"
+                                                        Binding="{Binding GroupDisplay, Mode=OneWay}" />
+
+                                    <DataGridTextColumn Header="Tín chỉ"
+                                                        Width="92"
+                                                        Binding="{Binding Credits, Mode=OneWay}" />
+
+                                    <DataGridTemplateColumn Header="Điểm chữ" Width="100">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="vm:CourseGradeItemViewModel">
+                                                <Border CornerRadius="6"
+                                                        Padding="10,3"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Background="{Binding LetterGrade, Mode=OneWay, Converter={StaticResource GradeLetterToBrushConverter}}">
+                                                    <TextBlock Text="{Binding GradeLabel, Mode=OneWay}"
+                                                               Foreground="White"
+                                                               FontWeight="Bold"
+                                                               FontSize="12" />
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Điểm số" Width="90">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="vm:CourseGradeItemViewModel">
+                                                <TextBlock Text="{Binding ScoreDisplay, Mode=OneWay}"
+                                                           Classes.FailedText="{Binding IsFailed, Mode=OneWay}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           FontWeight="SemiBold" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Tích lũy" Width="85">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="vm:CourseGradeItemViewModel">
+                                                <Panel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <materialIcons:MaterialIcon Kind="CheckCircleOutline"
+                                                                                Width="18"
+                                                                                Height="18"
+                                                                                Foreground="{DynamicResource PrimaryBrush}"
+                                                                                IsVisible="{Binding IsAccumulated, Mode=OneWay}"
+                                                                                ToolTip.Tip="Đã tính vào tín chỉ tích lũy" />
+                                                    <TextBlock Text="-"
+                                                               Foreground="{DynamicResource SubTextColor}"
+                                                               IsVisible="{Binding !IsAccumulated, Mode=OneWay}" />
+                                                </Panel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Expander>
+                    </Border>
+                </DataTemplate>
+            </ItemsRepeater.ItemTemplate>
+        </ItemsRepeater>
+    </StackPanel>
+</rxui:ReactiveUserControl>

@@ -119,7 +119,7 @@ internal sealed class AuthClient : IAuthClient
         var samlContext = await SubmitCredentialAsync(httpClient, bootstrapContext, username, password, cancellationToken);
 
         _logger.LogDebug("Hoàn tất thiết lập phiên trên Web HTQL...");
-        var isAuthenticated = await CompleteAuthenticationAsync(httpClient, samlContext, cancellationToken);
+        var isAuthenticated = await CompleteAuthenticationAsync(httpClient, samlContext, _logger, cancellationToken);
 
         if (!isAuthenticated)
         {
@@ -227,7 +227,7 @@ internal sealed class AuthClient : IAuthClient
             _httpOptions.ApplyBrowserHeaders(httpClient.DefaultRequestHeaders);
 
             // bắt tay xin lại PHPSESSID
-            bool isSuccess = await ExecuteLegacySsoHandshakeAsync(httpClient, currentSession.StudentId, cancellationToken);
+            bool isSuccess = await ExecuteLegacySsoHandshakeAsync(httpClient, currentSession.StudentId, _logger, cancellationToken);
             if (!isSuccess) return null;
 
             // Trích xuất và cập nhật các legacy cookies mới nhận được sau khi re-auth
@@ -281,7 +281,7 @@ internal sealed class AuthClient : IAuthClient
     /// Thực hiện bắt tay SSO Legacy PHP (Gửi định danh rỗng mật khẩu -> Lấy SAML -> POST SAML -> Hoàn tất)
     /// </summary>
     private static async Task<bool> ExecuteLegacySsoHandshakeAsync(HttpClient httpClient, string studentId,
-        CancellationToken ct)
+        ILogger logger, CancellationToken ct)
     {
         // Bước 1: Khởi động SSO chuyển hướng lấy SAML
         using var ssoRequest = new HttpRequestMessage(HttpMethod.Post, HtqlEndpoints.SsoAuth);
@@ -311,7 +311,7 @@ internal sealed class AuthClient : IAuthClient
 
         // Gửi SAML Response để kích hoạt và thiết lập phiên Cookie PHPSESSID
         var samlContext = new SamlLoginContext(samlResponse);
-        return await CompleteAuthenticationAsync(httpClient, samlContext, ct);
+        return await CompleteAuthenticationAsync(httpClient, samlContext, logger, ct);
     }
 
     /// <summary>
@@ -463,7 +463,10 @@ internal sealed class AuthClient : IAuthClient
         return new SamlLoginContext(samlResponse);
     }
 
-    private static async Task<bool> CompleteAuthenticationAsync(HttpClient httpClient, SamlLoginContext samlContext,
+    internal static async Task<bool> CompleteAuthenticationAsync(
+        HttpClient httpClient,
+        SamlLoginContext samlContext,
+        ILogger logger,
         CancellationToken ct = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, HtqlEndpoints.SsoAuth);
@@ -474,8 +477,46 @@ internal sealed class AuthClient : IAuthClient
         });
 
         using var response = await httpClient.SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode)
+        {
+            return false;
+        }
 
-        return response.IsSuccessStatusCode;
+        await WarmupStudentHomeAsync(httpClient, logger, ct);
+        return true;
+    }
+
+    internal static async Task WarmupStudentHomeAsync(
+        HttpClient httpClient,
+        ILogger logger,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            // Trang hindex.php nạp mvMaHDDT (hệ đào tạo) vào $_SESSION của PHPSESSID trên server;
+            // nếu bỏ qua bước này, các trang con như qldiem/codes/index.php?mID=201 sẽ trả về dữ liệu rỗng.
+            using var response = await httpClient.GetAsync(HtqlEndpoints.StudentHome, ct).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+            {
+                logger.LogWarning(
+                    "Không thể khởi tạo trang chủ HTQL (hindex.php), HTTP {StatusCode}. Các tính năng Web HTQL có thể thiếu biến phiên.",
+                    response.StatusCode);
+                return;
+            }
+
+            var html = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            if (CtuCaptchaDetector.IsCaptcha(html))
+            {
+                logger.LogWarning("Phát hiện Captcha CTU khi khởi tạo phiên tại trang chủ HTQL (hindex.php).");
+                throw new CaptchaBlockedException("Kẹt Captcha, hãy bật VPN hoặc đổi mạng");
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException and not CaptchaBlockedException)
+        {
+            logger.LogWarning(
+                ex,
+                "Lỗi tạm thời khi khởi tạo trang chủ HTQL (hindex.php); tiếp tục giữ phiên đăng nhập.");
+        }
     }
 
     internal static (StudentProfile Profile, DateTimeOffset ExpiresAt) ParseJwt(string jwtToken)

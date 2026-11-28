@@ -1,0 +1,241 @@
+<rxui:ReactiveUserControl
+    x:TypeArguments="vm:GradesViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+    xmlns:rxui="http://reactiveui.net"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Grades.ViewModels"
+    xmlns:components="clr-namespace:CTUScheduler.Presentation.Features.Grades.Views.Components"
+    x:DataType="vm:GradesViewModel"
+    x:CompileBindings="True"
+    x:Class="CTUScheduler.Presentation.Features.Grades.Views.GradesView">
+
+    <rxui:ReactiveUserControl.Styles>
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
+
+        <Style Selector="TextBlock.PageTitle">
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource Grey}" />
+        </Style>
+
+        <Style Selector="TextBlock.SubTitle">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{DynamicResource SubTextColor}" />
+        </Style>
+
+        <Style Selector="Border.KpiCard">
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="18,16" />
+            <Setter Property="BoxShadow" Value="0 4 15 0 #0D000000" />
+        </Style>
+
+        <Style Selector="TextBlock.KpiLabel">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{DynamicResource SubTextColor}" />
+        </Style>
+
+        <Style Selector="TextBlock.KpiValue">
+            <Setter Property="FontFamily" Value="{StaticResource Ctu-Title-Font}" />
+            <Setter Property="FontSize" Value="26" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
+        </Style>
+
+        <Style Selector="Button.btnTopAction">
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.btnTopAction:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SemiColorFill0}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}" />
+        </Style>
+
+        <!-- Responsive Header -->
+        <Style Selector="Grid.HeaderGrid > StackPanel.HeaderTitle">
+            <Setter Property="Grid.Row" Value="0" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+        </Style>
+        <Style Selector="Grid.HeaderGrid > StackPanel.HeaderActions">
+            <Setter Property="Grid.Row" Value="1" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Margin" Value="0,10,0,0" />
+        </Style>
+        <Style Selector="Grid.RootContainer.wide-header Grid.HeaderGrid > StackPanel.HeaderTitle">
+            <Setter Property="Grid.ColumnSpan" Value="1" />
+        </Style>
+        <Style Selector="Grid.RootContainer.wide-header Grid.HeaderGrid > StackPanel.HeaderActions">
+            <Setter Property="Grid.Row" Value="0" />
+            <Setter Property="Grid.Column" Value="1" />
+            <Setter Property="Grid.ColumnSpan" Value="1" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="Margin" Value="0" />
+        </Style>
+
+        <!-- Responsive KPI Grid (2x2 mặc định -> 4 cột khi >= 1000px) -->
+        <Style Selector="Grid.KpiGrid > Border.kpi-1">
+            <Setter Property="Grid.Row" Value="0" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+        </Style>
+        <Style Selector="Grid.KpiGrid > Border.kpi-2">
+            <Setter Property="Grid.Row" Value="0" />
+            <Setter Property="Grid.Column" Value="2" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+        </Style>
+        <Style Selector="Grid.KpiGrid > Border.kpi-3">
+            <Setter Property="Grid.Row" Value="1" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+        </Style>
+        <Style Selector="Grid.KpiGrid > Border.kpi-4">
+            <Setter Property="Grid.Row" Value="1" />
+            <Setter Property="Grid.Column" Value="2" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+        </Style>
+        <Style Selector="Grid.RootContainer.wide-kpi Grid.KpiGrid > Border.kpi-1">
+            <Setter Property="Grid.ColumnSpan" Value="1" />
+        </Style>
+        <Style Selector="Grid.RootContainer.wide-kpi Grid.KpiGrid > Border.kpi-2">
+            <Setter Property="Grid.Column" Value="1" />
+            <Setter Property="Grid.ColumnSpan" Value="1" />
+        </Style>
+        <Style Selector="Grid.RootContainer.wide-kpi Grid.KpiGrid > Border.kpi-3">
+            <Setter Property="Grid.Row" Value="0" />
+            <Setter Property="Grid.Column" Value="2" />
+            <Setter Property="Grid.ColumnSpan" Value="1" />
+        </Style>
+        <Style Selector="Grid.RootContainer.wide-kpi Grid.KpiGrid > Border.kpi-4">
+            <Setter Property="Grid.Row" Value="0" />
+            <Setter Property="Grid.Column" Value="3" />
+            <Setter Property="Grid.ColumnSpan" Value="1" />
+        </Style>
+    </rxui:ReactiveUserControl.Styles>
+
+    <Grid Classes="RootContainer" RowDefinitions="Auto, Auto, *" RowSpacing="14">
+        <Interaction.Behaviors>
+            <AdaptiveBehavior>
+                <AdaptiveClassSetter MinWidth="850" MinWidthOperator="GreaterThanOrEqual" ClassName="wide-header" />
+                <AdaptiveClassSetter MinWidth="1000" MinWidthOperator="GreaterThanOrEqual" ClassName="wide-kpi" />
+            </AdaptiveBehavior>
+        </Interaction.Behaviors>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Classes="HeaderGrid" RowDefinitions="Auto, Auto" ColumnDefinitions="*, Auto">
+            <StackPanel Classes="HeaderTitle" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <TextBlock Classes="PageTitle" Text="Thống kê kết quả học tập" />
+                <TextBlock Classes="SubTitle"
+                           Text="{Binding LastUpdatedDisplay, Mode=OneWay}"
+                           VerticalAlignment="Bottom"
+                           Margin="0,0,0,3" />
+            </StackPanel>
+
+            <StackPanel Classes="HeaderActions" Orientation="Horizontal" Spacing="8">
+                <Button Classes="btnTopAction"
+                        Command="{Binding ReloadGradesCommand}"
+                        IsEnabled="{Binding !IsLoading, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <materialIcons:MaterialIcon Kind="Reload" Width="16" Height="16" />
+                        <TextBlock VerticalAlignment="Center" Text="Tải lại điểm" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- 4 Thẻ KPI -->
+        <Grid Grid.Row="1"
+              Classes="KpiGrid"
+              ColumnDefinitions="*, *, *, *"
+              RowDefinitions="Auto, Auto"
+              ColumnSpacing="12"
+              RowSpacing="12">
+            <Border Classes="KpiCard kpi-1">
+                <u:Skeleton IsLoading="{Binding IsInitialLoading, Mode=OneWay}" IsActive="True">
+                    <StackPanel Spacing="6">
+                        <TextBlock Classes="KpiLabel" Text="GPA tích lũy" />
+                        <TextBlock Classes="KpiValue" Text="{Binding CumulativeGpaDisplay, Mode=OneWay}" />
+                    </StackPanel>
+                </u:Skeleton>
+            </Border>
+
+            <Border Classes="KpiCard kpi-2">
+                <u:Skeleton IsLoading="{Binding IsInitialLoading, Mode=OneWay}" IsActive="True">
+                    <StackPanel Spacing="6">
+                        <TextBlock Classes="KpiLabel" Text="Tín chỉ tích lũy" />
+                        <TextBlock Classes="KpiValue" Text="{Binding TotalCreditsDisplay, Mode=OneWay}" />
+                    </StackPanel>
+                </u:Skeleton>
+            </Border>
+
+            <Border Classes="KpiCard kpi-3">
+                <u:Skeleton IsLoading="{Binding IsInitialLoading, Mode=OneWay}" IsActive="True">
+                    <StackPanel Spacing="6">
+                        <TextBlock Classes="KpiLabel" Text="ĐRL gần nhất" />
+                        <TextBlock Classes="KpiValue" Text="{Binding ConductScoreDisplay, Mode=OneWay}" />
+                    </StackPanel>
+                </u:Skeleton>
+            </Border>
+
+            <Border Classes="KpiCard kpi-4">
+                <u:Skeleton IsLoading="{Binding IsInitialLoading, Mode=OneWay}" IsActive="True">
+                    <StackPanel Spacing="6">
+                        <TextBlock Classes="KpiLabel" Text="Môn đã có điểm" />
+                        <TextBlock Classes="KpiValue" Text="{Binding GradedCourseCountDisplay, Mode=OneWay}" />
+                    </StackPanel>
+                </u:Skeleton>
+            </Border>
+        </Grid>
+
+        <!-- Nội dung chính -->
+        <u:Skeleton Grid.Row="2" IsLoading="{Binding IsInitialLoading, Mode=OneWay}" IsActive="True">
+            <Panel>
+                <!-- Trạng thái chưa có dữ liệu bảng điểm -->
+                <Border IsVisible="{Binding HasNoTranscriptData, Mode=OneWay}"
+                        Background="{DynamicResource SemiColorBackground1}"
+                        BorderBrush="{DynamicResource BorderColor}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="32">
+                    <StackPanel HorizontalAlignment="Center" Spacing="10">
+                        <materialIcons:MaterialIcon Kind="SchoolOutline"
+                                                    Width="40"
+                                                    Height="40"
+                                                    Foreground="{DynamicResource SubTextColor}" />
+                        <TextBlock Text="Chưa có dữ liệu điểm học tập từ hệ thống."
+                                   FontSize="15"
+                                   Foreground="{DynamicResource SubTextColor}" />
+                    </StackPanel>
+                </Border>
+
+                <TabControl SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}"
+                            IsVisible="{Binding !HasNoTranscriptData, Mode=OneWay}">
+                    <TabItem Header="Biểu đồ thống kê">
+                        <components:GradeChartsView Margin="0,12,0,0"
+                                                    DataContext="{Binding ChartsViewModel}" />
+                    </TabItem>
+
+                    <TabItem Header="Bảng điểm chi tiết">
+                        <components:GradeTranscriptListView Margin="0,12,0,0"
+                                                            DataContext="{Binding TranscriptListViewModel}" />
+                    </TabItem>
+                </TabControl>
+            </Panel>
+        </u:Skeleton>
+    </Grid>
+</rxui:ReactiveUserControl>

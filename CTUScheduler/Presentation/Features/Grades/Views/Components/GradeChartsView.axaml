@@ -1,0 +1,266 @@
+<rxui:ReactiveUserControl
+    x:TypeArguments="vm:GradeChartsViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="950"
+    xmlns:rxui="http://reactiveui.net"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Avalonia;assembly=LiveChartsCore.SkiaSharpView.Avalonia"
+    xmlns:vm="clr-namespace:CTUScheduler.Presentation.Features.Grades.ViewModels.Components"
+    x:DataType="vm:GradeChartsViewModel"
+    x:CompileBindings="True"
+    x:Class="CTUScheduler.Presentation.Features.Grades.Views.Components.GradeChartsView">
+
+    <rxui:ReactiveUserControl.Styles>
+        <StyleInclude Source="avares://CTUScheduler/Presentation/Shared/Styles/Controls.axaml" />
+
+        <Style Selector="Border.ChartCard">
+            <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="18,16" />
+            <Setter Property="BoxShadow" Value="0 4 15 0 #0D000000" />
+        </Style>
+
+        <Style Selector="TextBlock.ChartTitle">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource Grey}" />
+        </Style>
+
+        <Style Selector="TextBlock.ChartSubtitle">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource SubTextColor}" />
+        </Style>
+
+        <!-- Responsive 1 cột (< 1050px) -> 2 cột (>= 1050px) -->
+        <Style Selector="Grid.ChartsGrid > Border.chart-gpa">
+            <Setter Property="Grid.Row" Value="0" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+        </Style>
+        <Style Selector="Grid.ChartsGrid > Border.chart-credits">
+            <Setter Property="Grid.Row" Value="1" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+        </Style>
+        <Style Selector="Grid.ChartsGrid > Border.chart-dist">
+            <Setter Property="Grid.Row" Value="2" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+        </Style>
+        <Style Selector="Grid.ChartsGrid > Border.chart-conduct">
+            <Setter Property="Grid.Row" Value="3" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+        </Style>
+        <Style Selector="Grid.ChartsGrid > Border.chart-courses">
+            <Setter Property="Grid.Row" Value="4" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+        </Style>
+
+        <Style Selector="Grid.ChartsGrid.wide-charts > Border.chart-gpa">
+            <Setter Property="Grid.Row" Value="0" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="1" />
+        </Style>
+        <Style Selector="Grid.ChartsGrid.wide-charts > Border.chart-credits">
+            <Setter Property="Grid.Row" Value="0" />
+            <Setter Property="Grid.Column" Value="1" />
+            <Setter Property="Grid.ColumnSpan" Value="1" />
+        </Style>
+        <Style Selector="Grid.ChartsGrid.wide-charts > Border.chart-dist">
+            <Setter Property="Grid.Row" Value="1" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="1" />
+        </Style>
+        <Style Selector="Grid.ChartsGrid.wide-charts > Border.chart-conduct">
+            <Setter Property="Grid.Row" Value="1" />
+            <Setter Property="Grid.Column" Value="1" />
+            <Setter Property="Grid.ColumnSpan" Value="1" />
+        </Style>
+        <Style Selector="Grid.ChartsGrid.wide-charts > Border.chart-courses">
+            <Setter Property="Grid.Row" Value="2" />
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+        </Style>
+    </rxui:ReactiveUserControl.Styles>
+
+    <Grid Classes="ChartsGrid"
+          ColumnDefinitions="*, *"
+          RowDefinitions="Auto, Auto, Auto, Auto, Auto"
+          ColumnSpacing="14"
+          RowSpacing="14">
+        <Interaction.Behaviors>
+            <AdaptiveBehavior>
+                <AdaptiveClassSetter MinWidth="1050" MinWidthOperator="GreaterThanOrEqual" ClassName="wide-charts" />
+            </AdaptiveBehavior>
+        </Interaction.Behaviors>
+
+        <!-- 1. Xu hướng GPA -->
+        <Border Classes="ChartCard chart-gpa">
+            <Grid RowDefinitions="Auto, *" RowSpacing="10">
+                <StackPanel Spacing="2">
+                    <TextBlock Classes="ChartTitle" Text="Xu hướng ĐTB học kỳ &amp; tích lũy" />
+                    <TextBlock Classes="ChartSubtitle" Text="Thang điểm 4 (các học kỳ đã tổng kết)" />
+                </StackPanel>
+
+                <Panel Grid.Row="1" Height="290" ClipToBounds="False">
+                    <lvc:CartesianChart IsVisible="{Binding HasGpaData, Mode=OneWay}"
+                                        Series="{Binding GpaSeries, Mode=OneWay}"
+                                        XAxes="{Binding GpaXAxes, Mode=OneWay}"
+                                        YAxes="{Binding GpaYAxes, Mode=OneWay}"
+                                        LegendPosition="Top"
+                                        LegendTextPaint="{Binding LegendTextPaint, Mode=OneWay}"
+                                        TooltipTextPaint="{Binding TooltipTextPaint, Mode=OneWay}"
+                                        TooltipBackgroundPaint="{Binding TooltipBackgroundPaint, Mode=OneWay}"/>
+                    <TextBlock IsVisible="{Binding !HasGpaData, Mode=OneWay}"
+                               Text="Chưa có học kỳ đã tổng kết."
+                               Foreground="{DynamicResource SubTextColor}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Panel>
+            </Grid>
+        </Border>
+
+        <!-- 2. Tiến độ tín chỉ -->
+        <Border Classes="ChartCard chart-credits">
+            <Grid RowDefinitions="Auto, *" RowSpacing="10">
+                <StackPanel Spacing="2">
+                    <TextBlock Classes="ChartTitle" Text="Tín chỉ tích lũy theo học kỳ" />
+                    <TextBlock Classes="ChartSubtitle" Text="Cột: TC từng kỳ · Đường: Tổng TC tích lũy" />
+                </StackPanel>
+
+                <Panel Grid.Row="1" Height="290" ClipToBounds="False">
+                    <lvc:CartesianChart IsVisible="{Binding HasCreditData, Mode=OneWay}"
+                                        Series="{Binding CreditSeries, Mode=OneWay}"
+                                        XAxes="{Binding CreditXAxes, Mode=OneWay}"
+                                        YAxes="{Binding CreditYAxes, Mode=OneWay}"
+                                        LegendPosition="Top"
+                                        LegendTextPaint="{Binding LegendTextPaint, Mode=OneWay}"
+                                        TooltipTextPaint="{Binding TooltipTextPaint, Mode=OneWay}"
+                                        TooltipBackgroundPaint="{Binding TooltipBackgroundPaint, Mode=OneWay}" />
+                    <TextBlock IsVisible="{Binding !HasCreditData, Mode=OneWay}"
+                               Text="Chưa có dữ liệu tín chỉ tổng kết."
+                               Foreground="{DynamicResource SubTextColor}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Panel>
+            </Grid>
+        </Border>
+
+        <!-- 3. Phân bố điểm chữ (Donut) -->
+        <Border Classes="ChartCard chart-dist">
+            <Grid RowDefinitions="Auto, *" RowSpacing="10">
+                <Grid ColumnDefinitions="*, Auto" ColumnSpacing="10">
+                    <StackPanel Spacing="2">
+                        <TextBlock Classes="ChartTitle" Text="Phân bố điểm chữ" />
+                        <TextBlock Classes="ChartSubtitle" Text="Tỷ lệ điểm đạt qua các học phần đã có kết quả" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <RadioButton GroupName="DistMode"
+                                     Content="Theo tín chỉ"
+                                     IsChecked="{Binding IsDistributionByCredits, Mode=TwoWay}" />
+                        <RadioButton GroupName="DistMode"
+                                     Content="Theo số môn"
+                                     IsChecked="{Binding IsDistributionByCourses, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+
+                <Panel Grid.Row="1" Height="300">
+                    <lvc:PieChart IsVisible="{Binding HasDistributionData, Mode=OneWay}"
+                                  Series="{Binding DistributionSeries, Mode=OneWay}"
+                                  InitialRotation="-90"
+                                  LegendPosition="Right"
+                                  LegendTextPaint="{Binding LegendTextPaint, Mode=OneWay}"
+                                  TooltipTextPaint="{Binding TooltipTextPaint, Mode=OneWay}"
+                                  TooltipBackgroundPaint="{Binding TooltipBackgroundPaint, Mode=OneWay}" />
+                    <TextBlock IsVisible="{Binding !HasDistributionData, Mode=OneWay}"
+                               Text="Chưa có học phần nào có điểm chữ."
+                               Foreground="{DynamicResource SubTextColor}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Panel>
+            </Grid>
+        </Border>
+
+        <!-- 4. Điểm rèn luyện -->
+        <Border Classes="ChartCard chart-conduct">
+            <Grid RowDefinitions="Auto, *" RowSpacing="10">
+                <StackPanel Spacing="2">
+                    <TextBlock Classes="ChartTitle" Text="Điểm rèn luyện qua các học kỳ" />
+                    <TextBlock Classes="ChartSubtitle" Text="Thang điểm 100 (bỏ qua kỳ chưa có ĐRL)" />
+                </StackPanel>
+
+                <Panel Grid.Row="1" Height="300">
+                    <lvc:CartesianChart IsVisible="{Binding HasConductData, Mode=OneWay}"
+                                        Series="{Binding ConductSeries, Mode=OneWay}"
+                                        XAxes="{Binding ConductXAxes, Mode=OneWay}"
+                                        YAxes="{Binding ConductYAxes, Mode=OneWay}"
+                                        LegendPosition="Top"
+                                        LegendTextPaint="{Binding LegendTextPaint, Mode=OneWay}"
+                                        TooltipTextPaint="{Binding TooltipTextPaint, Mode=OneWay}"
+                                        TooltipBackgroundPaint="{Binding TooltipBackgroundPaint, Mode=OneWay}" />
+                    <TextBlock IsVisible="{Binding !HasConductData, Mode=OneWay}"
+                               Text="Chưa có dữ liệu điểm rèn luyện."
+                               Foreground="{DynamicResource SubTextColor}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Panel>
+            </Grid>
+        </Border>
+
+        <!-- 5. Điểm thang 10 theo từng học phần -->
+        <Border Classes="ChartCard chart-courses">
+            <Grid RowDefinitions="Auto, *" RowSpacing="12">
+                <Grid ColumnDefinitions="*, Auto" ColumnSpacing="12">
+                    <StackPanel Spacing="2">
+                        <TextBlock Classes="ChartTitle" Text="Phổ điểm từng học phần (thang 10)" />
+                        <TextBlock Classes="ChartSubtitle" Text="Theo thứ tự học kỳ từ đầu khóa · hỗ trợ lọc theo năm học / học kỳ" />
+                    </StackPanel>
+
+                    <u:TreeComboBox Grid.Column="1"
+                                    MinWidth="240"
+                                    MaxDropDownHeight="320"
+                                    PlaceholderText="Chọn năm học / học kỳ"
+                                    ItemsSource="{Binding CourseFilterOptions, Mode=OneWay}"
+                                    SelectedItem="{Binding SelectedCourseFilter, Mode=TwoWay}">
+                        <u:TreeComboBox.ItemTemplate>
+                            <TreeDataTemplate x:DataType="vm:SemesterFilterOption"
+                                              ItemsSource="{Binding Children, Mode=OneWay}">
+                                <TextBlock Text="{Binding DisplayName, Mode=OneWay}" />
+                            </TreeDataTemplate>
+                        </u:TreeComboBox.ItemTemplate>
+                        <u:TreeComboBox.SelectedItemTemplate>
+                            <DataTemplate x:DataType="vm:SemesterFilterOption">
+                                <TextBlock Text="{Binding SelectedDisplayName, Mode=OneWay}" />
+                            </DataTemplate>
+                        </u:TreeComboBox.SelectedItemTemplate>
+                    </u:TreeComboBox>
+                </Grid>
+
+                <Panel Grid.Row="1">
+                    <lvc:CartesianChart IsVisible="{Binding HasCourseScoreData, Mode=OneWay}"
+                                        Height="{Binding CourseChartHeight, Mode=OneWay}"
+                                        Series="{Binding CourseScoreSeries, Mode=OneWay}"
+                                        XAxes="{Binding CourseScoreXAxes, Mode=OneWay}"
+                                        YAxes="{Binding CourseScoreYAxes, Mode=OneWay}"
+                                        LegendPosition="Hidden"
+                                        TooltipTextPaint="{Binding TooltipTextPaint, Mode=OneWay}"
+                                        TooltipBackgroundPaint="{Binding TooltipBackgroundPaint, Mode=OneWay}" />
+                    <TextBlock IsVisible="{Binding !HasCourseScoreData, Mode=OneWay}"
+                               Height="220"
+                               Text="Không có học phần nào có điểm số trong phạm vi đã chọn."
+                               Foreground="{DynamicResource SubTextColor}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Panel>
+            </Grid>
+        </Border>
+    </Grid>
+</rxui:ReactiveUserControl>
